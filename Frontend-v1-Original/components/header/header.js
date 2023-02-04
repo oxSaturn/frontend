@@ -324,14 +324,14 @@ function Header (props) {
             params: [
               {
                 chainId: hexChain,
-                chainName: 'Arbitrum',
+                chainName: 'Canto',
                 nativeCurrency: {
-                  name: 'ETH',
-                  symbol: 'ETH',
+                  name: 'CANTO',
+                  symbol: 'CANTO',
                   decimals: 18
                 },
-                rpcUrls: ['https://arb1.arbitrum.io/rpc'],
-                blockExplorerUrls: 'https://arbiscan.io/'
+                rpcUrls: ['https://canto.slingshot.finance/'],
+                blockExplorerUrls: 'https://evm.explorer.canto.io/'
               }
             ]
           })
@@ -507,7 +507,7 @@ function Header (props) {
               Switch to{' '}
               {process.env.NEXT_PUBLIC_CHAINID == '421613'
                 ? 'ARB GOERLI'
-                : 'Arbitrum'}
+                : 'Canto'}
             </Button>
           </div>
         </div>

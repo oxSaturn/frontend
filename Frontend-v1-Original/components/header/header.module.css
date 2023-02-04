@@ -22,9 +22,11 @@ html:not([data-scroll="0"]) .headerContainer {
   align-items: center;
   /* background-color: #fff; */
   opacity: 0.9;
-  background-color: rgba(0, 0, 0, 0.952);
+  background-color: rgba(0, 0, 0, 0.973);
   box-shadow: 0 0 0.2em rgba(14, 233, 222, 0.993);
   transition: 0.4s linear;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 }
 
 .hidden {

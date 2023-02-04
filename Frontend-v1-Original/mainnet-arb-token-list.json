@@ -25,14 +25,6 @@
   },
   {
     "chainId": 42161,
-    "address": "0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978",
-    "name": "Curve DAO Token",
-    "symbol": "CRV",
-    "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/crv.jpg"
-  },
-  {
-    "chainId": 42161,
     "address": "0x590020B1005b8b25f1a2C82c5f743c540dcfa24d",
     "name": "GMX",
     "symbol": "GMX",
@@ -275,7 +267,7 @@
     "address": "0xC33f7f83CbB021846Cb9c58f2d8E3df428dbC8C1",
     "chainId": 42161,
     "decimals": 18,
-    "logoURI": "https://arbiscan.io/token/images/camelotexchange_32.png",
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
     "name": "Flow",
     "symbol": "VELO"
   }
