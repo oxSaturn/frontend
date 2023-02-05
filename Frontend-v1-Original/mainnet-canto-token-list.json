@@ -1,8 +1,8 @@
 [
   {
-    "name": "Wrapped Ether",
-    "address": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
-    "symbol": "WETH",
+    "name": "WCANTO",
+    "address": "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B",
+    "symbol": "CANTO",
     "decimals": 18,
     "chainId": 7700,
     "logoURI": "https://assets.coingecko.com/coins/images/2518/small/weth.png?1628852295"
@@ -27,7 +27,7 @@
     "address": "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
     "chainId": 7700,
     "decimals": 18,
-    "logoURI": "https://arbiscan.io/token/images/camelotexchange_32.png",
+    "logoURI": "https://assets.coingecko.com/coins/images/26988/small/iShot_2022-08-23_09.17.46.png?1661217695",
     "name": "NOTE",
     "symbol": "GRAIL"
   },
@@ -38,6 +38,14 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
     "name": "Flow",
     "symbol": "FLOW"
+  },
+  {
+    "address": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
+    "name": "ATOM",
+    "symbol": "ATOM"
   },
   {
     "address": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",
