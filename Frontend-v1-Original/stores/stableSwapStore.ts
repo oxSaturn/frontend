@@ -17,7 +17,7 @@ import {
   ZERO_ADDRESS,
 } from "./constants/constants";
 
-import tokenlist from "../mainnet-arb-token-list.json";
+import tokenlist from "../mainnet-canto-token-list.json";
 // import tokenlist from '../token-list.json';
 // import tokenlist from '../goerli-arb-token-list.json'
 
