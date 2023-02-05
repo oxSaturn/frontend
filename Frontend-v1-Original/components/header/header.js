@@ -497,7 +497,7 @@ function Header (props) {
             <WrongNetworkIcon className={classes.networkIcon} />
             <Typography className={classes.ErrorTxt}>
               The chain you're connected to isn't supported. Please check that
-              your wallet is connected to Arbitrum Mainnet.
+              your wallet is connected to Canto Mainnet.
             </Typography>
             <Button
               className={classes.switchNetworkBtn}
