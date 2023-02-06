@@ -29,7 +29,7 @@
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/26988/small/iShot_2022-08-23_09.17.46.png?1661217695",
     "name": "NOTE",
-    "symbol": "GRAIL"
+    "symbol": "NOTE"
   },
   {
     "address": "0x156ecfbdd58b9012192b5B36B1164FfA60e605A0",
@@ -38,14 +38,6 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
     "name": "Flow",
     "symbol": "FLOW"
-  },
-  {
-    "address": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",
-    "chainId": 7700,
-    "decimals": 18,
-    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
-    "name": "ATOM",
-    "symbol": "ATOM"
   },
   {
     "address": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",

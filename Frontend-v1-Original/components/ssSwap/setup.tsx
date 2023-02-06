@@ -196,13 +196,13 @@ function Setup() {
 
   const calculateReceiveAmount = (amount, from, to) => {
     if (
-      (from.symbol === "WETH" && to.symbol === "ETH") ||
-      (from.symbol === "ETH" && to.symbol === "WETH")
+      (from.symbol === "WCANTO" && to.symbol === "CANTO") ||
+      (from.symbol === "CANTO" && to.symbol === "WCANTO")
     ) {
       setQuoteLoading(false);
       setQuote(null);
       setToAmountValue(amount);
-      setQuoteError("No support for wrapping/unwrapping WETH yet");
+      setQuoteError("No support for wrapping/unwrapping WCANTO yet");
       return;
     }
     if (amount !== "" && !isNaN(amount) && to != null) {
@@ -747,7 +747,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
               autoFocus
               variant='outlined'
               fullWidth
-              placeholder='ETH, MIM, 0x...'
+              placeholder='CANTO, MIM, 0x...'
               value={search}
               onChange={onSearchChanged}
               InputProps={{
@@ -787,7 +787,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
               autoFocus
               variant='outlined'
               fullWidth
-              placeholder='ETH, MIM, 0x...'
+              placeholder='CANTO, MIM, 0x...'
               value={search}
               onChange={onSearchChanged}
               InputProps={{

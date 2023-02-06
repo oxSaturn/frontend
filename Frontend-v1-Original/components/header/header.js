@@ -377,7 +377,7 @@ function Header (props) {
             justifyContent: 'flex-end'
           }}
         >
-          {process.env.NEXT_PUBLIC_CHAINID == '421613' && (
+          {process.env.NEXT_PUBLIC_CHAINID == '740' && (
             <div className={classes.testnetDisclaimer}>
               <Typography className={classes.testnetDisclaimerText}>
                 Testnet
@@ -505,8 +505,8 @@ function Header (props) {
               onClick={() => switchChain()}
             >
               Switch to{' '}
-              {process.env.NEXT_PUBLIC_CHAINID == '421613'
-                ? 'ARB GOERLI'
+              {process.env.NEXT_PUBLIC_CHAINID == '740'
+                ? 'Canto testnet'
                 : 'Canto'}
             </Button>
           </div>
