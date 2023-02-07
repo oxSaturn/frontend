@@ -46,5 +46,13 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
     "name": "ATOM",
     "symbol": "ATOM"
+  },
+  {
+    "address": "0x533C0f08BE45eaaC821392B85E67Fb0c7DC2cab7",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "COHM",
+    "symbol": "COHM"
   }
 ]
