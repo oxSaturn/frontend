@@ -54,5 +54,13 @@
     "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
     "name": "COHM",
     "symbol": "COHM"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "scOHM",
+    "symbol": "scOHM"
   }
 ]
