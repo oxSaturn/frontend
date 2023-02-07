@@ -5,7 +5,7 @@
     "symbol": "CANTO",
     "decimals": 18,
     "chainId": 7700,
-    "logoURI": "https://assets.coingecko.com/coins/images/2518/small/weth.png?1628852295"
+    "logoURI": "https://assets.slingshot.finance/icons/canto_0x826551890dc65655a0aceca109ab11abdbd7a07b"
   },
   {
     "address": "0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75",
@@ -27,7 +27,7 @@
     "address": "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
     "chainId": 7700,
     "decimals": 18,
-    "logoURI": "https://assets.coingecko.com/coins/images/26988/small/iShot_2022-08-23_09.17.46.png?1661217695",
+    "logoURI": "https://assets.slingshot.finance/icons/canto_0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503",
     "name": "NOTE",
     "symbol": "NOTE"
   },
