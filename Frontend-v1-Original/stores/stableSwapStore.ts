@@ -32,7 +32,8 @@ interface BaseAsset {
   isWhitelisted?: boolean;
   listingFee?: string | number;
 }
-
+// FIXME: everything bribe related is using Internal Bribe ABI so address has to be internal bribe which is set to fees_address
+// double check bribe related stuff
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -49,6 +50,7 @@ class Store {
       fees: any[];
       rewards: any[];
     };
+    updateDate: number;
   };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
@@ -68,10 +70,12 @@ class Store {
         fees: [],
         rewards: [],
       },
+      updateDate: 0,
     };
 
     dispatcher.register(
       function (payload) {
+        console.log("<< Payload of dispatched function from fe <<", payload);
         switch (payload.type) {
           case ACTIONS.CONFIGURE_SS:
             this.configure(payload);
@@ -534,7 +538,7 @@ class Store {
           gaugeContract.methods.balanceOf(account.address).call(),
           gaugesContract.methods.bribes(gaugeAddress).call(),
         ]);
-        // NOTE: this bribe contract is ExternalBribe so we can ask rewardRate directly (line 536)
+        // FIXME: this is external bribe in python and internal in express
         const bribeContract = new web3.eth.Contract(
           CONTRACTS.BRIBE_ABI as AbiItem[],
           bribeAddress
@@ -960,7 +964,7 @@ class Store {
             .div(10 ** newBaseAsset.decimals)
             .toFixed(newBaseAsset.decimals);
         }
-      } // GET BACK HERE
+      }
 
       //only save when a user adds it. don't for when we lookup a pair and find he asset.
       if (save) {
@@ -995,6 +999,7 @@ class Store {
       this.setStore({ routeAssets: await this._getRouteAssets() });
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
+      this.setStore({ updateDate: await this._getActivePeriod() });
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
@@ -1074,7 +1079,13 @@ class Store {
         }
       );
       const pairsCall = await response.json();
-      return pairsCall.data;
+      const ignoredPairs = ["0xf9e9e9c918a90e126249095de0c8d6560d0b6535"]; // this pair from canto blockchain sneaked inside arbitrum api
+      const filteredPairs = pairsCall.data.filter((pair) => {
+        return !ignoredPairs.includes(pair.address);
+      });
+      return process.env.NEXT_PUBLIC_CHAINID !== "7700"
+        ? filteredPairs
+        : pairsCall.data;
     } catch (ex) {
       console.log(ex);
       return [];
@@ -1108,6 +1119,24 @@ class Store {
     );
     this.setStore({ swapAssets: baseAssetsWeSwap });
     this.emitter.emit(ACTIONS.SWAP_ASSETS_UPDATED, baseAssetsWeSwap);
+  };
+
+  _getActivePeriod = async () => {
+    try {
+      const week = 604800;
+      const web3 = await stores.accountStore.getWeb3Provider();
+      const minterContract = new web3.eth.Contract(
+        CONTRACTS.MINTER_ABI as AbiItem[],
+        CONTRACTS.MINTER_ADDRESS
+      );
+      const activePeriod = await minterContract.methods.active_period().call();
+      const activePeriodEnd = parseInt(activePeriod) + week;
+      return activePeriodEnd;
+    } catch (ex) {
+      console.log("EXCEPTION. ACTIVE PERIOD ERROR");
+      console.log(ex);
+      return 0;
+    }
   };
 
   _getGovTokenBase = () => {
@@ -1344,7 +1373,7 @@ class Store {
                   gaugeContract.methods.balanceOf(account.address),
                   gaugesContract.methods.weights(pair.address),
                 ]);
-              // NOTE: this bribe contract is wrapped external bribe, so we can't ask directly for reward rate
+              // FIXME: this is external bribe in python and internal in express
               // const bribeContract = new web3.eth.Contract(
               //   CONTRACTS.BRIBE_ABI,
               //   pair.gauge.bribeAddress
@@ -1365,7 +1394,6 @@ class Store {
               //     return bribe;
               //   })
               // );
-              // FIXME: this is unnecessary as we can just use the rewardAmmount from the python api in frontend
               const bribes = pair.gauge.bribes.map((bribe) => {
                 bribe.rewardAmount = bribe.rewardAmmount;
                 return bribe;
@@ -1557,8 +1585,15 @@ class Store {
         return null;
       }
 
-      const { token0, token1, amount0, amount1, stable, token, slippage } =
-        payload.content;
+      const {
+        token0,
+        token1,
+        amount0,
+        amount1,
+        isStable: stable,
+        token,
+        slippage,
+      } = payload.content;
 
       let toki0 = token0.address;
       let toki1 = token1.address;
@@ -1992,8 +2027,14 @@ class Store {
         return null;
       }
 
-      const { token0, token1, amount0, amount1, stable, slippage } =
-        payload.content;
+      const {
+        token0,
+        token1,
+        amount0,
+        amount1,
+        isStable: stable,
+        slippage,
+      } = payload.content;
 
       let toki0 = token0.address;
       let toki1 = token1.address;
@@ -4232,7 +4273,7 @@ class Store {
 
           this.emitter.emit(ACTIONS.SWAP_RETURNED);
         },
-        sendValue // TODO: any chance all sendValue being out of scope is intentional? like maybe made on purpose to be null everywhere?
+        sendValue
       );
     } catch (ex) {
       console.error(ex);
@@ -5106,7 +5147,7 @@ class Store {
         filteredPairs.map(async (pair) => {
           const bribesEarned = await Promise.all(
             pair.gauge.bribes.map(async (bribe) => {
-              // NOTE: this bribe contract is wrapped external bribe
+              // FIXME: this is external bribe in python and internal in express
               const bribeContract = new web3.eth.Contract(
                 CONTRACTS.BRIBE_ABI as AbiItem[],
                 pair.gauge.bribeAddress
@@ -5180,7 +5221,7 @@ class Store {
           filteredPairs.map(async (pair) => {
             const bribesEarned = await Promise.all(
               pair.gauge.bribes.map(async (bribe) => {
-                // NOTE: this bribe contract is wrapped external bribe
+                // FIXME: this is external bribe in python and internal in express
                 const bribeContract = new web3.eth.Contract(
                   CONTRACTS.BRIBE_ABI as AbiItem[],
                   pair.gauge.bribeAddress
