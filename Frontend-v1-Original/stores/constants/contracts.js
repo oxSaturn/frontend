@@ -32,8 +32,7 @@ export const CANTO_LOGO =
 export const FACTORY_ADDRESS = "0x721c869533725b867224BC7c4C3C026f52e47Ca9"; // canto
 export const FACTORY_ABI = abis.factoryABI;
 
-  "address": "0x57E230661a7D50285B4e7444b361F99Dd0e895a5",
-  export const ROUTER_ADDRESS = ""; // done
+export const ROUTER_ADDRESS = "0x57E230661a7D50285B4e7444b361F99Dd0e895a5"; // done
 export const ROUTER_ABI = abis.routerABI;
 
 export const VE_DIST_ADDRESS = "0xb2F6a5B73BFdD2A029013564ACE61b2651A6E3a4"; // done
