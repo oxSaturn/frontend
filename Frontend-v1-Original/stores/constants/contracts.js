@@ -1,13 +1,13 @@
 import abis from "../abis";
 // this is arb mainnet
-export const GOV_TOKEN_ADDRESS = "0x0dBe98C98A29EB01d0499B3ba8E0d92E48bcAC83"; // canto
+export const GOV_TOKEN_ADDRESS = "0x2Baec546a92cA3469f71b7A091f7dF61e5569889"; // canto
 export const GOV_TOKEN_NAME = "Flow";
 export const GOV_TOKEN_SYMBOL = "FLOW";
 export const GOV_TOKEN_DECIMALS = 18;
 export const GOV_TOKEN_LOGO = "https://prod.solidly.exchange/Solidly-O.svg";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
-export const VE_TOKEN_ADDRESS = "0x33E2392577374d42F0a44b18a8A7D9Ec45dB07EF"; // canto
+export const VE_TOKEN_ADDRESS = "0x990efF367C6c4aece43c1E98099061c897730F27"; // canto
 export const VE_TOKEN_NAME = "veFLOW";
 export const VE_TOKEN_SYMBOL = "veFLOW";
 export const VE_TOKEN_DECIMALS = 18;
@@ -29,19 +29,19 @@ export const CANTO_LOGO =
   "https://assets.coingecko.com/coins/images/279/large/ethereum.png";
 
 // BaseV1Factory checked here: https://ftmscan.com/address/0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28#code
-export const FACTORY_ADDRESS = "0x721c869533725b867224BC7c4C3C026f52e47Ca9"; // canto
+export const FACTORY_ADDRESS = "0xb12aF64E128A1D4489D13314eB4Df81cBCE126aC"; // canto
 export const FACTORY_ABI = abis.factoryABI;
 
-export const ROUTER_ADDRESS = "0x57E230661a7D50285B4e7444b361F99Dd0e895a5"; // done
+export const ROUTER_ADDRESS = "0x9B2920e72dF6E1A7053bEa7235c65079F5104398"; // done
 export const ROUTER_ABI = abis.routerABI;
 
-export const VE_DIST_ADDRESS = "0xb2F6a5B73BFdD2A029013564ACE61b2651A6E3a4"; // done
+export const VE_DIST_ADDRESS = "0x19E1eef506eE61A58d1AAa11635361bBaE5D0676"; // done
 export const VE_DIST_ABI = abis.veDistABI;
 
-export const VOTER_ADDRESS = "0x79D9FEa4892097815B682d642bc52Bd28D81A513"; //
+export const VOTER_ADDRESS = "0xC5B58aE761a77fF16d548dE9b42933c8FBfe4c33"; //
 export const VOTER_ABI = abis.voterABI;
 
-export const MINTER_ADDRESS = "0x23d7194411298307844AcB7f6C20E717F13e553d";
+export const MINTER_ADDRESS = "0x0cEd59FF9BDe47b2F5F0EDD2FdFfA6a0116d91Cd";
 export const MINTER_ABI = abis.minterABI;
 
 export const ERC20_ABI = abis.erc20ABI;
