@@ -2,7 +2,7 @@
   {
     "name": "WCANTO",
     "address": "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B",
-    "symbol": "CANTO",
+    "symbol": "WCANTO",
     "decimals": 18,
     "chainId": 7700,
     "logoURI": "https://assets.slingshot.finance/icons/canto_0x826551890dc65655a0aceca109ab11abdbd7a07b"
