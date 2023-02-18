@@ -62,5 +62,61 @@
     "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
     "name": "scOHM",
     "symbol": "scOHM"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "SOMM",
+    "symbol": "SOMM"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "GRAV",
+    "symbol": "GRAV"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "INJ",
+    "symbol": "INJ"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "KAVA",
+    "symbol": "KAVA"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "OSMO",
+    "symbol": "OSMO"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "AKASH",
+    "symbol": "AKASH"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "CRE",
+    "symbol": "CRE"
   }
 ]
