@@ -279,6 +279,34 @@ const coreTheme = createTheme({
         },
       },
     },
+    MuiSlider: {
+      styleOverrides: {
+        root: {
+          color: "#06D3D7",
+          height: 8,
+        },
+        thumb: {
+          height: 24,
+          width: 24,
+          backgroundColor: "#06D3D7",
+          border: "2px solid currentColor",
+          "&:focus, &:hover, &$active": {
+            boxShadow: "inherit",
+          },
+        },
+        active: {},
+        valueLabel: {
+          left: "calc(-50% + 4px)",
+        },
+        track: {
+          height: 8,
+          border: "none",
+        },
+        rail: {
+          height: 8,
+        },
+      },
+    },
   },
 });
 
