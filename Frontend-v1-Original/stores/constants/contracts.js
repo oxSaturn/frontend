@@ -26,7 +26,7 @@ export const CANTO_NAME = "CANTO";
 export const CANTO_SYMBOL = "CANTO";
 export const CANTO_DECIMALS = 18;
 export const CANTO_LOGO =
-  "https://assets.coingecko.com/coins/images/279/large/ethereum.png";
+  "https://assets.slingshot.finance/icons/canto_0x826551890dc65655a0aceca109ab11abdbd7a07b";
 
 // BaseV1Factory checked here: https://ftmscan.com/address/0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28#code
 export const FACTORY_ADDRESS = "0xb12aF64E128A1D4489D13314eB4Df81cBCE126aC"; // canto
