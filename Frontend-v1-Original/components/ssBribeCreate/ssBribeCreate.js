@@ -36,15 +36,12 @@ export default function ssBribeCreate() {
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
-    let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
-      return option.address !== "CANTO";
-    });
     const storePairs = stores.stableSwapStore.getStore("pairs");
-    setAssetOptions(filteredStoreAssetOptions);
+    setAssetOptions(storeAssetOptions);
     setGaugeOptions(storePairs);
 
-    if (filteredStoreAssetOptions.length > 0 && asset == null) {
-      setAsset(filteredStoreAssetOptions[0]);
+    if (storeAssetOptions.length > 0 && asset == null) {
+      setAsset(storeAssetOptions[0]);
     }
 
     if (storePairs.length > 0 && gauge == null) {
@@ -66,10 +63,7 @@ export default function ssBribeCreate() {
 
     const assetsUpdated = () => {
       const baseAsset = stores.stableSwapStore.getStore("baseAssets");
-      let filteredStoreAssetOptions = baseAsset.filter((option) => {
-        return option.address !== "CANTO";
-      });
-      setAssetOptions(filteredStoreAssetOptions);
+      setAssetOptions(baseAsset);
     };
 
     stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
@@ -119,9 +113,6 @@ export default function ssBribeCreate() {
         error = true;
       } else if (asset && BigNumber(amount).gt(asset.balance)) {
         setAmountError(`Greater than your available balance`);
-        error = true;
-      } else if (asset && asset.address === "CANTO") {
-        setAmountError(`CANTO is not supported`);
         error = true;
       }
     }

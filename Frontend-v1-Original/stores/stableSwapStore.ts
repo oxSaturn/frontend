@@ -1088,7 +1088,7 @@ class Store {
     const baseAssets: Store["store"]["baseAssets"] =
       this.getStore("baseAssets");
     const pairs: Store["store"]["pairs"] = this.getStore("pairs");
-    const set = new Set<string>();
+    const set = new Set<string>([CONTRACTS.CANTO_ADDRESS]);
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
