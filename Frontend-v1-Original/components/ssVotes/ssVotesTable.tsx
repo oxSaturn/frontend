@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { makeStyles } from "@mui/styles";
 import {
   Skeleton,
@@ -16,82 +16,6 @@ import {
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-
-function descendingComparator(a, b, orderBy) {
-  if (!a || !b) {
-    return 0;
-  }
-
-  switch (orderBy) {
-    case "balance":
-      if (BigNumber(b?.gauge?.balance).lt(a?.gauge?.balance)) {
-        return -1;
-      }
-      if (BigNumber(b?.gauge?.balance).gt(a?.gauge?.balance)) {
-        return 1;
-      }
-      return 0;
-
-    case "liquidity":
-      let reserveA = BigNumber(a?.reserve0).plus(a?.reserve1).toNumber();
-      let reserveB = BigNumber(b?.reserve0).plus(b?.reserve1).toNumber();
-
-      if (BigNumber(reserveB).lt(reserveA)) {
-        return -1;
-      }
-      if (BigNumber(reserveB).gt(reserveA)) {
-        return 1;
-      }
-      return 0;
-
-    case "totalVotes":
-      if (BigNumber(b?.gauge?.weightPercent).lt(a?.gauge?.weightPercent)) {
-        return -1;
-      }
-      if (BigNumber(b?.gauge?.weightPercent).gt(a?.gauge?.weightPercent)) {
-        return 1;
-      }
-      return 0;
-
-    case "apy":
-      if (BigNumber(b?.gauge?.bribes.length).lt(a?.gauge?.bribes.length)) {
-        return -1;
-      }
-      if (BigNumber(b?.gauge?.bribes.length).gt(a?.gauge?.bribes.length)) {
-        return 1;
-      }
-      return 0;
-
-    case "myVotes":
-    case "mvp":
-      if (BigNumber(b?.gauge?.bribes.length).lt(a?.gauge?.bribes.length)) {
-        return -1;
-      }
-      if (BigNumber(b?.gauge?.bribes.length).gt(a?.gauge?.bribes.length)) {
-        return 1;
-      }
-      return 0;
-
-    default:
-      return 0;
-  }
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
 
 const headCells = [
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
@@ -131,16 +55,18 @@ const headCells = [
     disablePadding: false,
     label: "My Vote %",
   },
-];
+] as const;
+
+type OrderBy = (typeof headCells)[number]["id"];
 
 function EnhancedTableHead(props: {
   classes: ReturnType<typeof useStyles>;
   order: "asc" | "desc";
-  orderBy: string;
-  onRequestSort: (event: any, property: any) => void;
+  orderBy: OrderBy;
+  onRequestSort: (event: any, property: OrderBy) => void;
 }) {
   const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property) => (event) => {
+  const createSortHandler = (property: OrderBy) => (event) => {
     onRequestSort(event, property);
   };
 
@@ -272,7 +198,7 @@ export default function EnhancedTable({
   const classes = useStyles();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState("totalVotes");
+  const [orderBy, setOrderBy] = useState<OrderBy>("totalVotes");
   const [sliderValues, setSliderValues] = useState(defaultVotes);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
@@ -391,6 +317,15 @@ export default function EnhancedTable({
     },
   ];
 
+  const sortedGauges = useMemo(
+    () =>
+      stableSort(gauges, getComparator(order, orderBy)).slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      ),
+    [gauges, order, orderBy, page, rowsPerPage]
+  );
+
   return (
     <div className={classes.root}>
       <TableContainer className={classes.tableContainer}>
@@ -406,178 +341,78 @@ export default function EnhancedTable({
             onRequestSort={handleRequestSort}
           />
           <TableBody>
-            {stableSort(gauges, getComparator(order, orderBy))
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => {
-                if (!row) {
-                  return null;
-                }
-                let sliderValue = sliderValues.find(
-                  (el) => el.address === row?.address
-                )?.value;
-                if (sliderValue) {
-                  sliderValue = BigNumber(sliderValue).toNumber();
-                } else {
-                  sliderValue = 0;
-                }
+            {sortedGauges.map((row, index) => {
+              if (!row) {
+                return null;
+              }
+              let sliderValue = sliderValues.find(
+                (el) => el.address === row?.address
+              )?.value;
+              if (sliderValue) {
+                sliderValue = BigNumber(sliderValue).toNumber();
+              } else {
+                sliderValue = 0;
+              }
 
-                return (
-                  <TableRow key={row?.gauge?.address}>
-                    <TableCell className={classes.cell}>
-                      <div className={classes.inline}>
-                        <div className={classes.doubleImages}>
-                          <img
-                            className={classes.img1Logo}
-                            src={
-                              row && row.token0 && row.token0.logoURI
-                                ? row.token0.logoURI
-                                : ``
-                            }
-                            width="37"
-                            height="37"
-                            alt=""
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).onerror = null;
-                              (e.target as HTMLImageElement).src =
-                                "/tokens/unknown-logo.png";
-                            }}
-                          />
-                          <img
-                            className={classes.img2Logo}
-                            src={
-                              row && row.token1 && row.token1.logoURI
-                                ? row.token1.logoURI
-                                : ``
-                            }
-                            width="37"
-                            height="37"
-                            alt=""
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).onerror = null;
-                              (e.target as HTMLImageElement).src =
-                                "/tokens/unknown-logo.png";
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Typography
-                            variant="h2"
-                            className={classes.textSpaced}
-                          >
-                            {row?.symbol}
-                          </Typography>
-                          <Typography
-                            variant="h5"
-                            className={classes.textSpaced}
-                            color="textSecondary"
-                          >
-                            {row?.isStable ? "Stable Pool" : "Volatile Pool"}
-                          </Typography>
-                        </div>
+              return (
+                <TableRow key={row?.gauge?.address}>
+                  <TableCell className={classes.cell}>
+                    <div className={classes.inline}>
+                      <div className={classes.doubleImages}>
+                        <img
+                          className={classes.img1Logo}
+                          src={
+                            row && row.token0 && row.token0.logoURI
+                              ? row.token0.logoURI
+                              : ``
+                          }
+                          width="37"
+                          height="37"
+                          alt=""
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).onerror = null;
+                            (e.target as HTMLImageElement).src =
+                              "/tokens/unknown-logo.png";
+                          }}
+                        />
+                        <img
+                          className={classes.img2Logo}
+                          src={
+                            row && row.token1 && row.token1.logoURI
+                              ? row.token1.logoURI
+                              : ``
+                          }
+                          width="37"
+                          height="37"
+                          alt=""
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).onerror = null;
+                            (e.target as HTMLImageElement).src =
+                              "/tokens/unknown-logo.png";
+                          }}
+                        />
                       </div>
-                    </TableCell>
-                    <TableCell className={classes.cell} align="right">
-                      <div className={classes.inlineEnd}>
+                      <div>
                         <Typography variant="h2" className={classes.textSpaced}>
-                          {formatCurrency(
-                            BigNumber(row?.gauge?.balance)
-                              .div(row?.gauge?.totalSupply)
-                              .times(row?.reserve0)
-                          )}
+                          {row?.symbol}
                         </Typography>
                         <Typography
                           variant="h5"
                           className={classes.textSpaced}
                           color="textSecondary"
                         >
-                          {row?.token0?.symbol}
+                          {row?.isStable ? "Stable Pool" : "Volatile Pool"}
                         </Typography>
                       </div>
-                      <div className={classes.inlineEnd}>
-                        <Typography variant="h5" className={classes.textSpaced}>
-                          {formatCurrency(
-                            BigNumber(row?.gauge?.balance)
-                              .div(row?.gauge?.totalSupply)
-                              .times(row?.reserve1)
-                          )}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className={classes.textSpaced}
-                          color="textSecondary"
-                        >
-                          {row?.token1?.symbol}
-                        </Typography>
-                      </div>
-                    </TableCell>
-                    <TableCell className={classes.cell} align="right">
-                      <div className={classes.inlineEnd}>
-                        <Typography variant="h2" className={classes.textSpaced}>
-                          {formatCurrency(BigNumber(row?.reserve0))}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className={classes.textSpaced}
-                          color="textSecondary"
-                        >
-                          {row?.token0?.symbol}
-                        </Typography>
-                      </div>
-                      <div className={classes.inlineEnd}>
-                        <Typography variant="h5" className={classes.textSpaced}>
-                          {formatCurrency(BigNumber(row?.reserve1))}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className={classes.textSpaced}
-                          color="textSecondary"
-                        >
-                          {row?.token1?.symbol}
-                        </Typography>
-                      </div>
-                    </TableCell>
-                    <TableCell className={classes.cell} align="right">
-                      <Typography variant="h2" className={classes.textSpaced}>
-                        {formatCurrency(row?.gauge?.weight)}
-                      </Typography>
-                      <Typography
-                        variant="h5"
-                        className={classes.textSpaced}
-                        color="textSecondary"
-                      >
-                        {formatCurrency(row?.gauge?.weightPercent)} %
-                      </Typography>
-                    </TableCell>
-                    <TableCell className={classes.cell} align="right">
-                      {row?.gauge?.bribes.map((bribe, idx) => {
-                        return (
-                          <div
-                            className={classes.inlineEnd}
-                            key={bribe.token.symbol}
-                          >
-                            <Typography
-                              variant="h2"
-                              className={classes.textSpaced}
-                            >
-                              {formatCurrency(bribe.rewardAmount)}
-                            </Typography>
-                            <Typography
-                              variant="h5"
-                              className={classes.textSpaced}
-                              color="textSecondary"
-                            >
-                              {bribe.token.symbol}
-                            </Typography>
-                          </div>
-                        );
-                      })}
-                    </TableCell>
-                    <TableCell className={classes.cell} align="right">
+                    </div>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    <div className={classes.inlineEnd}>
                       <Typography variant="h2" className={classes.textSpaced}>
                         {formatCurrency(
-                          BigNumber(sliderValue)
-                            .div(100)
-                            .times(token?.lockValue)
+                          BigNumber(row?.gauge?.balance)
+                            .div(row?.gauge?.totalSupply)
+                            .times(row?.reserve0)
                         )}
                       </Typography>
                       <Typography
@@ -585,24 +420,117 @@ export default function EnhancedTable({
                         className={classes.textSpaced}
                         color="textSecondary"
                       >
-                        {formatCurrency(sliderValue)} %
+                        {row?.token0?.symbol}
                       </Typography>
-                    </TableCell>
-                    <TableCell className={classes.cell} align="right">
-                      <Slider
-                        valueLabelDisplay="auto"
-                        value={sliderValue}
-                        onChange={(event, value) => {
-                          onSliderChange(event, value, row);
-                        }}
-                        min={-100}
-                        max={100}
-                        marks
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                    </div>
+                    <div className={classes.inlineEnd}>
+                      <Typography variant="h5" className={classes.textSpaced}>
+                        {formatCurrency(
+                          BigNumber(row?.gauge?.balance)
+                            .div(row?.gauge?.totalSupply)
+                            .times(row?.reserve1)
+                        )}
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        className={classes.textSpaced}
+                        color="textSecondary"
+                      >
+                        {row?.token1?.symbol}
+                      </Typography>
+                    </div>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    <div className={classes.inlineEnd}>
+                      <Typography variant="h2" className={classes.textSpaced}>
+                        {formatCurrency(BigNumber(row?.reserve0))}
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        className={classes.textSpaced}
+                        color="textSecondary"
+                      >
+                        {row?.token0?.symbol}
+                      </Typography>
+                    </div>
+                    <div className={classes.inlineEnd}>
+                      <Typography variant="h5" className={classes.textSpaced}>
+                        {formatCurrency(BigNumber(row?.reserve1))}
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        className={classes.textSpaced}
+                        color="textSecondary"
+                      >
+                        {row?.token1?.symbol}
+                      </Typography>
+                    </div>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    <Typography variant="h2" className={classes.textSpaced}>
+                      {formatCurrency(row?.gauge?.weight)}
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      className={classes.textSpaced}
+                      color="textSecondary"
+                    >
+                      {formatCurrency(row?.gauge?.weightPercent)} %
+                    </Typography>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    {row?.gauge?.bribes.map((bribe, idx) => {
+                      return (
+                        <div
+                          className={classes.inlineEnd}
+                          key={bribe.token.symbol}
+                        >
+                          <Typography
+                            variant="h2"
+                            className={classes.textSpaced}
+                          >
+                            {formatCurrency(bribe.rewardAmount)}
+                          </Typography>
+                          <Typography
+                            variant="h5"
+                            className={classes.textSpaced}
+                            color="textSecondary"
+                          >
+                            {bribe.token.symbol}
+                          </Typography>
+                        </div>
+                      );
+                    })}
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    <Typography variant="h2" className={classes.textSpaced}>
+                      {formatCurrency(
+                        BigNumber(sliderValue).div(100).times(token?.lockValue)
+                      )}
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      className={classes.textSpaced}
+                      color="textSecondary"
+                    >
+                      {formatCurrency(sliderValue)} %
+                    </Typography>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    <Slider
+                      valueLabelDisplay="auto"
+                      value={sliderValue}
+                      onChange={(event, value) => {
+                        onSliderChange(event, value, row);
+                      }}
+                      min={0}
+                      max={100}
+                      marks
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {emptyRows > 0 && (
               <TableRow style={{ height: 61 * emptyRows }}>
                 <TableCell colSpan={7} />
@@ -622,4 +550,80 @@ export default function EnhancedTable({
       />
     </div>
   );
+}
+
+function descendingComparator(a, b, orderBy: OrderBy) {
+  if (!a || !b) {
+    return 0;
+  }
+
+  switch (orderBy) {
+    case "balance":
+      if (BigNumber(b?.gauge?.balance).lt(a?.gauge?.balance)) {
+        return -1;
+      }
+      if (BigNumber(b?.gauge?.balance).gt(a?.gauge?.balance)) {
+        return 1;
+      }
+      return 0;
+
+    case "liquidity":
+      let reserveA = BigNumber(a?.reserve0).plus(a?.reserve1).toNumber();
+      let reserveB = BigNumber(b?.reserve0).plus(b?.reserve1).toNumber();
+
+      if (BigNumber(reserveB).lt(reserveA)) {
+        return -1;
+      }
+      if (BigNumber(reserveB).gt(reserveA)) {
+        return 1;
+      }
+      return 0;
+
+    case "totalVotes":
+      if (BigNumber(b?.gauge?.weightPercent).lt(a?.gauge?.weightPercent)) {
+        return -1;
+      }
+      if (BigNumber(b?.gauge?.weightPercent).gt(a?.gauge?.weightPercent)) {
+        return 1;
+      }
+      return 0;
+
+    case "apy":
+      if (BigNumber(b?.gauge?.bribes.length).lt(a?.gauge?.bribes.length)) {
+        return -1;
+      }
+      if (BigNumber(b?.gauge?.bribes.length).gt(a?.gauge?.bribes.length)) {
+        return 1;
+      }
+      return 0;
+
+    case "myVotes":
+    case "mvp":
+      if (BigNumber(b?.gauge?.bribes.length).lt(a?.gauge?.bribes.length)) {
+        return -1;
+      }
+      if (BigNumber(b?.gauge?.bribes.length).gt(a?.gauge?.bribes.length)) {
+        return 1;
+      }
+      return 0;
+
+    default:
+      return 0;
+  }
+}
+
+function getComparator(order, orderBy: OrderBy) {
+  return order === "desc"
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
+function stableSort(array, comparator) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  return stabilizedThis.map((el) => el[0]);
 }

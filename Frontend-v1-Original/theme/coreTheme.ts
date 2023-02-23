@@ -295,9 +295,6 @@ const coreTheme = createTheme({
           },
         },
         active: {},
-        valueLabel: {
-          left: "calc(-50% + 4px)",
-        },
         track: {
           height: 8,
           border: "none",

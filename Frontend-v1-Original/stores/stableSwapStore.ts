@@ -6023,6 +6023,9 @@ class Store {
               uuid,
               txHash: receipt.transactionHash,
             });
+            setTimeout(() => {
+              context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+            }, 1);
             callback(null, receipt.transactionHash);
             if (dispatchEvent) {
               context.dispatcher.dispatch({
