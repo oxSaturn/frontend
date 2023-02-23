@@ -34,12 +34,13 @@ interface Bribe {
   };
   reward_ammount: number;
   rewardAmmount: number;
+  rewardAmount?: number; // gets assigned in frontend store and eq rewardAmmount
   earned?: string;
 }
 
 type BribeEarned = { earned: string };
 
-interface PairFromAPI {
+interface Pair {
   tvl: number;
   apr: number;
   address: string;
@@ -47,36 +48,19 @@ interface PairFromAPI {
   decimals: number;
   stable: boolean;
   total_supply: number;
-  reserve0: number;
-  reserve1: number;
+  reserve0: number | string; // gets reassigned to string in frontend store
+  reserve1: number | string; // gets reassigned to string in frontend store
   token0_address: string;
   token1_address: string;
   gauge_address: string; // if no,  set to :""
   isStable: boolean;
-  totalSupply: number;
-  token0: {
-    price: number;
-    nativeChainAddress: string; // if no,  set to :""
-    nativeChainId: number;
-    address: string;
-    name: string;
-    symbol: string;
-    decimals: number;
-    logoURI: null | string;
-  };
-  token1: {
-    price: number;
-    nativeChainAddress: string; // if no,  set to :""
-    nativeChainId: number;
-    address: string;
-    name: string;
-    symbol: string;
-    decimals: number;
-    logoURI: null | string;
-  };
+  totalSupply: number | string; // gets reassigned to string in frontend store
+  token0: RouteAsset | BaseAsset; //TODO check if this is correct
+  token1: RouteAsset | BaseAsset;
   rewardType?: string;
   claimable0?: string;
   claimable1?: string;
+  balance?: string;
   gauge?: {
     // exists only if gauge_address is not empty
     decimals: number;
@@ -91,11 +75,18 @@ interface PairFromAPI {
     reward: number;
     bribeAddress: string;
     feesAddress: string;
-    totalSupply: number;
+    totalSupply: number | string; //gets reassigned to string in frontend store
     bribes: Bribe[];
+    // following gets assigned in frontend store
+    balance?: string;
+    reserve0?: string;
+    reserve1?: string;
+    weight?: string;
+    weightPercent?: string;
     rewardsEarned?: string;
     bribesEarned?: Bribe[] | BribeEarned[];
   };
+  gaugebribes?: Bribe[];
 }
 
-export type { BaseAsset, PairFromAPI, RouteAsset };
+export type { BaseAsset, Pair, RouteAsset };
