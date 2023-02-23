@@ -1088,7 +1088,8 @@ class Store {
     const baseAssets: Store["store"]["baseAssets"] =
       this.getStore("baseAssets");
     const pairs: Store["store"]["pairs"] = this.getStore("pairs");
-    const set = new Set<string>([CONTRACTS.CANTO_ADDRESS]);
+    const set = new Set<string>();
+    set.add(CONTRACTS.CANTO_ADDRESS.toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
@@ -1102,6 +1103,7 @@ class Store {
     const baseAssets = payload;
     const pairs: Store["store"]["pairs"] = this.getStore("pairs");
     const set = new Set<string>();
+    set.add(CONTRACTS.CANTO_ADDRESS.toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
