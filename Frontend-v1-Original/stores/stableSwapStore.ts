@@ -17,7 +17,7 @@ import {
   ZERO_ADDRESS,
 } from "./constants/constants";
 
-import type { BaseAsset, PairFromAPI, RouteAsset } from "./types/types";
+import type { BaseAsset, Pair, RouteAsset } from "./types/types";
 
 import tokenlist from "../mainnet-canto-token-list.json";
 
@@ -35,7 +35,7 @@ class Store {
     routeAssets: RouteAsset[];
     govToken: Omit<BaseAsset, "local"> & { balanceOf: string };
     veToken: Omit<BaseAsset, "balance" | "local">;
-    pairs: PairFromAPI[];
+    pairs: Pair[];
     vestNFTs: any[];
     rewards: {
       bribes: any[];
@@ -934,7 +934,7 @@ class Store {
         baseAssetContract.methods.name().call(),
       ]);
 
-      const newBaseAsset = {
+      const newBaseAsset: BaseAsset = {
         address: address,
         symbol: symbol,
         name: name,
@@ -1258,7 +1258,7 @@ class Store {
     try {
       const multicall = await stores.accountStore.getMulticall();
 
-      let pairs = [];
+      let pairs: Pair[] = [];
 
       if (overridePairs) {
         pairs = overridePairs;
@@ -1320,16 +1320,16 @@ class Store {
             pair.token1 = token1 != null ? token1 : pair.token1;
             pair.balance = BigNumber(balanceOf)
               .div(10 ** pair.decimals)
-              .toFixed(parseInt(pair.decimals));
+              .toFixed(pair.decimals);
             pair.totalSupply = BigNumber(totalSupply)
               .div(10 ** pair.decimals)
-              .toFixed(parseInt(pair.decimals));
+              .toFixed(pair.decimals);
             pair.reserve0 = BigNumber(reserves[0])
               .div(10 ** pair.token0.decimals)
-              .toFixed(parseInt(pair.token0.decimals));
+              .toFixed(pair.token0.decimals);
             pair.reserve1 = BigNumber(reserves[1])
               .div(10 ** pair.token1.decimals)
-              .toFixed(parseInt(pair.token1.decimals));
+              .toFixed(pair.token1.decimals);
             pair.claimable0 = BigNumber(claimable0)
               .div(10 ** pair.token0.decimals)
               .toFixed(pair.token0.decimals);
