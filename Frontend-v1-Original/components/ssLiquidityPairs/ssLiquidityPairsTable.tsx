@@ -726,7 +726,14 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
 
           return true;
         }),
-    [pairs]
+    [
+      pairs,
+      toggleActiveGauge,
+      toggleActive,
+      toggleStable,
+      toggleVariable,
+      search,
+    ]
   );
 
   const sortedPairs = useMemo(
