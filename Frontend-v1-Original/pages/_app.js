@@ -11,7 +11,7 @@ import darkTheme from '../theme/dark'
 
 import Configure from './configure'
 
-import stores from '../stores/index.js'
+import stores from '../stores/index'
 
 import { ACTIONS } from '../stores/constants'
 import '../styles/global.css'
