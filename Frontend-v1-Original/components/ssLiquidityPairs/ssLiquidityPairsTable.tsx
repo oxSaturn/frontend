@@ -79,17 +79,19 @@ const headCells = [
     disablePadding: false,
     label: "Actions",
   },
-];
+] as const;
+
+type OrderBy = (typeof headCells)[number]["id"];
 
 function EnhancedTableHead(props: {
   classes: ReturnType<typeof useStyles>;
   order: "asc" | "desc";
-  orderBy: string;
-  onRequestSort: (event: any, property: any) => void;
+  orderBy: OrderBy;
+  onRequestSort: (_e: any, property: OrderBy) => void;
 }) {
   const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
+  const createSortHandler = (property: OrderBy) => (_e) => {
+    onRequestSort(_e, property);
   };
 
   return (
@@ -590,7 +592,7 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
   const router = useRouter();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState("stakedBalance");
+  const [orderBy, setOrderBy] = useState<OrderBy>("stakedBalance");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
@@ -606,7 +608,7 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
     localToggles.toggleVariable
   );
 
-  const handleRequestSort = (event, property) => {
+  const handleRequestSort = (_e, property: OrderBy) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -1268,7 +1270,7 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
   );
 }
 
-function descendingComparator(a: Pair, b: Pair, orderBy: string) {
+function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
   if (!a || !b) {
     return 0;
   }
@@ -1287,6 +1289,15 @@ function descendingComparator(a: Pair, b: Pair, orderBy: string) {
         return -1;
       }
       if (BigNumber(balanceB).gt(balanceA)) {
+        return 1;
+      }
+      return 0;
+
+    case "apr":
+      if (BigNumber(b?.apr).lt(a?.apr)) {
+        return -1;
+      }
+      if (BigNumber(b?.apr).gt(a?.apr)) {
         return 1;
       }
       return 0;
@@ -1358,7 +1369,7 @@ function descendingComparator(a: Pair, b: Pair, orderBy: string) {
   }
 }
 
-function getComparator(order: "asc" | "desc", orderBy: string) {
+function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
   return order === "desc"
     ? (a: Pair, b: Pair) => descendingComparator(a, b, orderBy)
     : (a: Pair, b: Pair) => -descendingComparator(a, b, orderBy);
