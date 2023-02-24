@@ -17,14 +17,12 @@ import {
   ZERO_ADDRESS,
 } from "./constants/constants";
 
-import tokenlist from "../mainnet-arb-token-list.json";
+import tokenlistArb from "../mainnet-arb-token-list.json";
+import tokenlistCan from "../mainnet-canto-token-list.json";
 import type { BaseAsset, Pair, RouteAsset } from "./types/types";
 
-// import tokenlist from '../token-list.json';
-// import tokenlist from '../goerli-arb-token-list.json'
-
-// FIXME: everything bribe related is using Internal Bribe ABI so address has to be internal bribe which is set to fees_address
-// double check bribe related stuff
+const tokenlist =
+  process.env.NEXT_PUBLIC_CHAINID === "42161" ? tokenlistArb : tokenlistCan;
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -65,7 +63,7 @@ class Store {
     };
 
     dispatcher.register(
-      function (payload) {
+      function (this: Store, payload) {
         console.log("<< Payload of dispatched function from fe <<", payload);
         switch (payload.type) {
           case ACTIONS.CONFIGURE_SS:
@@ -79,7 +77,7 @@ class Store {
             break;
           case ACTIONS.BASE_ASSETS_UPDATED:
           case ACTIONS.UPDATED:
-            this.updateSwapAssets(payload);
+            this.updateSwapAssets();
             break;
 
           // LIQUIDITY
@@ -1028,7 +1026,8 @@ class Store {
         chainId: 42161,
       };
 
-      baseAssets.unshift(nativeETH);
+      const set = new Set<string>(baseAssets.map((asset) => asset.address));
+      if (!set.has(CONTRACTS.ETH_ADDRESS)) baseAssets.unshift(nativeETH);
 
       let localBaseAssets = this.getLocalAssets();
 
@@ -1084,10 +1083,10 @@ class Store {
   };
 
   _getSwapAssets = () => {
-    const baseAssets: Store["store"]["baseAssets"] =
-      this.getStore("baseAssets");
-    const pairs: Store["store"]["pairs"] = this.getStore("pairs");
+    const baseAssets = this.getStore("baseAssets");
+    const pairs = this.getStore("pairs");
     const set = new Set<string>();
+    set.add(CONTRACTS.ETH_ADDRESS.toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
@@ -1097,10 +1096,11 @@ class Store {
     );
     return [...baseAssetsWeSwap];
   };
-  updateSwapAssets = (payload) => {
-    const baseAssets = payload;
-    const pairs: Store["store"]["pairs"] = this.getStore("pairs");
+  updateSwapAssets = () => {
+    const baseAssets = this.getStore("baseAssets");
+    const pairs = this.getStore("pairs");
     const set = new Set<string>();
+    set.add(CONTRACTS.ETH_ADDRESS.toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
@@ -6043,7 +6043,10 @@ class Store {
                 });
                 return callback(error.message);
               }
-              context.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: error });
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid,
+                error: error,
+              });
               callback(error);
             }
           })
@@ -6056,7 +6059,10 @@ class Store {
                 });
                 return callback(error.message);
               }
-              context.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: error });
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid,
+                error: error,
+              });
               callback(error);
             }
           });

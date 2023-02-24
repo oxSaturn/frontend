@@ -8,7 +8,6 @@ import {
   IconButton,
   Dialog,
   CircularProgress,
-  Tooltip,
 } from "@mui/material";
 import {
   Search,
@@ -28,7 +27,7 @@ import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import BigNumber from "bignumber.js";
 
 function Setup() {
-  const [, updateState] = React.useState<undefined | {}>();
+  const [, updateState] = React.useState<{}>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   const [loading, setLoading] = useState(false);
@@ -358,9 +357,9 @@ function Setup() {
         <div className={classes.route}>
           <img
             className={classes.displayAssetIconSmall}
-            alt=''
+            alt=""
             src={fromAssetValue ? `${fromAssetValue.logoURI}` : ""}
-            height='40px'
+            height="40px"
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
               (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -380,13 +379,13 @@ function Setup() {
             <>
               <img
                 className={classes.displayAssetIconSmall}
-                alt=''
+                alt=""
                 src={
                   quote.output.routeAsset
                     ? `${quote.output.routeAsset.logoURI}`
                     : ""
                 }
-                height='40px'
+                height="40px"
                 onError={(e) => {
                   (e.target as HTMLImageElement).onerror = null;
                   (e.target as HTMLImageElement).src =
@@ -407,9 +406,9 @@ function Setup() {
           )}
           <img
             className={classes.displayAssetIconSmall}
-            alt=''
+            alt=""
             src={toAssetValue ? `${toAssetValue.logoURI}` : ""}
-            height='40px'
+            height="40px"
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
               (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -424,7 +423,7 @@ function Setup() {
                   ? classes.warningError
                   : classes.warningWarning
               }
-              align='center'
+              align="center"
             >
               Price impact {formatCurrency(quote.priceImpact)}%
             </Typography>
@@ -447,7 +446,7 @@ function Setup() {
         </div>
         <div className={classes.smallInputContainer}>
           <TextField
-            placeholder='0.00'
+            placeholder="0.00"
             fullWidth
             error={amountError}
             helperText={amountError}
@@ -456,7 +455,7 @@ function Setup() {
             disabled={loading}
             InputProps={{
               className: classes.smallInput,
-              endAdornment: <InputAdornment position='end'>%</InputAdornment>,
+              endAdornment: <InputAdornment position="end">%</InputAdornment>,
             }}
           />
         </div>
@@ -509,7 +508,7 @@ function Setup() {
           </div>
           <div className={classes.massiveInputAmount}>
             <TextField
-              placeholder='0.00'
+              placeholder="0.00"
               fullWidth
               error={amountError}
               helperText={amountError}
@@ -521,7 +520,7 @@ function Setup() {
               }}
             />
 
-            <Typography color='textSecondary' className={classes.smallerText}>
+            <Typography color="textSecondary" className={classes.smallerText}>
               {assetValue?.symbol}
             </Typography>
           </div>
@@ -560,9 +559,9 @@ function Setup() {
       {renderSwapInformation()}
       <div className={classes.actionsContainer}>
         <Button
-          variant='contained'
-          size='large'
-          color='primary'
+          variant="contained"
+          size="large"
+          color="primary"
           className={classes.buttonOverride}
           disabled={loading || quoteLoading || !quote}
           onClick={onSwap}
@@ -660,9 +659,9 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           <div className={classes.displayDualIconContainerSmall}>
             <img
               className={classes.displayAssetIconSmall}
-              alt=''
+              alt=""
               src={asset ? `${asset.logoURI}` : ""}
-              height='60px'
+              height="60px"
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -671,8 +670,8 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           </div>
         </div>
         <div className={classes.assetSelectIconName}>
-          <Typography variant='h5'>{asset ? asset.symbol : ""}</Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
+          <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
+          <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
@@ -710,9 +709,9 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           <div className={classes.displayDualIconContainerSmall}>
             <img
               className={classes.displayAssetIconSmall}
-              alt=''
+              alt=""
               src={asset ? `${asset.logoURI}` : ""}
-              height='60px'
+              height="60px"
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -721,17 +720,17 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           </div>
         </div>
         <div className={classes.assetSelectIconName}>
-          <Typography variant='h5'>{asset ? asset.symbol : ""}</Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
+          <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
+          <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
         <div className={classes.assetSelectBalance}>
-          <Typography variant='h5'>
+          <Typography variant="h5">
             {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
           </Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
-            {"Balance"}
+          <Typography variant="subtitle1" color="textSecondary">
+            Balance
           </Typography>
         </div>
       </MenuItem>
@@ -745,14 +744,14 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           <div className={classes.searchInline}>
             <TextField
               autoFocus
-              variant='outlined'
+              variant="outlined"
               fullWidth
-              placeholder='ETH, MIM, 0x...'
+              placeholder="ETH, MIM, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position='start'>
+                  <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
                 ),
@@ -785,14 +784,14 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           <div className={classes.searchInline}>
             <TextField
               autoFocus
-              variant='outlined'
+              variant="outlined"
               fullWidth
-              placeholder='ETH, MIM, 0x...'
+              placeholder="ETH, MIM, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position='start'>
+                  <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
                 ),
@@ -836,9 +835,9 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
           <div className={classes.displayDualIconContainer}>
             <img
               className={classes.displayAssetIcon}
-              alt=''
+              alt=""
               src={value ? `${value.logoURI}` : ""}
-              height='100px'
+              height="100px"
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -849,7 +848,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
       </div>
       <Dialog
         onClose={onClose}
-        aria-labelledby='simple-dialog-title'
+        aria-labelledby="simple-dialog-title"
         open={open}
       >
         {!manageLocal && renderOptions()}

@@ -21,8 +21,6 @@ import classes from './ssBribeCreate.module.css'
 import stores from '../../stores'
 import { ACTIONS, ETHERSCAN_URL } from '../../stores/constants'
 
-console.log('dunksstores: ', stores)
-
 export default function ssBribeCreate () {
   const router = useRouter()
   const [createLoading, setCreateLoading] = useState(false)
@@ -119,9 +117,6 @@ export default function ssBribeCreate () {
         error = true
       } else if (asset && BigNumber(amount).gt(asset.balance)) {
         setAmountError(`Greater than your available balance`)
-        error = true
-      } else if (asset && asset.address === 'ETH') {
-        setAmountError(`ETH is not supported`)
         error = true
       }
     }
