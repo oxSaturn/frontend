@@ -11,28 +11,26 @@ import {
   Dialog,
   MenuItem,
   IconButton,
-  Select,
-} from "@mui/material";
-import { Add, Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
-import BigNumber from "bignumber.js";
-import { formatCurrency } from "../../utils";
-import classes from "./ssBribeCreate.module.css";
+  Select
+} from '@mui/material'
+import { Search, ArrowBack, DeleteOutline } from '@mui/icons-material'
+import BigNumber from 'bignumber.js'
+import { formatCurrency } from '../../utils'
+import classes from './ssBribeCreate.module.css'
 
-import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants";
+import stores from '../../stores'
+import { ACTIONS, ETHERSCAN_URL } from '../../stores/constants'
 
-console.log("dunksstores: ", stores);
+export default function ssBribeCreate () {
+  const router = useRouter()
+  const [createLoading, setCreateLoading] = useState(false)
 
-export default function ssBribeCreate() {
-  const router = useRouter();
-  const [createLoading, setCreateLoading] = useState(false);
-
-  const [amount, setAmount] = useState("");
-  const [amountError, setAmountError] = useState(false);
-  const [asset, setAsset] = useState(null);
-  const [assetOptions, setAssetOptions] = useState([]);
-  const [gauge, setGauge] = useState(null);
-  const [gaugeOptions, setGaugeOptions] = useState([]);
+  const [amount, setAmount] = useState('')
+  const [amountError, setAmountError] = useState(false)
+  const [asset, setAsset] = useState(null)
+  const [assetOptions, setAssetOptions] = useState([])
+  const [gauge, setGauge] = useState(null)
+  const [gaugeOptions, setGaugeOptions] = useState([])
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
@@ -118,11 +116,8 @@ export default function ssBribeCreate() {
         setAmountError("Invalid amount");
         error = true;
       } else if (asset && BigNumber(amount).gt(asset.balance)) {
-        setAmountError(`Greater than your available balance`);
-        error = true;
-      } else if (asset && asset.address === "CANTO") {
-        setAmountError(`CANTO is not supported`);
-        error = true;
+        setAmountError(`Greater than your available balance`)
+        error = true
       }
     }
 

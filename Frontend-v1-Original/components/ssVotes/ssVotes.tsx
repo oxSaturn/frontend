@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Paper,
   Typography,
@@ -225,6 +225,33 @@ export default function ssVotes() {
     );
   };
 
+  const filteredGauges = useMemo(
+    () =>
+      gauges.filter((pair) => {
+        if (!search || search === "") {
+          return true;
+        }
+
+        const searchLower = search.toLowerCase();
+
+        if (
+          pair.symbol.toLowerCase().includes(searchLower) ||
+          pair.address.toLowerCase().includes(searchLower) ||
+          pair.token0.symbol.toLowerCase().includes(searchLower) ||
+          pair.token0.address.toLowerCase().includes(searchLower) ||
+          pair.token0.name.toLowerCase().includes(searchLower) ||
+          pair.token1.symbol.toLowerCase().includes(searchLower) ||
+          pair.token1.address.toLowerCase().includes(searchLower) ||
+          pair.token1.name.toLowerCase().includes(searchLower)
+        ) {
+          return true;
+        }
+
+        return false;
+      }),
+    [gauges, search]
+  );
+
   return (
     <div className={classes.container}>
       <div className={classes.descriptionTimerBox}>
@@ -281,28 +308,7 @@ export default function ssVotes() {
       </div>
       <Paper elevation={0} className={classes.tableContainer}>
         <GaugesTable
-          gauges={gauges.filter((pair) => {
-            if (!search || search === "") {
-              return true;
-            }
-
-            const searchLower = search.toLowerCase();
-
-            if (
-              pair.symbol.toLowerCase().includes(searchLower) ||
-              pair.address.toLowerCase().includes(searchLower) ||
-              pair.token0.symbol.toLowerCase().includes(searchLower) ||
-              pair.token0.address.toLowerCase().includes(searchLower) ||
-              pair.token0.name.toLowerCase().includes(searchLower) ||
-              pair.token1.symbol.toLowerCase().includes(searchLower) ||
-              pair.token1.address.toLowerCase().includes(searchLower) ||
-              pair.token1.name.toLowerCase().includes(searchLower)
-            ) {
-              return true;
-            }
-
-            return false;
-          })}
+          gauges={filteredGauges}
           setParentSliderValues={setVotes}
           defaultVotes={votes}
           veToken={veToken}

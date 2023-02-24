@@ -5,7 +5,7 @@ import { PieChart } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 import classes from "./ssBribeCard.module.css";
 
-import stores from "../../stores/index.js";
+import stores from "../../stores/index";
 import { formatCurrency } from "../../utils/utils";
 
 import { ACTIONS } from "../../stores/constants/constants";
@@ -97,18 +97,18 @@ export default function BribeCard({ pair, bribe }) {
   const renderClaimable = () => {
     return (
       <>
-        <Typography className={classes.descriptionText} align='center'>
+        <Typography className={classes.descriptionText} align="center">
           {formatCurrency(bribe.earned)} {bribe.token.symbol}
         </Typography>
-        <Typography className={classes.descriptionSubText} align='center'>
+        <Typography className={classes.descriptionSubText} align="center">
           Your bribe for voting for {pair.symbol}
         </Typography>
         {bribe.hasClaimed && (
           <Button
             className={classes.tryButton}
-            variant='outlined'
+            variant="outlined"
             disableElevation
-            color='primary'
+            color="primary"
           >
             <Typography className={classes.buttonLabel}>
               Bribe Claimed
@@ -118,10 +118,10 @@ export default function BribeCard({ pair, bribe }) {
         {!bribe.hasClaimed && (
           <Button
             className={classes.tryButton}
-            variant='outlined'
+            variant="outlined"
             disableElevation
             onClick={onClaim}
-            color='primary'
+            color="primary"
             disabled={claiming}
           >
             <Typography className={classes.buttonLabel}>
@@ -136,23 +136,23 @@ export default function BribeCard({ pair, bribe }) {
   const renderAvailable = () => {
     return (
       <>
-        <Typography className={classes.descriptionPreText} align='center'>
+        <Typography className={classes.descriptionPreText} align="center">
           Current receive amount:
         </Typography>
-        <Typography className={classes.descriptionText} align='center'>
+        <Typography className={classes.descriptionText} align="center">
           {formatCurrency(BigNumber(bribe.rewardPerToken).times(100).div(100))}{" "}
           {bribe.token.symbol}
         </Typography>
-        <Typography className={classes.descriptionSubText} align='center'>
+        <Typography className={classes.descriptionSubText} align="center">
           100% vote for {pair.symbol} gives you{" "}
           {formatCurrency(bribe.rewardPerToken)} {bribe.token.symbol}
         </Typography>
         <Button
           className={classes.tryButton}
-          variant='outlined'
+          variant="outlined"
           disableElevation
           onClick={onVote}
-          color='primary'
+          color="primary"
         >
           <Typography className={classes.buttonLabel}>{"Cast Vote"}</Typography>
         </Button>
