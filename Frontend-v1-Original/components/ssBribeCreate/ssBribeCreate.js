@@ -21,8 +21,6 @@ import classes from "./ssBribeCreate.module.css";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants";
 
-console.log("dunksstores: ", stores);
-
 export default function ssBribeCreate() {
   const router = useRouter();
   const [createLoading, setCreateLoading] = useState(false);
@@ -36,12 +34,15 @@ export default function ssBribeCreate() {
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
+    let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
+      return option.address !== "CANTO";
+    });
     const storePairs = stores.stableSwapStore.getStore("pairs");
-    setAssetOptions(storeAssetOptions);
+    setAssetOptions(filteredStoreAssetOptions);
     setGaugeOptions(storePairs);
 
-    if (storeAssetOptions.length > 0 && asset == null) {
-      setAsset(storeAssetOptions[0]);
+    if (filteredStoreAssetOptions.length > 0 && asset == null) {
+      setAsset(filteredStoreAssetOptions[0]);
     }
 
     if (storePairs.length > 0 && gauge == null) {
@@ -63,7 +64,10 @@ export default function ssBribeCreate() {
 
     const assetsUpdated = () => {
       const baseAsset = stores.stableSwapStore.getStore("baseAssets");
-      setAssetOptions(baseAsset);
+      let filteredStoreAssetOptions = baseAsset.filter((option) => {
+        return option.address !== "CANTO";
+      });
+      setAssetOptions(filteredStoreAssetOptions);
     };
 
     stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
