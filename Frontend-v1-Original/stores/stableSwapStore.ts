@@ -21,11 +21,7 @@ import type { BaseAsset, Pair, RouteAsset } from "./types/types";
 
 import tokenlist from "../mainnet-canto-token-list.json";
 
-// import tokenlist from '../token-list.json';
-// import tokenlist from '../goerli-arb-token-list.json'
-
-// FIXME: everything bribe related is using Internal Bribe ABI so address has to be internal bribe which is set to fees_address
-// double check bribe related stuff
+// TODO: double check bribe related stuff
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -66,7 +62,7 @@ class Store {
     };
 
     dispatcher.register(
-      function (payload) {
+      function (this: Store, payload) {
         console.log("<< Payload of dispatched function from fe <<", payload);
         switch (payload.type) {
           case ACTIONS.CONFIGURE_SS:
@@ -80,7 +76,7 @@ class Store {
             break;
           case ACTIONS.BASE_ASSETS_UPDATED:
           case ACTIONS.UPDATED:
-            this.updateSwapAssets(payload);
+            this.updateSwapAssets();
             break;
 
           // LIQUIDITY
@@ -1029,7 +1025,8 @@ class Store {
         chainId: 7700,
       };
 
-      baseAssets.unshift(nativeETH);
+      const set = new Set<string>(baseAssets.map((asset) => asset.address));
+      if (!set.has(CONTRACTS.CANTO_ADDRESS)) baseAssets.unshift(nativeETH);
 
       let localBaseAssets = this.getLocalAssets();
 
@@ -1085,9 +1082,8 @@ class Store {
   };
 
   _getSwapAssets = () => {
-    const baseAssets: Store["store"]["baseAssets"] =
-      this.getStore("baseAssets");
-    const pairs: Store["store"]["pairs"] = this.getStore("pairs");
+    const baseAssets = this.getStore("baseAssets");
+    const pairs = this.getStore("pairs");
     const set = new Set<string>();
     set.add(CONTRACTS.CANTO_ADDRESS.toLowerCase());
     pairs.forEach((pair) => {
@@ -1099,8 +1095,9 @@ class Store {
     );
     return [...baseAssetsWeSwap];
   };
-  updateSwapAssets = (payload) => {
-    const baseAssets = payload;
+  updateSwapAssets = () => {
+    const baseAssets: Store["store"]["baseAssets"] =
+      this.getStore("baseAssets");
     const pairs: Store["store"]["pairs"] = this.getStore("pairs");
     const set = new Set<string>();
     set.add(CONTRACTS.CANTO_ADDRESS.toLowerCase());
