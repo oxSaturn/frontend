@@ -23,8 +23,9 @@ import tokenlistArb from "../mainnet-arb-token-list.json";
 import tokenlistCan from "../mainnet-canto-token-list.json";
 import type { BaseAsset, Pair, RouteAsset } from "./types/types";
 
-const tokenlist =
-  process.env.NEXT_PUBLIC_CHAINID === "42161" ? tokenlistArb : tokenlistCan;
+const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
+
+const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -5990,23 +5991,18 @@ class Store {
     sendValue = null
   ) => {
     this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
-
     const gasCost = contract.methods[method](...params)
       .estimateGas({ from: account.address, value: sendValue })
-      .then((gasAmount) => {
+      .then(async (estimatedGas) => [...(await stores.accountStore.getGasPriceEIP1559() ), estimatedGas])
+      .then(([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]) => {
         const context = this;
-
-        let sendGasAmount = BigNumber(gasAmount).times(1.5).toFixed(0);
-        let sendGasPrice = BigNumber(gasPrice).times(1.5).toFixed(0);
-
         contract.methods[method](...params)
           .send({
             from: account.address,
-            // gasPrice: web3.utils.toWei(sendGasPrice, "gwei"),
-            gas: sendGasAmount,
+            gas: estimatedGas,
             value: sendValue,
-            maxFeePerGas: web3.utils.toWei(gasPrice, "gwei"),
-            maxPriorityFeePerGas: web3.utils.toWei("0.1", "gwei"),
+            maxFeePerGas,
+            maxPriorityFeePerGas
           })
           .on("transactionHash", function (txHash) {
             context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });

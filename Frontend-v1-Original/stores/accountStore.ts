@@ -1,9 +1,9 @@
-import async from "async";
-import { ACTIONS, CONTRACTS } from "./constants/constants";
 import Multicall from "@dopex-io/web3-multicall";
 
 import { Dispatcher } from "flux";
 import EventEmitter from "events";
+
+import { ACTIONS, CONTRACTS } from "./constants/constants";
 
 import {
   injected,
@@ -23,9 +23,9 @@ class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
   store: {
-    account: null | string;
+    account: null | { address: string };
     chainInvalid: boolean;
-    web3context: null | { librabry: { provider: any } };
+    web3context: null | { library: { provider: any } };
     tokens: any[];
     connectorsByName: {
       MetaMask: typeof injected;
@@ -67,10 +67,10 @@ class Store {
     };
 
     dispatcher.register(
-      function (payload) {
+      function (this: Store, payload) {
         switch (payload.type) {
           case ACTIONS.CONFIGURE:
-            this.configure(payload);
+            this.configure();
             break;
           default: {
           }
@@ -79,11 +79,11 @@ class Store {
     );
   }
 
-  getStore(index) {
+  getStore = <K extends keyof Store["store"]>(index: K) => {
     return this.store[index];
-  }
+  };
 
-  setStore(obj) {
+  setStore(obj: { [key: string]: any }) {
     this.store = { ...this.store, ...obj };
     return this.emitter.emit(ACTIONS.STORE_UPDATED);
   }
@@ -246,6 +246,62 @@ class Store {
     });
     return multicall;
   };
+
+  getGasPriceEIP1559 = async () => {
+    const web3 = await this.getWeb3Provider();
+    const blocksBack = 10;
+    const feeHistory = await web3.eth.getFeeHistory(blocksBack, "pending", [
+      10,
+    ]);
+    const blocks = this._formatFeeHistory(feeHistory, false, blocksBack);
+
+    const firstPercentialPriorityFees = blocks.map(
+      (b) => b.priorityFeePerGas[0]
+    );
+    const sum = firstPercentialPriorityFees.reduce((a, v) => a + v);
+    const priorityFeePerGasEstimate = Math.round(
+      sum / firstPercentialPriorityFees.length
+    );
+    const block = await web3.eth.getBlock("pending");
+    return [
+      Number(block.baseFeePerGas) + priorityFeePerGasEstimate,
+      priorityFeePerGasEstimate,
+    ];
+  };
+
+  _formatFeeHistory(
+    result: Awaited<ReturnType<Web3["eth"]["getFeeHistory"]>>,
+    includePending: boolean,
+    historicalBlocks: number
+  ) {
+    let blockNum = result.oldestBlock;
+    let index = 0;
+    const blocks: {
+      number: number | "pending";
+      baseFeePerGas: number;
+      gasUsedRatio: number;
+      priorityFeePerGas: number[];
+    }[] = [];
+    while (blockNum < result.oldestBlock + historicalBlocks) {
+      blocks.push({
+        number: blockNum,
+        baseFeePerGas: Number(result.baseFeePerGas[index]),
+        gasUsedRatio: Number(result.gasUsedRatio[index]),
+        priorityFeePerGas: result.reward[index].map((x) => Number(x)),
+      });
+      blockNum += 1;
+      index += 1;
+    }
+    if (includePending) {
+      blocks.push({
+        number: "pending",
+        baseFeePerGas: Number(result.baseFeePerGas[historicalBlocks]),
+        gasUsedRatio: NaN,
+        priorityFeePerGas: [],
+      });
+    }
+    return blocks;
+  }
 }
 
 export default Store;
