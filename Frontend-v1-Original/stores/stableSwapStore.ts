@@ -15,13 +15,16 @@ import {
   CONTRACTS,
   MAX_UINT256,
   ZERO_ADDRESS,
+  NATIVE_TOKEN,
+  W_NATIVE_ADDRESS,
 } from "./constants/constants";
 
+import tokenlistArb from "../mainnet-arb-token-list.json";
+import tokenlistCan from "../mainnet-canto-token-list.json";
 import type { BaseAsset, Pair, RouteAsset } from "./types/types";
 
-import tokenlist from "../mainnet-canto-token-list.json";
-
-// TODO: double check bribe related stuff
+const tokenlist =
+  process.env.NEXT_PUBLIC_CHAINID === "42161" ? tokenlistArb : tokenlistCan;
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -593,11 +596,11 @@ class Store {
   };
 
   getPair = async (addressA, addressB, stab) => {
-    if (addressA === "CANTO") {
-      addressA = CONTRACTS.WCANTO_ADDRESS;
+    if (addressA === NATIVE_TOKEN.symbol) {
+      addressA = W_NATIVE_ADDRESS;
     }
-    if (addressB === "CANTO") {
-      addressB = CONTRACTS.WCANTO_ADDRESS;
+    if (addressB === NATIVE_TOKEN.symbol) {
+      addressB = W_NATIVE_ADDRESS;
     }
 
     const web3 = await stores.accountStore.getWeb3Provider();
@@ -1016,17 +1019,8 @@ class Store {
 
       let baseAssets = tokenlist;
 
-      const nativeETH = {
-        address: CONTRACTS.CANTO_ADDRESS,
-        decimals: CONTRACTS.CANTO_DECIMALS,
-        logoURI: CONTRACTS.CANTO_LOGO,
-        name: CONTRACTS.CANTO_NAME,
-        symbol: CONTRACTS.CANTO_SYMBOL,
-        chainId: 7700,
-      };
-
       const set = new Set<string>(baseAssets.map((asset) => asset.address));
-      if (!set.has(CONTRACTS.CANTO_ADDRESS)) baseAssets.unshift(nativeETH);
+      if (!set.has(NATIVE_TOKEN.address)) baseAssets.unshift(NATIVE_TOKEN);
 
       let localBaseAssets = this.getLocalAssets();
 
@@ -1085,7 +1079,7 @@ class Store {
     const baseAssets = this.getStore("baseAssets");
     const pairs = this.getStore("pairs");
     const set = new Set<string>();
-    set.add(CONTRACTS.CANTO_ADDRESS.toLowerCase());
+    set.add(NATIVE_TOKEN.address.toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
@@ -1096,11 +1090,10 @@ class Store {
     return [...baseAssetsWeSwap];
   };
   updateSwapAssets = () => {
-    const baseAssets: Store["store"]["baseAssets"] =
-      this.getStore("baseAssets");
-    const pairs: Store["store"]["pairs"] = this.getStore("pairs");
+    const baseAssets = this.getStore("baseAssets");
+    const pairs = this.getStore("pairs");
     const set = new Set<string>();
-    set.add(CONTRACTS.CANTO_ADDRESS.toLowerCase());
+    set.add(NATIVE_TOKEN.address.toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
@@ -1453,7 +1446,7 @@ class Store {
       const baseAssetsBalances = await Promise.all(
         baseAssets.map(async (asset) => {
           try {
-            if (asset.address === "CANTO") {
+            if (asset.address === NATIVE_TOKEN.symbol) {
               let bal = await web3.eth.getBalance(account.address);
               return {
                 balanceOf: bal,
@@ -1588,11 +1581,11 @@ class Store {
 
       let toki0 = token0.address;
       let toki1 = token1.address;
-      if (token0.address === "CANTO") {
-        toki0 = CONTRACTS.WCANTO_ADDRESS;
+      if (token0.address === NATIVE_TOKEN.symbol) {
+        toki0 = W_NATIVE_ADDRESS;
       }
-      if (token1.address === "CANTO") {
-        toki1 = CONTRACTS.WCANTO_ADDRESS;
+      if (token1.address === NATIVE_TOKEN.symbol) {
+        toki1 = W_NATIVE_ADDRESS;
       }
 
       const factoryContract = new web3.eth.Contract(
@@ -1661,7 +1654,7 @@ class Store {
       let allowance1 = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (token0.address !== "CANTO") {
+      if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -1684,7 +1677,7 @@ class Store {
         });
       }
 
-      if (token1.address !== "CANTO") {
+      if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -1808,7 +1801,7 @@ class Store {
       ];
       let sendValue = null;
 
-      if (token0.address === "CANTO") {
+      if (token0.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token1.address,
@@ -1821,7 +1814,7 @@ class Store {
         ];
         sendValue = sendAmount0;
       }
-      if (token1.address === "CANTO") {
+      if (token1.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token0.address,
@@ -1857,11 +1850,11 @@ class Store {
           // GET PAIR FOR NEWLY CREATED LIQUIDITY POOL
           let tok0 = token0.address;
           let tok1 = token1.address;
-          if (token0.address === "CANTO") {
-            tok0 = CONTRACTS.WCANTO_ADDRESS;
+          if (token0.address === NATIVE_TOKEN.symbol) {
+            tok0 = W_NATIVE_ADDRESS;
           }
-          if (token1.address === "CANTO") {
-            tok1 = CONTRACTS.WCANTO_ADDRESS;
+          if (token1.address === NATIVE_TOKEN.symbol) {
+            tok1 = W_NATIVE_ADDRESS;
           }
           const pairFor = await factoryContract.methods
             .getPair(tok0, tok1, stable)
@@ -2029,11 +2022,11 @@ class Store {
 
       let toki0 = token0.address;
       let toki1 = token1.address;
-      if (token0.address === "CANTO") {
-        toki0 = CONTRACTS.WCANTO_ADDRESS;
+      if (token0.address === NATIVE_TOKEN.symbol) {
+        toki0 = W_NATIVE_ADDRESS;
       }
-      if (token1.address === "CANTO") {
-        toki1 = CONTRACTS.WCANTO_ADDRESS;
+      if (token1.address === NATIVE_TOKEN.symbol) {
+        toki1 = W_NATIVE_ADDRESS;
       }
 
       const factoryContract = new web3.eth.Contract(
@@ -2090,7 +2083,7 @@ class Store {
       let allowance1 = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (token0.address !== "CANTO") {
+      if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2113,7 +2106,7 @@ class Store {
         });
       }
 
-      if (token1.address !== "CANTO") {
+      if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2237,7 +2230,7 @@ class Store {
       ];
       let sendValue = null;
 
-      if (token0.address === "CANTO") {
+      if (token0.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token1.address,
@@ -2250,7 +2243,7 @@ class Store {
         ];
         sendValue = sendAmount0;
       }
-      if (token1.address === "CANTO") {
+      if (token1.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token0.address,
@@ -2286,11 +2279,11 @@ class Store {
           // GET PAIR FOR NEWLY CREATED LIQUIDITY POOL
           let tok0 = token0.address;
           let tok1 = token1.address;
-          if (token0.address === "CANTO") {
-            tok0 = CONTRACTS.WCANTO_ADDRESS;
+          if (token0.address === NATIVE_TOKEN.symbol) {
+            tok0 = W_NATIVE_ADDRESS;
           }
-          if (token1.address === "CANTO") {
-            tok1 = CONTRACTS.WCANTO_ADDRESS;
+          if (token1.address === NATIVE_TOKEN.symbol) {
+            tok1 = W_NATIVE_ADDRESS;
           }
           const pairFor = await factoryContract.methods
             .getPair(tok0, tok1, stable)
@@ -2409,7 +2402,7 @@ class Store {
       let allowance1 = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (token0.address !== "CANTO") {
+      if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2432,7 +2425,7 @@ class Store {
         });
       }
 
-      if (token1.address !== "CANTO") {
+      if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2563,7 +2556,7 @@ class Store {
       ];
       let sendValue = null;
 
-      if (token0.address === "CANTO") {
+      if (token0.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token1.address,
@@ -2576,7 +2569,7 @@ class Store {
         ];
         sendValue = sendAmount0;
       }
-      if (token1.address === "CANTO") {
+      if (token1.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token0.address,
@@ -2830,7 +2823,7 @@ class Store {
       let allowance1 = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (token0.address !== "CANTO") {
+      if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2853,7 +2846,7 @@ class Store {
         });
       }
 
-      if (token1.address !== "CANTO") {
+      if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -3036,7 +3029,7 @@ class Store {
       ];
       let sendValue = null;
 
-      if (token0.address === "CANTO") {
+      if (token0.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token1.address,
@@ -3049,7 +3042,7 @@ class Store {
         ];
         sendValue = sendAmount0;
       }
-      if (token1.address === "CANTO") {
+      if (token1.address === NATIVE_TOKEN.symbol) {
         func = "addLiquidityETH";
         params = [
           token0.address,
@@ -3206,11 +3199,11 @@ class Store {
       let addy0 = token0.address;
       let addy1 = token1.address;
 
-      if (token0.address === "CANTO") {
-        addy0 = CONTRACTS.WCANTO_ADDRESS;
+      if (token0.address === NATIVE_TOKEN.symbol) {
+        addy0 = W_NATIVE_ADDRESS;
       }
-      if (token1.address === "CANTO") {
-        addy1 = CONTRACTS.WCANTO_ADDRESS;
+      if (token1.address === NATIVE_TOKEN.symbol) {
+        addy1 = W_NATIVE_ADDRESS;
       }
 
       const res = await routerContract.methods
@@ -3898,11 +3891,11 @@ class Store {
       let addy0 = fromAsset.address;
       let addy1 = toAsset.address;
 
-      if (fromAsset.address === "CANTO") {
-        addy0 = CONTRACTS.WCANTO_ADDRESS;
+      if (fromAsset.address === NATIVE_TOKEN.symbol) {
+        addy0 = W_NATIVE_ADDRESS;
       }
-      if (toAsset.address === "CANTO") {
-        addy1 = CONTRACTS.WCANTO_ADDRESS;
+      if (toAsset.address === NATIVE_TOKEN.symbol) {
+        addy1 = W_NATIVE_ADDRESS;
       }
 
       const includesRouteAddress = routeAssets.filter((asset) => {
@@ -4141,7 +4134,7 @@ class Store {
       let allowance = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (fromAsset.address !== "CANTO") {
+      if (fromAsset.address !== NATIVE_TOKEN.symbol) {
         allowance = await this._getSwapAllowance(web3, fromAsset, account);
 
         if (BigNumber(allowance).lt(fromAmount)) {
@@ -4229,7 +4222,7 @@ class Store {
       ];
       let sendValue = null;
 
-      if (fromAsset.address === "CANTO") {
+      if (fromAsset.address === NATIVE_TOKEN.symbol) {
         func = "swapExactETHForTokens";
         params = [
           sendMinAmountOut,
@@ -4239,7 +4232,7 @@ class Store {
         ];
         sendValue = sendFromAmount;
       }
-      if (toAsset.address === "CANTO") {
+      if (toAsset.address === NATIVE_TOKEN.symbol) {
         func = "swapExactTokensForETH";
       }
 
@@ -4283,7 +4276,7 @@ class Store {
       const ba = await Promise.all(
         baseAssets.map(async (asset) => {
           if (asset.address.toLowerCase() === assetAddress.toLowerCase()) {
-            if (asset.address === "CANTO") {
+            if (asset.address === NATIVE_TOKEN.symbol) {
               let bal = await web3.eth.getBalance(account.address);
               asset.balance = BigNumber(bal)
                 .div(10 ** asset.decimals)
@@ -6043,7 +6036,10 @@ class Store {
                 });
                 return callback(error.message);
               }
-              context.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: error });
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid,
+                error: error,
+              });
               callback(error);
             }
           })
@@ -6056,7 +6052,10 @@ class Store {
                 });
                 return callback(error.message);
               }
-              context.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: error });
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid,
+                error: error,
+              });
               callback(error);
             }
           });

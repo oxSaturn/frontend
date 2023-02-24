@@ -1,17 +1,17 @@
-import abis from "../abis";
+import abis from "../abis/abis";
 // this is arb mainnet
 export const GOV_TOKEN_ADDRESS = "0x2Baec546a92cA3469f71b7A091f7dF61e5569889"; // canto
 export const GOV_TOKEN_NAME = "Flow";
 export const GOV_TOKEN_SYMBOL = "FLOW";
 export const GOV_TOKEN_DECIMALS = 18;
-export const GOV_TOKEN_LOGO = "https://prod.solidly.exchange/Solidly-O.svg";
+export const GOV_TOKEN_LOGO = "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0x990efF367C6c4aece43c1E98099061c897730F27"; // canto
 export const VE_TOKEN_NAME = "veFLOW";
 export const VE_TOKEN_SYMBOL = "veFLOW";
 export const VE_TOKEN_DECIMALS = 18;
-export const VE_TOKEN_LOGO = "https://prod.solidly.exchange/Solidly-O.svg";
+export const VE_TOKEN_LOGO = "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
 export const VE_TOKEN_ABI = abis.veTokenABI;
 
 export const WCANTO_ADDRESS = "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B"; // canto wsCANTO

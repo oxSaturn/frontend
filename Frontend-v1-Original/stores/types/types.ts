@@ -89,4 +89,85 @@ interface Pair {
   gaugebribes?: Bribe[];
 }
 
-export type { BaseAsset, Pair, RouteAsset };
+interface GeneralContracts {
+  GOV_TOKEN_ADDRESS: string;
+  GOV_TOKEN_NAME: string;
+  GOV_TOKEN_SYMBOL: string;
+  GOV_TOKEN_DECIMALS: number;
+  GOV_TOKEN_LOGO: string;
+  GOV_TOKEN_ABI: any[];
+  VE_TOKEN_ADDRESS: string;
+  VE_TOKEN_NAME: string;
+  VE_TOKEN_SYMBOL: string;
+  VE_TOKEN_DECIMALS: number;
+  VE_TOKEN_LOGO: string;
+  VE_TOKEN_ABI: any[];
+  FACTORY_ADDRESS: string;
+  FACTORY_ABI: any[];
+  ROUTER_ADDRESS: string;
+  ROUTER_ABI: any[];
+  VE_DIST_ADDRESS: string;
+  VE_DIST_ABI: any[];
+  VOTER_ADDRESS: string;
+  VOTER_ABI: any[];
+  MINTER_ADDRESS: string;
+  MINTER_ABI: any[];
+  ERC20_ABI: any[];
+  PAIR_ABI: any[];
+  GAUGE_ABI: any[];
+  BRIBE_ABI: any[];
+  TOKEN_ABI: any[];
+  MULTICALL_ADDRESS: string;
+}
+
+interface TestnetContracts extends GeneralContracts {
+  WETH_ADDRESS: string;
+  WETH_NAME: string;
+  WETH_SYMBOL: string;
+  WETH_DECIMALS: number;
+  WETH_ABI: any[];
+  WETH_IMPL_ABI: any[];
+  ETH_ADDRESS: string;
+  ETH_NAME: string;
+  ETH_SYMBOL: string;
+  ETH_DECIMALS: number;
+  ETH_LOGO: string;
+}
+interface CantoContracts extends GeneralContracts {
+  WCANTO_ADDRESS: string;
+  WCANTO_NAME: string;
+  WCANTO_SYMBOL: string;
+  WCANTO_DECIMALS: number;
+  WCANTO_ABI: any[];
+  WCANTO_IMPL_ABI: any[];
+  CANTO_ADDRESS: string;
+  CANTO_NAME: string;
+  CANTO_SYMBOL: string;
+  CANTO_DECIMALS: number;
+  CANTO_LOGO: string;
+}
+interface ArbitrumContracts extends GeneralContracts {
+  WETH_ADDRESS: string;
+  WETH_NAME: string;
+  WETH_SYMBOL: string;
+  WETH_DECIMALS: number;
+  WETH_ABI: any[];
+  WETH_IMPL_ABI: any[];
+  ETH_ADDRESS: string;
+  ETH_NAME: string;
+  ETH_SYMBOL: string;
+  ETH_DECIMALS: number;
+  ETH_LOGO: string;
+}
+
+type Contracts = TestnetContracts | CantoContracts | ArbitrumContracts;
+
+export type {
+  BaseAsset,
+  Pair,
+  RouteAsset,
+  Contracts,
+  TestnetContracts,
+  CantoContracts,
+  ArbitrumContracts,
+};
