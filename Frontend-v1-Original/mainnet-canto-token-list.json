@@ -66,7 +66,7 @@
   {
     "address": "0xFA3C22C069B9556A4B2f7EcE1Ee3B467909f4864",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fsomm.png&w=64&q=75",
     "name": "SOMM",
     "symbol": "SOMM"
@@ -74,7 +74,7 @@
   {
     "address": "0xc03345448969Dd8C00e9E4A85d2d9722d093aF8E",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fgrav.svg&w=64&q=75",
     "name": "GRAV",
     "symbol": "GRAV"
@@ -82,7 +82,7 @@
   {
     "address": "0x1D54EcB8583Ca25895c512A8308389fFD581F9c9",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Finj.svg&w=64&q=75",
     "name": "INJ",
     "symbol": "INJ"
@@ -90,7 +90,7 @@
   {
     "address": "0xC5e00D3b04563950941f7137B5AfA3a534F0D6d6",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fkava.png&w=64&q=75",
     "name": "KAVA",
     "symbol": "KAVA"
@@ -98,7 +98,7 @@
   {
     "address": "0x0CE35b0D42608Ca54Eb7bcc8044f7087C18E7717",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fosmo.svg&w=64&q=75",
     "name": "OSMO",
     "symbol": "OSMO"
@@ -106,7 +106,7 @@
   {
     "address": "0x5aD523d94Efb56C400941eb6F34393b84c75ba39",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fakt.svg&w=64&q=75",
     "name": "AKASH",
     "symbol": "AKASH"
@@ -114,7 +114,7 @@
   {
     "address": "0x5db67696C3c088DfBf588d3dd849f44266ff0ffa",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://crescent.explorers.guru/chains/crescent.svg",
     "name": "CRE",
     "symbol": "CRE"
@@ -122,9 +122,17 @@
   {
     "address": "0x3452e23F9c4cC62c70B7ADAd699B264AF3549C19",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fcmdx.png&w=64&q=75",
     "name": "CMDX",
     "symbol": "CMDX"
+  },
+  {
+    "address": "0x3452e23F9c4cC62c70B7ADAd699B264AF3549C19",
+    "chainId": 7700,
+    "decimals": 6,
+    "logoURI": "https://assets.slingshot.finance/icons/canto_0x7264610a66eca758a8ce95cf11ff5741e1fd0455",
+    "name": "CINU",
+    "symbol": "CINU"
   }
 ]
