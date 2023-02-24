@@ -1,0 +1,130 @@
+[
+  {
+    "name": "WCANTO",
+    "address": "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B",
+    "symbol": "WCANTO",
+    "decimals": 18,
+    "chainId": 7700,
+    "logoURI": "https://assets.slingshot.finance/icons/canto_0x826551890dc65655a0aceca109ab11abdbd7a07b"
+  },
+  {
+    "address": "0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75",
+    "chainId": 7700,
+    "name": "Tether USD",
+    "symbol": "USDT",
+    "decimals": 6,
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg"
+  },
+  {
+    "address": "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd",
+    "chainId": 7700,
+    "name": "USDC",
+    "symbol": "USDC",
+    "decimals": 6,
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg"
+  },
+  {
+    "address": "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.slingshot.finance/icons/canto_0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503",
+    "name": "NOTE",
+    "symbol": "NOTE"
+  },
+  {
+    "address": "0x2Baec546a92cA3469f71b7A091f7dF61e5569889",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
+    "name": "Flow",
+    "symbol": "FLOW"
+  },
+  {
+    "address": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",
+    "chainId": 7700,
+    "decimals": 6,
+    "logoURI": "https://assets.slingshot.finance/icons/canto_0xeceeefcee421d8062ef8d6b4d814efe4dc898265",
+    "name": "ATOM",
+    "symbol": "ATOM"
+  },
+  {
+    "address": "0x533C0f08BE45eaaC821392B85E67Fb0c7DC2cab7",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "COHM",
+    "symbol": "COHM"
+  },
+  {
+    "address": "0x5d6d848eaab022e2c919d9df9fc6a7a255280f82",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
+    "name": "scOHM",
+    "symbol": "scOHM"
+  },
+  {
+    "address": "0xFA3C22C069B9556A4B2f7EcE1Ee3B467909f4864",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fsomm.png&w=64&q=75",
+    "name": "SOMM",
+    "symbol": "SOMM"
+  },
+  {
+    "address": "0xc03345448969Dd8C00e9E4A85d2d9722d093aF8E",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fgrav.svg&w=64&q=75",
+    "name": "GRAV",
+    "symbol": "GRAV"
+  },
+  {
+    "address": "0x1D54EcB8583Ca25895c512A8308389fFD581F9c9",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Finj.svg&w=64&q=75",
+    "name": "INJ",
+    "symbol": "INJ"
+  },
+  {
+    "address": "0xC5e00D3b04563950941f7137B5AfA3a534F0D6d6",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fkava.png&w=64&q=75",
+    "name": "KAVA",
+    "symbol": "KAVA"
+  },
+  {
+    "address": "0x0CE35b0D42608Ca54Eb7bcc8044f7087C18E7717",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fosmo.svg&w=64&q=75",
+    "name": "OSMO",
+    "symbol": "OSMO"
+  },
+  {
+    "address": "0x5aD523d94Efb56C400941eb6F34393b84c75ba39",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fakt.svg&w=64&q=75",
+    "name": "AKASH",
+    "symbol": "AKASH"
+  },
+  {
+    "address": "0x5db67696C3c088DfBf588d3dd849f44266ff0ffa",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://crescent.explorers.guru/chains/crescent.svg",
+    "name": "CRE",
+    "symbol": "CRE"
+  },
+  {
+    "address": "0x3452e23F9c4cC62c70B7ADAd699B264AF3549C19",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Fcmdx.png&w=64&q=75",
+    "name": "CMDX",
+    "symbol": "CMDX"
+  }
+]
