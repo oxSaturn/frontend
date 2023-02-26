@@ -183,25 +183,16 @@
 }
 
 .inputTitleContainer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
   position: absolute;
   top: 8px;
+  right: 8px;
+  z-index: 1;
+  cursor: pointer;
 }
 
 .inputTitle {
   padding-bottom: 6px;
   margin-left: 12px;
-}
-
-.inputBalance {
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 12px;
-  padding-bottom: 6px;
-  cursor: pointer;
 }
 
 .inputBalanceText {

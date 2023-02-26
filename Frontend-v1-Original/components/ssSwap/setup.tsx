@@ -25,6 +25,7 @@ import classes from "./ssSwap.module.css";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import BigNumber from "bignumber.js";
+import type { BaseAsset } from "../../stores/types/types";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -36,15 +37,15 @@ function Setup() {
 
   const [fromAmountValue, setFromAmountValue] = useState("");
   const [fromAmountError, setFromAmountError] = useState<false | string>(false);
-  const [fromAssetValue, setFromAssetValue] = useState(null);
+  const [fromAssetValue, setFromAssetValue] = useState<BaseAsset>(null);
   const [fromAssetError, setFromAssetError] = useState<false | string>(false);
-  const [fromAssetOptions, setFromAssetOptions] = useState([]);
+  const [fromAssetOptions, setFromAssetOptions] = useState<BaseAsset[]>([]);
 
   const [toAmountValue, setToAmountValue] = useState("");
   const [toAmountError, setToAmountError] = useState(false);
-  const [toAssetValue, setToAssetValue] = useState(null);
+  const [toAssetValue, setToAssetValue] = useState<BaseAsset>(null);
   const [toAssetError, setToAssetError] = useState(false);
-  const [toAssetOptions, setToAssetOptions] = useState([]);
+  const [toAssetOptions, setToAssetOptions] = useState<BaseAsset[]>([]);
 
   const [slippage, setSlippage] = useState("2");
   const [slippageError, setSlippageError] = useState(false);
@@ -162,7 +163,7 @@ function Setup() {
       }
     } else {
       if (value.address === fromAssetValue.address) {
-        setFromAssetError(toAssetValue);
+        setFromAssetError(false);
         setToAssetValue(fromAssetValue);
         calculateReceiveAmount(fromAmountValue, toAssetValue, fromAssetValue);
       } else {
@@ -232,7 +233,7 @@ function Setup() {
     } else {
       if (
         !fromAssetValue.balance ||
-        isNaN(fromAssetValue.balance) ||
+        isNaN(+fromAssetValue.balance) || // TODO probably dont neet it
         BigNumber(fromAssetValue.balance).lte(0)
       ) {
         setFromAmountError("Invalid balance");
@@ -277,12 +278,9 @@ function Setup() {
   };
 
   const setBalance100 = () => {
-    setFromAmountValue(fromAssetValue.balance);
-    calculateReceiveAmount(
-      fromAssetValue.balance,
-      fromAssetValue,
-      toAssetValue
-    );
+    const am = BigNumber(fromAssetValue.balance).toFixed(4);
+    setFromAmountValue(am);
+    calculateReceiveAmount(am, fromAssetValue, toAssetValue);
   };
 
   const swapAssets = () => {
@@ -475,23 +473,20 @@ function Setup() {
   ) => {
     return (
       <div className={classes.textField}>
-        <div className={classes.inputTitleContainer}>
-          <div className={classes.inputBalance}>
-            <Typography
-              className={classes.inputBalanceText}
-              noWrap
-              onClick={() => {
-                if (type === "From") {
-                  setBalance100();
-                }
-              }}
-            >
-              Balance:
-              {assetValue && assetValue.balance
-                ? " " + formatCurrency(assetValue.balance)
-                : ""}
-            </Typography>
-          </div>
+        <div
+          className={classes.inputTitleContainer}
+          onClick={() => {
+            if (type === "From") {
+              setBalance100();
+            }
+          }}
+        >
+          <Typography className={classes.inputBalanceText} noWrap>
+            Balance:
+            {assetValue && assetValue.balance
+              ? " " + formatCurrency(assetValue.balance)
+              : ""}
+          </Typography>
         </div>
         <div
           className={`${classes.massiveInputContainer} ${
