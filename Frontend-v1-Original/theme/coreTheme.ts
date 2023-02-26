@@ -304,6 +304,16 @@ const coreTheme = createTheme({
         },
       },
     },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          border: "1px solid rgba(126,153,176,0.2)",
+          marginTop: "10px",
+          minWidth: "230px",
+          background: "#040105",
+        },
+      },
+    },
   },
 });
 
