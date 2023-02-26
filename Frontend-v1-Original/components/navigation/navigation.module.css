@@ -7,10 +7,7 @@
   border: 0 !important;
   padding: 10px;
   box-shadow: 0 0 0.2em rgba(14, 233, 222, 0.993);
-  
 }
-
-
 
 a.linkz {
   cursor: pointer !important;
@@ -303,6 +300,8 @@ a.linkz {
 
 .navToggles {
   min-height: 50px;
+  display: inline-flex;
+  border-radius: 10px;
 }
 
 .navButton {
@@ -311,13 +310,33 @@ a.linkz {
   text-transform: capitalize !important;
   border: 1px solid rgba(0, 0, 0, 0) !important;
   color: #7e99b0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  background-color: transparent;
+  outline: 0px;
+  margin: 0px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.75;
 } /* Transparent border to eliminate position jittering from Active state */
+
+.navButton:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
 
 .testChange {
   box-shadow: 0 0 0.2em rgba(30, 131, 126, 0.993);
   background-color: rgba(0, 0, 0, 0) !important;
   color: #fff !important;
-
 }
 
 @media screen and (max-width: 1200px) {

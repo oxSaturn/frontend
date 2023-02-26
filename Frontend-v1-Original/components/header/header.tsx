@@ -120,6 +120,49 @@ const StyledBadge = withStyles((theme) => ({
   },
 }))(Badge);
 
+const switchChain = async () => {
+  let hexChain = "0x" + Number(process.env.NEXT_PUBLIC_CHAINID).toString(16);
+  try {
+    await (window as EthWindow).ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: hexChain }],
+    });
+  } catch (switchError) {
+    if (switchError.code === 4902) {
+      try {
+        await (window as EthWindow).ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: hexChain,
+              chainName: "Canto",
+              nativeCurrency: {
+                name: "CANTO",
+                symbol: "CANTO",
+                decimals: 18,
+              },
+              rpcUrls: [
+                "https://canto.slingshot.finance/",
+                "https://canto.gravitychain.io/",
+                "https://canto.neobase.one/",
+                "https://canto.evm.chandrastation.com/",
+                "https://jsonrpc.canto.nodestake.top/",
+              ],
+              blockExplorerUrls: [
+                "https://evm.explorer.canto.io/",
+                "https://tuber.build/",
+              ],
+            },
+          ],
+        });
+      } catch (addError) {
+        console.log("add error", addError);
+      }
+    }
+    console.log("switch error", switchError);
+  }
+};
+
 function Header() {
   const accountStore = stores.accountStore.getStore("account");
   const router = useRouter();
@@ -196,49 +239,6 @@ function Header() {
 
   const closeUnlock = () => {
     setUnlockOpen(false);
-  };
-
-  const switchChain = async () => {
-    let hexChain = "0x" + Number(process.env.NEXT_PUBLIC_CHAINID).toString(16);
-    try {
-      await (window as EthWindow).ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: hexChain }],
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) {
-        try {
-          await (window as EthWindow).ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: hexChain,
-                chainName: "Canto",
-                nativeCurrency: {
-                  name: "CANTO",
-                  symbol: "CANTO",
-                  decimals: 18,
-                },
-                rpcUrls: [
-                  "https://canto.gravitychain.io/",
-                  "https://canto.slingshot.finance/",
-                  "https://canto.neobase.one/",
-                  "https://canto.evm.chandrastation.com/",
-                  "https://jsonrpc.canto.nodestake.top/",
-                ],
-                blockExplorerUrls: [
-                  "https://tuber.build/",
-                  "https://evm.explorer.canto.io/",
-                ],
-              },
-            ],
-          });
-        } catch (addError) {
-          console.log("add error", addError);
-        }
-      }
-      console.log("switch error", switchError);
-    }
   };
 
   const setQueueLength = (length) => {

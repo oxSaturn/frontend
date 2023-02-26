@@ -263,11 +263,12 @@ class Store {
     const priorityFeePerGasEstimate = Math.round(
       sum / firstPercentialPriorityFees.length
     );
+    let priorityFee = priorityFeePerGasEstimate;
+    if (priorityFee === 0) {
+      priorityFee = 100_000_000;
+    }
     const block = await web3.eth.getBlock("pending");
-    return [
-      Number(block.baseFeePerGas) + priorityFeePerGasEstimate,
-      priorityFeePerGasEstimate,
-    ];
+    return [Number(block.baseFeePerGas) + priorityFee, priorityFee];
   };
 
   _formatFeeHistory(
