@@ -744,7 +744,7 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [filteredPairs, order, orderBy]
+    [filteredPairs, order, orderBy, page, rowsPerPage]
   );
 
   const emptyRows = 5 - Math.min(5, filteredPairs.length - page * 5);

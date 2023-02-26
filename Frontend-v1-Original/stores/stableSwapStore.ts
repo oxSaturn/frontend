@@ -5993,7 +5993,10 @@ class Store {
     this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
     const gasCost = contract.methods[method](...params)
       .estimateGas({ from: account.address, value: sendValue })
-      .then(async (estimatedGas) => [...(await stores.accountStore.getGasPriceEIP1559() ), estimatedGas])
+      .then(async (estimatedGas) => [
+        ...(await stores.accountStore.getGasPriceEIP1559()),
+        estimatedGas,
+      ])
       .then(([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]) => {
         const context = this;
         contract.methods[method](...params)
@@ -6002,7 +6005,7 @@ class Store {
             gas: estimatedGas,
             value: sendValue,
             maxFeePerGas,
-            maxPriorityFeePerGas
+            maxPriorityFeePerGas,
           })
           .on("transactionHash", function (txHash) {
             context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
@@ -6012,9 +6015,11 @@ class Store {
               uuid,
               txHash: receipt.transactionHash,
             });
-            setTimeout(() => {
-              context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-            }, 1);
+            if (method !== "approve") {
+              setTimeout(() => {
+                context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+              }, 1);
+            }
             callback(null, receipt.transactionHash);
             if (dispatchEvent) {
               context.dispatcher.dispatch({
