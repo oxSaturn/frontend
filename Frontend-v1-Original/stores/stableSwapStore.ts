@@ -43,6 +43,7 @@ class Store {
       rewards: any[];
     };
     updateDate: number;
+    tvl: number;
   };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
@@ -63,6 +64,7 @@ class Store {
         rewards: [],
       },
       updateDate: 0,
+      tvl: 0,
     };
 
     dispatcher.register(
@@ -992,6 +994,7 @@ class Store {
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
       this.setStore({ updateDate: await this._getActivePeriod() });
+      this.setStore({ tvl: await this._getCurrentTvl() });
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
@@ -6095,6 +6098,11 @@ class Store {
   // _getMulticallWatcher = (web3, calls) => {
   //
   // }
+  _getCurrentTvl = async () => {
+    const response = await fetch(`https://api.llama.fi/tvl/velocimeter`);
+    const json = await response.json();
+    return json as number;
+  };
 }
 
 export default Store;

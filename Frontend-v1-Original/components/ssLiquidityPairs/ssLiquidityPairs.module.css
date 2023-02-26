@@ -9,12 +9,31 @@
   padding: 0 0 10px 0px;
 }
 
+.descriptionTvlBox {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .descriptionBox {
-  align-self: flex-start;
   text-align: left;
   gap: 0.25rem;
   flex-direction: column;
   display: flex;
+}
+
+.tvlBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 178px;
+}
+
+.tvlText {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.167;
 }
 
 .title {
