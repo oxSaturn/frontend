@@ -21,7 +21,14 @@ import {
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
 import tokenlistCan from "../mainnet-canto-token-list.json";
-import type { BaseAsset, Pair, RouteAsset } from "./types/types";
+import type {
+  BaseAsset,
+  Pair,
+  RouteAsset,
+  VeToken,
+  Vote,
+  VestNFT,
+} from "./types/types";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
@@ -34,9 +41,9 @@ class Store {
     swapAssets: BaseAsset[];
     routeAssets: RouteAsset[];
     govToken: Omit<BaseAsset, "local"> & { balanceOf: string };
-    veToken: Omit<BaseAsset, "balance" | "local">;
+    veToken: VeToken;
     pairs: Pair[];
-    vestNFTs: any[];
+    vestNFTs: VestNFT[];
     rewards: {
       bribes: any[];
       fees: any[];
@@ -69,7 +76,7 @@ class Store {
 
     dispatcher.register(
       function (this: Store, payload) {
-        console.log("<< Payload of dispatched function from fe <<", payload);
+        console.log("<< Payload of dispatched event", payload);
         switch (payload.type) {
           case ACTIONS.CONFIGURE_SS:
             this.configure(payload);
@@ -262,7 +269,7 @@ class Store {
         .call();
       const arr = Array.from({ length: parseInt(nftsLength) }, (v, i) => i);
 
-      const nfts = await Promise.all(
+      const nfts: VestNFT[] = await Promise.all(
         arr.map(async (idx) => {
           const tokenIndex = await vestingContract.methods
             .tokenOfOwnerByIndex(account.address, idx)
@@ -338,7 +345,7 @@ class Store {
       const locked = await vestingContract.methods.locked(id).call();
       const lockValue = await vestingContract.methods.balanceOfNFT(id).call();
 
-      const newVestNFTs = vestNFTs.map((nft) => {
+      const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
           return {
             id: id,
@@ -532,7 +539,7 @@ class Store {
           gaugeContract.methods.balanceOf(account.address).call(),
           gaugesContract.methods.bribes(gaugeAddress).call(),
         ]);
-        // FIXME: this is external bribe in python and internal in express ++
+
         const bribeContract = new web3.eth.Contract(
           CONTRACTS.BRIBE_ABI as AbiItem[],
           thePair.gauge.wrapped_bribe_address
@@ -993,8 +1000,8 @@ class Store {
       this.setStore({ routeAssets: await this._getRouteAssets() });
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
-      this.setStore({ updateDate: await this._getActivePeriod() });
-      this.setStore({ tvl: await this._getCurrentTvl() });
+      this.setStore({ updateDate: await stores.helper._getActivePeriod() });
+      this.setStore({ tvl: await stores.helper._getCurrentTvl() });
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
@@ -1047,7 +1054,7 @@ class Store {
         }
       );
       const routeAssetsCall = await response.json();
-      return routeAssetsCall.data;
+      return routeAssetsCall.data as RouteAsset[];
     } catch (ex) {
       console.log(ex);
       return [];
@@ -1107,24 +1114,6 @@ class Store {
     );
     this.setStore({ swapAssets: baseAssetsWeSwap });
     this.emitter.emit(ACTIONS.SWAP_ASSETS_UPDATED, baseAssetsWeSwap);
-  };
-
-  _getActivePeriod = async () => {
-    try {
-      const week = 604800;
-      const web3 = await stores.accountStore.getWeb3Provider();
-      const minterContract = new web3.eth.Contract(
-        CONTRACTS.MINTER_ABI as AbiItem[],
-        CONTRACTS.MINTER_ADDRESS
-      );
-      const activePeriod = await minterContract.methods.active_period().call();
-      const activePeriodEnd = parseInt(activePeriod) + week;
-      return activePeriodEnd;
-    } catch (ex) {
-      console.log("EXCEPTION. ACTIVE PERIOD ERROR");
-      console.log(ex);
-      return 0;
-    }
   };
 
   _getGovTokenBase = () => {
@@ -1346,6 +1335,7 @@ class Store {
       this.setStore({ pairs: ps });
       this.emitter.emit(ACTIONS.UPDATED);
 
+      const tokenPricesMap = new Map<string, number>();
       const ps1 = await Promise.all(
         ps.map(async (pair) => {
           try {
@@ -1361,7 +1351,7 @@ class Store {
                   gaugeContract.methods.balanceOf(account.address),
                   gaugesContract.methods.weights(pair.address),
                 ]);
-              // FIXME: this is external bribe in python and internal in express
+
               // const bribeContract = new web3.eth.Contract(
               //   CONTRACTS.BRIBE_ABI,
               //   pair.gauge.bribeAddress
@@ -1382,11 +1372,39 @@ class Store {
               //     return bribe;
               //   })
               // );
-              const bribes = pair.gauge.bribes.map((bribe) => {
-                bribe.rewardAmount = bribe.rewardAmmount;
-                return bribe;
-              });
+              //TODO: this one causing 38 calls to getTokenPrice which is awful. (!)
+              const bribes = await Promise.all(
+                pair.gauge.bribes.map(async (bribe) => {
+                  bribe.rewardAmount = bribe.rewardAmmount;
+                  if (!tokenPricesMap.has(bribe.token.address)) {
+                    bribe.tokenPrice = await stores.helper._getTokenPrice(
+                      bribe.token
+                    );
+                    tokenPricesMap.set(bribe.token.address, bribe.tokenPrice);
+                  } else {
+                    bribe.tokenPrice = tokenPricesMap.get(bribe.token.address);
+                  }
+                  return bribe;
+                })
+              );
 
+              let votingApr = 0;
+              const votes = BigNumber(gaugeWeight)
+                .div(10 ** 18)
+                .toNumber();
+              const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
+                return acc + bribe.tokenPrice * bribe.rewardAmount;
+              }, 0);
+              if (totalUSDValueOfBribes > 0) {
+                const perVote = totalUSDValueOfBribes / votes;
+                const perVotePerYear = perVote * 52.179;
+                const token = this.getStore("routeAssets").filter(
+                  (asset) => asset.symbol === "FLOW"
+                )[0];
+                const flowPrice = tokenPricesMap.get(token.address);
+
+                votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
+              }
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
                 .toFixed(18);
@@ -1415,6 +1433,7 @@ class Store {
                 .div(totalWeight)
                 .toFixed(2);
               pair.gaugebribes = bribes;
+              pair.gauge.votingApr = votingApr;
             }
 
             return pair;
@@ -4926,7 +4945,7 @@ class Store {
 
       const voteCounts = (await multicall.aggregate(calls)) as string[];
 
-      let votes = [];
+      let votes: Vote[] = [];
 
       const totalVotes = voteCounts.reduce((curr, acc) => {
         let num = BigNumber(acc).gt(0)
@@ -6098,11 +6117,6 @@ class Store {
   // _getMulticallWatcher = (web3, calls) => {
   //
   // }
-  _getCurrentTvl = async () => {
-    const response = await fetch(`https://api.llama.fi/tvl/velocimeter`);
-    const json = await response.json();
-    return json as number;
-  };
 }
 
 export default Store;

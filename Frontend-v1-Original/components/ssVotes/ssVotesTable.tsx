@@ -16,6 +16,7 @@ import {
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
+import { Pair, Vote, VestNFT } from "../../stores/types/types";
 
 const headCells = [
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
@@ -30,6 +31,12 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Total Liquidity",
+  },
+  {
+    id: "votes_apr",
+    numeric: true,
+    disablePadding: false,
+    label: "Voting APR",
   },
   {
     id: "totalVotes",
@@ -192,8 +199,18 @@ export default function EnhancedTable({
   gauges,
   setParentSliderValues,
   defaultVotes,
-  veToken,
   token,
+}: {
+  gauges: Pair[];
+  setParentSliderValues: React.Dispatch<
+    React.SetStateAction<
+      (Pick<Vote, "address"> & {
+        value: number;
+      })[]
+    >
+  >;
+  defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
+  token: VestNFT;
 }) {
   const classes = useStyles();
 
@@ -468,6 +485,11 @@ export default function EnhancedTable({
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
                     <Typography variant="h2" className={classes.textSpaced}>
+                      {formatCurrency(row?.gauge?.votingApr)} %
+                    </Typography>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    <Typography variant="h2" className={classes.textSpaced}>
                       {formatCurrency(row?.gauge?.weight)}
                     </Typography>
                     <Typography
@@ -579,6 +601,14 @@ function descendingComparator(a, b, orderBy: OrderBy) {
       }
       return 0;
 
+    case "votes_apr":
+      if (BigNumber(b?.gauge?.votingApr).lt(a?.gauge?.votingApr)) {
+        return -1;
+      }
+      if (BigNumber(b?.gauge?.votingApr).gt(a?.gauge?.votingApr)) {
+        return 1;
+      }
+      return 0;
     case "totalVotes":
       if (BigNumber(b?.gauge?.weightPercent).lt(a?.gauge?.weightPercent)) {
         return -1;
@@ -612,14 +642,14 @@ function descendingComparator(a, b, orderBy: OrderBy) {
   }
 }
 
-function getComparator(order, orderBy: OrderBy) {
+function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
   return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    ? (a: Pair, b: Pair) => descendingComparator(a, b, orderBy)
+    : (a: Pair, b: Pair) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
+function stableSort(array: Pair[], comparator: (a: Pair, b: Pair) => number) {
+  const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) return order;

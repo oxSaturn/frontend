@@ -21,21 +21,22 @@ interface RouteAsset {
   logoURI?: null | string;
 }
 
+type VeToken = Omit<BaseAsset, "balance" | "local">;
+
+interface VestNFT {
+  id: string;
+  lockAmount: string;
+  lockEnds: string;
+  lockValue: string;
+}
+
 interface Bribe {
-  token: {
-    price: number;
-    nativeChainAddress: string; // if no,  set to :""
-    nativeChainId: number;
-    address: string;
-    name: string;
-    symbol: string;
-    decimals: number;
-    logoURI: null | string;
-  };
+  token: RouteAsset;
   reward_ammount: number;
   rewardAmmount: number;
   rewardAmount?: number; // gets assigned in frontend store and eq rewardAmmount
   earned?: string;
+  tokenPrice?: number;
 }
 
 type BribeEarned = { earned: string };
@@ -85,6 +86,7 @@ interface Pair {
     weightPercent?: string;
     rewardsEarned?: string;
     bribesEarned?: Bribe[] | BribeEarned[];
+    votingApr?: number;
   };
   gaugebribes?: Bribe[];
 }
@@ -118,6 +120,7 @@ interface GeneralContracts {
   BRIBE_ABI: any[];
   TOKEN_ABI: any[];
   MULTICALL_ADDRESS: string;
+  STABLE_TOKEN_ADDRESS: string;
 }
 
 interface TestnetContracts extends GeneralContracts {
@@ -162,6 +165,77 @@ interface ArbitrumContracts extends GeneralContracts {
 
 type Contracts = TestnetContracts | CantoContracts | ArbitrumContracts;
 
+type Vote = {
+  address: string;
+  votePercent: string;
+};
+
+interface DexScrennerPair {
+  chainId: string;
+  dexId: string;
+  url: string;
+  pairAddress: string;
+  baseToken: {
+    address: string;
+    name: string;
+    symbol: string;
+  };
+  quoteToken: {
+    symbol: string;
+  };
+  priceNative: string;
+  priceUsd?: string;
+  txns: {
+    m5: {
+      buys: number;
+      sells: number;
+    };
+    h1: {
+      buys: number;
+      sells: number;
+    };
+    h6: {
+      buys: number;
+      sells: number;
+    };
+    h24: {
+      buys: number;
+      sells: number;
+    };
+  };
+  volume: {
+    m5: number;
+    h1: number;
+    h6: number;
+    h24: number;
+  };
+  priceChange: {
+    m5: number;
+    h1: number;
+    h6: number;
+    h24: number;
+  };
+  liquidity?: {
+    usd?: number;
+    base: number;
+    quote: number;
+  };
+  fdv?: number;
+  pairCreatedAt?: number;
+}
+
+interface DefiLlamaTokenPrice {
+  coins: {
+    [key: string]: {
+      decimals: number;
+      price: number;
+      symbol: string;
+      timestamp: number;
+      confidence: number;
+    };
+  };
+}
+
 export type {
   BaseAsset,
   Pair,
@@ -170,4 +244,9 @@ export type {
   TestnetContracts,
   CantoContracts,
   ArbitrumContracts,
+  VeToken,
+  Vote,
+  VestNFT,
+  DexScrennerPair,
+  DefiLlamaTokenPrice,
 };

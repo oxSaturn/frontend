@@ -22,6 +22,7 @@ import Timer from "./timer";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
+import { Pair, VeToken, Vote } from "../../stores/types/types";
 
 const initialEmptyToken = {
   id: "0",
@@ -36,10 +37,12 @@ export default function ssVotes() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [gauges, setGauges] = useState([]);
+  const [gauges, setGauges] = useState<Pair[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState([]);
-  const [veToken, setVeToken] = useState(null);
+  const [votes, setVotes] = useState<
+    Array<Pick<Vote, "address"> & { value: number }>
+  >([]);
+  const [veToken, setVeToken] = useState<VeToken>(null);
   const [token, setToken] = useState(initialEmptyToken);
   const [vestNFTs, setVestNFTs] = useState([]);
   const [search, setSearch] = useState("");
@@ -311,7 +314,6 @@ export default function ssVotes() {
           gauges={filteredGauges}
           setParentSliderValues={setVotes}
           defaultVotes={votes}
-          veToken={veToken}
           token={token}
         />
       </Paper>

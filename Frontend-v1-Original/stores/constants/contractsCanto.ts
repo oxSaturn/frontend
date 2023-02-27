@@ -4,14 +4,16 @@ export const GOV_TOKEN_ADDRESS = "0x2Baec546a92cA3469f71b7A091f7dF61e5569889"; /
 export const GOV_TOKEN_NAME = "Flow";
 export const GOV_TOKEN_SYMBOL = "FLOW";
 export const GOV_TOKEN_DECIMALS = 18;
-export const GOV_TOKEN_LOGO = "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
+export const GOV_TOKEN_LOGO =
+  "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0x990efF367C6c4aece43c1E98099061c897730F27"; // canto
 export const VE_TOKEN_NAME = "veFLOW";
 export const VE_TOKEN_SYMBOL = "veFLOW";
 export const VE_TOKEN_DECIMALS = 18;
-export const VE_TOKEN_LOGO = "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
+export const VE_TOKEN_LOGO =
+  "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
 export const VE_TOKEN_ABI = abis.veTokenABI;
 
 export const WCANTO_ADDRESS = "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B"; // canto wsCANTO
@@ -51,5 +53,8 @@ export const BRIBE_ABI = abis.bribeABI;
 export const TOKEN_ABI = abis.tokenABI;
 
 export const MULTICALL_ADDRESS = "0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9"; // canto but need check this is multicall 2 apparently..
+
+export const STABLE_TOKEN_ADDRESS =
+  "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd";
 
 //LFG
