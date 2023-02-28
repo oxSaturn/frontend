@@ -1335,6 +1335,7 @@ class Store {
       this.setStore({ pairs: ps });
       this.emitter.emit(ACTIONS.UPDATED);
 
+      // TODO make api calculate valid token prices and send it pack to us so we can just assign it
       const tokensMap = new Map<string, RouteAsset>();
       for (const pair of ps) {
         if (pair.gauge?.bribes) {
