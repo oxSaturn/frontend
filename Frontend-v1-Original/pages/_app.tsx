@@ -16,6 +16,8 @@ import stores from "../stores/index";
 import { ACTIONS } from "../stores/constants/constants";
 import "../styles/global.css";
 
+console.log('<<<<<<<<<<<<< flow >>>>>>>>>>>>>')
+
 export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 

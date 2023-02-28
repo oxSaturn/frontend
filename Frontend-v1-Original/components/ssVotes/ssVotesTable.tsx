@@ -574,7 +574,7 @@ export default function EnhancedTable({
   );
 }
 
-function descendingComparator(a, b, orderBy: OrderBy) {
+function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
   if (!a || !b) {
     return 0;
   }

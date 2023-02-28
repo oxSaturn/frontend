@@ -170,7 +170,8 @@ export default function ssBribeCreate() {
               fullWidth
               value={value}
               onChange={onChange}
-              inputProps={{
+              // @ts-expect-error This is because of how material-ui works
+              InputProps={{
                 className: classes.largeInput,
               }}
             >
