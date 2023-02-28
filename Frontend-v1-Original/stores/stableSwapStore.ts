@@ -1335,7 +1335,23 @@ class Store {
       this.setStore({ pairs: ps });
       this.emitter.emit(ACTIONS.UPDATED);
 
-      const tokenPricesMap = new Map<string, number>();
+      // TODO make api calculate valid token prices and send it pack to us so we can just assign it
+      const tokensMap = new Map<string, RouteAsset>();
+      for (const pair of ps) {
+        if (pair.gauge?.bribes) {
+          for (const bribe of pair.gauge.bribes) {
+            if (bribe.token) {
+              tokensMap.set(bribe.token.address, bribe.token);
+            }
+          }
+        }
+      }
+      await Promise.all(
+        [...tokensMap.values()].map(
+          async (token) => await stores.helper.updateTokenPrice(token)
+        )
+      );
+
       const ps1 = await Promise.all(
         ps.map(async (pair) => {
           try {
@@ -1372,21 +1388,14 @@ class Store {
               //     return bribe;
               //   })
               // );
-              //TODO: this one causing 38 calls to getTokenPrice which is awful. (!)
-              const bribes = await Promise.all(
-                pair.gauge.bribes.map(async (bribe) => {
-                  bribe.rewardAmount = bribe.rewardAmmount;
-                  if (!tokenPricesMap.has(bribe.token.address)) {
-                    bribe.tokenPrice = await stores.helper._getTokenPrice(
-                      bribe.token
-                    );
-                    tokenPricesMap.set(bribe.token.address, bribe.tokenPrice);
-                  } else {
-                    bribe.tokenPrice = tokenPricesMap.get(bribe.token.address);
-                  }
-                  return bribe;
-                })
-              );
+
+              const bribes = pair.gauge.bribes.map((bribe) => {
+                bribe.rewardAmount = bribe.rewardAmmount;
+                bribe.tokenPrice = stores.helper.getTokenPricesMap.get(
+                  bribe.token.address
+                );
+                return bribe;
+              });
 
               let votingApr = 0;
               const votes = BigNumber(gaugeWeight)
@@ -1401,10 +1410,13 @@ class Store {
                 const token = this.getStore("routeAssets").filter(
                   (asset) => asset.symbol === "FLOW"
                 )[0];
-                const flowPrice = tokenPricesMap.get(token.address);
+                const flowPrice = stores.helper.getTokenPricesMap.get(
+                  token.address
+                );
 
                 votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
               }
+
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
                 .toFixed(18);
