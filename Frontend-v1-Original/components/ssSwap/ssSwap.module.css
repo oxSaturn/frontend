@@ -39,7 +39,6 @@
   background: #272826;
   max-width: 112px;
   min-height: 50px;
-  padding: 20px 12px 4px 12px;
 }
 
 .massiveInputContainer {
@@ -171,11 +170,8 @@
 }
 
 .inputTitleContainerSlippage {
-  width: 100%;
-  display: flex;
-  align-items: center;
   position: absolute;
-  top: 0px;
+  top: 4px;
 }
 
 .inputBalanceSlippage {
@@ -201,6 +197,11 @@
   color: #7e99b0;
   margin-right: 6px !important;
   margin-top: 6px !important;
+}
+.inputBalanceTextSlippage {
+  font-weight: 100 !important;
+  font-size: 12px !important;
+  color: #7e99b0;
 }
 
 .textField {

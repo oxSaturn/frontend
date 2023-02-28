@@ -436,9 +436,8 @@ function Setup() {
       <div className={classes.textField}>
         <div className={classes.inputTitleContainerSlippage}>
           <div className={classes.inputBalanceSlippage}>
-            <Typography className={classes.inputBalanceText} noWrap>
-              {" "}
-              Slippage{" "}
+            <Typography className={classes.inputBalanceTextSlippage} noWrap>
+              Slippage
             </Typography>
           </div>
         </div>

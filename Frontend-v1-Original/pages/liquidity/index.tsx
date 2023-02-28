@@ -1,51 +1,47 @@
-import { Typography, Button, Paper, SvgIcon } from "@mui/material";
-import LiquidityPairs from '../../components/ssLiquidityPairs'
+import { useEffect, useState } from "react";
+import { Button, Paper, Typography } from "@mui/material";
 
-import React, { useState, useEffect } from 'react'
-import { ACTIONS } from '../../stores/constants'
+import LiquidityPairs from "../../components/ssLiquidityPairs/ssLiquidityPairs";
+import Unlock from "../../components/unlock/unlockModal";
 
-import stores from '../../stores'
-import { useRouter } from 'next/router'
-import Unlock from '../../components/unlock'
+import { ACTIONS } from "../../stores/constants/constants";
+import stores from "../../stores";
 
-import classes from './liquidity.module.css'
+import classes from "./liquidity.module.css";
 
-function Liquidity ({ changeTheme }) {
-  const accountStore = stores.accountStore.getStore('account')
-  const router = useRouter()
-  const [account, setAccount] = useState(accountStore)
-  const [unlockOpen, setUnlockOpen] = useState(false)
-
-  console.log(accountStore)
+function Liquidity({ changeTheme }) {
+  const accountStore = stores.accountStore.getStore("account");
+  const [account, setAccount] = useState(accountStore);
+  const [unlockOpen, setUnlockOpen] = useState(false);
 
   useEffect(() => {
     const accountConfigure = () => {
-      const accountStore = stores.accountStore.getStore('account')
-      setAccount(accountStore)
-      closeUnlock()
-    }
+      const accountStore = stores.accountStore.getStore("account");
+      setAccount(accountStore);
+      closeUnlock();
+    };
     const connectWallet = () => {
-      onAddressClicked()
-    }
+      onAddressClicked();
+    };
 
-    stores.emitter.on(ACTIONS.ACCOUNT_CONFIGURED, accountConfigure)
-    stores.emitter.on(ACTIONS.CONNECT_WALLET, connectWallet)
+    stores.emitter.on(ACTIONS.ACCOUNT_CONFIGURED, accountConfigure);
+    stores.emitter.on(ACTIONS.CONNECT_WALLET, connectWallet);
     return () => {
       stores.emitter.removeListener(
         ACTIONS.ACCOUNT_CONFIGURED,
         accountConfigure
-      )
-      stores.emitter.removeListener(ACTIONS.CONNECT_WALLET, connectWallet)
-    }
-  }, [])
+      );
+      stores.emitter.removeListener(ACTIONS.CONNECT_WALLET, connectWallet);
+    };
+  }, []);
 
   const onAddressClicked = () => {
-    setUnlockOpen(true)
-  }
+    setUnlockOpen(true);
+  };
 
   const closeUnlock = () => {
-    setUnlockOpen(false)
-  }
+    setUnlockOpen(false);
+  };
 
   return (
     <div className={classes.ffContainer}>
@@ -57,17 +53,17 @@ function Liquidity ({ changeTheme }) {
         <Paper className={classes.notConnectedContent}>
           <div className={classes.sphere}></div>
           <div className={classes.contentFloat}>
-            <Typography className={classes.mainHeadingNC} variant='h1'>
+            <Typography className={classes.mainHeadingNC} variant="h1">
               Liquidity Pools
             </Typography>
-            <Typography className={classes.mainDescNC} variant='body2'>
+            <Typography className={classes.mainDescNC} variant="body2">
               Create a pair or add liquidity to existing stable or volatile
               Liquidity Pairs.
             </Typography>
             <Button
               disableElevation
               className={classes.buttonConnect}
-              variant='contained'
+              variant="contained"
               onClick={onAddressClicked}
             >
               {account && account.address && (
@@ -82,7 +78,7 @@ function Liquidity ({ changeTheme }) {
       )}
       {unlockOpen && <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />}
     </div>
-  )
+  );
 }
 
-export default Liquidity
+export default Liquidity;

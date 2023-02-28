@@ -161,6 +161,7 @@ export default function ssRewards() {
                 InputProps={{
                   className: classes.mediumInput,
                 }}
+                sx={{ "& .MuiSelect-select": { height: "inherit" } }}
               >
                 { options && options.map((option) => {
                   return (

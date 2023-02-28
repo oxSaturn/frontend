@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -16,11 +16,6 @@ import {
   MenuItem,
   Dialog,
 } from "@mui/material";
-import BigNumber from "bignumber.js";
-import { formatCurrency } from "../../utils";
-import classes from "./ssLiquidityManage.module.css";
-import stores from "../../stores";
-import { ACTIONS, CONTRACTS } from "../../stores/constants";
 import {
   Add,
   ArrowDownward,
@@ -28,6 +23,17 @@ import {
   Search,
   DeleteOutline,
 } from "@mui/icons-material";
+import BigNumber from "bignumber.js";
+
+import stores from "../../stores";
+import {
+  ACTIONS,
+  ETHERSCAN_URL,
+  W_NATIVE_ADDRESS,
+} from "../../stores/constants/constants";
+import { formatCurrency } from "../../utils/utils";
+
+import classes from "./ssLiquidityManage.module.css";
 
 const initialEmptyToken = {
   id: "0",
@@ -52,9 +58,9 @@ export default function ssLiquidityManage() {
   const [createLoading, setCreateLoading] = useState(false);
 
   const [amount0, setAmount0] = useState("");
-  const [amount0Error, setAmount0Error] = useState(false);
+  const [amount0Error, setAmount0Error] = useState<string | false>(false);
   const [amount1, setAmount1] = useState("");
-  const [amount1Error, setAmount1Error] = useState(false);
+  const [amount1Error, setAmount1Error] = useState<string | false>(false);
 
   const [stable, setStable] = useState(false);
 
@@ -65,26 +71,28 @@ export default function ssLiquidityManage() {
   const [withdrawAsset, setWithdrawAsset] = useState(null);
   const [withdrawAassetOptions, setWithdrawAssetOptions] = useState([]);
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawAmountError, setWithdrawAmountError] = useState(false);
+  const [withdrawAmountError, setWithdrawAmountError] = useState<
+    string | false
+  >(false);
 
   const [withdrawAmount0, setWithdrawAmount0] = useState("");
   const [withdrawAmount1, setWithdrawAmount1] = useState("");
 
-  const [withdrawAmount0Percent, setWithdrawAmount0Percent] = useState("");
-  const [withdrawAmount1Percent, setWithdrawAmount1Percent] = useState("");
+  // const [withdrawAmount0Percent, setWithdrawAmount0Percent] = useState("");
+  // const [withdrawAmount1Percent, setWithdrawAmount1Percent] = useState("");
 
   const [activeTab, setActiveTab] = useState("deposit");
   const [quote, setQuote] = useState(null);
   const [withdrawQuote, setWithdrawQuote] = useState(null);
 
   const [priorityAsset, setPriorityAsset] = useState(0);
-  const [advanced, setAdvanced] = useState(false);
+  const [advanced, setAdvanced] = useState(true);
 
   const [token, setToken] = useState(initialEmptyToken);
   const [vestNFTs, setVestNFTs] = useState([]);
 
   const [slippage, setSlippage] = useState("2");
-  const [slippageError, setSlippageError] = useState(false);
+  const [slippageError, setSlippageError] = useState(false); //TODO setSlippageError if any?
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
@@ -255,7 +263,7 @@ export default function ssLiquidityManage() {
     };
   }, []);
 
-  useEffect(async () => {
+  useEffect(() => {
     ssUpdated();
   }, [router.query.address]);
 
@@ -284,10 +292,10 @@ export default function ssLiquidityManage() {
     let addy1 = assetB.address;
 
     if (assetA.address === "CANTO") {
-      addy0 = CONTRACTS.WETH_ADDRESS;
+      addy0 = W_NATIVE_ADDRESS;
     }
     if (assetB.address === "CANTO") {
-      addy1 = CONTRACTS.WETH_ADDRESS;
+      addy1 = W_NATIVE_ADDRESS;
     }
 
     if (
@@ -415,7 +423,7 @@ export default function ssLiquidityManage() {
       if (am === "") {
         setWithdrawAmount0("");
         setWithdrawAmount1("");
-      } else if (am !== "" && !isNaN(am)) {
+      } else if (am !== "" && !isNaN(+am)) {
         calcRemove(pair, am);
       }
     }
@@ -427,7 +435,7 @@ export default function ssLiquidityManage() {
 
     let error = false;
 
-    if (!amount0 || amount0 === "" || isNaN(amount0)) {
+    if (!amount0 || amount0 === "" || isNaN(+amount0)) {
       setAmount0Error("Amount 0 is required");
       error = true;
     } else {
@@ -447,7 +455,7 @@ export default function ssLiquidityManage() {
       }
     }
 
-    if (!amount1 || amount1 === "" || isNaN(amount1)) {
+    if (!amount1 || amount1 === "" || isNaN(+amount1)) {
       setAmount1Error("Amount 0 is required");
       error = true;
     } else {
@@ -479,7 +487,7 @@ export default function ssLiquidityManage() {
           amount0: amount0,
           amount1: amount1,
           minLiquidity: quote ? quote : "0",
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -499,7 +507,7 @@ export default function ssLiquidityManage() {
         content: {
           pair: pair,
           token: token,
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -511,7 +519,7 @@ export default function ssLiquidityManage() {
 
     let error = false;
 
-    if (!amount0 || amount0 === "" || isNaN(amount0)) {
+    if (!amount0 || amount0 === "" || isNaN(+amount0)) {
       setAmount0Error("Amount 0 is required");
       error = true;
     } else {
@@ -531,7 +539,7 @@ export default function ssLiquidityManage() {
       }
     }
 
-    if (!amount1 || amount1 === "" || isNaN(amount1)) {
+    if (!amount1 || amount1 === "" || isNaN(+amount1)) {
       setAmount1Error("Amount 0 is required");
       error = true;
     } else {
@@ -564,7 +572,7 @@ export default function ssLiquidityManage() {
           amount1: amount1,
           minLiquidity: quote ? quote : "0",
           token: token,
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -576,7 +584,7 @@ export default function ssLiquidityManage() {
 
     let error = false;
 
-    if (!amount0 || amount0 === "" || isNaN(amount0)) {
+    if (!amount0 || amount0 === "" || isNaN(+amount0)) {
       setAmount0Error("Amount 0 is required");
       error = true;
     } else {
@@ -596,7 +604,7 @@ export default function ssLiquidityManage() {
       }
     }
 
-    if (!amount1 || amount1 === "" || isNaN(amount1)) {
+    if (!amount1 || amount1 === "" || isNaN(+amount1)) {
       setAmount1Error("Amount 0 is required");
       error = true;
     } else {
@@ -637,7 +645,7 @@ export default function ssLiquidityManage() {
           amount1: amount1,
           isStable: stable,
           token: token,
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -649,7 +657,7 @@ export default function ssLiquidityManage() {
 
     let error = false;
 
-    if (!amount0 || amount0 === "" || isNaN(amount0)) {
+    if (!amount0 || amount0 === "" || isNaN(+amount0)) {
       setAmount0Error("Amount 0 is required");
       error = true;
     } else {
@@ -669,7 +677,7 @@ export default function ssLiquidityManage() {
       }
     }
 
-    if (!amount1 || amount1 === "" || isNaN(amount1)) {
+    if (!amount1 || amount1 === "" || isNaN(+amount1)) {
       setAmount1Error("Amount 0 is required");
       error = true;
     } else {
@@ -710,7 +718,7 @@ export default function ssLiquidityManage() {
           amount1: amount1,
           isStable: stable,
           token: token,
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -735,7 +743,7 @@ export default function ssLiquidityManage() {
           token0: pair.token0,
           token1: pair.token1,
           quote: withdrawQuote,
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -746,7 +754,7 @@ export default function ssLiquidityManage() {
 
     let error = false;
 
-    if (!withdrawAmount || withdrawAmount === "" || isNaN(withdrawAmount)) {
+    if (!withdrawAmount || withdrawAmount === "" || isNaN(+withdrawAmount)) {
       setWithdrawAmountError("Amount is required");
       error = true;
     } else {
@@ -788,7 +796,7 @@ export default function ssLiquidityManage() {
           amount0: withdrawAmount0,
           amount1: withdrawAmount1,
           quote: withdrawQuote,
-          slippage: (slippage && slippage) != "" ? slippage : "2",
+          slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
     }
@@ -806,7 +814,7 @@ export default function ssLiquidityManage() {
         amount0: withdrawAmount0,
         amount1: withdrawAmount1,
         quote: withdrawQuote,
-        slippage: (slippage && slippage) != "" ? slippage : "2",
+        slippage: slippage && slippage != "" ? slippage : "2",
       },
     });
   };
@@ -822,10 +830,12 @@ export default function ssLiquidityManage() {
   };
 
   const toggleDeposit = () => {
+    if (depositLoading) return;
     setActiveTab("deposit");
   };
 
   const toggleWithdraw = () => {
+    if (depositLoading) return;
     setActiveTab("withdraw");
   };
 
@@ -963,24 +973,26 @@ export default function ssLiquidityManage() {
                   {logo && (
                     <img
                       className={classes.mediumdisplayAssetIcon}
-                      alt=''
+                      alt=""
                       src={logo}
-                      height='50px'
+                      height="50px"
                       onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/tokens/unknown-logo.png";
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src =
+                          "/tokens/unknown-logo.png";
                       }}
                     />
                   )}
                   {!logo && (
                     <img
                       className={classes.mediumdisplayAssetIcon}
-                      alt=''
+                      alt=""
                       src={"/tokens/unknown-logo.png"}
-                      height='50px'
+                      height="50px"
                       onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "/tokens/unknown-logo.png";
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src =
+                          "/tokens/unknown-logo.png";
                       }}
                     />
                   )}
@@ -990,7 +1002,7 @@ export default function ssLiquidityManage() {
           </div>
           <div className={classes.mediumInputAmount}>
             <TextField
-              placeholder='0.00'
+              placeholder="0.00"
               fullWidth
               value={value}
               disabled={true}
@@ -998,7 +1010,7 @@ export default function ssLiquidityManage() {
                 className: classes.mediumInput,
               }}
             />
-            <Typography color='textSecondary' className={classes.smallestText}>
+            <Typography color="textSecondary" className={classes.smallestText}>
               {symbol}
             </Typography>
           </div>
@@ -1072,7 +1084,7 @@ export default function ssLiquidityManage() {
           <div className={classes.massiveInputAmount}>
             <TextField
               inputRef={inputRef}
-              placeholder='0.00'
+              placeholder="0.00"
               fullWidth
               error={amountError}
               helperText={amountError}
@@ -1084,7 +1096,7 @@ export default function ssLiquidityManage() {
                 className: classes.largeInput,
               }}
             />
-            <Typography color='textSecondary' className={classes.smallerText}>
+            <Typography color="textSecondary" className={classes.smallerText}>
               {assetValue?.symbol}
             </Typography>
           </div>
@@ -1237,7 +1249,7 @@ export default function ssLiquidityManage() {
         </div>
         <div className={classes.disclaimerContainer}>
           <Typography className={classes.disclaimer}>
-            {"Please make sure to claim any rewards before withdrawing"}
+            "We are very sad to see you are no longer going with the FLOW"
           </Typography>
         </div>
       </div>
@@ -1249,15 +1261,14 @@ export default function ssLiquidityManage() {
       <div className={classes.textField}>
         <div className={classes.inputTitleContainerSlippage}>
           <div className={classes.inputBalanceSlippage}>
-            <Typography className={classes.inputBalanceText} noWrap>
-              {" "}
-              Slippage{" "}
+            <Typography className={classes.inputBalanceTextSlippage} noWrap>
+              Slippage
             </Typography>
           </div>
         </div>
         <div className={classes.smallInputContainer}>
           <TextField
-            placeholder='0.00'
+            placeholder="0.00"
             fullWidth
             error={amountError}
             helperText={amountError}
@@ -1271,7 +1282,7 @@ export default function ssLiquidityManage() {
             }
             InputProps={{
               className: classes.smallInput,
-              endAdornment: <InputAdornment position='end'>%</InputAdornment>,
+              endAdornment: <InputAdornment position="end">%</InputAdornment>,
             }}
           />
         </div>
@@ -1319,7 +1330,7 @@ export default function ssLiquidityManage() {
               fullWidth
               value={token}
               onChange={handleChange}
-              InputProps={{
+              inputProps={{
                 className: classes.mediumInput,
               }}
             >
@@ -1331,13 +1342,13 @@ export default function ssLiquidityManage() {
                         <Typography>Token #{option.id}</Typography>
                         <div>
                           <Typography
-                            align='right'
+                            align="right"
                             className={classes.smallerText}
                           >
                             {formatCurrency(option.lockValue)}
                           </Typography>
                           <Typography
-                            color='textSecondary'
+                            color="textSecondary"
                             className={classes.smallerText}
                           >
                             {veToken?.symbol}
@@ -1371,9 +1382,8 @@ export default function ssLiquidityManage() {
                     : classes.button
                 } ${classes.topLeftButton}`}
                 onClick={toggleDeposit}
-                disabled={depositLoading}
               >
-                <Typography variant='h5'>Deposit</Typography>
+                <Typography variant="h5">Deposit</Typography>
                 <div
                   className={`${
                     activeTab === "deposit" ? classes.activeIcon : ""
@@ -1389,9 +1399,8 @@ export default function ssLiquidityManage() {
                     : classes.button
                 }  ${classes.bottomLeftButton}`}
                 onClick={toggleWithdraw}
-                disabled={depositLoading}
               >
-                <Typography variant='h5'>Withdraw</Typography>
+                <Typography variant="h5">Withdraw</Typography>
                 <div
                   className={`${
                     activeTab === "withdraw" ? classes.activeIcon : ""
@@ -1402,7 +1411,7 @@ export default function ssLiquidityManage() {
           </Grid>
         </div>
         <div className={classes.titleSection}>
-          <Tooltip title='Back to Liquidity' placement='top'>
+          <Tooltip title="Back to Liquidity" placement="top">
             <IconButton className={classes.backButton} onClick={onBack}>
               <ArrowBack className={classes.backIcon} />
             </IconButton>
@@ -1490,34 +1499,34 @@ export default function ssLiquidityManage() {
             <FormControlLabel
               control={
                 <Switch
-                  size='small'
+                  size="small"
                   checked={advanced}
                   onChange={toggleAdvanced}
                   color={"primary"}
                 />
               }
               className={classes.some}
-              label='Advanced'
-              labelPlacement='start'
+              label="Advanced"
+              labelPlacement="start"
             />
           </div>
           {activeTab === "deposit" && (
             <div className={classes.actionsContainer}>
-              {pair == null &&
+              {pair === null &&
                 asset0 &&
-                asset0.isWhitelisted == true &&
+                asset0.isWhitelisted === true &&
                 asset1 &&
-                asset1.isWhitelisted == true && (
+                asset1.isWhitelisted === true && (
                   <>
                     <Button
-                      variant='contained'
-                      size='large'
+                      variant="contained"
+                      size="large"
                       className={
                         createLoading || depositLoading
                           ? classes.multiApprovalButton
                           : classes.buttonOverride
                       }
-                      color='primary'
+                      color="primary"
                       disabled={createLoading || depositLoading}
                       onClick={onCreateAndStake}
                     >
@@ -1534,14 +1543,14 @@ export default function ssLiquidityManage() {
                     {advanced && (
                       <>
                         <Button
-                          variant='contained'
-                          size='large'
+                          variant="contained"
+                          size="large"
                           className={
                             createLoading || depositLoading
                               ? classes.multiApprovalButton
                               : classes.buttonOverride
                           }
-                          color='primary'
+                          color="primary"
                           disabled={createLoading || depositLoading}
                           onClick={onCreateAndDeposit}
                         >
@@ -1561,23 +1570,23 @@ export default function ssLiquidityManage() {
                     )}
                   </>
                 )}
-              {pair == null &&
+              {pair === null &&
                 !(
                   asset0 &&
-                  asset0.isWhitelisted == true &&
+                  asset0.isWhitelisted === true &&
                   asset1 &&
-                  asset1.isWhitelisted == true
+                  asset1.isWhitelisted === true
                 ) && (
                   <>
                     <Button
-                      variant='contained'
-                      size='large'
+                      variant="contained"
+                      size="large"
                       className={
                         createLoading || depositLoading
                           ? classes.multiApprovalButton
                           : classes.buttonOverride
                       }
-                      color='primary'
+                      color="primary"
                       disabled={createLoading || depositLoading}
                       onClick={onCreateAndDeposit}
                     >
@@ -1600,8 +1609,8 @@ export default function ssLiquidityManage() {
                 pair && !(pair && pair.gauge && pair.gauge.address) && (
                   <>
                     <Button
-                      variant='contained'
-                      size='large'
+                      variant="contained"
+                      size="large"
                       className={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
@@ -1610,7 +1619,7 @@ export default function ssLiquidityManage() {
                           ? classes.multiApprovalButton
                           : classes.buttonOverride
                       }
-                      color='primary'
+                      color="primary"
                       disabled={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
@@ -1631,8 +1640,8 @@ export default function ssLiquidityManage() {
                     </Button>
                     {pair.token0.isWhitelisted && pair.token1.isWhitelisted && (
                       <Button
-                        variant='contained'
-                        size='large'
+                        variant="contained"
+                        size="large"
                         className={
                           createLoading ||
                           depositLoading ||
@@ -1641,7 +1650,7 @@ export default function ssLiquidityManage() {
                             ? classes.multiApprovalButton
                             : classes.buttonOverride
                         }
-                        color='primary'
+                        color="primary"
                         disabled={
                           createLoading ||
                           depositLoading ||
@@ -1669,8 +1678,8 @@ export default function ssLiquidityManage() {
                 pair && pair && pair.gauge && pair.gauge.address && (
                   <>
                     <Button
-                      variant='contained'
-                      size='large'
+                      variant="contained"
+                      size="large"
                       className={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
@@ -1679,7 +1688,7 @@ export default function ssLiquidityManage() {
                           ? classes.multiApprovalButton
                           : classes.buttonOverride
                       }
-                      color='primary'
+                      color="primary"
                       disabled={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
@@ -1701,8 +1710,8 @@ export default function ssLiquidityManage() {
                     {advanced && (
                       <>
                         <Button
-                          variant='contained'
-                          size='large'
+                          variant="contained"
+                          size="large"
                           className={
                             (amount0 === "" && amount1 === "") ||
                             depositLoading ||
@@ -1711,7 +1720,7 @@ export default function ssLiquidityManage() {
                               ? classes.multiApprovalButton
                               : classes.buttonOverride
                           }
-                          color='primary'
+                          color="primary"
                           disabled={
                             (amount0 === "" && amount1 === "") ||
                             depositLoading ||
@@ -1731,8 +1740,8 @@ export default function ssLiquidityManage() {
                           )}
                         </Button>
                         <Button
-                          variant='contained'
-                          size='large'
+                          variant="contained"
+                          size="large"
                           className={
                             BigNumber(pair.balance).eq(0) ||
                             depositLoading ||
@@ -1741,7 +1750,7 @@ export default function ssLiquidityManage() {
                               ? classes.multiApprovalButton
                               : classes.buttonOverride
                           }
-                          color='primary'
+                          color="primary"
                           disabled={
                             BigNumber(pair.balance).eq(0) ||
                             depositLoading ||
@@ -1775,9 +1784,9 @@ export default function ssLiquidityManage() {
             <div className={classes.actionsContainer}>
               {!(pair && pair.gauge && pair.gauge.address) && (
                 <Button
-                  variant='contained'
-                  size='large'
-                  color='primary'
+                  variant="contained"
+                  size="large"
+                  color="primary"
                   className={
                     depositLoading || withdrawAmount === ""
                       ? classes.multiApprovalButton
@@ -1800,9 +1809,9 @@ export default function ssLiquidityManage() {
               {pair && pair.gauge && pair.gauge.address && (
                 <>
                   <Button
-                    variant='contained'
-                    size='large'
-                    color='primary'
+                    variant="contained"
+                    size="large"
+                    color="primary"
                     className={
                       depositLoading ||
                       stakeLoading ||
@@ -1834,8 +1843,8 @@ export default function ssLiquidityManage() {
                   {advanced && (
                     <>
                       <Button
-                        variant='contained'
-                        size='large'
+                        variant="contained"
+                        size="large"
                         className={
                           withdrawAmount === "" ||
                           depositLoading ||
@@ -1844,7 +1853,7 @@ export default function ssLiquidityManage() {
                             ? classes.multiApprovalButton
                             : classes.buttonOverride
                         }
-                        color='primary'
+                        color="primary"
                         disabled={
                           withdrawAmount === "" ||
                           depositLoading ||
@@ -1864,8 +1873,8 @@ export default function ssLiquidityManage() {
                         )}
                       </Button>
                       <Button
-                        variant='contained'
-                        size='large'
+                        variant="contained"
+                        size="large"
                         className={
                           BigNumber(pair.balance).eq(0) ||
                           depositLoading ||
@@ -1874,7 +1883,7 @@ export default function ssLiquidityManage() {
                             ? classes.multiApprovalButton
                             : classes.buttonOverride
                         }
-                        color='primary'
+                        color="primary"
                         disabled={
                           BigNumber(pair.balance).eq(0) ||
                           depositLoading ||
@@ -1924,8 +1933,9 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
     setOpen(true);
   };
 
-  useEffect(
-    async function () {
+  // TODO this useEffect needs to be refactored.
+  useEffect(() => {
+    const filter = async () => {
       let ao = assetOptions
         .filter((asset) => {
           if (search && search !== "") {
@@ -1951,16 +1961,15 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
       //no options in our default list and its an address we search for the address
       if (ao.length === 0 && search && search.length === 42) {
         const baseAsset = await stores.stableSwapStore.getBaseAsset(
-          event.target.value,
+          search,
           true,
           true
         );
       }
-
-      return () => {};
-    },
-    [assetOptions, search]
-  );
+    };
+    filter();
+    return () => {};
+  }, [assetOptions, search]);
 
   const onSearchChanged = async (event) => {
     setSearch(event.target.value);
@@ -1994,7 +2003,6 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   const renderManageOption = (type, asset, idx) => {
     return (
       <MenuItem
-        val={asset.address}
         key={asset.address + "_" + idx}
         className={classes.assetSelectMenu}
       >
@@ -2002,19 +2010,19 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           <div className={classes.displayDualIconContainerSmall}>
             <img
               className={classes.displayAssetIconSmall}
-              alt=''
+              alt=""
               src={asset ? `${asset.logoURI}` : ""}
-              height='60px'
+              height="60px"
               onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/tokens/unknown-logo.png";
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
               }}
             />
           </div>
         </div>
         <div className={classes.assetSelectIconName}>
-          <Typography variant='h5'>{asset ? asset.symbol : ""}</Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
+          <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
+          <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
@@ -2041,7 +2049,6 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   const renderAssetOption = (type, asset, idx) => {
     return (
       <MenuItem
-        val={asset.address}
         key={asset.address + "_" + idx}
         className={classes.assetSelectMenu}
         onClick={() => {
@@ -2052,27 +2059,27 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           <div className={classes.displayDualIconContainerSmall}>
             <img
               className={classes.displayAssetIconSmall}
-              alt=''
+              alt=""
               src={asset ? `${asset.logoURI}` : ""}
-              height='60px'
+              height="60px"
               onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/tokens/unknown-logo.png";
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
               }}
             />
           </div>
         </div>
         <div className={classes.assetSelectIconName}>
-          <Typography variant='h5'>{asset ? asset.symbol : ""}</Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
+          <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
+          <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
         <div className={classes.assetSelectBalance}>
-          <Typography variant='h5'>
+          <Typography variant="h5">
             {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
           </Typography>
-          <Typography variant='subtitle1' color='textSecondary'>
+          <Typography variant="subtitle1" color="textSecondary">
             {"Balance"}
           </Typography>
         </div>
@@ -2087,14 +2094,14 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           <div className={classes.searchInline}>
             <TextField
               autoFocus
-              variant='outlined'
+              variant="outlined"
               fullWidth
-              placeholder='CANTO, MIM, 0x...'
+              placeholder="CANTO, MIM, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position='start'>
+                  <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
                 ),
@@ -2127,14 +2134,14 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           <div className={classes.searchInline}>
             <TextField
               autoFocus
-              variant='outlined'
+              variant="outlined"
               fullWidth
-              placeholder='CANTO, MIM, 0x...'
+              placeholder="CANTO, MIM, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position='start'>
+                  <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
                 ),
@@ -2167,7 +2174,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   };
 
   return (
-    <React.Fragment>
+    <>
       <div
         className={classes.displaySelectContainer}
         onClick={() => {
@@ -2178,12 +2185,12 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           <div className={classes.displayDualIconContainer}>
             <img
               className={classes.displayAssetIcon}
-              alt=''
+              alt=""
               src={value ? `${value.logoURI}` : ""}
-              height='100px'
+              height="100px"
               onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/tokens/unknown-logo.png";
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
               }}
             />
           </div>
@@ -2191,12 +2198,12 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
       </div>
       <Dialog
         onClose={onClose}
-        aria-labelledby='simple-dialog-title'
+        aria-labelledby="simple-dialog-title"
         open={open}
       >
         {!manageLocal && renderOptions()}
         {manageLocal && renderManageLocal()}
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
