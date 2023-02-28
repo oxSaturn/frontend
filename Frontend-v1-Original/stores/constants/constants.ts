@@ -24,7 +24,7 @@ if (isGoerli) {
   scan = "https://goerli.arbiscan.io/";
   cont = contractsTestnet;
 } else if (isCanto) {
-  scan = "https://evm.explorer.canto.io/";
+  scan = "https://tuber.build/";
   cont = contractsCanto;
   nativeETH = {
     address: cont.CANTO_ADDRESS,

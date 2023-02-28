@@ -156,7 +156,7 @@
   width: 100%;
   align-items: center;
   background: #272826;
-  padding: 0 20px;
+  padding-left: 20px;
 }
 
 .mediumInputAssetSelect {
@@ -185,7 +185,6 @@
   align-items: center !important;
   justify-content: space-between !important;
   width: calc(100% - 24px);
-  padding: 6px 12px;
 }
 
 .smallerText {
