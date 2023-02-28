@@ -130,7 +130,7 @@
   {
     "address": "0x7264610A66EcA758A8ce95CF11Ff5741E1fd0455",
     "chainId": 7700,
-    "decimals": 6,
+    "decimals": 18,
     "logoURI": "https://assets.slingshot.finance/icons/canto_0x7264610a66eca758a8ce95cf11ff5741e1fd0455",
     "name": "CINU",
     "symbol": "CINU"

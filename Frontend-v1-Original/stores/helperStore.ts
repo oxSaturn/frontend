@@ -26,6 +26,11 @@ class Helper {
   private dexScrennerEndpoint = "https://api.dexscreener.com/latest/dex/tokens";
   private dexGuruEndpoint =
     "https://api.dev.dex.guru/v1/chain/10/tokens/%/market";
+  tokenPricesMap = new Map<string, number>();
+
+  get getTokenPricesMap() {
+    return this.tokenPricesMap;
+  }
 
   _getProtocolTvlDefiLlama = async () => {
     const data = await fetch(`${this.defiLlamaBaseUrl}/protocol/velocimeter`);
@@ -56,7 +61,17 @@ class Helper {
     }
   };
 
-  _getTokenPrice = async (token: RouteAsset) => {
+  updateTokenPrice = async (token: RouteAsset) => {
+    if (this.tokenPricesMap.has(token.address)) {
+      return this.tokenPricesMap.get(token.address);
+    }
+
+    const price = await this._getTokenPrice(token);
+    this.tokenPricesMap.set(token.address, price);
+    return price;
+  };
+
+  protected _getTokenPrice = async (token: RouteAsset) => {
     let price = 0;
 
     price = await this._getAggregatedPriceInStables(token);
@@ -68,7 +83,6 @@ class Helper {
     // if (price === 0) {
     //   price = await this._getDebankPriceInStables(token);
     // }
-
     return price;
   };
 
