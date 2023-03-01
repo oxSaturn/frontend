@@ -34,9 +34,10 @@ class Helper {
     return this.tokenPricesMap;
   }
 
-  setTokenPricesMap = async (tokenPrices: Map<string, number>) => {
-    this.tokenPricesMap = tokenPrices;
-  };
+  // TODO: understand token prices in python
+  // setTokenPricesMap = async (tokenPrices: Map<string, number>) => {
+  //   this.tokenPricesMap = tokenPrices;
+  // };
 
   getProtocolDefiLlama = async () => {
     const data = await fetch(`${this.defiLlamaBaseUrl}/protocol/velocimeter`);
@@ -67,7 +68,7 @@ class Helper {
     }
   };
 
-  protected _updateTokenPrice = async (token: TokenForPrice) => {
+  updateTokenPrice = async (token: TokenForPrice) => {
     if (this.tokenPricesMap.has(token.address.toLowerCase())) {
       return this.tokenPricesMap.get(token.address.toLowerCase());
     }
@@ -113,7 +114,7 @@ class Helper {
 
   getMarketCap = async () => {
     const circulatingSupply = await this.getCirculatingSupply();
-    const price = await this._updateTokenPrice({
+    const price = await this.updateTokenPrice({
       address: CONTRACTS.GOV_TOKEN_ADDRESS,
       decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
       symbol: CONTRACTS.GOV_TOKEN_SYMBOL,

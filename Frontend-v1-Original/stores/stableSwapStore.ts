@@ -1348,26 +1348,27 @@ class Store {
       this.emitter.emit(ACTIONS.UPDATED);
 
       // TODO make api calculate valid token prices and send it pack to us so we can just assign it
-      const tokensPricesMap = new Map<string, number>();
+      const tokensPricesMap = new Map<string, RouteAsset>();
       for (const pair of ps) {
         if (pair.gauge?.bribes) {
           for (const bribe of pair.gauge.bribes) {
             if (bribe.token) {
               tokensPricesMap.set(
                 bribe.token.address.toLowerCase(),
-                bribe.token.price
+                bribe.token
               );
             }
           }
         }
       }
 
-      stores.helper.setTokenPricesMap(tokensPricesMap);
-      // await Promise.all(
-      //   [...tokensMap.values()].map(
-      //     async (token) => await stores.helper.updateTokenPrice(token)
-      //   )
-      // );
+      // TODO understand api token prices
+      // stores.helper.setTokenPricesMap(tokensPricesMap);
+      await Promise.all(
+        [...tokensPricesMap.values()].map(
+          async (token) => await stores.helper.updateTokenPrice(token)
+        )
+      );
 
       const ps1 = await Promise.all(
         ps.map(async (pair) => {
