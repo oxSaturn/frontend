@@ -1330,7 +1330,8 @@ export default function ssLiquidityManage() {
               fullWidth
               value={token}
               onChange={handleChange}
-              inputProps={{
+              // @ts-expect-error This is because of how material-ui works
+              InputProps={{
                 className: classes.mediumInput,
               }}
             >

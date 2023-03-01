@@ -48,6 +48,7 @@ class Store {
       bribes: any[];
       fees: any[];
       rewards: any[];
+      veDist: any[];
     };
     updateDate: number;
     tvl: number;
@@ -69,6 +70,7 @@ class Store {
         bribes: [],
         fees: [],
         rewards: [],
+        veDist: [],
       },
       updateDate: 0,
       tvl: 0,
@@ -5231,9 +5233,17 @@ class Store {
         }),
       ];
 
-      let veDistReward = [];
+      let veDistReward: {
+        token: VestNFT;
+        lockToken: VeToken;
+        rewardToken: Omit<BaseAsset, "local"> & {
+          balanceOf: string;
+        };
+        earned: string;
+        rewardType: "Distribution";
+      }[] = [];
 
-      let filteredBribes = [];
+      let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
 
       if (tokenID) {
         const bribesEarned = await Promise.all(
@@ -5313,18 +5323,18 @@ class Store {
           });
         }
       }
-
-      const filteredFees = [];
-      for (let i = 0; i < pairs.length; i++) {
-        let pair = Object.assign({}, pairs[i]);
-        if (
-          BigNumber(pair.claimable0).gt(0) ||
-          BigNumber(pair.claimable1).gt(0)
-        ) {
-          pair.rewardType = "Fees";
-          filteredFees.push(pair);
-        }
-      }
+      // TODO we probably dont even need claimable any more
+      // const filteredFees: Pair[] = []; // Pair with rewardType set to "Fees"
+      // for (let i = 0; i < pairs.length; i++) {
+      //   let pair = Object.assign({}, pairs[i]);
+      //   if (
+      //     BigNumber(pair.claimable0).gt(0) ||
+      //     BigNumber(pair.claimable1).gt(0)
+      //   ) {
+      //     pair.rewardType = "Fees";
+      //     filteredFees.push(pair);
+      //   }
+      // }
 
       const rewardsEarned = await Promise.all(
         filteredPairs2.map(async (pair) => {
@@ -5346,7 +5356,7 @@ class Store {
         })
       );
 
-      const filteredRewards = [];
+      const filteredRewards: Pair[] = []; // Pair with rewardType set to "Reward"
       for (let j = 0; j < rewardsEarned.length; j++) {
         let pair = Object.assign({}, rewardsEarned[j]);
         if (
@@ -5359,14 +5369,14 @@ class Store {
         }
       }
 
-      console.log(filteredBribes);
-      console.log(filteredFees);
-      console.log(filteredRewards);
-      console.log(veDistReward);
+      // console.log(filteredBribes, "<< filtered bribes");
+      // console.log(filteredFees, "<< fees");
+      // console.log(filteredRewards, "<< rewards");
+      // console.log(veDistReward, "<< dist rewards");
 
       const rewards = {
         bribes: filteredBribes,
-        fees: filteredFees,
+        // fees: filteredFees,
         rewards: filteredRewards,
         veDist: veDistReward,
       };
@@ -5472,7 +5482,7 @@ class Store {
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
-      let feeClaimTXIDs = [];
+      // let feeClaimTXIDs = [];
       let rewardClaimTXIDs = [];
       let distributionClaimTXIDs = [];
 
@@ -5480,9 +5490,9 @@ class Store {
         return pair.rewardType === "Bribe";
       });
 
-      let feePairs = pairs.filter((pair) => {
-        return pair.rewardType === "Fees";
-      });
+      // let feePairs = pairs.filter((pair) => {
+      //   return pair.rewardType === "Fees";
+      // });
 
       let rewardPairs = pairs.filter((pair) => {
         return pair.rewardType === "Reward";
@@ -5503,7 +5513,7 @@ class Store {
 
       if (
         bribePairs.length == 0 &&
-        feePairs.length == 0 &&
+        // feePairs.length == 0 &&
         rewardPairs.length == 0
       ) {
         this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
@@ -5525,18 +5535,18 @@ class Store {
         });
       }
 
-      if (feePairs.length > 0) {
-        for (let i = 0; i < feePairs.length; i++) {
-          const newClaimTX = this.getTXUUID();
+      // if (feePairs.length > 0) {
+      //   for (let i = 0; i < feePairs.length; i++) {
+      //     const newClaimTX = this.getTXUUID();
 
-          feeClaimTXIDs.push(newClaimTX);
-          sendOBJ.transactions.push({
-            uuid: newClaimTX,
-            description: `Claiming fees for ${feePairs[i].symbol}`,
-            status: "WAITING",
-          });
-        }
-      }
+      //     feeClaimTXIDs.push(newClaimTX);
+      //     sendOBJ.transactions.push({
+      //       uuid: newClaimTX,
+      //       description: `Claiming fees for ${feePairs[i].symbol}`,
+      //       status: "WAITING",
+      //     });
+      //   }
+      // }
 
       if (rewardPairs.length > 0) {
         for (let i = 0; i < rewardPairs.length; i++) {
@@ -5600,38 +5610,38 @@ class Store {
         await Promise.all([claimPromise]);
       }
 
-      if (feePairs.length > 0) {
-        for (let i = 0; i < feePairs.length; i++) {
-          const pairContract = new web3.eth.Contract(
-            CONTRACTS.PAIR_ABI as AbiItem[],
-            feePairs[i].address
-          );
+      // if (feePairs.length > 0) {
+      //   for (let i = 0; i < feePairs.length; i++) {
+      //     const pairContract = new web3.eth.Contract(
+      //       CONTRACTS.PAIR_ABI as AbiItem[],
+      //       feePairs[i].address
+      //     );
 
-          const claimPromise = new Promise<void>((resolve, reject) => {
-            context._callContractWait(
-              web3,
-              pairContract,
-              "claimFees",
-              [],
-              account,
-              gasPrice,
-              null,
-              null,
-              feeClaimTXIDs[i],
-              (err) => {
-                if (err) {
-                  reject(err);
-                  return;
-                }
+      //     const claimPromise = new Promise<void>((resolve, reject) => {
+      //       context._callContractWait(
+      //         web3,
+      //         pairContract,
+      //         "claimFees",
+      //         [],
+      //         account,
+      //         gasPrice,
+      //         null,
+      //         null,
+      //         feeClaimTXIDs[i],
+      //         (err) => {
+      //           if (err) {
+      //             reject(err);
+      //             return;
+      //           }
 
-                resolve();
-              }
-            );
-          });
+      //           resolve();
+      //         }
+      //       );
+      //     });
 
-          await Promise.all([claimPromise]);
-        }
-      }
+      //     await Promise.all([claimPromise]);
+      //   }
+      // }
 
       if (rewardPairs.length > 0) {
         for (let i = 0; i < rewardPairs.length; i++) {
