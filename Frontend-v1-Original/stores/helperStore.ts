@@ -102,10 +102,15 @@ class Helper {
       .balanceOf(CONTRACTS.MSIG_ADDRESS)
       .call();
 
+    const flowInTimelockerController = await flowContract.methods
+      .balanceOf("0xd0cC9738866cd82B237A14c92ac60577602d6c18")
+      .call();
+
     const circulatingSupply = BigNumber(totalSupply)
       .minus(BigNumber(lockedSupply))
       .minus(BigNumber(flowInMinter))
       .minus(BigNumber(flowInMsig))
+      .minus(BigNumber(flowInTimelockerController))
       .div(10 ** NATIVE_TOKEN.decimals)
       .toNumber();
 
