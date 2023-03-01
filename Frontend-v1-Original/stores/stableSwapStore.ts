@@ -52,6 +52,8 @@ class Store {
     };
     updateDate: number;
     tvl: number;
+    circulatingSupply: number;
+    marketCap: number;
   };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
@@ -74,6 +76,8 @@ class Store {
       },
       updateDate: 0,
       tvl: 0,
+      circulatingSupply: 0,
+      marketCap: 0,
     };
 
     dispatcher.register(
@@ -1002,8 +1006,14 @@ class Store {
       this.setStore({ routeAssets: await this._getRouteAssets() });
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
-      this.setStore({ updateDate: await stores.helper._getActivePeriod() });
-      this.setStore({ tvl: await stores.helper._getCurrentTvl() });
+      this.setStore({ updateDate: await stores.helper.getActivePeriod() });
+      this.setStore({ tvl: await stores.helper.getCurrentTvl() });
+      this.setStore({
+        circulatingSupply: await stores.helper.getCirculatingSupply(), // TODO move to api
+      });
+      this.setStore({
+        marketCap: await stores.helper.getMarketCap(), // TODO move to api
+      });
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
@@ -1338,21 +1348,26 @@ class Store {
       this.emitter.emit(ACTIONS.UPDATED);
 
       // TODO make api calculate valid token prices and send it pack to us so we can just assign it
-      const tokensMap = new Map<string, RouteAsset>();
+      const tokensPricesMap = new Map<string, number>();
       for (const pair of ps) {
         if (pair.gauge?.bribes) {
           for (const bribe of pair.gauge.bribes) {
             if (bribe.token) {
-              tokensMap.set(bribe.token.address, bribe.token);
+              tokensPricesMap.set(
+                bribe.token.address.toLowerCase(),
+                bribe.token.price
+              );
             }
           }
         }
       }
-      await Promise.all(
-        [...tokensMap.values()].map(
-          async (token) => await stores.helper.updateTokenPrice(token)
-        )
-      );
+
+      stores.helper.setTokenPricesMap(tokensPricesMap);
+      // await Promise.all(
+      //   [...tokensMap.values()].map(
+      //     async (token) => await stores.helper.updateTokenPrice(token)
+      //   )
+      // );
 
       const ps1 = await Promise.all(
         ps.map(async (pair) => {
@@ -1394,7 +1409,7 @@ class Store {
               const bribes = pair.gauge.bribes.map((bribe) => {
                 bribe.rewardAmount = bribe.rewardAmmount;
                 bribe.tokenPrice = stores.helper.getTokenPricesMap.get(
-                  bribe.token.address
+                  bribe.token.address.toLowerCase()
                 );
                 return bribe;
               });
@@ -1413,7 +1428,7 @@ class Store {
                   (asset) => asset.symbol === "FLOW"
                 )[0];
                 const flowPrice = stores.helper.getTokenPricesMap.get(
-                  token.address
+                  token.address.toLowerCase()
                 );
 
                 votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
@@ -5250,7 +5265,6 @@ class Store {
           filteredPairs.map(async (pair) => {
             const bribesEarned = await Promise.all(
               pair.gauge.bribes.map(async (bribe) => {
-                // FIXME: this is external bribe in python and internal in express
                 const bribeContract = new web3.eth.Contract(
                   CONTRACTS.BRIBE_ABI as AbiItem[],
                   pair.gauge.wrapped_bribe_address

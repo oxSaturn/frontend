@@ -149,8 +149,8 @@ const switchChain = async () => {
                 "https://jsonrpc.canto.nodestake.top/",
               ],
               blockExplorerUrls: [
-                "https://evm.explorer.canto.io/",
                 "https://tuber.build/",
+                "https://evm.explorer.canto.io/",
               ],
             },
           ],

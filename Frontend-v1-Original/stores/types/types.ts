@@ -21,6 +21,12 @@ interface RouteAsset {
   logoURI?: null | string;
 }
 
+type TokenForPrice = Omit<
+  RouteAsset,
+  "price" | "nativeChainAddress" | "nativeChainId" | "name" | "logoURI"
+> &
+  Partial<RouteAsset>;
+
 type VeToken = Omit<BaseAsset, "balance" | "local">;
 
 interface VestNFT {
@@ -121,6 +127,7 @@ interface GeneralContracts {
   TOKEN_ABI: any[];
   MULTICALL_ADDRESS: string;
   STABLE_TOKEN_ADDRESS: string;
+  MSIG_ADDRESS: string;
 }
 
 interface TestnetContracts extends GeneralContracts {
@@ -240,6 +247,7 @@ export type {
   BaseAsset,
   Pair,
   RouteAsset,
+  TokenForPrice,
   Contracts,
   TestnetContracts,
   CantoContracts,

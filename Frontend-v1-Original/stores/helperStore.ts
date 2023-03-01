@@ -1,12 +1,14 @@
-import stores from ".";
-import { CONTRACTS } from "./constants/constants";
 import type { AbiItem } from "web3-utils";
+import BigNumber from "bignumber.js";
+
+import stores from ".";
+import { CONTRACTS, NATIVE_TOKEN } from "./constants/constants";
+
 import {
   DefiLlamaTokenPrice,
   DexScrennerPair,
-  RouteAsset,
+  TokenForPrice,
 } from "./types/types";
-import BigNumber from "bignumber.js";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;
@@ -26,25 +28,29 @@ class Helper {
   private dexScrennerEndpoint = "https://api.dexscreener.com/latest/dex/tokens";
   private dexGuruEndpoint =
     "https://api.dev.dex.guru/v1/chain/10/tokens/%/market";
-  tokenPricesMap = new Map<string, number>();
+  private tokenPricesMap = new Map<string, number>();
 
   get getTokenPricesMap() {
     return this.tokenPricesMap;
   }
 
-  _getProtocolTvlDefiLlama = async () => {
+  setTokenPricesMap = async (tokenPrices: Map<string, number>) => {
+    this.tokenPricesMap = tokenPrices;
+  };
+
+  getProtocolDefiLlama = async () => {
     const data = await fetch(`${this.defiLlamaBaseUrl}/protocol/velocimeter`);
     const json = await data.json();
     return json as unknown;
   };
 
-  _getCurrentTvl = async () => {
+  getCurrentTvl = async () => {
     const response = await fetch(`${this.defiLlamaBaseUrl}/tvl/velocimeter`);
     const json = await response.json();
     return json as number;
   };
 
-  _getActivePeriod = async () => {
+  getActivePeriod = async () => {
     try {
       const web3 = await stores.accountStore.getWeb3Provider();
       const minterContract = new web3.eth.Contract(
@@ -61,17 +67,61 @@ class Helper {
     }
   };
 
-  updateTokenPrice = async (token: RouteAsset) => {
-    if (this.tokenPricesMap.has(token.address)) {
-      return this.tokenPricesMap.get(token.address);
+  protected _updateTokenPrice = async (token: TokenForPrice) => {
+    if (this.tokenPricesMap.has(token.address.toLowerCase())) {
+      return this.tokenPricesMap.get(token.address.toLowerCase());
     }
 
     const price = await this._getTokenPrice(token);
-    this.tokenPricesMap.set(token.address, price);
+    this.tokenPricesMap.set(token.address.toLowerCase(), price);
     return price;
   };
 
-  protected _getTokenPrice = async (token: RouteAsset) => {
+  getCirculatingSupply = async () => {
+    const web3 = await stores.accountStore.getWeb3Provider();
+    if (!web3) return;
+
+    const flowContract = new web3.eth.Contract(
+      CONTRACTS.GOV_TOKEN_ABI,
+      CONTRACTS.GOV_TOKEN_ADDRESS
+    );
+    const totalSupply = await flowContract.methods.totalSupply().call();
+
+    const lockedFlowContract = new web3.eth.Contract(
+      CONTRACTS.VE_TOKEN_ABI,
+      CONTRACTS.VE_TOKEN_ADDRESS
+    );
+    const lockedSupply = await lockedFlowContract.methods.totalSupply().call();
+
+    const flowInMinter = await flowContract.methods
+      .balanceOf(CONTRACTS.MINTER_ADDRESS)
+      .call();
+
+    const flowInMsig = await flowContract.methods
+      .balanceOf(CONTRACTS.MSIG_ADDRESS)
+      .call();
+
+    const circulatingSupply = BigNumber(totalSupply)
+      .minus(BigNumber(lockedSupply))
+      .minus(BigNumber(flowInMinter))
+      .minus(BigNumber(flowInMsig))
+      .div(10 ** NATIVE_TOKEN.decimals)
+      .toNumber();
+
+    return circulatingSupply;
+  };
+
+  getMarketCap = async () => {
+    const circulatingSupply = await this.getCirculatingSupply();
+    const price = await this._updateTokenPrice({
+      address: CONTRACTS.GOV_TOKEN_ADDRESS,
+      decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
+      symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
+    });
+    return circulatingSupply * price;
+  };
+
+  protected _getTokenPrice = async (token: TokenForPrice) => {
     let price = 0;
 
     price = await this._getAggregatedPriceInStables(token);
@@ -86,7 +136,7 @@ class Helper {
     return price;
   };
 
-  protected _getAggregatedPriceInStables = async (token: RouteAsset) => {
+  protected _getAggregatedPriceInStables = async (token: TokenForPrice) => {
     const price = await this._getDefillamaPriceInStables(token);
 
     if (price !== 0) {
@@ -101,7 +151,7 @@ class Helper {
     }
   };
 
-  protected _getDefillamaPriceInStables = async (token: RouteAsset) => {
+  protected _getDefillamaPriceInStables = async (token: TokenForPrice) => {
     if (token.address === CONTRACTS.STABLE_TOKEN_ADDRESS) {
       return 1.0;
     }
@@ -120,7 +170,7 @@ class Helper {
     return 0;
   };
 
-  protected _getChainPriceInStables = async (token: RouteAsset) => {
+  protected _getChainPriceInStables = async (token: TokenForPrice) => {
     const web3 = await stores.accountStore.getWeb3Provider();
 
     if (!web3) return 0;
@@ -146,14 +196,14 @@ class Helper {
         )
         .call();
       return BigNumber(amountOutFromContract.amount)
-        .div(BigNumber(10).pow(token.decimals))
+        .div(BigNumber(10).pow(6)) //stablecoin decimals
         .toNumber();
     } catch (ex) {
       return 0;
     }
   };
 
-  protected _getDebankPriceInStables = async (token: RouteAsset) => {
+  protected _getDebankPriceInStables = async (token: TokenForPrice) => {
     if (token.address === CONTRACTS.STABLE_TOKEN_ADDRESS) {
       return 1.0;
     }
@@ -167,7 +217,7 @@ class Helper {
     return 0;
   };
 
-  protected _getDexscreenerPriceInStables = async (token: RouteAsset) => {
+  protected _getDexscreenerPriceInStables = async (token: TokenForPrice) => {
     if (token.address === CONTRACTS.STABLE_TOKEN_ADDRESS) {
       return 1.0;
     }
@@ -178,7 +228,7 @@ class Helper {
     const json = await res.json();
     const pairs = json.pairs as DexScrennerPair[];
 
-    if (pairs.length === 0) {
+    if (pairs?.length === 0) {
       return 0;
     }
 
@@ -191,7 +241,7 @@ class Helper {
 
     const price = sortedPairs.filter(
       (pair) => pair.baseToken.symbol === token.symbol
-    )[0].priceUsd;
+    )[0]?.priceUsd;
 
     return parseFloat(price);
   };
