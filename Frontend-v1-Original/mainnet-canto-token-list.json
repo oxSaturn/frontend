@@ -82,7 +82,7 @@
   {
     "address": "0x1D54EcB8583Ca25895c512A8308389fFD581F9c9",
     "chainId": 7700,
-    "decimals": 6,
+    "decimals": 18,
     "logoURI": "https://app.osmosis.zone/_next/image?url=%2Ftokens%2Finj.svg&w=64&q=75",
     "name": "INJ",
     "symbol": "INJ"
@@ -142,5 +142,13 @@
     "logoURI": "https://teal-working-newt-713.mypinata.cloud/ipfs/QmRX9dYrNkGv9379n4ksma3AM8w14f8ofe25yvqF8Th8dX/1.png",
     "name": "CBONK",
     "symbol": "CBONK"
+  },
+  {
+    "address": "0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "",
+    "name": "ETH",
+    "symbol": "ETH"
   }
 ]
