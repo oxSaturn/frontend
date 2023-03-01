@@ -63,12 +63,12 @@ function Setup() {
 
   const usdDiff = useMemo(() => {
     if (
-      !(
-        fromAmountValueUsd &&
-        fromAmountValueUsd !== "" &&
-        toAmountValueUsd &&
-        toAmountValueUsd !== ""
-      )
+      fromAmountValueUsd &&
+      fromAmountValueUsd === "" &&
+      toAmountValueUsd &&
+      toAmountValueUsd === "" &&
+      (parseFloat(fromAmountValueUsd) === 0 ||
+        parseFloat(toAmountValueUsd) === 0)
     )
       return "";
     if (parseFloat(fromAmountValueUsd) === parseFloat(toAmountValueUsd)) return;
@@ -279,7 +279,12 @@ function Setup() {
       setQuoteError("No support for wrapping/unwrapping WCANTO yet");
       return;
     }
-    if (amount !== "" && !isNaN(+amount) && to != null && parseFloat(amount) !== 0) {
+    if (
+      amount !== "" &&
+      !isNaN(+amount) &&
+      to != null &&
+      parseFloat(amount) !== 0
+    ) {
       setQuoteLoading(true);
       setQuoteError(false);
 
