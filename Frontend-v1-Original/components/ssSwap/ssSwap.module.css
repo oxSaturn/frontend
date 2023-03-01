@@ -186,6 +186,11 @@
   cursor: pointer;
 }
 
+.usdContainer {
+  bottom: 8px;
+  top: unset;
+}
+
 .inputTitle {
   padding-bottom: 6px;
   margin-left: 12px;

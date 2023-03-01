@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   TextField,
   Typography,
@@ -23,7 +23,11 @@ import { formatCurrency } from "../../utils/utils";
 import classes from "./ssSwap.module.css";
 
 import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
+import {
+  ACTIONS,
+  ETHERSCAN_URL,
+  W_NATIVE_ADDRESS,
+} from "../../stores/constants/constants";
 import BigNumber from "bignumber.js";
 import type { BaseAsset } from "../../stores/types/types";
 
@@ -36,12 +40,14 @@ function Setup() {
   const [approvalLoading, setApprovalLoading] = useState(false);
 
   const [fromAmountValue, setFromAmountValue] = useState("");
+  const [fromAmountValueUsd, setFromAmountValueUsd] = useState("");
   const [fromAmountError, setFromAmountError] = useState<false | string>(false);
   const [fromAssetValue, setFromAssetValue] = useState<BaseAsset>(null);
   const [fromAssetError, setFromAssetError] = useState<false | string>(false);
   const [fromAssetOptions, setFromAssetOptions] = useState<BaseAsset[]>([]);
 
   const [toAmountValue, setToAmountValue] = useState("");
+  const [toAmountValueUsd, setToAmountValueUsd] = useState("");
   const [toAmountError, setToAmountError] = useState(false);
   const [toAssetValue, setToAssetValue] = useState<BaseAsset>(null);
   const [toAssetError, setToAssetError] = useState(false);
@@ -52,6 +58,40 @@ function Setup() {
 
   const [quoteError, setQuoteError] = useState(null);
   const [quote, setQuote] = useState(null);
+
+  const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
+
+  const usdDiff = useMemo(() => {
+    if (
+      !(
+        fromAmountValueUsd &&
+        fromAmountValueUsd !== "" &&
+        toAmountValueUsd &&
+        toAmountValueUsd !== ""
+      )
+    )
+      return "";
+    if (parseFloat(fromAmountValueUsd) === parseFloat(toAmountValueUsd)) return;
+    if (parseFloat(fromAmountValueUsd) === parseFloat(toAmountValueUsd)) return;
+    fromAmountValueUsd &&
+      fromAmountValueUsd !== "" &&
+      toAmountValueUsd &&
+      toAmountValueUsd !== "";
+
+    const increase =
+      ((parseFloat(toAmountValueUsd) - parseFloat(fromAmountValueUsd)) /
+        parseFloat(fromAmountValueUsd)) *
+      100;
+    const decrease =
+      ((parseFloat(fromAmountValueUsd) - parseFloat(toAmountValueUsd)) /
+        parseFloat(fromAmountValueUsd)) *
+      100;
+    const diff =
+      parseFloat(fromAmountValueUsd) > parseFloat(toAmountValueUsd)
+        ? -1 * decrease
+        : increase;
+    return diff.toFixed(2);
+  }, [fromAmountValueUsd, toAmountValueUsd]);
 
   useEffect(
     function () {
@@ -66,6 +106,7 @@ function Setup() {
           setQuoteLoading(false);
           setQuote(null);
           setToAmountValue("");
+          setToAmountValueUsd("");
           setQuoteError(
             "Insufficient liquidity or no route available to complete swap"
           );
@@ -82,6 +123,7 @@ function Setup() {
           if (BigNumber(val.output.finalValue).eq(0)) {
             setQuote(null);
             setToAmountValue("");
+            setToAmountValueUsd("");
             setQuoteError(
               "Insufficient liquidity or no route available to complete swap"
             );
@@ -89,12 +131,21 @@ function Setup() {
           }
 
           setToAmountValue(BigNumber(val.output.finalValue).toFixed(8));
+          const toAddressLookUp =
+            val.inputs.toAsset.address === "CANTO"
+              ? W_NATIVE_ADDRESS.toLowerCase()
+              : val.inputs.toAsset.address.toLowerCase();
+          const toUsdValue = BigNumber(val.output.finalValue)
+            .multipliedBy(tokenPrices.get(toAddressLookUp))
+            .toFixed(2);
+          setToAmountValueUsd(toUsdValue);
           setQuote(val);
         }
       };
 
       const ssUpdated = () => {
         const swapAssets = stores.stableSwapStore.getStore("swapAssets");
+        const tokenPrices = stores.helper.getTokenPricesMap;
 
         setToAssetOptions(swapAssets);
         setFromAssetOptions(swapAssets);
@@ -105,6 +156,10 @@ function Setup() {
 
         if (swapAssets.length > 0 && fromAssetValue == null) {
           setFromAssetValue(swapAssets[1]);
+        }
+
+        if (tokenPrices.size > 0) {
+          setTokenPrices(tokenPrices);
         }
 
         forceUpdate();
@@ -121,7 +176,9 @@ function Setup() {
         setLoading(false);
         setFromAmountValue("");
         setToAmountValue("");
-        calculateReceiveAmount(0, fromAssetValue, toAssetValue);
+        setFromAmountValueUsd("");
+        setToAmountValueUsd("");
+        calculateReceiveAmount("", fromAssetValue, toAssetValue);
         setQuote(null);
         setQuoteLoading(false);
       };
@@ -181,7 +238,19 @@ function Setup() {
     if (event.target.value == "") {
       setToAmountValue("");
       setQuote(null);
+      setFromAmountValueUsd("");
+      setToAmountValueUsd("");
     } else {
+      setFromAmountValueUsd(
+        (
+          parseFloat(event.target.value) *
+          tokenPrices.get(
+            fromAssetValue.address === "CANTO"
+              ? W_NATIVE_ADDRESS.toLowerCase()
+              : fromAssetValue.address.toLowerCase()
+          )
+        ).toFixed(2)
+      );
       calculateReceiveAmount(event.target.value, fromAssetValue, toAssetValue);
     }
   };
@@ -194,7 +263,11 @@ function Setup() {
     }
   };
 
-  const calculateReceiveAmount = (amount, from, to) => {
+  const calculateReceiveAmount = (
+    amount: string,
+    from: BaseAsset,
+    to: BaseAsset
+  ) => {
     if (
       (from.symbol === "WCANTO" && to.symbol === "CANTO") ||
       (from.symbol === "CANTO" && to.symbol === "WCANTO")
@@ -202,10 +275,11 @@ function Setup() {
       setQuoteLoading(false);
       setQuote(null);
       setToAmountValue(amount);
+      setToAmountValueUsd("");
       setQuoteError("No support for wrapping/unwrapping WCANTO yet");
       return;
     }
-    if (amount !== "" && !isNaN(amount) && to != null) {
+    if (amount !== "" && !isNaN(+amount) && to != null && parseFloat(amount) !== 0) {
       setQuoteLoading(true);
       setQuoteError(false);
 
@@ -280,6 +354,16 @@ function Setup() {
   const setBalance100 = () => {
     const am = BigNumber(fromAssetValue.balance).toFixed(4);
     setFromAmountValue(am);
+    setFromAmountValueUsd(
+      (
+        parseFloat(am) *
+        tokenPrices.get(
+          fromAssetValue.address === "CANTO"
+            ? W_NATIVE_ADDRESS.toLowerCase()
+            : fromAssetValue.address.toLowerCase()
+        )
+      ).toFixed(2)
+    );
     calculateReceiveAmount(am, fromAssetValue, toAssetValue);
   };
 
@@ -463,6 +547,8 @@ function Setup() {
   const renderMassiveInput = (
     type,
     amountValue,
+    amountValueUsd,
+    diffUsd,
     amountError,
     amountChanged,
     assetValue,
@@ -487,6 +573,22 @@ function Setup() {
               : ""}
           </Typography>
         </div>
+        {assetValue &&
+        assetValue.balance &&
+        amountValueUsd &&
+        amountValueUsd !== "" ? (
+          <div
+            className={`${classes.inputTitleContainer} ${classes.usdContainer}`}
+          >
+            <Typography className={classes.inputBalanceText} noWrap>
+              {"~$" +
+                formatCurrency(amountValueUsd) +
+                (type === "To" && diffUsd && diffUsd !== ""
+                  ? ` (${diffUsd}%)`
+                  : "")}
+            </Typography>
+          </div>
+        ) : null}
         <div
           className={`${classes.massiveInputContainer} ${
             (amountError || assetError) && classes.error
@@ -528,6 +630,8 @@ function Setup() {
       {renderMassiveInput(
         "From",
         fromAmountValue,
+        fromAmountValueUsd,
+        usdDiff,
         fromAmountError,
         fromAmountChanged,
         fromAssetValue,
@@ -543,6 +647,8 @@ function Setup() {
       {renderMassiveInput(
         "To",
         toAmountValue,
+        toAmountValueUsd,
+        usdDiff,
         toAmountError,
         toAmountChanged,
         toAssetValue,
