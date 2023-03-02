@@ -5446,7 +5446,7 @@ class Store {
         CONTRACTS.VOTER_ADDRESS
       );
 
-      const sendGauges = [pair.gauge.bribeAddress];
+      const sendGauges = [pair.gauge.wrapped_bribe_address];
       const sendTokens = [
         pair.gauge.bribesEarned.map((bribe) => {
           return bribe.token.address;
@@ -5518,7 +5518,7 @@ class Store {
       });
 
       const sendGauges = bribePairs.map((pair) => {
-        return pair.gauge.bribeAddress;
+        return pair.gauge.wrapped_bribe_address;
       });
       const sendTokens = bribePairs.map((pair) => {
         return pair.gauge.bribesEarned.map((bribe) => {
