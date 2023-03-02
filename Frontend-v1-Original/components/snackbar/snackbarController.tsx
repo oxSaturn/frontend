@@ -28,14 +28,16 @@ const SnackbarController = (props) => {
       };
       setState(snackbarObj);
 
-      setTimeout(() => {
-        const snackbarObj = {
-          snackbarMessage: error.toString(),
-          snackbarType: "Error",
-          open: true,
-        };
-        setState(snackbarObj);
-      });
+      if (process.env.NODE_ENV === "development") {
+        setTimeout(() => {
+          const snackbarObj = {
+            snackbarMessage: error.toString(),
+            snackbarType: "Error",
+            open: true,
+          };
+          setState(snackbarObj);
+        });
+      }
     };
 
     const showHash = ({ txHash }) => {
