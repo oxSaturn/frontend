@@ -88,11 +88,9 @@ class Helper {
     );
     const totalSupply = await flowContract.methods.totalSupply().call();
 
-    const lockedFlowContract = new web3.eth.Contract(
-      CONTRACTS.VE_TOKEN_ABI,
-      CONTRACTS.VE_TOKEN_ADDRESS
-    );
-    const lockedSupply = await lockedFlowContract.methods.totalSupply().call();
+    const lockedSupply = await flowContract.methods
+      .balanceOf(CONTRACTS.VE_TOKEN_ADDRESS)
+      .call();
 
     const flowInMinter = await flowContract.methods
       .balanceOf(CONTRACTS.MINTER_ADDRESS)
