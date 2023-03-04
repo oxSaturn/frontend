@@ -22,5 +22,5 @@
     "theme/coreTheme.ts",
     "mainnet-arb-token-list.json"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "legacy"]
 }
