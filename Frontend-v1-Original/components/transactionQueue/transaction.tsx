@@ -119,4 +119,8 @@ const errorMap = new Map<string, string>([
     "request failed with status code 502",
     "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
   ],
+  [
+    "Request failed with status code 429",
+    "RPC is being rate limited. Please try reload page/switch RPC/switch networks back and forth",
+  ],
 ]);

@@ -1279,6 +1279,13 @@ class Store {
 
       const ps = await Promise.all(
         pairs.map(async (pair) => {
+          // this pair is broken
+          if (
+            pair.address.toLowerCase() ===
+            "0xA4Ed386124c023aCA6AA89b184F90e1375eE677c".toLowerCase()
+          ) {
+            pair.apr = 0;
+          }
           try {
             const pairContract = new web3.eth.Contract(
               CONTRACTS.PAIR_ABI,
