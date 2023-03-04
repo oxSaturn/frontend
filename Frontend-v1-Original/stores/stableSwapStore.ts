@@ -4804,10 +4804,10 @@ class Store {
         return null;
       }
 
-      const govToken = this.getStore("govToken");
       const { tokenID } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
@@ -4816,6 +4816,11 @@ class Store {
         verb: "Vest Withdrawn",
         transactions: [
           {
+            uuid: resetTXID,
+            description: `Checking if your nft is attached`,
+            status: "WAITING",
+          },
+          {
             uuid: vestTXID,
             description: `Withdrawing your expired tokens`,
             status: "WAITING",
@@ -4823,9 +4828,60 @@ class Store {
         ],
       });
 
+      // CHECK if veNFT is attached
+      const attached = await this._checkNFTAttached(web3, tokenID);
+
+      if (!!attached) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: resetTXID,
+          description: `NFT is attached, resetting`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: resetTXID,
+          description: `NFT is not attached, skipping reset`,
+          status: "DONE",
+        });
+      }
+
+      const resetCallsPromise = [];
+
+      if (!!attached) {
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const resetPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "reset",
+            [tokenID],
+            account,
+            null,
+            null,
+            null,
+            resetTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        resetCallsPromise.push(resetPromise);
+      }
+
+      const done = await Promise.all(resetCallsPromise);
+
       const gasPrice = await stores.accountStore.getGasPrice();
 
-      // SUBMIT INCREASE TRANSACTION
+      // SUBMIT withdraw TRANSACTION
       const veTokenContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
         CONTRACTS.VE_TOKEN_ADDRESS
@@ -4855,6 +4911,21 @@ class Store {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
+  };
+
+  _checkNFTAttached = async (web3, tokenID) => {
+    if (!web3) return;
+
+    const votingEscrowContract = new web3.eth.Contract(
+      CONTRACTS.VE_TOKEN_ABI as AbiItem[],
+      CONTRACTS.VE_TOKEN_ADDRESS
+    );
+
+    const attached = await votingEscrowContract.methods
+      .attachments(tokenID)
+      .call();
+
+    return attached !== 0;
   };
 
   vote = async (payload) => {

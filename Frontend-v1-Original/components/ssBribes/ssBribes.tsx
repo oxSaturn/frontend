@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { Button, Typography } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
@@ -48,17 +48,17 @@ export default function ssBribes() {
   return (
     <div className={classes.container}>
       <div className={classes.descriptionBox}>
-        <Typography variant='h1'>Bribe</Typography>
-        <Typography variant='body2'>
+        <Typography variant="h1">Bribe</Typography>
+        <Typography variant="body2">
           Create a bribe to encourage others to vote for your selected
           pool&apos;s rewards distribution.
         </Typography>
       </div>
       <Button
-        variant='contained'
-        color='secondary'
+        variant="contained"
+        color="secondary"
         startIcon={<AddCircleOutline />}
-        size='large'
+        size="large"
         className={classes.buttonOverride}
         onClick={onCreate}
       >

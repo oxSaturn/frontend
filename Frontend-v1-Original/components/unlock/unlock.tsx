@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { withStyles } from "@mui/styles";
 import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
@@ -6,70 +6,71 @@ import { Close } from "@mui/icons-material";
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 import { Web3Provider } from "@ethersproject/providers";
 
-import { ACTIONS } from "../../stores/constants";
+import { ACTIONS } from "../../stores/constants/constants";
 const { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE_SS } =
   ACTIONS;
 
 import stores from "../../stores";
 
-const styles = (theme) => ({
-  root: {
-    flex: 1,
-    height: "auto",
-    display: "flex",
-    position: "relative",
-  },
-  contentContainer: {
-    margin: "auto",
-    textAlign: "center",
-    padding: "12px",
-    display: "flex",
-    flexWrap: "wrap",
+const styles = (theme) =>
+  ({
+    root: {
+      flex: 1,
+      height: "auto",
+      display: "flex",
+      position: "relative",
+    },
+    contentContainer: {
+      margin: "auto",
+      textAlign: "center",
+      padding: "12px",
+      display: "flex",
+      flexWrap: "wrap",
 
-    "@media (max-width: 960px)": {
-      paddingTop: "160px",
+      "@media (max-width: 960px)": {
+        paddingTop: "160px",
+      },
     },
-  },
-  cardContainer: {
-    marginTop: "60px",
-    minHeight: "260px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  unlockCard: {
-    padding: "24px",
-  },
-  buttonText: {
-    marginLeft: "12px",
-    fontWeight: "700",
-  },
-  instruction: {
-    maxWidth: "400px",
-    marginBottom: "32px",
-    marginTop: "32px",
-  },
-  actionButton: {
-    padding: "12px",
-    backgroundColor: "white",
-    borderRadius: "3rem",
-    border: "1px solid #E1E1E1",
-    fontWeight: 500,
-    [theme.breakpoints.up("md")]: {
-      padding: "15px",
+    cardContainer: {
+      marginTop: "60px",
+      minHeight: "260px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-around",
+      alignItems: "center",
     },
-  },
-  connect: {
-    width: "100%",
-  },
-  closeIcon: {
-    position: "absolute",
-    right: "-8px",
-    top: "-8px",
-    cursor: "pointer",
-  },
-});
+    unlockCard: {
+      padding: "24px",
+    },
+    buttonText: {
+      marginLeft: "12px",
+      fontWeight: "700",
+    },
+    instruction: {
+      maxWidth: "400px",
+      marginBottom: "32px",
+      marginTop: "32px",
+    },
+    actionButton: {
+      padding: "12px",
+      backgroundColor: "white",
+      borderRadius: "3rem",
+      border: "1px solid #E1E1E1",
+      fontWeight: 500,
+      [theme.breakpoints.up("md")]: {
+        padding: "15px",
+      },
+    },
+    connect: {
+      width: "100%",
+    },
+    closeIcon: {
+      position: "absolute",
+      right: "-8px",
+      top: "-8px",
+      cursor: "pointer",
+    },
+  } as const);
 
 const Unlock = (props) => {
   const { classes, closeModal } = props;
@@ -131,77 +132,6 @@ const Unlock = (props) => {
   );
 };
 
-class Legacy_Unlock extends Component {
-  constructor(props) {
-    super();
-
-    this.state = {
-      loading: false,
-      error: null,
-    };
-  }
-
-  componentWillMount() {
-    stores.emitter.on(CONNECTION_CONNECTED, this.connectionConnected);
-    stores.emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
-    stores.emitter.on(ERROR, this.error);
-  }
-
-  componentWillUnmount() {
-    stores.emitter.removeListener(
-      CONNECTION_CONNECTED,
-      this.connectionConnected
-    );
-    stores.emitter.removeListener(
-      CONNECTION_DISCONNECTED,
-      this.connectionDisconnected
-    );
-    stores.emitter.removeListener(ERROR, this.error);
-  }
-
-  error = (err) => {
-    this.setState({ loading: false, error: err });
-  };
-
-  connectionConnected = () => {
-    stores.dispatcher.dispatch({
-      type: CONFIGURE_SS,
-      content: { connected: true },
-    });
-
-    if (this.props.closeModal != null) {
-      this.props.closeModal();
-    }
-  };
-
-  connectionDisconnected = () => {
-    stores.dispatcher.dispatch({
-      type: CONFIGURE_SS,
-      content: { connected: false },
-    });
-    if (this.props.closeModal != null) {
-      this.props.closeModal();
-    }
-  };
-
-  render() {
-    const { classes, closeModal } = this.props;
-
-    return (
-      <div className={classes.root}>
-        <div className={classes.closeIcon} onClick={closeModal}>
-          <Close />
-        </div>
-        <div className={classes.contentContainer}>
-          <Web3ReactProvider getLibrary={getLibrary}>
-            <MyComponent closeModal={closeModal} />
-          </Web3ReactProvider>
-        </div>
-      </div>
-    );
-  }
-}
-
 function getLibrary(provider) {
   const library = new Web3Provider(provider);
   library.pollingInterval = 8000;
@@ -233,13 +163,14 @@ function onDeactivateClicked(deactivate, connector) {
 function MyComponent(props) {
   const context = useWeb3React();
   const localContext = stores.accountStore.getStore("web3context");
-  var localConnector = null;
-  if (localContext) {
-    localConnector = localContext.connector;
-  }
+  let localConnector = null;
+  // FIXME connector is always undefined
+  // if (localContext) {
+  //   localConnector = localContext.connector;
+  // }
   const { connector, library, account, activate, deactivate, active, error } =
     context;
-  var connectorsByName = stores.accountStore.getStore("connectorsByName");
+  const connectorsByName = stores.accountStore.getStore("connectorsByName");
 
   const { closeModal } = props;
 
@@ -337,7 +268,7 @@ function MyComponent(props) {
                 border: "1px solid rgba(108,108,123,0.2)",
                 color: "rgba(108,108,123,1)",
               }}
-              variant='contained'
+              variant="contained"
               onClick={() => {
                 onConnectionClicked(
                   currentConnector,
@@ -347,7 +278,7 @@ function MyComponent(props) {
                 );
               }}
               disableElevation
-              color='secondary'
+              color="secondary"
               disabled={disabled}
             >
               <div
@@ -366,7 +297,7 @@ function MyComponent(props) {
                     height: "60px",
                   }}
                   src={url}
-                  alt=''
+                  alt=""
                 />
                 <Typography
                   style={{ color: "#FFFFFF", marginBottom: "-15px" }}

@@ -243,6 +243,19 @@ interface DefiLlamaTokenPrice {
   };
 }
 
+interface ITransaction {
+  title: string;
+  type: string;
+  verb: string;
+  transactions: {
+    uuid: string;
+    description: string;
+    status: string;
+    txHash?: string;
+    error?: string;
+  }[];
+}
+
 export type {
   BaseAsset,
   Pair,
@@ -257,4 +270,5 @@ export type {
   VestNFT,
   DexScrennerPair,
   DefiLlamaTokenPrice,
+  ITransaction,
 };

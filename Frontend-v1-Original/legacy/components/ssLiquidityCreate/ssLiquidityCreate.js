@@ -17,11 +17,11 @@ import {
 } from "@mui/material";
 import { Add, Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
-import { formatCurrency } from "../../utils/utils";
+import { formatCurrency } from "../../../utils/utils";
 import classes from "./ssLiquidityCreate.module.css";
 
-import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
+import stores from "../../../stores";
+import { ACTIONS, ETHERSCAN_URL } from "../../../stores/constants/constants";
 
 export default function SSLiquidityCreate() {
   const router = useRouter();
