@@ -3925,7 +3925,7 @@ class Store {
         return null;
       }
 
-      // some path logic. Have a base asset (FTM) swap from start asset to FTM, swap from FTM back to out asset. Don't know.
+      // route assets are USDC, WCANTO and FLOW
       const routeAssets = this.getStore("routeAssets");
       const { fromAsset, toAsset, fromAmount } = payload.content;
 
@@ -3966,10 +3966,74 @@ class Store {
       });
 
       let amountOuts = [];
-
+      // FIXME we should have tryAggregate here so to filter not existing routes instead of this hardcore
       if (includesRouteAddress.length === 0) {
         amountOuts = routeAssets
           .map((routeAsset) => {
+            if (routeAsset.symbol === "WCANTO") {
+              return [
+                // {
+                //   routes: [
+                //     {
+                //       from: addy0,
+                //       to: routeAsset.address,
+                //       stable: true,
+                //     },
+                //     {
+                //       from: routeAsset.address,
+                //       to: addy1,
+                //       stable: true,
+                //     },
+                //   ],
+                //   routeAsset: routeAsset,
+                // },
+                {
+                  routes: [
+                    {
+                      from: addy0,
+                      to: routeAsset.address,
+                      stable: false,
+                    },
+                    {
+                      from: routeAsset.address,
+                      to: addy1,
+                      stable: false,
+                    },
+                  ],
+                  routeAsset: routeAsset,
+                },
+                {
+                  routes: [
+                    {
+                      from: addy0,
+                      to: routeAsset.address,
+                      stable: true,
+                    },
+                    {
+                      from: routeAsset.address,
+                      to: addy1,
+                      stable: false,
+                    },
+                  ],
+                  routeAsset: routeAsset,
+                },
+                {
+                  routes: [
+                    {
+                      from: addy0,
+                      to: routeAsset.address,
+                      stable: false,
+                    },
+                    {
+                      from: routeAsset.address,
+                      to: addy1,
+                      stable: true,
+                    },
+                  ],
+                  routeAsset: routeAsset,
+                },
+              ];
+            }
             return [
               {
                 routes: [
