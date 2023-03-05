@@ -51,7 +51,10 @@ export default function ssLiquidityPairs() {
           </Typography>
         </div>
         <div className={classes.tvlBox}>
-          <div className={classes.tvlText}>TVL: ${formatFinancialData(tvl)}</div>
+          <div className={classes.tvlText}>Version: 2.0</div>
+          <div className={classes.tvlText}>
+            TVL: ${formatFinancialData(tvl)}
+          </div>
           <div className={classes.tvlText}>
             MCap: ${formatFinancialData(mCap)}
           </div>
@@ -67,12 +70,10 @@ export default function ssLiquidityPairs() {
 
 function formatFinancialData(dataNumber: number) {
   if (dataNumber < 10_000_000) {
-    return (
-      dataNumber.toLocaleString("en-US", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      })
-    );
+    return dataNumber.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
   } else if (dataNumber < 1_000_000_000) {
     return (dataNumber / 1_000_000).toFixed(2) + "m";
   } else {
