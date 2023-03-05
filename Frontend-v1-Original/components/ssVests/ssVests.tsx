@@ -3,13 +3,13 @@ import { Typography } from "@mui/material";
 
 import classes from "./ssVests.module.css";
 
-import VestsTable from "./ssVestsTable.js";
+import VestsTable from "./ssVestsTable";
 
 import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants";
+import { ACTIONS } from "../../stores/constants/constants";
 
 export default function ssVests() {
-  const [, updateState] = useState();
+  const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
   const [vestNFTs, setVestNFTs] = useState([]);
@@ -52,8 +52,8 @@ export default function ssVests() {
   return (
     <div className={classes.container}>
       <div className={classes.descriptionBox}>
-        <Typography variant='h1'>Vest</Typography>
-        <Typography variant='body2'>
+        <Typography variant="h1">Vest</Typography>
+        <Typography variant="body2">
           Lock FLOW into veFLOW to earn and govern. Vote with veFLOW to earn
           bribes and trading fees. veFLOW can be transferred, merged and split.
           You can hold multiple positions.
