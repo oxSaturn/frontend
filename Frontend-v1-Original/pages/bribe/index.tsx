@@ -109,7 +109,7 @@ function Bribes() {
           <SSBribes />
         </div>
       ) : (
-        <Paper className=" fixed top-0 flex h-[calc(100%-150px)] w-[calc(100%-80px)] flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">
+        <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-[calc(100%-80px)] flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">
           <BalanceIcon className="mb-8 -mt-20 text-7xl sm:text-8xl" />
           <Typography
             className="text-center font-['Monument'] text-2xl font-thin text-white sm:text-3xl"
