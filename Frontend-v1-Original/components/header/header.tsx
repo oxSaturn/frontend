@@ -263,7 +263,7 @@ function Header() {
           className={classes.logoContainer}
         >
           <SiteLogo className={classes.appLogo} />
-          {/* <Typography className={classes.logoText}>Velocimeter</Typography> */}
+          <Typography className={classes.logoText}>v2</Typography>
         </a>
 
         <Navigation />
