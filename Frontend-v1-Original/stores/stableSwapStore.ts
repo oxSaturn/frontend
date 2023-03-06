@@ -28,6 +28,7 @@ import type {
   VeToken,
   Vote,
   VestNFT,
+  CantoContracts,
 } from "./types/types";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
@@ -41,6 +42,7 @@ class Store {
     swapAssets: BaseAsset[];
     routeAssets: RouteAsset[];
     govToken: Omit<BaseAsset, "local"> & { balanceOf: string };
+    v1TokenBalance: string;
     veToken: VeToken;
     pairs: Pair[];
     vestNFTs: VestNFT[];
@@ -65,6 +67,7 @@ class Store {
       swapAssets: [],
       routeAssets: [],
       govToken: null,
+      v1TokenBalance: "0",
       veToken: null,
       pairs: [],
       vestNFTs: [],
@@ -142,6 +145,11 @@ class Store {
             break;
           case ACTIONS.SWAP:
             this.swap(payload);
+            break;
+
+          // REDEEM
+          case ACTIONS.REDEEM:
+            this.redeem(payload);
             break;
 
           // VESTING
@@ -1014,6 +1022,7 @@ class Store {
       this.setStore({
         marketCap: await stores.helper.getMarketCap(), // TODO move to api
       });
+      this.setStore({ v1TokenBalance: await stores.helper.getV1Balance() }); //FIXME temporary
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
@@ -1220,7 +1229,7 @@ class Store {
     }
   };
 
-  _getGovTokenInfo = async (web3, account) => {
+  _getGovTokenInfo = async (web3: Web3, account: { address: string }) => {
     try {
       const govToken = this.getStore("govToken");
       if (!govToken) {
@@ -4318,6 +4327,83 @@ class Store {
           this.emitter.emit(ACTIONS.SWAP_RETURNED);
         },
         sendValue
+      );
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  redeem = async (payload) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { fromAmount } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let redeemTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Redeem Flow v1 for Flow v2`,
+        type: "Redeem", // TODO not sure what type does so leaving it here if something
+        verb: "Redeem Successful",
+        transactions: [
+          {
+            uuid: redeemTXID,
+            description: `Redeeming your Flow v1 for Flow v2`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // SUBMIT REDEEM TRANSACTION
+      const sendFromAmount = BigNumber(fromAmount)
+        .times(10 ** 18)
+        .toFixed(0);
+
+      const flowConvertor = new web3.eth.Contract(
+        (CONTRACTS as CantoContracts).FLOW_CONVERTOR_ABI as AbiItem[],
+        (CONTRACTS as CantoContracts).FLOW_CONVERTOR_ADDRESS
+      );
+
+      let func = "redeem";
+      let params = [sendFromAmount];
+
+      this._callContractWait(
+        web3,
+        flowConvertor,
+        func,
+        params,
+        account,
+        undefined,
+        null,
+        null,
+        redeemTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+
+          this._getSpecificAssetInfo(
+            web3,
+            account,
+            CONTRACTS.GOV_TOKEN_ADDRESS
+          );
+          this._getPairInfo(web3, account);
+
+          this.emitter.emit(ACTIONS.REDEEM_RETURNED);
+        },
+        null
       );
     } catch (ex) {
       console.error(ex);
