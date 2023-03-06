@@ -57,7 +57,7 @@ function Home() {
         </Grid>
       </div>
       <div id="info" className="relative h-screen w-full">
-        <div className="z-[1] hidden -translate-x-1/2 -translate-y-1/2 bg-homePage bg-cover bg-no-repeat opacity-50 mix-blend-lighten md:absolute md:top-[5%] md:left-1/2 md:h-[600px] md:w-[600px]"></div>
+        <div className="hidden md:absolute md:top-[5%] md:left-1/2 md:z-[1] md:block md:h-[600px] md:w-[600px] md:-translate-x-1/2 md:-translate-y-1/2 md:bg-homePage md:bg-cover md:bg-no-repeat md:opacity-50 md:mix-blend-lighten"></div>
         <Grid
           container
           spacing={3}
