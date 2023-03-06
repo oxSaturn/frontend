@@ -52,13 +52,9 @@ export default function ssLiquidityPairs() {
         </div>
         <div className={classes.tvlBox}>
           <div>Version: 2.0</div>
-          <div className={classes.tvlText}>
-            TVL: ${formatFinancialData(tvl)}
-          </div>
-          <div className={classes.tvlText}>
-            MCap: ${formatFinancialData(mCap)}
-          </div>
-          <div className={classes.tvlText}>
+          <div>TVL: ${formatFinancialData(tvl)}</div>
+          <div>MCap: ${formatFinancialData(mCap)}</div>
+          <div>
             Circulating Supply: {formatFinancialData(circulatingSupply)}
           </div>
         </div>
