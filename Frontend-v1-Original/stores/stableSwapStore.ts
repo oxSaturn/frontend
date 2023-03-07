@@ -96,9 +96,8 @@ class Store {
           case ACTIONS.SEARCH_ASSET:
             this.searchBaseAsset(payload);
             break;
-          case ACTIONS.BASE_ASSETS_UPDATED:
+
           case ACTIONS.UPDATED:
-            this.updateSwapAssets();
             break;
 
           // LIQUIDITY
@@ -886,8 +885,6 @@ class Store {
       let localBaseAssets = [];
       const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
-      console.log("localbaseassets", localBaseAssetsString);
-
       if (localBaseAssetsString && localBaseAssetsString !== "") {
         localBaseAssets = JSON.parse(localBaseAssetsString);
 
@@ -909,6 +906,7 @@ class Store {
         });
 
         this.setStore({ baseAssets: baseAssets });
+        this.updateSwapAssets(baseAssets);
         this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, baseAssets);
       }
     } catch (ex) {
@@ -999,6 +997,7 @@ class Store {
         const storeBaseAssets = [...baseAssets, newBaseAsset];
 
         this.setStore({ baseAssets: storeBaseAssets });
+        this.updateSwapAssets(storeBaseAssets);
         this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, storeBaseAssets);
       }
 
@@ -1126,8 +1125,7 @@ class Store {
     );
     return [...baseAssetsWeSwap];
   };
-  updateSwapAssets = () => {
-    const baseAssets = this.getStore("baseAssets");
+  updateSwapAssets = (payload: BaseAsset[]) => {
     const pairs = this.getStore("pairs");
     const set = new Set<string>();
     set.add(NATIVE_TOKEN.address.toLowerCase());
@@ -1135,7 +1133,7 @@ class Store {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
     });
-    const baseAssetsWeSwap = baseAssets.filter((asset) =>
+    const baseAssetsWeSwap = payload.filter((asset) =>
       set.has(asset.address.toLowerCase())
     );
     this.setStore({ swapAssets: baseAssetsWeSwap });
