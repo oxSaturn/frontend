@@ -72,9 +72,12 @@ function Setup() {
       fromAmountValueUsd &&
       fromAmountValueUsd === "" &&
       toAmountValueUsd &&
-      toAmountValueUsd === "" &&
-      (parseFloat(fromAmountValueUsd) === 0 ||
-        parseFloat(toAmountValueUsd) === 0)
+      toAmountValueUsd === ""
+    )
+      return "";
+    if (
+      parseFloat(fromAmountValueUsd) === 0 ||
+      parseFloat(toAmountValueUsd) === 0
     )
       return "";
     if (parseFloat(fromAmountValueUsd) === parseFloat(toAmountValueUsd)) return;
@@ -417,7 +420,7 @@ function Setup() {
   };
 
   const setBalance100 = () => {
-    const am = BigNumber(fromAssetValue.balance).toFixed(4);
+    const am = BigNumber(fromAssetValue.balance).toString();
     setFromAmountValue(am);
     setFromAmountValueUsd(
       (

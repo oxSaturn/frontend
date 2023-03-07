@@ -4072,15 +4072,24 @@ class Store {
         routeAsset: null,
       });
 
-      const multicall = await stores.accountStore.getMulticall();
-      const receiveAmounts = await multicall.aggregate(
-        amountOuts.map((route) => {
-          return routerContract.methods.getAmountsOut(
-            sendFromAmount,
-            route.routes
-          );
-        })
-      );
+      const quoteFetch = await fetch("/api/routes-multicall", {
+        method: "POST",
+        body: JSON.stringify({
+          sendFromAmount,
+          routes: amountOuts,
+        }),
+      });
+      const receiveAmounts = await quoteFetch.json();
+
+      // const multicall = await stores.accountStore.getMulticall();
+      // const receiveAmounts = await multicall.aggregate(
+      //   amountOuts.map((route) => {
+      //     return routerContract.methods.getAmountsOut(
+      //       sendFromAmount,
+      //       route.routes
+      //     );
+      //   })
+      // );
 
       for (let i = 0; i < receiveAmounts.length; i++) {
         amountOuts[i].receiveAmounts = receiveAmounts[i];
@@ -6427,10 +6436,6 @@ class Store {
 
     return Promise.all(promises);
   };
-  //
-  // _getMulticallWatcher = (web3, calls) => {
-  //
-  // }
 }
 
 export default Store;
