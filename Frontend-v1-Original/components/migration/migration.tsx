@@ -19,12 +19,12 @@ function Migration() {
             withdraw your v1 LPs, convert any v1 FLOW to v2, then deposit
             liquidity via the v2{" "}
             <Link href={"/liquidity"}>
-              <a className="">interface.</a>
+              <a className="font-medium text-cantoGreen underline hover:no-underline">
+                interface.
+              </a>
             </Link>
           </div>
-          <div className="font-medium">
-            MIGRATION NEEDS TO BE COMPLETED BEFORE THE NEXT EPOCH!
-          </div>
+          <div>MIGRATION NEEDS TO BE COMPLETED BEFORE THE NEXT EPOCH!</div>
           <div className="">Go with the FLOW 🌊.</div>
         </div>
       )}
