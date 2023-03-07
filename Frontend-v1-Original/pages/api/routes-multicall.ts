@@ -9,7 +9,9 @@ import Web3 from "web3";
 import { CONTRACTS } from "../../stores/constants/constants";
 import { RouteAsset } from "../../stores/types/types";
 
-const web3 = new Web3(process.env.VELOCIMETER_NODE);
+const web3 = new Web3(
+  process.env.VELOCIMETER_NODE ?? "https://canto.slingshot.finance/"
+);
 const multicall = new Multicall({
   web3Instance: web3,
   tryAggregate: true,
