@@ -469,8 +469,6 @@ class Store {
         stable,
         gaugeAddress,
         gaugeWeight,
-        claimable0,
-        claimable1,
       ] = await Promise.all([
         pairContract.methods.token0().call(),
         pairContract.methods.token1().call(),
@@ -483,8 +481,6 @@ class Store {
         pairContract.methods.stable().call(),
         gaugesContract.methods.gauges(pairAddress).call(),
         gaugesContract.methods.weights(pairAddress).call(),
-        pairContract.methods.claimable0(account.address).call(),
-        pairContract.methods.claimable1(account.address).call(),
       ]);
 
       const token0Contract = new web3.eth.Contract(
@@ -543,12 +539,6 @@ class Store {
           .div(10 ** token0Decimals)
           .toFixed(parseInt(token0Decimals)),
         reserve1: BigNumber(reserve1)
-          .div(10 ** token1Decimals)
-          .toFixed(parseInt(token1Decimals)),
-        claimable0: BigNumber(claimable0)
-          .div(10 ** token0Decimals)
-          .toFixed(parseInt(token0Decimals)),
-        claimable1: BigNumber(claimable1)
           .div(10 ** token1Decimals)
           .toFixed(parseInt(token1Decimals)),
       };
@@ -724,8 +714,6 @@ class Store {
         stable,
         gaugeAddress,
         gaugeWeight,
-        claimable0,
-        claimable1,
       ] = await Promise.all([
         pairContract.methods.token0().call(),
         pairContract.methods.token1().call(),
@@ -738,8 +726,6 @@ class Store {
         pairContract.methods.stable().call(),
         gaugesContract.methods.gauges(pairAddress).call(),
         gaugesContract.methods.weights(pairAddress).call(),
-        pairContract.methods.claimable0(account.address).call(),
-        pairContract.methods.claimable1(account.address).call(),
       ]);
 
       const token0Contract = new web3.eth.Contract(
@@ -798,12 +784,6 @@ class Store {
           .div(10 ** token0Decimals)
           .toFixed(parseInt(token0Decimals)),
         reserve1: BigNumber(reserve1)
-          .div(10 ** token1Decimals)
-          .toFixed(parseInt(token1Decimals)),
-        claimable0: BigNumber(claimable0)
-          .div(10 ** token0Decimals)
-          .toFixed(parseInt(token0Decimals)),
-        claimable1: BigNumber(claimable1)
           .div(10 ** token1Decimals)
           .toFixed(parseInt(token1Decimals)),
       };
@@ -1333,13 +1313,11 @@ class Store {
               true
             );
 
-            const [totalSupply, reserves, balanceOf, claimable0, claimable1] =
+            const [totalSupply, reserves, balanceOf] =
               await multicall.aggregate([
                 pairContract.methods.totalSupply(),
                 pairContract.methods.getReserves(),
                 pairContract.methods.balanceOf(account.address),
-                pairContract.methods.claimable0(account.address),
-                pairContract.methods.claimable1(account.address),
               ]);
 
             pair.token0 = token0 != null ? token0 : pair.token0;
@@ -1354,12 +1332,6 @@ class Store {
               .div(10 ** pair.token0.decimals)
               .toFixed(pair.token0.decimals);
             pair.reserve1 = BigNumber(reserves[1])
-              .div(10 ** pair.token1.decimals)
-              .toFixed(pair.token1.decimals);
-            pair.claimable0 = BigNumber(claimable0)
-              .div(10 ** pair.token0.decimals)
-              .toFixed(pair.token0.decimals);
-            pair.claimable1 = BigNumber(claimable1)
               .div(10 ** pair.token1.decimals)
               .toFixed(pair.token1.decimals);
 
@@ -5746,18 +5718,6 @@ class Store {
           });
         }
       }
-      // TODO we probably dont even need claimable any more
-      // const filteredFees: Pair[] = []; // Pair with rewardType set to "Fees"
-      // for (let i = 0; i < pairs.length; i++) {
-      //   let pair = Object.assign({}, pairs[i]);
-      //   if (
-      //     BigNumber(pair.claimable0).gt(0) ||
-      //     BigNumber(pair.claimable1).gt(0)
-      //   ) {
-      //     pair.rewardType = "Fees";
-      //     filteredFees.push(pair);
-      //   }
-      // }
 
       const rewardsEarned = await Promise.all(
         filteredPairs2.map(async (pair) => {
