@@ -4,6 +4,7 @@ import type { Contract } from "web3-eth-contract";
 import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
 import Web3 from "web3";
+import { ContractCallContext, ContractCallResults } from "ethereum-multicall";
 
 import { Dispatcher } from "flux";
 import EventEmitter from "events";
@@ -4070,24 +4071,60 @@ class Store {
         routeAsset: null,
       });
 
-      const quoteFetch = await fetch("/api/routes-multicall", {
-        method: "POST",
-        body: JSON.stringify({
-          sendFromAmount,
-          routes: amountOuts,
-        }),
-      });
-      const receiveAmounts = await quoteFetch.json();
+      // Example of how we can use next api with private velocimeter node
+      // const quoteFetch = await fetch("/api/routes-multicall", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     sendFromAmount,
+      //     routes: amountOuts,
+      //   }),
+      // });
+      // const receiveAmounts = await quoteFetch.json();
 
-      // const multicall = await stores.accountStore.getMulticall();
-      // const receiveAmounts = await multicall.aggregate(
-      //   amountOuts.map((route) => {
-      //     return routerContract.methods.getAmountsOut(
-      //       sendFromAmount,
-      //       route.routes
-      //     );
-      //   })
-      // );
+      const multicall3 = await stores.accountStore.getMulticall3(true);
+      const calls = amountOuts.map((route) => {
+        return {
+          reference: route.routes[0].from + route.routes[0].to,
+          methodName: "getAmountsOut",
+          methodParameters: [sendFromAmount, route.routes],
+        };
+      });
+
+      const contractCallContext: ContractCallContext[] = [
+        {
+          reference: "routerContract",
+          contractAddress: CONTRACTS.ROUTER_ADDRESS,
+          abi: CONTRACTS.ROUTER_ABI,
+          calls,
+        },
+      ];
+
+      const results: ContractCallResults = await multicall3.call(
+        contractCallContext
+      );
+
+      const returnValuesBigNumbers =
+        results.results.routerContract.callsReturnContext.map((retCtx) => {
+          if (retCtx.success) {
+            return retCtx.returnValues as {
+              hex: string;
+              type: "BigNumber";
+            }[];
+          }
+        });
+
+      let receiveAmounts = [];
+
+      for (const returnValue of returnValuesBigNumbers) {
+        if (!returnValue) {
+          receiveAmounts.push([sendFromAmount, "0", "0"]);
+          continue;
+        }
+        const arr = returnValue.map((bignumber) => {
+          return web3.utils.hexToNumberString(bignumber.hex);
+        });
+        receiveAmounts.push(arr);
+      }
 
       for (let i = 0; i < receiveAmounts.length; i++) {
         amountOuts[i].receiveAmounts = receiveAmounts[i];
