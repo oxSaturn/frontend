@@ -4,8 +4,8 @@ import { Typography, Button, CircularProgress } from "@mui/material";
 import { withTheme } from "@mui/styles";
 
 import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
-import type { BaseAsset } from "../../stores/types/types";
+import { ACTIONS, CONTRACTS } from "../../stores/constants/constants";
+import type { BaseAsset, CantoContracts } from "../../stores/types/types";
 import { formatCurrency } from "../../utils/utils";
 
 const flowV1 = {
