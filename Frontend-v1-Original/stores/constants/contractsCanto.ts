@@ -1,10 +1,11 @@
 import abis from "../abis/abis";
 
 export const FLOW_V1_ADDRESS = "0x2Baec546a92cA3469f71b7A091f7dF61e5569889";
-export const FLOW_CONVERTOR_ADDRESS = "";
+export const FLOW_CONVERTOR_ADDRESS =
+  "0xe52b51Bfc75CF4bdd5AA73Ff170AF600d3c30c4c";
 export const FLOW_CONVERTOR_ABI = abis.flowConvertorABI;
 
-export const GOV_TOKEN_ADDRESS = "0x2Baec546a92cA3469f71b7A091f7dF61e5569889"; // canto
+export const GOV_TOKEN_ADDRESS = "0x78e489523291581205Ea3fA16a69689EcA79757A"; // canto
 export const GOV_TOKEN_NAME = "Flow";
 export const GOV_TOKEN_SYMBOL = "FLOW";
 export const GOV_TOKEN_DECIMALS = 18;
@@ -12,7 +13,7 @@ export const GOV_TOKEN_LOGO =
   "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
-export const VE_TOKEN_ADDRESS = "0x990efF367C6c4aece43c1E98099061c897730F27"; // canto
+export const VE_TOKEN_ADDRESS = "0x99F911758345BB6DE08d28b2319D93B914e375a1"; // canto
 export const VE_TOKEN_NAME = "veFLOW";
 export const VE_TOKEN_SYMBOL = "veFLOW";
 export const VE_TOKEN_DECIMALS = 18;
@@ -34,19 +35,19 @@ export const CANTO_LOGO =
   "https://assets.slingshot.finance/icons/canto_0x826551890dc65655a0aceca109ab11abdbd7a07b";
 
 // BaseV1Factory checked here: https://ftmscan.com/address/0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28#code
-export const FACTORY_ADDRESS = "0xb12aF64E128A1D4489D13314eB4Df81cBCE126aC"; // canto
+export const FACTORY_ADDRESS = "0xfEC3a2ec1f0676D59493Fe0F45911E6B5DF5E205"; // canto
 export const FACTORY_ABI = abis.factoryABI;
 
-export const ROUTER_ADDRESS = "0x9B2920e72dF6E1A7053bEa7235c65079F5104398"; // done
+export const ROUTER_ADDRESS = "0x0e7287d8802BE21F86c38f8D27C6C9f67DFd4A1d"; // done
 export const ROUTER_ABI = abis.routerABI;
 
-export const VE_DIST_ADDRESS = "0x19E1eef506eE61A58d1AAa11635361bBaE5D0676"; // done
+export const VE_DIST_ADDRESS = "0x1C6C3C55Dd8f84723bDf245be774cA2dcbdA8ec8"; // done
 export const VE_DIST_ABI = abis.veDistABI;
 
-export const VOTER_ADDRESS = "0xC5B58aE761a77fF16d548dE9b42933c8FBfe4c33"; //
+export const VOTER_ADDRESS = "0xd08143fD3362aDdF5FAac314B2642c0270587503"; //
 export const VOTER_ABI = abis.voterABI;
 
-export const MINTER_ADDRESS = "0x0cEd59FF9BDe47b2F5F0EDD2FdFfA6a0116d91Cd";
+export const MINTER_ADDRESS = "0xa562588FE6f058DfcF671C7BAf4F7B4C5bC8fb18";
 export const MINTER_ABI = abis.minterABI;
 
 export const ERC20_ABI = abis.erc20ABI;

@@ -6,7 +6,8 @@ import { NetworkConnector } from "@web3-react/network-connector";
 const POLLING_INTERVAL = 12000;
 const RPC_URLS = {
   740: "https://eth.plexnode.wtf/",
-  7700: "https://canto.slingshot.finance/", //TODO set it to new node
+  7700: "https://eca5-219-73-56-235.ngrok.io/", //TODO set it to new node
+  31337: "https://eca5-219-73-56-235.ngrok.io/", //TODO set it to new node
 };
 
 let obj: {
