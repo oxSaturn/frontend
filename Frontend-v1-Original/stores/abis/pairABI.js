@@ -1,6 +1,12 @@
 export const pairABI = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_csrNftId",
+        type: "uint256",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -66,29 +72,11 @@ export const pairABI = [
       {
         indexed: true,
         internalType: "address",
-        name: "sender",
+        name: "externalBribe",
         type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "recipient",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount0",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount1",
-        type: "uint256",
       },
     ],
-    name: "Claim",
+    name: "ExternalBribeSet",
     type: "event",
   },
   {
@@ -97,7 +85,7 @@ export const pairABI = [
       {
         indexed: true,
         internalType: "address",
-        name: "sender",
+        name: "token",
         type: "address",
       },
       {
@@ -108,12 +96,25 @@ export const pairABI = [
       },
       {
         indexed: false,
-        internalType: "uint256",
-        name: "amount1",
-        type: "uint256",
+        internalType: "address",
+        name: "externalBribe",
+        type: "address",
       },
     ],
-    name: "Fees",
+    name: "GaugeFees",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "value",
+        type: "bool",
+      },
+    ],
+    name: "HasGaugeSet",
     type: "event",
   },
   {
@@ -201,6 +202,31 @@ export const pairABI = [
       },
     ],
     name: "Sync",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount0",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "tank",
+        type: "address",
+      },
+    ],
+    name: "TankFees",
     type: "event",
   },
   {
@@ -333,62 +359,6 @@ export const pairABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "claimFees",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "claimed0",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "claimed1",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "claimable0",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "claimable1",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -450,7 +420,7 @@ export const pairABI = [
   },
   {
     inputs: [],
-    name: "fees",
+    name: "externalBribe",
     outputs: [
       {
         internalType: "address",
@@ -510,25 +480,12 @@ export const pairABI = [
   },
   {
     inputs: [],
-    name: "index0",
+    name: "hasGauge",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "bool",
         name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "index1",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -891,6 +848,32 @@ export const pairABI = [
     inputs: [
       {
         internalType: "address",
+        name: "_externalBribe",
+        type: "address",
+      },
+    ],
+    name: "setExternalBribe",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bool",
+        name: "value",
+        type: "bool",
+      },
+    ],
+    name: "setHasGauge",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "to",
         type: "address",
       },
@@ -908,44 +891,6 @@ export const pairABI = [
         internalType: "bool",
         name: "",
         type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "supplyIndex0",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "supplyIndex1",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -997,6 +942,19 @@ export const pairABI = [
     name: "sync",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "tank",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1107,6 +1065,32 @@ export const pairABI = [
       },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "turnstile",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "voter",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
 ];

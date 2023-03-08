@@ -2221,7 +2221,7 @@ class Store {
           CONTRACTS.ERC20_ABI as AbiItem[],
           token0.address
         );
-
+        console.log(CONTRACTS.ROUTER_ADDRESS)
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
             web3,
