@@ -4,6 +4,7 @@ import type { Contract } from "web3-eth-contract";
 import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
 import Web3 from "web3";
+import { ContractCallContext, ContractCallResults } from "ethereum-multicall";
 
 import { Dispatcher } from "flux";
 import EventEmitter from "events";
@@ -96,9 +97,8 @@ class Store {
           case ACTIONS.SEARCH_ASSET:
             this.searchBaseAsset(payload);
             break;
-          case ACTIONS.BASE_ASSETS_UPDATED:
+
           case ACTIONS.UPDATED:
-            this.updateSwapAssets();
             break;
 
           // LIQUIDITY
@@ -886,8 +886,6 @@ class Store {
       let localBaseAssets = [];
       const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
-      console.log("localbaseassets", localBaseAssetsString);
-
       if (localBaseAssetsString && localBaseAssetsString !== "") {
         localBaseAssets = JSON.parse(localBaseAssetsString);
 
@@ -909,6 +907,7 @@ class Store {
         });
 
         this.setStore({ baseAssets: baseAssets });
+        this.updateSwapAssets(baseAssets);
         this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, baseAssets);
       }
     } catch (ex) {
@@ -999,6 +998,7 @@ class Store {
         const storeBaseAssets = [...baseAssets, newBaseAsset];
 
         this.setStore({ baseAssets: storeBaseAssets });
+        this.updateSwapAssets(storeBaseAssets);
         this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, storeBaseAssets);
       }
 
@@ -1126,8 +1126,7 @@ class Store {
     );
     return [...baseAssetsWeSwap];
   };
-  updateSwapAssets = () => {
-    const baseAssets = this.getStore("baseAssets");
+  updateSwapAssets = (payload: BaseAsset[]) => {
     const pairs = this.getStore("pairs");
     const set = new Set<string>();
     set.add(NATIVE_TOKEN.address.toLowerCase());
@@ -1135,7 +1134,7 @@ class Store {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
     });
-    const baseAssetsWeSwap = baseAssets.filter((asset) =>
+    const baseAssetsWeSwap = payload.filter((asset) =>
       set.has(asset.address.toLowerCase())
     );
     this.setStore({ swapAssets: baseAssetsWeSwap });
@@ -4072,15 +4071,60 @@ class Store {
         routeAsset: null,
       });
 
-      const multicall = await stores.accountStore.getMulticall();
-      const receiveAmounts = await multicall.aggregate(
-        amountOuts.map((route) => {
-          return routerContract.methods.getAmountsOut(
-            sendFromAmount,
-            route.routes
-          );
-        })
+      // Example of how we can use next api with private velocimeter node
+      // const quoteFetch = await fetch("/api/routes-multicall", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     sendFromAmount,
+      //     routes: amountOuts,
+      //   }),
+      // });
+      // const receiveAmounts = await quoteFetch.json();
+
+      const multicall3 = await stores.accountStore.getMulticall3(true);
+      const calls = amountOuts.map((route) => {
+        return {
+          reference: route.routes[0].from + route.routes[0].to,
+          methodName: "getAmountsOut",
+          methodParameters: [sendFromAmount, route.routes],
+        };
+      });
+
+      const contractCallContext: ContractCallContext[] = [
+        {
+          reference: "routerContract",
+          contractAddress: CONTRACTS.ROUTER_ADDRESS,
+          abi: CONTRACTS.ROUTER_ABI,
+          calls,
+        },
+      ];
+
+      const results: ContractCallResults = await multicall3.call(
+        contractCallContext
       );
+
+      const returnValuesBigNumbers =
+        results.results.routerContract.callsReturnContext.map((retCtx) => {
+          if (retCtx.success) {
+            return retCtx.returnValues as {
+              hex: string;
+              type: "BigNumber";
+            }[];
+          }
+        });
+
+      let receiveAmounts = [];
+
+      for (const returnValue of returnValuesBigNumbers) {
+        if (!returnValue) {
+          receiveAmounts.push([sendFromAmount, "0", "0"]);
+          continue;
+        }
+        const arr = returnValue.map((bignumber) => {
+          return web3.utils.hexToNumberString(bignumber.hex);
+        });
+        receiveAmounts.push(arr);
+      }
 
       for (let i = 0; i < receiveAmounts.length; i++) {
         amountOuts[i].receiveAmounts = receiveAmounts[i];
@@ -6427,10 +6471,6 @@ class Store {
 
     return Promise.all(promises);
   };
-  //
-  // _getMulticallWatcher = (web3, calls) => {
-  //
-  // }
 }
 
 export default Store;
