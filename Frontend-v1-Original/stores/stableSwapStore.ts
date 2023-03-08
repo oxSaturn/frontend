@@ -4570,7 +4570,7 @@ class Store {
             web3,
             tokenContract,
             "approve",
-            [FLOW_V1_ADDRESS, MAX_UINT256],
+            [FLOW_CONVERTOR_ADDRESS, MAX_UINT256],
             account,
             undefined,
             null,
