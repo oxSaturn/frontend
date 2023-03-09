@@ -18,7 +18,7 @@ import {
   ZERO_ADDRESS,
   NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
-  PAIR_DECIMALS
+  PAIR_DECIMALS,
 } from "./constants/constants";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
@@ -1908,7 +1908,8 @@ class Store {
               const stakeAllowance = await this._getStakeAllowance(
                 web3,
                 pair,
-                account
+                account,
+                pairFor
               );
 
               if (
@@ -3126,12 +3127,17 @@ class Store {
     }
   };
 
-  _getStakeAllowance = async (web3, pair, account) => {
+  _getStakeAllowance = async (web3, pair, account, pairAddress?) => {
     try {
-      const tokenContract = new web3.eth.Contract(
-        CONTRACTS.ERC20_ABI,
-        pair.address
-      );
+      let tokenContract;
+      if (pair === null && !!pairAddress) {
+        tokenContract = new web3.eth.Contract(CONTRACTS.ERC20_ABI, pairAddress);
+      } else {
+        tokenContract = new web3.eth.Contract(
+          CONTRACTS.ERC20_ABI,
+          pair.address
+        );
+      }
       const allowance = await tokenContract.methods
         .allowance(account.address, pair.gauge.address)
         .call();
