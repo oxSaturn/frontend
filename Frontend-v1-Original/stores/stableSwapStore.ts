@@ -201,9 +201,7 @@ class Store {
           case ACTIONS.CLAIM_BRIBE:
             this.claimBribes(payload);
             break;
-          case ACTIONS.CLAIM_PAIR_FEES:
-            this.claimPairFees(payload);
-            break;
+
           case ACTIONS.CLAIM_REWARD:
             this.claimRewards(payload);
             break;
@@ -214,13 +212,6 @@ class Store {
             this.claimAllRewards(payload);
             break;
 
-          //WHITELIST
-          case ACTIONS.SEARCH_WHITELIST:
-            this.searchWhitelist(payload);
-            break;
-          case ACTIONS.WHITELIST_TOKEN:
-            this.whitelistToken(payload);
-            break;
           default: {
           }
         }
@@ -236,28 +227,6 @@ class Store {
     this.store = { ...this.store, ...obj };
     return this.emitter.emit(ACTIONS.STORE_UPDATED);
   };
-
-  // COMMON GETTER FUNCTIONS Assets, BaseAssets, Pairs etc
-  // commented out because never used and assets are never in store
-  // getAsset = (address) => {
-  //   const assets = this.store.assets;
-  //   if (!assets || assets.length === 0) {
-  //     return null;
-  //   }
-
-  //   let theAsset = assets.filter((ass) => {
-  //     if (!ass) {
-  //       return false;
-  //     }
-  //     return ass.address.toLowerCase() === address.toLowerCase();
-  //   });
-
-  //   if (!theAsset || theAsset.length === 0) {
-  //     return null;
-  //   }
-
-  //   return theAsset[0];
-  // };
 
   getNFTByID = async (id) => {
     try {
@@ -552,9 +521,9 @@ class Store {
         const [totalSupply, gaugeBalance, bribeAddress] = await Promise.all([
           gaugeContract.methods.totalSupply().call(),
           gaugeContract.methods.balanceOf(account.address).call(),
-          gaugesContract.methods.bribes(gaugeAddress).call(),
+          gaugesContract.methods.external_bribes(gaugeAddress).call(),
         ]);
-
+        //wrapped bribe address is coming from api. if the api doesnt work this will break
         const bribeContract = new web3.eth.Contract(
           CONTRACTS.BRIBE_ABI as AbiItem[],
           thePair.gauge.wrapped_bribe_address
@@ -575,9 +544,9 @@ class Store {
               .call();
             const token = await this.getBaseAsset(tokenAddress);
 
-            const [rewardRate] = await Promise.all([
-              bribeContract.methods.rewardRate(tokenAddress).call(),
-            ]);
+            const rewardRate = await gaugeContract.methods
+              .rewardRate(tokenAddress)
+              .call();
 
             return {
               token: token,
@@ -698,9 +667,7 @@ class Store {
         CONTRACTS.VOTER_ADDRESS
       );
 
-      const [totalWeight] = await Promise.all([
-        gaugesContract.methods.totalWeight().call(),
-      ]);
+      const totalWeight = await gaugesContract.methods.totalWeight().call();
 
       const [
         token0,
@@ -797,9 +764,9 @@ class Store {
         const [totalSupply, gaugeBalance, bribeAddress] = await Promise.all([
           gaugeContract.methods.totalSupply().call(),
           gaugeContract.methods.balanceOf(account.address).call(),
-          gaugesContract.methods.bribes(gaugeAddress).call(),
+          gaugesContract.methods.external_bribes(gaugeAddress).call(),
         ]);
-        // NOTE: this bribe contract is ExternalBribe so we can ask rewardRate directly (line 791)
+
         const bribeContract = new web3.eth.Contract(
           CONTRACTS.BRIBE_ABI as AbiItem[],
           thePair.gauge.wrapped_bribe_address
@@ -820,9 +787,9 @@ class Store {
               .call();
             const token = await this.getBaseAsset(tokenAddress);
 
-            const [rewardRate] = await Promise.all([
-              bribeContract.methods.rewardRate(tokenAddress).call(),
-            ]);
+            const rewardRate = await gaugeContract.methods
+              .rewardRate(tokenAddress)
+              .call();
 
             return {
               token: token,
@@ -1235,9 +1202,9 @@ class Store {
         CONTRACTS.GOV_TOKEN_ADDRESS
       );
 
-      const [balanceOf] = await Promise.all([
-        veTokenContract.methods.balanceOf(account.address).call(),
-      ]);
+      const balanceOf = await veTokenContract.methods
+        .balanceOf(account.address)
+        .call();
 
       govToken.balanceOf = balanceOf;
       govToken.balance = BigNumber(balanceOf)
@@ -1265,19 +1232,12 @@ class Store {
         pairs = this.getStore("pairs");
       }
 
-      const factoryContract = new web3.eth.Contract(
-        CONTRACTS.FACTORY_ABI,
-        CONTRACTS.FACTORY_ADDRESS
-      );
       const gaugesContract = new web3.eth.Contract(
         CONTRACTS.VOTER_ABI,
         CONTRACTS.VOTER_ADDRESS
       );
 
-      const [allPairsLength, totalWeight] = await Promise.all([
-        factoryContract.methods.allPairsLength().call(),
-        gaugesContract.methods.totalWeight().call(),
-      ]);
+      const totalWeight = await gaugesContract.methods.totalWeight().call();
 
       const ps = await Promise.all(
         pairs.map(async (pair) => {
@@ -1292,14 +1252,6 @@ class Store {
             const pairContract = new web3.eth.Contract(
               CONTRACTS.PAIR_ABI,
               pair.address
-            );
-            const token0Contract = new web3.eth.Contract(
-              CONTRACTS.ERC20_ABI,
-              pair.token0.address
-            );
-            const token1Contract = new web3.eth.Contract(
-              CONTRACTS.ERC20_ABI,
-              pair.token1.address
             );
 
             const token0 = await this.getBaseAsset(
@@ -2183,8 +2135,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -2193,7 +2143,7 @@ class Store {
           CONTRACTS.ERC20_ABI as AbiItem[],
           token0.address
         );
-        console.log(CONTRACTS.ROUTER_ADDRESS)
+        console.log(CONTRACTS.ROUTER_ADDRESS);
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
             web3,
@@ -2201,7 +2151,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowance0TXID,
@@ -2232,7 +2182,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowance1TXID,
@@ -2321,7 +2271,7 @@ class Store {
         func,
         params,
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         depositTXID,
@@ -2354,7 +2304,7 @@ class Store {
             "createGauge",
             [pairFor],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             createGaugeTXID,
@@ -2502,8 +2452,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -2520,7 +2468,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowance0TXID,
@@ -2552,7 +2500,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowance1TXID,
@@ -2643,7 +2591,7 @@ class Store {
         func,
         params,
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         depositTXID,
@@ -2732,8 +2680,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       if (
@@ -2750,7 +2696,7 @@ class Store {
             "approve",
             [pair.gauge.address, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             stakeAllowanceTXID,
@@ -2786,7 +2732,7 @@ class Store {
         "deposit",
         [balanceOf, sendTok],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         stakeTXID,
@@ -2938,8 +2884,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -2956,7 +2900,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowance0TXID,
@@ -2987,7 +2931,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowance1TXID,
@@ -3018,7 +2962,7 @@ class Store {
             "approve",
             [pair.gauge.address, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             stakeAllowanceTXID,
@@ -3116,7 +3060,7 @@ class Store {
         func,
         params,
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         depositTXID,
@@ -3140,7 +3084,7 @@ class Store {
             "deposit",
             [balanceOf, sendTok],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             stakeTXID,
@@ -3237,7 +3181,6 @@ class Store {
         return null;
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
       const routerContract = new web3.eth.Contract(
         CONTRACTS.ROUTER_ABI as AbiItem[],
         CONTRACTS.ROUTER_ADDRESS
@@ -3329,15 +3272,10 @@ class Store {
         balanceCalls.push(
           gaugeContract.methods.balanceOf(account.address).call()
         );
-        // balanceCalls.push(gaugeContract.methods.earned(incentiveAddress, account.address).call())
       }
 
-      const [
-        token0Balance,
-        token1Balance,
-        poolBalance,
-        gaugeBalance /*, earned*/,
-      ] = await Promise.all(balanceCalls);
+      const [token0Balance, token1Balance, poolBalance, gaugeBalance] =
+        await Promise.all(balanceCalls);
 
       const returnVal = {
         token0: BigNumber(token0Balance)
@@ -3358,7 +3296,6 @@ class Store {
               .div(10 ** 18)
               .toFixed(18)
           : null;
-        // returnVal.earned = BigNumber(earned).div(10**incentiveAsset.decimals).toFixed(incentiveAsset.decimals),
       }
 
       this.emitter.emit(ACTIONS.GET_LIQUIDITY_BALANCES_RETURNED, returnVal);
@@ -3424,8 +3361,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -3442,7 +3377,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowanceTXID,
@@ -3506,7 +3441,7 @@ class Store {
           deadline,
         ],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         withdrawTXID,
@@ -3589,8 +3524,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -3607,7 +3540,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowanceTXID,
@@ -3661,7 +3594,7 @@ class Store {
         "withdraw",
         [sendAmount],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         unstakeTXID,
@@ -3689,7 +3622,7 @@ class Store {
               deadline,
             ],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             withdrawTXID,
@@ -3713,8 +3646,6 @@ class Store {
 
   unstakeLiquidity = async (payload) => {
     try {
-      const context = this;
-
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
@@ -3727,8 +3658,7 @@ class Store {
         return null;
       }
 
-      const { token0, token1, amount, amount0, amount1, pair } =
-        payload.content;
+      const { amount, pair } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let unstakeTXID = this.getTXUUID();
@@ -3746,9 +3676,7 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
-      // SUBMIT DEPOSIT TRANSACTION
+      // SUBMIT WITHDRAW TRANSACTION
       const sendAmount = BigNumber(amount)
         .times(10 ** pair.decimals)
         .toFixed(0);
@@ -3764,7 +3692,7 @@ class Store {
         "withdraw",
         [sendAmount],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         unstakeTXID,
@@ -3804,7 +3732,6 @@ class Store {
         return null;
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
       const routerContract = new web3.eth.Contract(
         CONTRACTS.ROUTER_ABI as AbiItem[],
         CONTRACTS.ROUTER_ADDRESS
@@ -3847,8 +3774,6 @@ class Store {
 
   createGauge = async (payload) => {
     try {
-      const context = this;
-
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
@@ -3879,8 +3804,6 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const gaugesContract = new web3.eth.Contract(
         CONTRACTS.VOTER_ABI as AbiItem[],
         CONTRACTS.VOTER_ADDRESS
@@ -3891,7 +3814,7 @@ class Store {
         "createGauge",
         [pair.address],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         createGaugeTXID,
@@ -4203,7 +4126,7 @@ class Store {
         return null;
       }
 
-      const { fromAsset, toAsset, fromAmount, toAmount, quote, slippage } =
+      const { fromAsset, toAsset, fromAmount, quote, slippage } =
         payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
@@ -4257,8 +4180,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -4275,7 +4196,7 @@ class Store {
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowanceTXID,
@@ -4341,7 +4262,7 @@ class Store {
         func,
         params,
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         swapTXID,
@@ -4366,8 +4287,6 @@ class Store {
 
   wrapOrUnwrap = async (payload) => {
     try {
-      const context = this;
-
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
@@ -4631,9 +4550,9 @@ class Store {
                 asset.address
               );
 
-              const [balanceOf] = await Promise.all([
-                assetContract.methods.balanceOf(account.address).call(),
-              ]);
+              const balanceOf = await assetContract.methods
+                .balanceOf(account.address)
+                .call();
 
               asset.balance = BigNumber(balanceOf)
                 .div(10 ** asset.decimals)
@@ -4809,8 +4728,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -4827,7 +4744,7 @@ class Store {
             "approve",
             [CONTRACTS.VE_TOKEN_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowanceTXID,
@@ -4863,7 +4780,7 @@ class Store {
         "create_lock",
         [sendAmount, unlockTime + ""],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         vestTXID,
@@ -4957,8 +4874,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -4975,7 +4890,7 @@ class Store {
             "approve",
             [CONTRACTS.VE_TOKEN_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowanceTXID,
@@ -5011,7 +4926,7 @@ class Store {
         "increase_amount",
         [tokenID, sendAmount],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         vestTXID,
@@ -5046,7 +4961,6 @@ class Store {
         return null;
       }
 
-      const govToken = this.getStore("govToken");
       const { tokenID, unlockTime } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
@@ -5065,8 +4979,6 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       // SUBMIT INCREASE TRANSACTION
       const veTokenContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -5079,7 +4991,7 @@ class Store {
         "increase_unlock_time",
         [tokenID, unlockTime + ""],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         vestTXID,
@@ -5168,7 +5080,7 @@ class Store {
             "reset",
             [tokenID],
             account,
-            null,
+            undefined,
             null,
             null,
             resetTXID,
@@ -5188,8 +5100,6 @@ class Store {
 
       const done = await Promise.all(resetCallsPromise);
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       // SUBMIT withdraw TRANSACTION
       const veTokenContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -5202,7 +5112,7 @@ class Store {
         "withdraw",
         [tokenID],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         vestTXID,
@@ -5269,8 +5179,6 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       // SUBMIT INCREASE TRANSACTION
       const gaugesContract = new web3.eth.Contract(
         CONTRACTS.VOTER_ABI as AbiItem[],
@@ -5295,7 +5203,7 @@ class Store {
         "vote",
         [parseInt(tokenID), tokens, voteCounts],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         voteTXID,
@@ -5439,8 +5347,6 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       const allowanceCallsPromises = [];
 
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
@@ -5457,7 +5363,7 @@ class Store {
             "approve",
             [gauge.gauge.wrapped_bribe_address, MAX_UINT256],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             allowanceTXID,
@@ -5493,7 +5399,7 @@ class Store {
         "notifyRewardAmount",
         [asset.address, sendAmount],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         bribeTXID,
@@ -5564,17 +5470,14 @@ class Store {
         filteredPairs.map(async (pair) => {
           const bribesEarned = await Promise.all(
             pair.gauge.bribes.map(async (bribe) => {
-              // FIXME: this is external bribe in python and internal in express
               const bribeContract = new web3.eth.Contract(
                 CONTRACTS.BRIBE_ABI as AbiItem[],
                 pair.gauge.wrapped_bribe_address
               );
 
-              const [earned] = await Promise.all([
-                bribeContract.methods
-                  .earned(bribe.token.address, tokenID)
-                  .call(),
-              ]);
+              const earned = await bribeContract.methods
+                .earned(bribe.token.address, tokenID)
+                .call();
 
               return {
                 earned: BigNumber(earned)
@@ -5651,11 +5554,9 @@ class Store {
                   pair.gauge.wrapped_bribe_address
                 );
 
-                const [earned] = await Promise.all([
-                  bribeContract.methods
-                    .earned(bribe.token.address, tokenID)
-                    .call(),
-                ]);
+                const earned = await bribeContract.methods
+                  .earned(bribe.token.address, tokenID)
+                  .call();
 
                 bribe.earned = BigNumber(earned)
                   .div(10 ** bribe.token.decimals)
@@ -5752,14 +5653,8 @@ class Store {
         }
       }
 
-      // console.log(filteredBribes, "<< filtered bribes");
-      // console.log(filteredFees, "<< fees");
-      // console.log(filteredRewards, "<< rewards");
-      // console.log(veDistReward, "<< dist rewards");
-
       const rewards = {
         bribes: filteredBribes,
-        // fees: filteredFees,
         rewards: filteredRewards,
         veDist: veDistReward,
       };
@@ -5806,8 +5701,6 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       // SUBMIT CLAIM TRANSACTION
       const gaugesContract = new web3.eth.Contract(
         CONTRACTS.VOTER_ABI as AbiItem[],
@@ -5827,7 +5720,7 @@ class Store {
         "claimBribes",
         [sendGauges, sendTokens, tokenID],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         claimTXID,
@@ -5865,17 +5758,12 @@ class Store {
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
-      // let feeClaimTXIDs = [];
       let rewardClaimTXIDs = [];
       let distributionClaimTXIDs = [];
 
       let bribePairs = pairs.filter((pair) => {
         return pair.rewardType === "Bribe";
       });
-
-      // let feePairs = pairs.filter((pair) => {
-      //   return pair.rewardType === "Fees";
-      // });
 
       let rewardPairs = pairs.filter((pair) => {
         return pair.rewardType === "Reward";
@@ -5894,11 +5782,7 @@ class Store {
         });
       });
 
-      if (
-        bribePairs.length == 0 &&
-        // feePairs.length == 0 &&
-        rewardPairs.length == 0
-      ) {
+      if (bribePairs.length == 0 && rewardPairs.length == 0) {
         this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
         this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
         return;
@@ -5917,19 +5801,6 @@ class Store {
           status: "WAITING",
         });
       }
-
-      // if (feePairs.length > 0) {
-      //   for (let i = 0; i < feePairs.length; i++) {
-      //     const newClaimTX = this.getTXUUID();
-
-      //     feeClaimTXIDs.push(newClaimTX);
-      //     sendOBJ.transactions.push({
-      //       uuid: newClaimTX,
-      //       description: `Claiming fees for ${feePairs[i].symbol}`,
-      //       status: "WAITING",
-      //     });
-      //   }
-      // }
 
       if (rewardPairs.length > 0) {
         for (let i = 0; i < rewardPairs.length; i++) {
@@ -5959,8 +5830,6 @@ class Store {
 
       this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       if (bribePairs.length > 0) {
         // SUBMIT CLAIM TRANSACTION
         const gaugesContract = new web3.eth.Contract(
@@ -5975,7 +5844,7 @@ class Store {
             "claimBribes",
             [sendGauges, sendTokens, tokenID],
             account,
-            gasPrice,
+            undefined,
             null,
             null,
             claimTXID,
@@ -5993,39 +5862,6 @@ class Store {
         await Promise.all([claimPromise]);
       }
 
-      // if (feePairs.length > 0) {
-      //   for (let i = 0; i < feePairs.length; i++) {
-      //     const pairContract = new web3.eth.Contract(
-      //       CONTRACTS.PAIR_ABI as AbiItem[],
-      //       feePairs[i].address
-      //     );
-
-      //     const claimPromise = new Promise<void>((resolve, reject) => {
-      //       context._callContractWait(
-      //         web3,
-      //         pairContract,
-      //         "claimFees",
-      //         [],
-      //         account,
-      //         gasPrice,
-      //         null,
-      //         null,
-      //         feeClaimTXIDs[i],
-      //         (err) => {
-      //           if (err) {
-      //             reject(err);
-      //             return;
-      //           }
-
-      //           resolve();
-      //         }
-      //       );
-      //     });
-
-      //     await Promise.all([claimPromise]);
-      //   }
-      // }
-
       if (rewardPairs.length > 0) {
         for (let i = 0; i < rewardPairs.length; i++) {
           const gaugeContract = new web3.eth.Contract(
@@ -6041,7 +5877,7 @@ class Store {
               "getReward",
               [account.address, sendTok],
               account,
-              gasPrice,
+              undefined,
               null,
               null,
               rewardClaimTXIDs[i],
@@ -6073,7 +5909,7 @@ class Store {
               "claim",
               [tokenID],
               account,
-              gasPrice,
+              undefined,
               null,
               null,
               distributionClaimTXIDs[i],
@@ -6131,8 +5967,6 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       // SUBMIT CLAIM TRANSACTION
       const gaugeContract = new web3.eth.Contract(
         CONTRACTS.GAUGE_ABI as AbiItem[],
@@ -6147,7 +5981,7 @@ class Store {
         "getReward",
         [account.address, sendTokens],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         claimTXID,
@@ -6197,8 +6031,6 @@ class Store {
         ],
       });
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
       // SUBMIT CLAIM TRANSACTION
       const veDistContract = new web3.eth.Contract(
         CONTRACTS.VE_DIST_ABI as AbiItem[],
@@ -6211,7 +6043,7 @@ class Store {
         "claim",
         [tokenID],
         account,
-        gasPrice,
+        undefined,
         null,
         null,
         claimTXID,
@@ -6222,180 +6054,6 @@ class Store {
 
           this.getRewardBalances({ content: { tokenID } });
           this.emitter.emit(ACTIONS.CLAIM_VE_DIST_RETURNED);
-        }
-      );
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
-
-  claimPairFees = async (payload) => {
-    try {
-      const account = stores.accountStore.getStore("account");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
-        return null;
-      }
-
-      const { pair, tokenID } = payload.content;
-
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
-
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim fees for ${pair.token0.symbol}/${pair.token1.symbol}`,
-        verb: "Fees Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your fees`,
-            status: "WAITING",
-          },
-        ],
-      });
-
-      const gasPrice = await stores.accountStore.getGasPrice();
-
-      // SUBMIT CLAIM TRANSACTION
-      const pairContract = new web3.eth.Contract(
-        CONTRACTS.PAIR_ABI as AbiItem[],
-        pair.address
-      );
-
-      this._callContractWait(
-        web3,
-        pairContract,
-        "claimFees",
-        [],
-        account,
-        gasPrice,
-        null,
-        null,
-        claimTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this.getRewardBalances({ content: { tokenID } });
-          this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
-        }
-      );
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
-
-  searchWhitelist = async (payload) => {
-    try {
-      const account = stores.accountStore.getStore("account");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
-        return null;
-      }
-      const veToken = this.getStore("veToken");
-
-      const { search } = payload.content;
-
-      const voterContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
-
-      const [isWhitelisted, listingFee] = await Promise.all([
-        voterContract.methods.isWhitelisted(search).call(),
-        voterContract.methods.listing_fee().call(),
-      ]);
-
-      const token = await this.getBaseAsset(search);
-      token.isWhitelisted = isWhitelisted;
-      token.listingFee = BigNumber(listingFee)
-        .div(10 ** veToken.decimals)
-        .toFixed(veToken.decimals);
-
-      this.emitter.emit(ACTIONS.SEARCH_WHITELIST_RETURNED, token);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
-
-  whitelistToken = async (payload) => {
-    try {
-      const account = stores.accountStore.getStore("account");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
-        return null;
-      }
-
-      const { token, nft } = payload.content;
-
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let whitelistTXID = this.getTXUUID();
-
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `WHITELIST ${token.symbol}`,
-        verb: "Token Whitelisted",
-        transactions: [
-          {
-            uuid: whitelistTXID,
-            description: `Whitelisting ${token.symbol}`,
-            status: "WAITING",
-          },
-        ],
-      });
-
-      const gasPrice = await stores.accountStore.getGasPrice();
-
-      // SUBMIT WHITELIST TRANSACTION
-      const voterContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
-
-      this._callContractWait(
-        web3,
-        voterContract,
-        "whitelist",
-        [token.address, nft.id],
-        account,
-        gasPrice,
-        null,
-        null,
-        whitelistTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          window.setTimeout(() => {
-            this.dispatcher.dispatch({
-              type: ACTIONS.SEARCH_WHITELIST,
-              content: { search: token.address },
-            });
-          }, 2);
-
-          this.emitter.emit(ACTIONS.WHITELIST_TOKEN_RETURNED);
         }
       );
     } catch (ex) {
@@ -6500,23 +6158,6 @@ class Store {
         });
         callback(ex);
       });
-  };
-
-  _makeBatchRequest = (web3, callFrom, calls) => {
-    let batch = new web3.BatchRequest();
-
-    let promises = calls.map((call) => {
-      return new Promise((res, rej) => {
-        let req = call.request({ from: callFrom }, (err, data) => {
-          if (err) rej(err);
-          else res(data);
-        });
-        batch.add(req);
-      });
-    });
-    batch.execute();
-
-    return Promise.all(promises);
   };
 }
 

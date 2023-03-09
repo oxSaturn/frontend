@@ -607,60 +607,6 @@ export const routerABI = [
         name: "deadline",
         type: "uint256",
       },
-    ],
-    name: "removeLiquidityETHSupportingFeeOnTransferTokens",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "amountToken",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountETH",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "stable",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "liquidity",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountTokenMin",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountETHMin",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "deadline",
-        type: "uint256",
-      },
       {
         internalType: "bool",
         name: "approveMax",
@@ -683,80 +629,6 @@ export const routerABI = [
       },
     ],
     name: "removeLiquidityETHWithPermit",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "amountToken",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountETH",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "stable",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "liquidity",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountTokenMin",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountETHMin",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "deadline",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "approveMax",
-        type: "bool",
-      },
-      {
-        internalType: "uint8",
-        name: "v",
-        type: "uint8",
-      },
-      {
-        internalType: "bytes32",
-        name: "r",
-        type: "bytes32",
-      },
-      {
-        internalType: "bytes32",
-        name: "s",
-        type: "bytes32",
-      },
-    ],
-    name: "removeLiquidityETHWithPermitSupportingFeeOnTransferTokens",
     outputs: [
       {
         internalType: "uint256",
@@ -935,51 +807,6 @@ export const routerABI = [
     inputs: [
       {
         internalType: "uint256",
-        name: "amountOutMin",
-        type: "uint256",
-      },
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "from",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "to",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "stable",
-            type: "bool",
-          },
-        ],
-        internalType: "struct Router.route[]",
-        name: "routes",
-        type: "tuple[]",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "deadline",
-        type: "uint256",
-      },
-    ],
-    name: "swapExactETHForTokensSupportingFeeOnTransferTokens",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
         name: "amountIn",
         type: "uint256",
       },
@@ -1029,56 +856,6 @@ export const routerABI = [
         type: "uint256[]",
       },
     ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amountIn",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountOutMin",
-        type: "uint256",
-      },
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "from",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "to",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "stable",
-            type: "bool",
-          },
-        ],
-        internalType: "struct Router.route[]",
-        name: "routes",
-        type: "tuple[]",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "deadline",
-        type: "uint256",
-      },
-    ],
-    name: "swapExactTokensForETHSupportingFeeOnTransferTokens",
-    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -1184,56 +961,6 @@ export const routerABI = [
         type: "uint256[]",
       },
     ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amountIn",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amountOutMin",
-        type: "uint256",
-      },
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "from",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "to",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "stable",
-            type: "bool",
-          },
-        ],
-        internalType: "struct Router.route[]",
-        name: "routes",
-        type: "tuple[]",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "deadline",
-        type: "uint256",
-      },
-    ],
-    name: "swapExactTokensForTokensSupportingFeeOnTransferTokens",
-    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
