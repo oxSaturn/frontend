@@ -47,3 +47,5 @@ export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export const NATIVE_TOKEN = nativeETH;
 export const W_NATIVE_ADDRESS = wNativeAddress;
+
+export const PAIR_DECIMALS = 18;

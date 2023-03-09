@@ -18,6 +18,7 @@ import {
   ZERO_ADDRESS,
   NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
+  PAIR_DECIMALS
 } from "./constants/constants";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
@@ -398,11 +399,11 @@ class Store {
 
         const returnPair = thePair[0];
         returnPair.balance = BigNumber(balanceOf)
-          .div(10 ** returnPair.decimals)
-          .toFixed(parseInt(returnPair.decimals));
+          .div(10 ** PAIR_DECIMALS)
+          .toFixed(PAIR_DECIMALS);
         returnPair.totalSupply = BigNumber(totalSupply)
-          .div(10 ** returnPair.decimals)
-          .toFixed(parseInt(returnPair.decimals));
+          .div(10 ** PAIR_DECIMALS)
+          .toFixed(PAIR_DECIMALS);
         returnPair.reserve0 = BigNumber(reserve0)
           .div(10 ** returnPair.token0.decimals)
           .toFixed(parseInt(returnPair.token0.decimals));
@@ -634,11 +635,11 @@ class Store {
 
       const returnPair = thePair[0];
       returnPair.balance = BigNumber(balanceOf)
-        .div(10 ** returnPair.decimals)
-        .toFixed(parseInt(returnPair.decimals));
+        .div(10 ** PAIR_DECIMALS)
+        .toFixed(PAIR_DECIMALS);
       returnPair.totalSupply = BigNumber(totalSupply)
-        .div(10 ** returnPair.decimals)
-        .toFixed(parseInt(returnPair.decimals));
+        .div(10 ** PAIR_DECIMALS)
+        .toFixed(PAIR_DECIMALS);
       returnPair.reserve0 = BigNumber(reserve0)
         .div(10 ** returnPair.token0.decimals)
         .toFixed(parseInt(returnPair.token0.decimals));
@@ -1275,11 +1276,11 @@ class Store {
             pair.token0 = token0 != null ? token0 : pair.token0;
             pair.token1 = token1 != null ? token1 : pair.token1;
             pair.balance = BigNumber(balanceOf)
-              .div(10 ** pair.decimals)
-              .toFixed(pair.decimals);
+              .div(10 ** PAIR_DECIMALS)
+              .toFixed(PAIR_DECIMALS);
             pair.totalSupply = BigNumber(totalSupply)
-              .div(10 ** pair.decimals)
-              .toFixed(pair.decimals);
+              .div(10 ** PAIR_DECIMALS)
+              .toFixed(PAIR_DECIMALS);
             pair.reserve0 = BigNumber(reserves[0])
               .div(10 ** pair.token0.decimals)
               .toFixed(pair.token0.decimals);
@@ -1902,7 +1903,7 @@ class Store {
               const balanceOf = await pairContract.methods
                 .balanceOf(account.address)
                 .call();
-
+              // FIXME this throws and pair is null for some reason (fork issue? fe issue?)
               const pair = await this.getPairByAddress(pairFor);
               const stakeAllowance = await this._getStakeAllowance(
                 web3,
@@ -1913,8 +1914,8 @@ class Store {
               if (
                 BigNumber(stakeAllowance).lt(
                   BigNumber(balanceOf)
-                    .div(10 ** pair.decimals)
-                    .toFixed(pair.decimals)
+                    .div(10 ** PAIR_DECIMALS)
+                    .toFixed(PAIR_DECIMALS)
                 )
               ) {
                 this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -1934,8 +1935,8 @@ class Store {
               if (
                 BigNumber(stakeAllowance).lt(
                   BigNumber(balanceOf)
-                    .div(10 ** pair.decimals)
-                    .toFixed(pair.decimals)
+                    .div(10 ** PAIR_DECIMALS)
+                    .toFixed(PAIR_DECIMALS)
                 )
               ) {
                 const stakePromise = new Promise<void>((resolve, reject) => {
@@ -2664,8 +2665,8 @@ class Store {
       if (
         BigNumber(stakeAllowance).lt(
           BigNumber(balanceOf)
-            .div(10 ** pair.decimals)
-            .toFixed(pair.decimals)
+            .div(10 ** PAIR_DECIMALS)
+            .toFixed(PAIR_DECIMALS)
         )
       ) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2685,8 +2686,8 @@ class Store {
       if (
         BigNumber(stakeAllowance).lt(
           BigNumber(balanceOf)
-            .div(10 ** pair.decimals)
-            .toFixed(pair.decimals)
+            .div(10 ** PAIR_DECIMALS)
+            .toFixed(PAIR_DECIMALS)
         )
       ) {
         const stakePromise = new Promise<void>((resolve, reject) => {
@@ -3135,8 +3136,8 @@ class Store {
         .allowance(account.address, pair.gauge.address)
         .call();
       return BigNumber(allowance)
-        .div(10 ** pair.decimals)
-        .toFixed(pair.decimals);
+        .div(10 ** PAIR_DECIMALS)
+        .toFixed(PAIR_DECIMALS);
     } catch (ex) {
       console.error(ex);
       return null;
@@ -3153,8 +3154,8 @@ class Store {
         .allowance(account.address, CONTRACTS.ROUTER_ADDRESS)
         .call();
       return BigNumber(allowance)
-        .div(10 ** pair.decimals)
-        .toFixed(pair.decimals);
+        .div(10 ** PAIR_DECIMALS)
+        .toFixed(PAIR_DECIMALS);
     } catch (ex) {
       console.error(ex);
       return null;
@@ -3215,8 +3216,8 @@ class Store {
           amount1,
         },
         output: BigNumber(res.liquidity)
-          .div(10 ** pair.decimals)
-          .toFixed(pair.decimals),
+          .div(10 ** PAIR_DECIMALS)
+          .toFixed(PAIR_DECIMALS),
       };
       this.emitter.emit(ACTIONS.QUOTE_ADD_LIQUIDITY_RETURNED, returnVal);
     } catch (ex) {
@@ -3400,7 +3401,7 @@ class Store {
 
       // SUBMIT WITHDRAW TRANSACTION
       const sendAmount = BigNumber(pair.balance)
-        .times(10 ** pair.decimals)
+        .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
 
       const routerContract = new web3.eth.Contract(
@@ -3563,7 +3564,7 @@ class Store {
       // SUBMIT DEPOSIT TRANSACTION
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
       const sendAmount = BigNumber(amount)
-        .times(10 ** pair.decimals)
+        .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
       const deadline = "" + moment().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
@@ -3678,7 +3679,7 @@ class Store {
 
       // SUBMIT WITHDRAW TRANSACTION
       const sendAmount = BigNumber(amount)
-        .times(10 ** pair.decimals)
+        .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
 
       const gaugeContract = new web3.eth.Contract(
@@ -3738,7 +3739,7 @@ class Store {
       );
 
       const sendWithdrawAmount = BigNumber(withdrawAmount)
-        .times(10 ** pair.decimals)
+        .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
 
       const res = await routerContract.methods
