@@ -102,6 +102,7 @@ class Helper {
   getActivePeriod = async () => {
     try {
       const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) throw new Error("Couldn't get web3");
       const minterContract = new web3.eth.Contract(
         CONTRACTS.MINTER_ABI as AbiItem[],
         CONTRACTS.MINTER_ADDRESS
@@ -175,6 +176,7 @@ class Helper {
       decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
       symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
     });
+    if (!price || !circulatingSupply) return 0;
     return circulatingSupply * price;
   };
 
@@ -299,6 +301,8 @@ class Helper {
     const price = sortedPairs.filter(
       (pair) => pair.baseToken.symbol === token.symbol
     )[0]?.priceUsd;
+
+    if (!price) return 0;
 
     return parseFloat(price);
   };
