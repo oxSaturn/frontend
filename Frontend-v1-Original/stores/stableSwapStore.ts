@@ -1968,9 +1968,9 @@ class Store {
               const done = await Promise.all(allowanceCallsPromise);
 
               let sendTok = "0";
-              if (token && token.id) {
-                sendTok = token.id;
-              }
+              // if (token && token.id) {
+              //   sendTok = token.id;
+              // }
 
               this._callContractWait(
                 web3,
@@ -2724,9 +2724,9 @@ class Store {
       );
 
       let sendTok = "0";
-      if (token && token.id) {
-        sendTok = token.id;
-      }
+      // if (token && token.id) {
+      //   sendTok = token.id;
+      // }
 
       this._callContractWait(
         web3,
@@ -3076,9 +3076,9 @@ class Store {
             .call();
 
           let sendTok = "0";
-          if (token && token.id) {
-            sendTok = token.id;
-          }
+          // if (token && token.id) {
+          //   sendTok = token.id;
+          // }
 
           this._callContractWait(
             web3,
