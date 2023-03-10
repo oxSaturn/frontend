@@ -10,8 +10,7 @@ const RPC_URLS: {
   [chainId: string]: string;
 } = {
   740: "https://eth.plexnode.wtf/",
-  7700: "https://d43d-219-73-56-235.ngrok.io/", //TODO set it to new node
-  31337: "https://d43d-219-73-56-235.ngrok.io/", //TODO set it to new node
+  7700: "https://canto.slingshot.finance",
 };
 
 let obj: {
