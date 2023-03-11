@@ -2,7 +2,7 @@ import abis from "../abis/abis";
 
 export const FLOW_V1_ADDRESS = "0x2Baec546a92cA3469f71b7A091f7dF61e5569889";
 export const FLOW_CONVERTOR_ADDRESS =
-  "0xe52b51Bfc75CF4bdd5AA73Ff170AF600d3c30c4c";
+  "0x63dF314EA0912412ff1cDC5A43585477d08CE5e9";
 export const FLOW_CONVERTOR_ABI = abis.flowConvertorABI;
 
 export const GOV_TOKEN_ADDRESS = "0xB5b060055F0d1eF5174329913ef861bC3aDdF029"; // canto
