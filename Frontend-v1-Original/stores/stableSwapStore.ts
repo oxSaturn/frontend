@@ -1069,13 +1069,7 @@ class Store {
         }
       );
       const pairsCall = (await response.json()) as { data: Pair[] };
-      const ignoredPairs = ["0xf9e9e9c918a90e126249095de0c8d6560d0b6535"]; // this pair from canto blockchain sneaked inside arbitrum api
-      const filteredPairs = pairsCall.data.filter((pair) => {
-        return !ignoredPairs.includes(pair.address);
-      });
-      return process.env.NEXT_PUBLIC_CHAINID !== "7700"
-        ? filteredPairs
-        : pairsCall.data;
+      return pairsCall.data;
     } catch (ex) {
       console.log(ex);
       return [];
@@ -1262,13 +1256,6 @@ class Store {
 
       const ps = await Promise.all(
         pairs.map(async (pair) => {
-          // this pair is broken
-          if (
-            pair.address.toLowerCase() ===
-            "0xA4Ed386124c023aCA6AA89b184F90e1375eE677c".toLowerCase()
-          ) {
-            pair.apr = 0;
-          }
           try {
             const pairContract = new web3.eth.Contract(
               CONTRACTS.PAIR_ABI,
