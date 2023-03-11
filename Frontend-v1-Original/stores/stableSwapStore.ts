@@ -47,10 +47,10 @@ class Store {
     baseAssets: BaseAsset[];
     swapAssets: BaseAsset[];
     routeAssets: RouteAsset[];
-    govToken: (Omit<BaseAsset, "local"> & { balanceOf: string }) | null;
+    govToken: Omit<BaseAsset, "local"> & { balanceOf: string };
     v1TokenBalance: string;
     flowConvertorBalance: string;
-    veToken: VeToken | null;
+    veToken: VeToken;
     pairs: Pair[];
     vestNFTs: VestNFT[];
     rewards: {
@@ -92,15 +92,14 @@ class Store {
     };
 
     dispatcher.register(
-      // FIXME: Parameter 'payload' implicitly has an 'any' type.
       function (this: Store, payload) {
         console.log("<< Payload of dispatched event", payload);
         switch (payload.type) {
           case ACTIONS.CONFIGURE_SS:
-            this.configure();
+            this.configure(payload);
             break;
           case ACTIONS.GET_BALANCES:
-            this.getBalances();
+            this.getBalances(payload);
             break;
           case ACTIONS.SEARCH_ASSET:
             this.searchBaseAsset(payload);
@@ -230,7 +229,7 @@ class Store {
     return this.emitter.emit(ACTIONS.STORE_UPDATED);
   };
 
-  getNFTByID = async (id: string) => {
+  getNFTByID = async (id) => {
     try {
       const vestNFTs = this.getStore("vestNFTs");
       let theNFT = vestNFTs.filter((vestNFT) => {
@@ -254,9 +253,6 @@ class Store {
 
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
-      if (!govToken || !veToken) {
-        throw new Error("govToken or veToken not found");
-      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -311,7 +307,7 @@ class Store {
     }
   };
 
-  _updateVestNFTByID = async (id: string) => {
+  _updateVestNFTByID = async (id) => {
     try {
       const vestNFTs = this.getStore("vestNFTs");
       let theNFT = vestNFTs.filter((vestNFT) => {
@@ -335,9 +331,6 @@ class Store {
 
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
-      if (!govToken || !veToken) {
-        throw new Error("govToken or veToken not found");
-      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -373,7 +366,7 @@ class Store {
     }
   };
 
-  getPairByAddress = async (pairAddress: string) => {
+  getPairByAddress = async (pairAddress) => {
     try {
       const web3 = await stores.accountStore.getWeb3Provider();
       if (!web3) {
@@ -551,9 +544,7 @@ class Store {
               .rewards(idx)
               .call();
             const token = await this.getBaseAsset(tokenAddress);
-            if (!token) {
-              throw new Error("Token not found in base assets");
-            }
+
             const rewardRate = await gaugeContract.methods
               .rewardRate(tokenAddress)
               .call();
@@ -599,7 +590,7 @@ class Store {
     }
   };
 
-  getPair = async (addressA: string, addressB: string, stab: boolean) => {
+  getPair = async (addressA, addressB, stab) => {
     if (addressA === NATIVE_TOKEN.symbol) {
       addressA = W_NATIVE_ADDRESS;
     }
@@ -796,7 +787,7 @@ class Store {
               .rewards(idx)
               .call();
             const token = await this.getBaseAsset(tokenAddress);
-            if (!token) throw new Error("Token not found");
+
             const rewardRate = await gaugeContract.methods
               .rewardRate(tokenAddress)
               .call();
@@ -844,7 +835,7 @@ class Store {
     return null;
   };
 
-  removeBaseAsset = (asset: BaseAsset) => {
+  removeBaseAsset = (asset) => {
     try {
       let localBaseAssets = [];
       const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
@@ -852,7 +843,7 @@ class Store {
       if (localBaseAssetsString && localBaseAssetsString !== "") {
         localBaseAssets = JSON.parse(localBaseAssetsString);
 
-        localBaseAssets = localBaseAssets.filter(function (obj: BaseAsset) {
+        localBaseAssets = localBaseAssets.filter(function (obj) {
           return obj.address.toLowerCase() !== asset.address.toLowerCase();
         });
 
@@ -895,11 +886,7 @@ class Store {
     }
   };
 
-  getBaseAsset = async (
-    address: string,
-    save?: boolean,
-    getBalance?: boolean
-  ) => {
+  getBaseAsset = async (address, save?, getBalance?) => {
     try {
       const baseAssets = this.getStore("baseAssets");
 
@@ -978,7 +965,7 @@ class Store {
   };
 
   // DISPATCHER FUNCTIONS
-  configure = async () => {
+  configure = async (payload) => {
     try {
       this.setStore({ govToken: this._getGovTokenBase() });
       this.setStore({ veToken: this._getVeTokenBase() });
@@ -1068,7 +1055,8 @@ class Store {
           },
         }
       );
-      const pairsCall = (await response.json()) as { data: Pair[] };
+
+      const pairsCall = await response.json();
       return pairsCall.data;
     } catch (ex) {
       console.log(ex);
@@ -1125,7 +1113,7 @@ class Store {
     };
   };
 
-  getBalances = async () => {
+  getBalances = async (payload) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -1148,13 +1136,10 @@ class Store {
     }
   };
 
-  _getVestNFTs = async (web3: Web3, account: { address: string }) => {
+  _getVestNFTs = async (web3, account) => {
     try {
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
-      if (!veToken || !govToken) {
-        throw new Error("veToken or govToken not found");
-      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI,
@@ -1231,11 +1216,7 @@ class Store {
     }
   };
 
-  _getPairInfo = async (
-    web3: Web3,
-    account: { address: string },
-    overridePairs?: Pair[]
-  ) => {
+  _getPairInfo = async (web3, account, overridePairs?) => {
     try {
       const multicall = await stores.accountStore.getMulticall();
 
@@ -1381,9 +1362,7 @@ class Store {
                 .div(10 ** 18)
                 .toNumber();
               const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
-                return bribe.tokenPrice && bribe.rewardAmount
-                  ? acc + bribe.tokenPrice * bribe.rewardAmount
-                  : acc;
+                return acc + bribe.tokenPrice * bribe.rewardAmount;
               }, 0);
               if (totalUSDValueOfBribes > 0) {
                 const perVote = totalUSDValueOfBribes / votes;
@@ -1395,10 +1374,7 @@ class Store {
                   token.address.toLowerCase()
                 );
 
-                votingApr =
-                  votes > 0 && flowPrice
-                    ? (perVotePerYear / flowPrice) * 100
-                    : 0;
+                votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
               }
 
               pair.gauge.balance = BigNumber(gaugeBalance)
@@ -1449,7 +1425,7 @@ class Store {
     }
   };
 
-  _getBaseAssetInfo = async (web3: Web3, account: { address: string }) => {
+  _getBaseAssetInfo = async (web3, account) => {
     try {
       const baseAssets = this.getStore("baseAssets");
       if (!baseAssets) {
