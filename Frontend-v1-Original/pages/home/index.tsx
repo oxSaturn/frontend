@@ -78,9 +78,9 @@ function Home() {
             >
               Velocimeter officially launched in January 2023 with a collective
               goal of fair and balanced access to DeFi. Velocimeter is a
-              decentralized exchange that has launched on the Arbitrum network
-              with low fees, near 0 slippage on correlated assets and a strong
-              focus on secondary markets for tokenized locks as NFT&apos;s.
+              decentralized exchange that has launched on the Canto network with
+              low fees, near 0 slippage on correlated assets and a strong focus
+              on secondary markets for tokenized locks as NFT&apos;s.
             </Typography>
             <Typography
               variant="body2"
