@@ -55,7 +55,10 @@ function Migration() {
           </div>
           <div>MIGRATION NEEDS TO BE COMPLETED BEFORE THE NEXT EPOCH!</div>
           <div className="">Go with the FLOW 🌊.</div>
-          <div>Flow Convertor balance is {formatFinancialData(parseFloat(flowConvertorBalance))}</div>
+          <div>
+            Flow Convertor balance is{" "}
+            {formatFinancialData(parseFloat(flowConvertorBalance))}
+          </div>
         </div>
       )}
       <Paper

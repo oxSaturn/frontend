@@ -5,7 +5,7 @@ import { withTheme } from "@mui/styles";
 
 import stores from "../../stores";
 import { ACTIONS, CONTRACTS } from "../../stores/constants/constants";
-import type { BaseAsset, CantoContracts } from "../../stores/types/types";
+import type { BaseAsset, EthWindow } from "../../stores/types/types";
 import { formatCurrency } from "../../utils/utils";
 
 const flowV1 = {
@@ -247,9 +247,44 @@ function Setup() {
           <Typography>{loading ? `Redeeming` : `Redeem`}</Typography>
           {loading && <CircularProgress size={10} />}
         </Button>
+        <Button
+          variant="contained"
+          size="large"
+          color="primary"
+          className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+          disabled={loading}
+          onClick={() => addFlowV2()}
+        >
+          <Typography>Add Flow v2 to Wallet</Typography>
+        </Button>
       </div>
     </div>
   );
 }
 
 export default withTheme(Setup);
+
+async function addFlowV2() {
+  try {
+    const wasAdded = await (window as EthWindow).ethereum.request({
+      method: "wallet_watchAsset",
+      params: {
+        type: "ERC20",
+        options: {
+          address: CONTRACTS.GOV_TOKEN_ADDRESS,
+          symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
+          decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
+          image: CONTRACTS.GOV_TOKEN_LOGO,
+        },
+      },
+    });
+
+    if (wasAdded) {
+      console.log("Added");
+    } else {
+      console.warn("Not added");
+    }
+  } catch (error) {
+    console.warn(error);
+  }
+}

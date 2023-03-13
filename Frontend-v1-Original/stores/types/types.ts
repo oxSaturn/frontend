@@ -256,6 +256,11 @@ interface ITransaction {
   }[];
 }
 
+type EthWindow = Window &
+  typeof globalThis & {
+    ethereum?: any;
+  };
+
 export type {
   BaseAsset,
   Pair,
@@ -271,4 +276,5 @@ export type {
   DexScrennerPair,
   DefiLlamaTokenPrice,
   ITransaction,
+  EthWindow,
 };
