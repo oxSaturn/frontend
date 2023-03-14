@@ -323,7 +323,7 @@ function Header() {
           {unlockOpen && (
             <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />
           )}
-          <TransactionQueue setQueueLength={setQueueLength} />
+          {/* <TransactionQueue setQueueLength={setQueueLength} /> */}
         </div>
       </div>
       {chainInvalid ? (
