@@ -150,5 +150,13 @@
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
     "name": "ETH",
     "symbol": "ETH"
+  },
+  {
+    "address": "0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.velocimeter.xyz/tokens/fBOMB.svg",
+    "name": "Fantom Bomb",
+    "symbol": "fBOMB"
   }
 ]
