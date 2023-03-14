@@ -5,7 +5,7 @@
     "symbol": "WCANTO",
     "decimals": 18,
     "chainId": 7700,
-    "logoURI": "https://assets.slingshot.finance/icons/canto_0x826551890dc65655a0aceca109ab11abdbd7a07b"
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/03/wcanto.png"
   },
   {
     "address": "0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75",
@@ -147,7 +147,7 @@
     "address": "0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687",
     "chainId": 7700,
     "decimals": 18,
-    "logoURI": "",
+    "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
     "name": "ETH",
     "symbol": "ETH"
   }
