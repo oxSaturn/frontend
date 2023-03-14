@@ -1,6 +1,7 @@
 import Head from "next/head";
 import classes from "./layout.module.css";
 import Header from "../header/header";
+import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
 
 export default function Layout({
@@ -20,12 +21,6 @@ export default function Layout({
           as="font"
           crossOrigin=""
         />
-        <link
-          rel="preload"
-          href="/fonts/Inter/Inter-Bold.ttf"
-          as="font"
-          crossOrigin=""
-        />
         <meta
           name="description"
           content="Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on Arbitrum."
@@ -37,7 +32,16 @@ export default function Layout({
       <div className={classes.greyGlow} />
       <div className={classes.greenGlow} />
       <div className={classes.content}>
-        {!configure && <Header />}
+        {!configure && (
+          <>
+            <div className="block md:hidden">
+              <MobileHeader />
+            </div>
+            <div className="sticky top-0 z-10 hidden md:block">
+              <Header />
+            </div>
+          </>
+        )}
         <SnackbarController />
         <main>{children}</main>
       </div>

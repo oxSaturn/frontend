@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -18,6 +18,7 @@ import {
   List,
   ArrowDropDown,
   AccountBalanceWalletOutlined,
+  Menu as MenuIcon,
 } from "@mui/icons-material";
 
 import Navigation from "../navigation/navigation";
@@ -25,7 +26,7 @@ import Unlock from "../unlock/unlockModal";
 import TransactionQueue from "../transactionQueue/transactionQueue";
 import Info from "./info";
 
-import useScrollPosition from "../../hooks/useScrollPosition";
+import useOnClickOutside from "../../hooks/useOnClickOutside";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 import { formatAddress } from "../../utils/utils";
@@ -169,8 +170,9 @@ function Header() {
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [chainInvalid, setChainInvalid] = useState(false);
   const [transactionQueueLength, setTransactionQueueLength] = useState(0);
-
-  const scrollPosition = useScrollPosition();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useOnClickOutside(ref, () => setOpen(false));
 
   useEffect(() => {
     const accountConfigure = () => {
@@ -199,6 +201,10 @@ function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [router.asPath]);
+
   const onAddressClicked = () => {
     setUnlockOpen(true);
   };
@@ -223,102 +229,97 @@ function Header() {
 
   return (
     <>
-      <div
-        className={`grid w-full grid-flow-row border-cantoGreen border-opacity-50 transition-all duration-200 ${
-          scrollPosition > 0
-            ? "border-b-[0.25px] bg-[rgba(0,0,0,0.973)] opacity-90 backdrop-blur-2xl"
-            : "border-b-0 border-none"
-        }`}
-      >
-        <Info />
-        <div className="flex min-h-[60px] items-center justify-between rounded-none border-none py-5 px-8 md:max-[1200px]:flex-col">
-          <a
-            onClick={() => router.push("/home")}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-1"
-          >
-            <SiteLogo />
-            <Typography className="text-2xl font-bold">v2</Typography>
-          </a>
-          <Navigation />
-          <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
-            {process.env.NEXT_PUBLIC_CHAINID === "740" && (
-              <div>
-                <Typography className="rounded-xl border border-cantoGreen bg-[#0e110c] p-4 text-sm">
-                  Testnet
-                </Typography>
-              </div>
-            )}
-            {transactionQueueLength > 0 && (
-              <IconButton
-                className="flex min-h-[40px] items-center rounded-3xl border-none bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
-                color="primary"
-                onClick={() => {
-                  stores.emitter.emit(ACTIONS.TX_OPEN);
-                }}
-              >
-                <StyledBadge
-                  badgeContent={transactionQueueLength}
-                  color="secondary"
-                  overlap="circular"
-                >
-                  <List className="text-white" />
-                </StyledBadge>
-              </IconButton>
-            )}
-            {account && account.address ? (
-              <>
-                <Button
-                  disableElevation
-                  className="flex min-h-[40px] items-center rounded-3xl border border-solid border-cantoGreen border-opacity-60 bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
-                  variant="contained"
-                  color="primary"
-                  aria-controls="simple-menu"
-                  aria-haspopup="true"
-                  onClick={handleClick}
-                >
-                  <Typography className="text-sm font-bold">
-                    {formatAddress(account.address)}
-                  </Typography>
-                  <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-[#7e99b0]" />
-                </Button>
-                <Menu
-                  elevation={0}
-                  anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "right",
-                  }}
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  id="customized-menu"
-                  anchorEl={anchorEl}
-                  keepMounted
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                >
-                  <StyledMenuItem onClick={onAddressClicked}>
-                    <ListItemIcon className="p-0 text-cantoGreen">
-                      <AccountBalanceWalletOutlined fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText primary="Switch Wallet Provider" />
-                  </StyledMenuItem>
-                </Menu>
-              </>
-            ) : (
+      <div className="relative top-0 z-10 flex w-full flex-col gap-2 border-b-0 border-none">
+        <a
+          onClick={() => router.push("/home")}
+          className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-1"
+        >
+          <SiteLogo />
+          <Typography className="text-2xl font-bold">v2</Typography>
+        </a>
+        <div className="flex justify-between px-6">
+          {account && account.address ? (
+            <>
               <Button
                 disableElevation
-                className="flex min-h-[40px] items-center rounded-3xl border-none bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+                className="flex min-h-[40px] items-center rounded-3xl border border-solid border-cantoGreen border-opacity-60 bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
                 variant="contained"
-                color={"primary"}
-                onClick={onAddressClicked}
+                color="primary"
+                aria-controls="simple-menu"
+                aria-haspopup="true"
+                onClick={handleClick}
               >
                 <Typography className="text-sm font-bold">
-                  Connect Wallet
+                  {formatAddress(account.address)}
                 </Typography>
+                <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-[#7e99b0]" />
               </Button>
-            )}
-          </div>
+              <Menu
+                elevation={0}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                id="customized-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <StyledMenuItem onClick={onAddressClicked}>
+                  <ListItemIcon className="p-0 text-cantoGreen">
+                    <AccountBalanceWalletOutlined fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Switch Wallet Provider" />
+                </StyledMenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              disableElevation
+              className="flex min-h-[40px] items-center rounded-3xl border-none bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+              variant="contained"
+              color={"primary"}
+              onClick={onAddressClicked}
+            >
+              <Typography className="text-sm font-bold">
+                Connect Wallet
+              </Typography>
+            </Button>
+          )}
+          <button onClick={() => setOpen((prev) => !prev)}>
+            <MenuIcon />
+          </button>
+        </div>
+        <div
+          ref={ref}
+          className={`${
+            open ? "" : "hidden"
+          } absolute top-[105%] right-2 z-10 flex w-80 animate-slideLeftAndFade flex-col items-start justify-between rounded-sm border-none bg-[#0d3531] py-5 px-6 shadow-md shadow-cantoGreen`}
+        >
+          <Navigation />
+          <Info />
+          {transactionQueueLength > 0 && (
+            <IconButton
+              className="flex min-h-[40px] items-center rounded-3xl border-none bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+              color="primary"
+              onClick={() => {
+                stores.emitter.emit(ACTIONS.TX_OPEN);
+              }}
+            >
+              <StyledBadge
+                badgeContent={transactionQueueLength}
+                color="secondary"
+                overlap="circular"
+              >
+                <List className="text-white" />
+              </StyledBadge>
+            </IconButton>
+          )}
           {unlockOpen && (
             <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />
           )}
