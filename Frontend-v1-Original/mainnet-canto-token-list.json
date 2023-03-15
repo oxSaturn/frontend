@@ -158,5 +158,13 @@
     "logoURI": "https://docs.velocimeter.xyz/tokens/fBOMB.svg",
     "name": "Fantom Bomb",
     "symbol": "fBOMB"
+  },
+  {
+    "address": "0x765277EebeCA2e31912C9946eAe1021199B39C61",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://beefy.com/cf57eaab09241a85ed3089f7c8c19167.png",
+    "name": "Fantom Bomb",
+    "symbol": "BIFI"
   }
 ]
