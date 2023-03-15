@@ -12,7 +12,9 @@ import {
   TablePagination,
   Typography,
   Slider,
+  Tooltip,
 } from "@mui/material";
+import { CurrencyExchangeOutlined } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
@@ -494,28 +496,43 @@ export default function EnhancedTable({
                     </Typography>
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
-                    {row?.gauge?.bribes.map((bribe, idx) => {
-                      return (
-                        <div
-                          className={classes.inlineEnd}
-                          key={bribe.token.symbol}
-                        >
-                          <Typography
-                            variant="h2"
-                            className={classes.textSpaced}
-                          >
-                            {formatCurrency(bribe.rewardAmount)}
-                          </Typography>
-                          <Typography
-                            variant="h5"
-                            className={classes.textSpaced}
-                            color="textSecondary"
-                          >
-                            {bribe.token.symbol}
-                          </Typography>
-                        </div>
-                      );
-                    })}
+                    <div className="flex items-center justify-between gap-1">
+                      <Tooltip
+                        title={`Total bribes value: $${formatCurrency(
+                          row?.gauge?.bribesInUsd
+                        )} USD`}
+                        followCursor
+                        placement="right"
+                        className="flex transition-all duration-200  hover:scale-105 hover:fill-cantoGreen"
+                        enterTouchDelay={500}
+                      >
+                        <CurrencyExchangeOutlined className="relative ml-6 inline-block h-4" />
+                      </Tooltip>
+                      <div>
+                        {row?.gauge?.bribes.map((bribe, idx) => {
+                          return (
+                            <div
+                              className={classes.inlineEnd}
+                              key={bribe.token.symbol}
+                            >
+                              <Typography
+                                variant="h2"
+                                className={classes.textSpaced}
+                              >
+                                {formatCurrency(bribe.rewardAmount)}
+                              </Typography>
+                              <Typography
+                                variant="h5"
+                                className={classes.textSpaced}
+                                color="textSecondary"
+                              >
+                                {bribe.token.symbol}
+                              </Typography>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
                     <Typography variant="h2" className={classes.textSpaced}>
@@ -617,10 +634,10 @@ function descendingComparator(
       return 0;
 
     case "apy":
-      if (BigNumber(b?.gauge?.bribes.length).lt(a?.gauge?.bribes.length)) {
+      if (BigNumber(b?.gauge?.bribesInUsd).lt(a?.gauge?.bribesInUsd)) {
         return -1;
       }
-      if (BigNumber(b?.gauge?.bribes.length).gt(a?.gauge?.bribes.length)) {
+      if (BigNumber(b?.gauge?.bribesInUsd).gt(a?.gauge?.bribesInUsd)) {
         return 1;
       }
       return 0;
