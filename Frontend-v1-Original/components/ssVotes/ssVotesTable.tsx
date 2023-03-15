@@ -217,7 +217,7 @@ export default function EnhancedTable({
   const classes = useStyles();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState<OrderBy>("totalVotes");
+  const [orderBy, setOrderBy] = useState<OrderBy>("votes_apr");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
   const [disabledSort, setDisabledSort] = useState(false);
