@@ -12,7 +12,6 @@ import {
   IconButton,
   FormControlLabel,
   Switch,
-  Select,
   MenuItem,
   Dialog,
 } from "@mui/material";
@@ -35,13 +34,6 @@ import { formatCurrency } from "../../utils/utils";
 
 import classes from "./ssLiquidityManage.module.css";
 
-const initialEmptyToken = {
-  id: "0",
-  lockAmount: "0",
-  lockEnds: "0",
-  lockValue: "0",
-};
-
 export default function ssLiquidityManage() {
   const router = useRouter();
   const amount0Ref = useRef(null);
@@ -50,7 +42,6 @@ export default function ssLiquidityManage() {
   const [pairReadOnly, setPairReadOnly] = useState(false);
 
   const [pair, setPair] = useState(null);
-  const [veToken, setVeToken] = useState(null);
 
   const [depositLoading, setDepositLoading] = useState(false);
   const [stakeLoading, setStakeLoading] = useState(false);
@@ -88,16 +79,11 @@ export default function ssLiquidityManage() {
   const [priorityAsset, setPriorityAsset] = useState(0);
   const [advanced, setAdvanced] = useState(true);
 
-  const [token, setToken] = useState(initialEmptyToken);
-  const [vestNFTs, setVestNFTs] = useState([]);
-
   const [slippage, setSlippage] = useState("2");
   const [slippageError, setSlippageError] = useState(false); //TODO setSlippageError if any?
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
-    const nfts = stores.stableSwapStore.getStore("vestNFTs");
-    const veTok = stores.stableSwapStore.getStore("veToken");
     const pairs = stores.stableSwapStore.getStore("pairs");
 
     const onlyWithBalance = pairs.filter((ppp) => {
@@ -109,14 +95,6 @@ export default function ssLiquidityManage() {
 
     setWithdrawAssetOptions(onlyWithBalance);
     setAssetOptions(storeAssetOptions);
-    setVeToken(veTok);
-    setVestNFTs(nfts);
-
-    if (nfts.length > 0) {
-      if (token == null || token.lockEnds === "0") {
-        setToken(nfts[0]);
-      }
-    }
 
     if (router.query.address && router.query.address !== "create") {
       setPairReadOnly(true);
@@ -380,10 +358,6 @@ export default function ssLiquidityManage() {
     });
   };
 
-  const handleChange = (event) => {
-    setToken(event.target.value);
-  };
-
   const onSlippageChanged = (event) => {
     if (event.target.value == "" || !isNaN(event.target.value)) {
       setSlippage(event.target.value);
@@ -506,7 +480,7 @@ export default function ssLiquidityManage() {
         type: ACTIONS.STAKE_LIQUIDITY,
         content: {
           pair: pair,
-          token: token,
+          token: "0",
           slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
@@ -571,7 +545,7 @@ export default function ssLiquidityManage() {
           amount0: amount0,
           amount1: amount1,
           minLiquidity: quote ? quote : "0",
-          token: token,
+          token: "0",
           slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
@@ -644,7 +618,7 @@ export default function ssLiquidityManage() {
           amount0: amount0,
           amount1: amount1,
           isStable: stable,
-          token: token,
+          token: "0",
           slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
@@ -717,7 +691,7 @@ export default function ssLiquidityManage() {
           amount0: amount0,
           amount1: amount1,
           isStable: stable,
-          token: token,
+          token: "0",
           slippage: slippage && slippage != "" ? slippage : "2",
         },
       });
@@ -1321,51 +1295,6 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const renderTokenSelect = () => {
-    return (
-      <div className={classes.textField}>
-        <div className={classes.mediumInputContainer}>
-          <div className={classes.mediumInputAmount}>
-            <Select
-              fullWidth
-              value={token}
-              onChange={handleChange}
-              // @ts-expect-error This is because of how material-ui works
-              InputProps={{
-                className: classes.mediumInput,
-              }}
-            >
-              {vestNFTs &&
-                vestNFTs.map((option) => {
-                  return (
-                    <MenuItem key={option.id} value={option}>
-                      <div className={classes.menuOption}>
-                        <Typography>Token #{option.id}</Typography>
-                        <div>
-                          <Typography
-                            align="right"
-                            className={classes.smallerText}
-                          >
-                            {formatCurrency(option.lockValue)}
-                          </Typography>
-                          <Typography
-                            color="textSecondary"
-                            className={classes.smallerText}
-                          >
-                            {veToken?.symbol}
-                          </Typography>
-                        </div>
-                      </div>
-                    </MenuItem>
-                  );
-                })}
-            </Select>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const toggleAdvanced = () => {
     setAdvanced(!advanced);
   };
@@ -1455,7 +1384,6 @@ export default function ssLiquidityManage() {
                   amount1Ref
                 )}
                 {renderMediumInputToggle("stable", stable)}
-                {renderTokenSelect()}
                 {renderDepositInformation()}
               </>
             )}
