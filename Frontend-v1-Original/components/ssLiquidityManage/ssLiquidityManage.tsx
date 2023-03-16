@@ -32,8 +32,6 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 
-import classes from "./ssLiquidityManage.module.css";
-
 export default function ssLiquidityManage() {
   const router = useRouter();
   const amount0Ref = useRef(null);
@@ -938,53 +936,51 @@ export default function ssLiquidityManage() {
 
   const renderMediumInput = (type, value, logo, symbol) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.mediumInputContainer}>
-          <div className={classes.mediumInputAssetSelect}>
-            <div className={classes.mediumdisplaySelectContainer}>
-              <div className={classes.assetSelectMenuItem}>
-                <div className={classes.mediumdisplayDualIconContainer}>
-                  {logo && (
-                    <img
-                      className={classes.mediumdisplayAssetIcon}
-                      alt=""
-                      src={logo}
-                      height="50px"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).onerror = null;
-                        (e.target as HTMLImageElement).src =
-                          "/tokens/unknown-logo.png";
-                      }}
-                    />
-                  )}
-                  {!logo && (
-                    <img
-                      className={classes.mediumdisplayAssetIcon}
-                      alt=""
-                      src={"/tokens/unknown-logo.png"}
-                      height="50px"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).onerror = null;
-                        (e.target as HTMLImageElement).src =
-                          "/tokens/unknown-logo.png";
-                      }}
-                    />
-                  )}
-                </div>
+      <div className="relative mb-1">
+        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-[#272826]">
+          <div className="w-20">
+            <div className="h-20 p-3">
+              <div className="relative w-12">
+                {logo && (
+                  <img
+                    className="rounded-[50px] border border-[rgba(128,128,128,0.5)] bg-[#032523] p-1"
+                    alt=""
+                    src={logo}
+                    height="50px"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).onerror = null;
+                      (e.target as HTMLImageElement).src =
+                        "/tokens/unknown-logo.png";
+                    }}
+                  />
+                )}
+                {!logo && (
+                  <img
+                    className="rounded-[50px] border border-[rgba(128,128,128,0.5)] bg-[#032523] p-1"
+                    alt=""
+                    src={"/tokens/unknown-logo.png"}
+                    height="50px"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).onerror = null;
+                      (e.target as HTMLImageElement).src =
+                        "/tokens/unknown-logo.png";
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
-          <div className={classes.mediumInputAmount}>
+          <div className="h-full flex-[1] p-1 pl-0">
             <TextField
               placeholder="0.00"
               fullWidth
               value={value}
               disabled={true}
               InputProps={{
-                className: classes.mediumInput,
+                style: { fontSize: "32px !important" },
               }}
             />
-            <Typography color="textSecondary" className={classes.smallestText}>
+            <Typography color="textSecondary" className="mb-1 -mt-1 text-xs">
               {symbol}
             </Typography>
           </div>
@@ -1006,12 +1002,12 @@ export default function ssLiquidityManage() {
     inputRef
   ) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.inputTitleContainer}>
-          <div className={classes.inputBalance}>
+      <div className="relative mb-1">
+        <div className="absolute top-2 flex w-full items-center justify-end">
+          <div className="z-[4] flex cursor-pointer justify-end pr-3 pb-[6px]">
             {type !== "withdraw" && (
               <Typography
-                className={classes.inputBalanceText}
+                className="text-xs font-thin text-[#7e99b0]"
                 noWrap
                 onClick={() => {
                   setAmountPercent(type, 100);
@@ -1025,7 +1021,7 @@ export default function ssLiquidityManage() {
             )}
             {type === "withdraw" && (
               <Typography
-                className={classes.inputBalanceText}
+                className="text-xs font-thin text-[#7e99b0]"
                 noWrap
                 onClick={() => {
                   setAmountPercent(type, 100);
@@ -1042,11 +1038,11 @@ export default function ssLiquidityManage() {
           </div>
         </div>
         <div
-          className={`${classes.massiveInputContainer} ${
-            (amountError || assetError) && classes.error
+          className={`flex w-full flex-wrap items-center rounded-[10px] bg-[#272826] ${
+            (amountError || assetError) && "border border-red-500"
           }`}
         >
-          <div className={classes.massiveInputAssetSelect}>
+          <div className="h-full min-h-[128px] w-32">
             <AssetSelect
               type={type}
               value={assetValue}
@@ -1055,7 +1051,7 @@ export default function ssLiquidityManage() {
               disabled={pairReadOnly}
             />
           </div>
-          <div className={classes.massiveInputAmount}>
+          <div className="h-full flex-[1] flex-grow-[0.98]">
             <TextField
               inputRef={inputRef}
               placeholder="0.00"
@@ -1067,10 +1063,12 @@ export default function ssLiquidityManage() {
               disabled={createLoading}
               onFocus={onFocus ? onFocus : null}
               InputProps={{
-                className: classes.largeInput,
+                style: {
+                  fontSize: "46px !important",
+                },
               }}
             />
-            <Typography color="textSecondary" className={classes.smallerText}>
+            <Typography color="textSecondary" className="text-xs">
               {assetValue?.symbol}
             </Typography>
           </div>
@@ -1082,58 +1080,50 @@ export default function ssLiquidityManage() {
   const renderDepositInformation = () => {
     if (!pair) {
       return (
-        <div className={classes.depositInfoContainer}>
-          <Typography className={classes.depositInfoHeading}>
+        <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
             Starting Liquidity Info
           </Typography>
-          <div className={classes.createPriceInfos}>
-            <div className={classes.priceInfo}>
-              <Typography className={classes.title}>
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
                 {BigNumber(amount1).gt(0)
                   ? formatCurrency(BigNumber(amount0).div(amount1))
                   : "0.00"}
               </Typography>
-              <Typography
-                className={classes.text}
-              >{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
             </div>
-            <div className={classes.priceInfo}>
-              <Typography className={classes.title}>
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
                 {BigNumber(amount0).gt(0)
                   ? formatCurrency(BigNumber(amount1).div(amount0))
                   : "0.00"}
               </Typography>
-              <Typography
-                className={classes.text}
-              >{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
             </div>
           </div>
         </div>
       );
     } else {
       return (
-        <div className={classes.depositInfoContainer}>
-          <Typography className={classes.depositInfoHeading}>
+        <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
             Reserve Info
           </Typography>
-          <div className={classes.priceInfos}>
-            <div className={classes.priceInfo}>
-              <Typography className={classes.title}>
+          <div className="grid w-full grid-cols-3 gap-3">
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.reserve0)}
               </Typography>
-              <Typography
-                className={classes.text}
-              >{`${pair?.token0?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`${pair?.token0?.symbol}`}</Typography>
             </div>
-            <div className={classes.priceInfo}>
-              <Typography className={classes.title}>
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.reserve1)}
               </Typography>
-              <Typography
-                className={classes.text}
-              >{`${pair?.token1?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`${pair?.token1?.symbol}`}</Typography>
             </div>
-            <div className={classes.priceInfo}>
+            <div className="flex flex-col items-center justify-center py-6 px-0">
               {renderSmallInput(
                 "slippage",
                 slippage,
@@ -1142,25 +1132,21 @@ export default function ssLiquidityManage() {
               )}
             </div>
           </div>
-          <Typography className={classes.depositInfoHeading}>
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
             Your Balances
           </Typography>
-          <div className={classes.createPriceInfos}>
-            <div className={classes.priceInfo}>
-              <Typography className={classes.title}>
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.balance)}
               </Typography>
-              <Typography
-                className={classes.text}
-              >{`Pooled ${pair?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`Pooled ${pair?.symbol}`}</Typography>
             </div>
-            <div className={classes.priceInfo}>
-              <Typography className={classes.title}>
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.gauge?.balance)}
               </Typography>
-              <Typography
-                className={classes.text}
-              >{`Staked ${pair?.symbol} `}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`Staked ${pair?.symbol} `}</Typography>
             </div>
           </div>
         </div>
@@ -1170,28 +1156,24 @@ export default function ssLiquidityManage() {
 
   const renderWithdrawInformation = () => {
     return (
-      <div className={classes.withdrawInfoContainer}>
-        <Typography className={classes.depositInfoHeading}>
+      <div className="mt-2 flex w-full flex-wrap items-center rounded-[10px] p-3">
+        <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
           Reserve Info
         </Typography>
-        <div className={classes.priceInfos}>
-          <div className={classes.priceInfo}>
-            <Typography className={classes.title}>
+        <div className="grid w-full grid-cols-3 gap-3">
+          <div className="flex flex-col items-center justify-center py-6 px-0">
+            <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.reserve0)}
             </Typography>
-            <Typography
-              className={classes.text}
-            >{`${pair?.token0?.symbol}`}</Typography>
+            <Typography className="text-xs text-[#7e99b0]">{`${pair?.token0?.symbol}`}</Typography>
           </div>
-          <div className={classes.priceInfo}>
-            <Typography className={classes.title}>
+          <div className="flex flex-col items-center justify-center py-6 px-0">
+            <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.reserve1)}
             </Typography>
-            <Typography
-              className={classes.text}
-            >{`${pair?.token1?.symbol}`}</Typography>
+            <Typography className="text-xs text-[#7e99b0]">{`${pair?.token1?.symbol}`}</Typography>
           </div>
-          <div className={classes.priceInfo}>
+          <div className="flex flex-col items-center justify-center py-6 px-0">
             {renderSmallInput(
               "slippage",
               slippage,
@@ -1200,29 +1182,25 @@ export default function ssLiquidityManage() {
             )}
           </div>
         </div>
-        <Typography className={classes.depositInfoHeading}>
+        <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
           Your Balances
         </Typography>
-        <div className={classes.createPriceInfos}>
-          <div className={classes.priceInfo}>
-            <Typography className={classes.title}>
+        <div className="grid w-full grid-cols-2 gap-3">
+          <div className="flex flex-col items-center justify-center py-6 px-0">
+            <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.balance)}
             </Typography>
-            <Typography
-              className={classes.text}
-            >{`Pooled ${pair?.symbol}`}</Typography>
+            <Typography className="text-xs text-[#7e99b0]">{`Pooled ${pair?.symbol}`}</Typography>
           </div>
-          <div className={classes.priceInfo}>
-            <Typography className={classes.title}>
+          <div className="flex flex-col items-center justify-center py-6 px-0">
+            <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.gauge?.balance)}
             </Typography>
-            <Typography
-              className={classes.text}
-            >{`Staked ${pair?.symbol} `}</Typography>
+            <Typography className="text-xs text-[#7e99b0]">{`Staked ${pair?.symbol} `}</Typography>
           </div>
         </div>
-        <div className={classes.disclaimerContainer}>
-          <Typography className={classes.disclaimer}>
+        <div className="flex min-h-[100px] items-center justify-center">
+          <Typography className="border border-cantoGreen bg-[#0e110c] p-6 text-sm font-extralight">
             "We are very sad to see you are no longer going with the FLOW"
           </Typography>
         </div>
@@ -1232,15 +1210,15 @@ export default function ssLiquidityManage() {
 
   const renderSmallInput = (type, amountValue, amountError, amountChanged) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.inputTitleContainerSlippage}>
-          <div className={classes.inputBalanceSlippage}>
-            <Typography className={classes.inputBalanceTextSlippage} noWrap>
+      <div className="relative mb-1">
+        <div className="absolute top-1">
+          <div className="pl-3">
+            <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
               Slippage
             </Typography>
           </div>
         </div>
-        <div className={classes.smallInputContainer}>
+        <div className="flex min-h-[50px] w-full max-w-[112px] flex-wrap items-center rounded-[10px] bg-[#272826]">
           <TextField
             placeholder="0.00"
             fullWidth
@@ -1255,7 +1233,6 @@ export default function ssLiquidityManage() {
               createLoading
             }
             InputProps={{
-              className: classes.smallInput,
               endAdornment: <InputAdornment position="end">%</InputAdornment>,
             }}
           />
@@ -1266,28 +1243,30 @@ export default function ssLiquidityManage() {
 
   const renderMediumInputToggle = (type, value) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.mediumInputContainer}>
-          <div className={classes.toggles}>
+      <div className="relative mb-1">
+        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-[#272826]">
+          <div className="grid w-full grid-cols-[1fr_1fr] p-1">
             <div
-              className={`${classes.toggleOption} ${stable && classes.active}`}
+              className={`cursor-pointer rounded-lg p-5 text-[#7e99b0] hover:bg-[rgb(23,52,72)] hover:text-cantoGreen ${
+                stable &&
+                "border border-cantoGreen bg-[rgb(23,52,72)] text-cantoGreen"
+              }`}
               onClick={() => {
                 setStab(true);
               }}
             >
-              <Typography className={classes.toggleOptionText}>
-                Stable
-              </Typography>
+              <Typography className="text-center">Stable</Typography>
             </div>
             <div
-              className={`${classes.toggleOption} ${!stable && classes.active}`}
+              className={`cursor-pointer rounded-lg p-5 text-[#7e99b0] hover:bg-[rgb(23,52,72)] hover:text-cantoGreen ${
+                !stable &&
+                "border border-cantoGreen bg-[rgb(23,52,72)] text-cantoGreen"
+              }`}
               onClick={() => {
                 setStab(false);
               }}
             >
-              <Typography className={classes.toggleOptionText}>
-                Volatile
-              </Typography>
+              <Typography className="text-center">Volatile</Typography>
             </div>
           </div>
         </div>
@@ -1300,58 +1279,51 @@ export default function ssLiquidityManage() {
   };
 
   return (
-    <div className={classes.retain}>
-      <Paper elevation={0} className={classes.container}>
-        <div className={classes.toggleButtons}>
+    <div className="relative">
+      <Paper
+        elevation={0}
+        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-lg shadow-cantoGreen"
+      >
+        <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-cantoGreen">
           <Grid container spacing={0}>
             <Grid item lg={6} md={6} sm={6} xs={6}>
               <Paper
-                className={`${
+                className={`cursor-pointer rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent font-medium text-[#7e99b0] outline-0 ${
                   activeTab === "deposit"
-                    ? classes.buttonActive
-                    : classes.button
-                } ${classes.topLeftButton}`}
+                    ? " border-cantoGreen text-white"
+                    : "border-transparent hover:bg-[hsla(0,0%,100%,.04)]"
+                } flex items-center justify-center py-6`}
                 onClick={toggleDeposit}
               >
                 <Typography variant="h5">Deposit</Typography>
-                <div
-                  className={`${
-                    activeTab === "deposit" ? classes.activeIcon : ""
-                  }`}
-                ></div>
               </Paper>
             </Grid>
             <Grid item lg={6} md={6} sm={6} xs={6}>
               <Paper
-                className={`${
+                className={`cursor-pointer rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent font-medium text-[#7e99b0] outline-0 ${
                   activeTab === "withdraw"
-                    ? classes.buttonActive
-                    : classes.button
-                }  ${classes.bottomLeftButton}`}
+                    ? " border-cantoGreen text-white"
+                    : "border-transparent hover:bg-[hsla(0,0%,100%,.04)]"
+                } flex items-center justify-center py-6`}
                 onClick={toggleWithdraw}
               >
                 <Typography variant="h5">Withdraw</Typography>
-                <div
-                  className={`${
-                    activeTab === "withdraw" ? classes.activeIcon : ""
-                  }`}
-                ></div>
               </Paper>
             </Grid>
           </Grid>
         </div>
-        <div className={classes.titleSection}>
+        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-[#212b48] bg-none">
           <Tooltip title="Back to Liquidity" placement="top">
-            <IconButton className={classes.backButton} onClick={onBack}>
-              <ArrowBack className={classes.backIcon} />
+            <IconButton className="absolute left-1" onClick={onBack}>
+              <ArrowBack className="text-cantoGreen" />
             </IconButton>
           </Tooltip>
-          <Typography className={classes.titleText}>
+          <Typography className="text-lg font-bold">
             Manage Liquidity Pair
           </Typography>
         </div>
-        <div className={classes.reAddPadding}>
-          <div className={classes.inputsContainer}>
+        <div className="w-full py-6 px-0">
+          <div className="py-0 px-6">
             {activeTab === "deposit" && (
               <>
                 {renderMassiveInput(
@@ -1366,9 +1338,9 @@ export default function ssLiquidityManage() {
                   amount0Focused,
                   amount0Ref
                 )}
-                <div className={classes.swapIconContainer}>
-                  <div className={classes.swapIconSubContainer}>
-                    <Add className={classes.swapIcon} />
+                <div className="z-[9] flex h-0 w-full items-center justify-center">
+                  <div className="z-[1] h-9 rounded-[9px] bg-[#161b2c]">
+                    <Add className="m-1 cursor-pointer rounded-md bg-[rgb(33,43,72)] p-[6px] text-3xl" />
                   </div>
                 </div>
                 {renderMassiveInput(
@@ -1401,12 +1373,12 @@ export default function ssLiquidityManage() {
                   null,
                   null
                 )}
-                <div className={classes.swapIconContainer}>
-                  <div className={classes.swapIconSubContainer}>
-                    <ArrowDownward className={classes.swapIcon} />
+                <div className="z-[9] flex h-0 w-full items-center justify-center">
+                  <div className="z-[1] h-9 rounded-[9px] bg-[#161b2c]">
+                    <ArrowDownward className="m-1 cursor-pointer rounded-md bg-[rgb(33,43,72)] p-[6px] text-3xl" />
                   </div>
                 </div>
-                <div className={classes.receiveAssets}>
+                <div className="grid grid-cols-[repeat(2,1fr)] gap-1">
                   {renderMediumInput(
                     "withdrawAmount0",
                     withdrawAmount0,
@@ -1424,7 +1396,7 @@ export default function ssLiquidityManage() {
               </>
             )}
           </div>
-          <div className={classes.advancedToggleContainer}>
+          <div className="flex justify-end py-0 px-8">
             <FormControlLabel
               control={
                 <Switch
@@ -1434,13 +1406,13 @@ export default function ssLiquidityManage() {
                   color={"primary"}
                 />
               }
-              className={classes.some}
+              className="[&>span]:text-[13px]"
               label="Advanced"
               labelPlacement="start"
             />
           </div>
           {activeTab === "deposit" && (
-            <div className={classes.actionsContainer}>
+            <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0 px-6">
               {pair === null &&
                 asset0 &&
                 asset0.isWhitelisted === true &&
@@ -1452,20 +1424,20 @@ export default function ssLiquidityManage() {
                       size="large"
                       className={
                         createLoading || depositLoading
-                          ? classes.multiApprovalButton
-                          : classes.buttonOverride
+                          ? "min-w-[auto]"
+                          : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
                       disabled={createLoading || depositLoading}
                       onClick={onCreateAndStake}
                     >
-                      <Typography className={classes.actionButtonText}>
+                      <Typography className="font-bold capitalize">
                         {createLoading ? `Creating` : `Create Pair & Stake`}
                       </Typography>
                       {createLoading && (
                         <CircularProgress
                           size={10}
-                          className={classes.loadingCircle}
+                          className="ml-2 fill-white"
                         />
                       )}
                     </Button>
@@ -1476,14 +1448,14 @@ export default function ssLiquidityManage() {
                           size="large"
                           className={
                             createLoading || depositLoading
-                              ? classes.multiApprovalButton
-                              : classes.buttonOverride
+                              ? "min-w-[auto]"
+                              : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                           }
                           color="primary"
                           disabled={createLoading || depositLoading}
                           onClick={onCreateAndDeposit}
                         >
-                          <Typography className={classes.actionButtonText}>
+                          <Typography className="font-bold capitalize">
                             {depositLoading
                               ? `Depositing`
                               : `Create Pair & Deposit`}
@@ -1491,7 +1463,7 @@ export default function ssLiquidityManage() {
                           {depositLoading && (
                             <CircularProgress
                               size={10}
-                              className={classes.loadingCircle}
+                              className="ml-2 fill-white"
                             />
                           )}
                         </Button>
@@ -1512,14 +1484,14 @@ export default function ssLiquidityManage() {
                       size="large"
                       className={
                         createLoading || depositLoading
-                          ? classes.multiApprovalButton
-                          : classes.buttonOverride
+                          ? "min-w-[auto]"
+                          : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
                       disabled={createLoading || depositLoading}
                       onClick={onCreateAndDeposit}
                     >
-                      <Typography className={classes.actionButtonText}>
+                      <Typography className="font-bold capitalize">
                         {depositLoading
                           ? `Depositing`
                           : `Create Pair & Deposit`}
@@ -1527,7 +1499,7 @@ export default function ssLiquidityManage() {
                       {depositLoading && (
                         <CircularProgress
                           size={10}
-                          className={classes.loadingCircle}
+                          className="ml-2 fill-white"
                         />
                       )}
                     </Button>
@@ -1545,8 +1517,8 @@ export default function ssLiquidityManage() {
                         depositLoading ||
                         stakeLoading ||
                         depositStakeLoading
-                          ? classes.multiApprovalButton
-                          : classes.buttonOverride
+                          ? "min-w-[auto]"
+                          : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
                       disabled={
@@ -1557,13 +1529,13 @@ export default function ssLiquidityManage() {
                       }
                       onClick={onDeposit}
                     >
-                      <Typography className={classes.actionButtonText}>
+                      <Typography className="font-bold capitalize">
                         {depositLoading ? `Depositing` : `Deposit`}
                       </Typography>
                       {depositLoading && (
                         <CircularProgress
                           size={10}
-                          className={classes.loadingCircle}
+                          className="ml-2 fill-white"
                         />
                       )}
                     </Button>
@@ -1576,8 +1548,8 @@ export default function ssLiquidityManage() {
                           depositLoading ||
                           stakeLoading ||
                           depositStakeLoading
-                            ? classes.multiApprovalButton
-                            : classes.buttonOverride
+                            ? "min-w-[auto]"
+                            : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                         }
                         color="primary"
                         disabled={
@@ -1588,13 +1560,13 @@ export default function ssLiquidityManage() {
                         }
                         onClick={onCreateGauge}
                       >
-                        <Typography className={classes.actionButtonText}>
+                        <Typography className="font-bold capitalize">
                           {createLoading ? `Creating` : `Create Gauge`}
                         </Typography>
                         {createLoading && (
                           <CircularProgress
                             size={10}
-                            className={classes.loadingCircle}
+                            className="ml-2 fill-white"
                           />
                         )}
                       </Button>
@@ -1614,8 +1586,8 @@ export default function ssLiquidityManage() {
                         depositLoading ||
                         stakeLoading ||
                         depositStakeLoading
-                          ? classes.multiApprovalButton
-                          : classes.buttonOverride
+                          ? "min-w-[auto]"
+                          : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
                       disabled={
@@ -1626,13 +1598,13 @@ export default function ssLiquidityManage() {
                       }
                       onClick={onDepositAndStake}
                     >
-                      <Typography className={classes.actionButtonText}>
+                      <Typography className="font-bold capitalize">
                         {depositStakeLoading ? `Depositing` : `Deposit & Stake`}
                       </Typography>
                       {depositStakeLoading && (
                         <CircularProgress
                           size={10}
-                          className={classes.loadingCircle}
+                          className="ml-2 fill-white"
                         />
                       )}
                     </Button>
@@ -1646,8 +1618,8 @@ export default function ssLiquidityManage() {
                             depositLoading ||
                             stakeLoading ||
                             depositStakeLoading
-                              ? classes.multiApprovalButton
-                              : classes.buttonOverride
+                              ? "min-w-[auto]"
+                              : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                           }
                           color="primary"
                           disabled={
@@ -1658,13 +1630,13 @@ export default function ssLiquidityManage() {
                           }
                           onClick={onDeposit}
                         >
-                          <Typography className={classes.actionButtonText}>
+                          <Typography className="font-bold capitalize">
                             {depositLoading ? `Depositing` : `Deposit LP`}
                           </Typography>
                           {depositLoading && (
                             <CircularProgress
                               size={10}
-                              className={classes.loadingCircle}
+                              className="ml-2 fill-white"
                             />
                           )}
                         </Button>
@@ -1676,8 +1648,8 @@ export default function ssLiquidityManage() {
                             depositLoading ||
                             stakeLoading ||
                             depositStakeLoading
-                              ? classes.multiApprovalButton
-                              : classes.buttonOverride
+                              ? "min-w-[auto]"
+                              : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                           }
                           color="primary"
                           disabled={
@@ -1688,7 +1660,7 @@ export default function ssLiquidityManage() {
                           }
                           onClick={onStake}
                         >
-                          <Typography className={classes.actionButtonText}>
+                          <Typography className="font-bold capitalize">
                             {BigNumber(pair.balance).gt(0)
                               ? stakeLoading
                                 ? `Staking`
@@ -1698,7 +1670,7 @@ export default function ssLiquidityManage() {
                           {stakeLoading && (
                             <CircularProgress
                               size={10}
-                              className={classes.loadingCircle}
+                              className="ml-2 fill-white"
                             />
                           )}
                         </Button>
@@ -1710,7 +1682,7 @@ export default function ssLiquidityManage() {
             </div>
           )}
           {activeTab === "withdraw" && (
-            <div className={classes.actionsContainer}>
+            <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0 px-6">
               {!(pair && pair.gauge && pair.gauge.address) && (
                 <Button
                   variant="contained"
@@ -1718,20 +1690,17 @@ export default function ssLiquidityManage() {
                   color="primary"
                   className={
                     depositLoading || withdrawAmount === ""
-                      ? classes.multiApprovalButton
-                      : classes.buttonOverride
+                      ? "min-w-[auto]"
+                      : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                   }
                   disabled={depositLoading || withdrawAmount === ""}
                   onClick={onWithdraw}
                 >
-                  <Typography className={classes.actionButtonText}>
+                  <Typography className="font-bold capitalize">
                     {depositLoading ? `Withdrawing` : `Withdraw`}
                   </Typography>
                   {depositLoading && (
-                    <CircularProgress
-                      size={10}
-                      className={classes.loadingCircle}
-                    />
+                    <CircularProgress size={10} className="ml-2 fill-white" />
                   )}
                 </Button>
               )}
@@ -1746,8 +1715,8 @@ export default function ssLiquidityManage() {
                       stakeLoading ||
                       depositStakeLoading ||
                       withdrawAmount === ""
-                        ? classes.multiApprovalButton
-                        : classes.buttonOverride
+                        ? "min-w-[auto]"
+                        : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                     }
                     disabled={
                       depositLoading ||
@@ -1757,16 +1726,13 @@ export default function ssLiquidityManage() {
                     }
                     onClick={onUnstakeAndWithdraw}
                   >
-                    <Typography className={classes.actionButtonText}>
+                    <Typography className="font-bold capitalize">
                       {depositStakeLoading
                         ? `Withdrawing`
                         : `Unstake and Withdraw`}
                     </Typography>
                     {depositStakeLoading && (
-                      <CircularProgress
-                        size={10}
-                        className={classes.loadingCircle}
-                      />
+                      <CircularProgress size={10} className="ml-2 fill-white" />
                     )}
                   </Button>
                   {advanced && (
@@ -1779,8 +1745,8 @@ export default function ssLiquidityManage() {
                           depositLoading ||
                           stakeLoading ||
                           depositStakeLoading
-                            ? classes.multiApprovalButton
-                            : classes.buttonOverride
+                            ? "min-w-[auto]"
+                            : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                         }
                         color="primary"
                         disabled={
@@ -1791,13 +1757,13 @@ export default function ssLiquidityManage() {
                         }
                         onClick={onUnstake}
                       >
-                        <Typography className={classes.actionButtonText}>
+                        <Typography className="font-bold capitalize">
                           {stakeLoading ? `Unstaking` : `Unstake LP`}
                         </Typography>
                         {stakeLoading && (
                           <CircularProgress
                             size={10}
-                            className={classes.loadingCircle}
+                            className="ml-2 fill-white"
                           />
                         )}
                       </Button>
@@ -1809,8 +1775,8 @@ export default function ssLiquidityManage() {
                           depositLoading ||
                           stakeLoading ||
                           depositStakeLoading
-                            ? classes.multiApprovalButton
-                            : classes.buttonOverride
+                            ? "min-w-[auto]"
+                            : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
                         }
                         color="primary"
                         disabled={
@@ -1821,7 +1787,7 @@ export default function ssLiquidityManage() {
                         }
                         onClick={onWithdraw}
                       >
-                        <Typography className={classes.actionButtonText}>
+                        <Typography className="font-bold capitalize">
                           {BigNumber(pair.balance).gt(0)
                             ? depositLoading
                               ? `Withdrawing`
@@ -1831,7 +1797,7 @@ export default function ssLiquidityManage() {
                         {depositLoading && (
                           <CircularProgress
                             size={10}
-                            className={classes.loadingCircle}
+                            className="ml-2 fill-white"
                           />
                         )}
                       </Button>
@@ -1933,29 +1899,27 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
     return (
       <MenuItem
         key={asset.address + "_" + idx}
-        className={classes.assetSelectMenu}
+        className="flex items-center justify-between px-0"
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainerSmall}>
-            <img
-              className={classes.displayAssetIconSmall}
-              alt=""
-              src={asset ? `${asset.logoURI}` : ""}
-              height="60px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative mr-3 w-14">
+          <img
+            className="rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
+            alt=""
+            src={asset ? `${asset.logoURI}` : ""}
+            height="60px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
-        <div className={classes.assetSelectIconName}>
+        <div>
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className={classes.assetSelectActions}>
+        <div className="flex flex-[1] justify-end">
           <IconButton
             onClick={() => {
               deleteOption(asset);
@@ -1979,32 +1943,31 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
     return (
       <MenuItem
         key={asset.address + "_" + idx}
-        className={classes.assetSelectMenu}
+        className="flex items-center justify-between px-0"
         onClick={() => {
           onLocalSelect(type, asset);
         }}
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainerSmall}>
-            <img
-              className={classes.displayAssetIconSmall}
-              alt=""
-              src={asset ? `${asset.logoURI}` : ""}
-              height="60px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative mr-3 w-14">
+          <img
+            className="rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
+            alt=""
+            src={asset ? `${asset.logoURI}` : ""}
+            height="60px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
-        <div className={classes.assetSelectIconName}>
+
+        <div>
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className={classes.assetSelectBalance}>
+        <div className="ml-12 flex flex-[1] flex-col items-end">
           <Typography variant="h5">
             {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
           </Typography>
@@ -2019,25 +1982,24 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   const renderManageLocal = () => {
     return (
       <>
-        <div className={classes.searchContainer}>
-          <div className={classes.searchInline}>
-            <TextField
-              autoFocus
-              variant="outlined"
-              fullWidth
-              placeholder="CANTO, MIM, 0x..."
-              value={search}
-              onChange={onSearchChanged}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </div>
-          <div className={classes.assetSearchResults}>
+        <div className="h-[600px] overflow-y-scroll p-6">
+          <TextField
+            autoFocus
+            variant="outlined"
+            fullWidth
+            placeholder="CANTO, MIM, 0x..."
+            value={search}
+            onChange={onSearchChanged}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <div className="mt-3 flex w-full min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .filter((option) => {
@@ -2049,7 +2011,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
               : []}
           </div>
         </div>
-        <div className={classes.manageLocalContainer}>
+        <div className="flex w-full items-center justify-center p-[6px]">
           <Button onClick={toggleLocal}>Back to Assets</Button>
         </div>
       </>
@@ -2059,25 +2021,24 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   const renderOptions = () => {
     return (
       <>
-        <div className={classes.searchContainer}>
-          <div className={classes.searchInline}>
-            <TextField
-              autoFocus
-              variant="outlined"
-              fullWidth
-              placeholder="CANTO, MIM, 0x..."
-              value={search}
-              onChange={onSearchChanged}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </div>
-          <div className={classes.assetSearchResults}>
+        <div className="h-[600px] overflow-y-scroll p-6">
+          <TextField
+            autoFocus
+            variant="outlined"
+            fullWidth
+            placeholder="CANTO, MIM, 0x..."
+            value={search}
+            onChange={onSearchChanged}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <div className="mt-3 flex w-full min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
@@ -2095,7 +2056,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
               : []}
           </div>
         </div>
-        <div className={classes.manageLocalContainer}>
+        <div className="flex w-full items-center justify-center p-[6px]">
           <Button onClick={toggleLocal}>Manage Local Assets</Button>
         </div>
       </>
@@ -2105,24 +2066,22 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   return (
     <>
       <div
-        className={classes.displaySelectContainer}
+        className="min-h-[100px] p-3"
         onClick={() => {
           openSearch();
         }}
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainer}>
-            <img
-              className={classes.displayAssetIcon}
-              alt=""
-              src={value ? `${value.logoURI}` : ""}
-              height="100px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative w-full">
+          <img
+            className="h-full w-full rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
+            alt=""
+            src={value ? `${value.logoURI}` : ""}
+            height="100px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
       </div>
       <Dialog
