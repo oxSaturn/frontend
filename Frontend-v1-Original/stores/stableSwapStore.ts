@@ -63,6 +63,7 @@ class Store {
     tvl: number;
     circulatingSupply: number;
     marketCap: number;
+    u_domain: string | undefined;
   };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
@@ -89,6 +90,7 @@ class Store {
       tvl: 0,
       circulatingSupply: 0,
       marketCap: 0,
+      u_domain: undefined,
     };
 
     dispatcher.register(
@@ -980,6 +982,9 @@ class Store {
       });
       this.setStore({
         marketCap: await stores.helper.getMarketCap(), // TODO move to api
+      });
+      this.setStore({
+        u_domain: await stores.helper.resolveUnstoppableDomain(),
       });
       this.setStore({ v1TokenBalance: await stores.helper.getV1Balance() }); //FIXME temporary
       this.setStore({

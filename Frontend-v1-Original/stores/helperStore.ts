@@ -306,6 +306,22 @@ class Helper {
 
     return parseFloat(price);
   };
+
+  resolveUnstoppableDomain = async () => {
+    const address = stores.accountStore.getStore("account").address;
+    if (!address) return undefined;
+    const res = await fetch(
+      `https://resolve.unstoppabledomains.com/reverse/${address.toLowerCase()}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer 7cdcaf3c-57bc-4cb8-b6e3-2db7ac24e60f",
+        },
+      }
+    );
+    const resJson = await res.json();
+    return resJson?.meta?.domain as string;
+  };
 }
 
 export default Helper;
