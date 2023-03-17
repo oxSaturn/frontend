@@ -49,7 +49,8 @@ function SiteLogo(props: { className?: string }) {
   );
 }
 
-const { CONNECT_WALLET, ACCOUNT_CONFIGURED, ACCOUNT_CHANGED } = ACTIONS;
+const { CONNECT_WALLET, ACCOUNT_CONFIGURED, ACCOUNT_CHANGED, UPDATED } =
+  ACTIONS;
 
 function WrongNetworkIcon(props: { className: string }) {
   const { className } = props;
@@ -170,6 +171,8 @@ function Header() {
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [chainInvalid, setChainInvalid] = useState(false);
   const [transactionQueueLength, setTransactionQueueLength] = useState(0);
+  const [domain, setDomain] = useState<string>();
+
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useOnClickOutside(ref, () => setOpen(false));
@@ -187,17 +190,25 @@ function Header() {
       const invalid = stores.accountStore.getStore("chainInvalid");
       setChainInvalid(invalid);
     };
+    const ssUpdated = () => {
+      const domain = stores.stableSwapStore.getStore("u_domain");
+      setDomain(domain);
+    };
 
     const invalid = stores.accountStore.getStore("chainInvalid");
     setChainInvalid(invalid);
 
+    ssUpdated();
+
     stores.emitter.on(ACCOUNT_CONFIGURED, accountConfigure);
     stores.emitter.on(CONNECT_WALLET, connectWallet);
     stores.emitter.on(ACCOUNT_CHANGED, accountChanged);
+    stores.emitter.on(UPDATED, ssUpdated);
     return () => {
       stores.emitter.removeListener(ACCOUNT_CONFIGURED, accountConfigure);
       stores.emitter.removeListener(CONNECT_WALLET, connectWallet);
       stores.emitter.removeListener(ACCOUNT_CHANGED, accountChanged);
+      stores.emitter.removeListener(UPDATED, ssUpdated);
     };
   }, []);
 

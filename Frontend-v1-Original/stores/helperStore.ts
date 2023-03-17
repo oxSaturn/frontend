@@ -320,6 +320,8 @@ class Helper {
       }
     );
     const resJson = await res.json();
+    if (!resJson?.meta?.domain || resJson?.meta?.domain === "")
+      return undefined;
     return resJson?.meta?.domain as string;
   };
 }
