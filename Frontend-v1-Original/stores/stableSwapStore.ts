@@ -5147,6 +5147,7 @@ class Store {
       const { tokenID } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let rewardsTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
@@ -5155,6 +5156,11 @@ class Store {
         type: "Vest",
         verb: "Vest Withdrawn",
         transactions: [
+          {
+            uuid: rewardsTXID,
+            description: `Checking unclaimed rewards`,
+            status: "WAITING",
+          },
           {
             uuid: resetTXID,
             description: `Checking if your nft is attached`,
@@ -5167,6 +5173,63 @@ class Store {
           },
         ],
       });
+
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ content: tokenID });
+      const rewards = this.getStore("rewards");
+
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `Unclaimed rewards found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `No unclaimed rewards found, skipping claim`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge.bribesEarned.map((bribe) => {
+            return bribe.token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rewardsTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
 
       // CHECK if veNFT is attached
       const attached = await this._checkNFTAttached(web3, tokenID);
