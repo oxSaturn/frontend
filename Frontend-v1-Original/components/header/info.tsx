@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 
 import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
+import { ACTIONS, CONTRACTS } from "../../stores/constants/constants";
 
 export default function Info() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
   const [tvl, setTvl] = useState<number>(0);
+  const [flowPrice, setFlowPrice] = useState<number>(0);
   const [circulatingSupply, setCirculatingSupply] = useState<number>(0);
   const [mCap, setMCap] = useState<number>(0);
   const [updateDate, setUpdateDate] = useState(0);
@@ -20,6 +21,13 @@ export default function Info() {
       );
       setMCap(stores.stableSwapStore.getStore("marketCap"));
 
+      const _flowPrice = stores.helper.getTokenPricesMap.get(
+        CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+      );
+      if (_flowPrice) {
+        setFlowPrice(_flowPrice);
+      }
+
       const _updateDate = stores.stableSwapStore.getStore("updateDate");
       if (_updateDate) {
         setUpdateDate(_updateDate);
@@ -29,6 +37,12 @@ export default function Info() {
     };
 
     setTvl(stores.stableSwapStore.getStore("tvl"));
+    const _flowPrice = stores.helper.getTokenPricesMap.get(
+      CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+    );
+    if (_flowPrice) {
+      setFlowPrice(_flowPrice);
+    }
     setCirculatingSupply(stores.stableSwapStore.getStore("circulatingSupply"));
     setMCap(stores.stableSwapStore.getStore("marketCap"));
     const _updateDate = stores.stableSwapStore.getStore("updateDate");
@@ -45,15 +59,19 @@ export default function Info() {
   return (
     <div className="flex flex-col items-start gap-3 px-6 pt-2 font-sono md:flex-row md:items-center md:px-4">
       <div>
-        TVL:{" "}
+        <span className="font-normal">TVL: </span>
         <span className="tracking-tighter">${formatFinancialData(tvl)}</span>
       </div>
       <div>
-        MCap:{" "}
+        <span className="font-normal">$FLOW price: </span>
+        <span className="tracking-tighter">${flowPrice.toFixed(3)}</span>
+      </div>
+      <div>
+        <span className="font-normal">MCap: </span>
         <span className="tracking-tighter">${formatFinancialData(mCap)}</span>
       </div>
       <div>
-        Circulating Supply:{" "}
+        <span className="font-normal">Circulating Supply: </span>
         <span className="tracking-tighter">
           {formatFinancialData(circulatingSupply)}
         </span>
@@ -73,7 +91,7 @@ function Timer({ deadline }: { deadline: number }) {
 
   return (
     <div>
-      Next Epoch:{" "}
+      <span className="font-normal">Next Epoch: </span>
       <span className="tracking-tighter">
         {days + hours + minutes + seconds <= 0
           ? "0d_0h_0m"
