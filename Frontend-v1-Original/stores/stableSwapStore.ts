@@ -55,7 +55,6 @@ class Store {
     vestNFTs: VestNFT[];
     rewards: {
       bribes: any[];
-      fees: any[];
       rewards: any[];
       veDist: any[];
     };
@@ -81,7 +80,6 @@ class Store {
       vestNFTs: [],
       rewards: {
         bribes: [],
-        fees: [],
         rewards: [],
         veDist: [],
       },
@@ -176,6 +174,9 @@ class Store {
             break;
           case ACTIONS.INCREASE_VEST_DURATION:
             this.increaseVestDuration(payload);
+            break;
+          case ACTIONS.RESET_VEST:
+            this.resetVest(payload);
             break;
           case ACTIONS.WITHDRAW_VEST:
             this.withdrawVest(payload);
@@ -5004,6 +5005,128 @@ class Store {
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  resetVest = async (payload) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { tokenID } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let rewardsTXID = this.getTXUUID();
+      let resetTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Reset veNFT #${tokenID}`,
+        type: "Reset",
+        verb: "Vest Reseted",
+        transactions: [
+          {
+            uuid: rewardsTXID,
+            description: `Checking unclaimed rewards`,
+            status: "WAITING",
+          },
+          {
+            uuid: resetTXID,
+            description: `Resetting your veNFT`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ content: tokenID });
+      const rewards = this.getStore("rewards");
+
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `Unclaimed rewards found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `No unclaimed rewards found, skipping claim`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge.bribesEarned.map((bribe) => {
+            return bribe.token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rewardsTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
+
+      // SUBMIT RESET TRANSACTION
+      const voterContract = new web3.eth.Contract(
+        CONTRACTS.VOTER_ABI as AbiItem[],
+        CONTRACTS.VOTER_ADDRESS
+      );
+
+      this._callContractWait(
+        web3,
+        voterContract,
+        "reset",
+        [tokenID],
+        account,
+        undefined,
+        null,
+        null,
+        resetTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+        }
+      );
+    } catch (e) {
+      console.log(e);
+      console.log("RESET VEST ERROR");
     }
   };
 
