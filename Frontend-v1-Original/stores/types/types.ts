@@ -68,6 +68,7 @@ interface Pair {
   claimable0?: string;
   claimable1?: string;
   balance?: string;
+  isAliveGauge?: boolean;
   gauge?: {
     // exists only if gauge_address is not empty
     decimals: number;
