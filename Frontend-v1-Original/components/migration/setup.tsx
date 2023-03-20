@@ -41,13 +41,13 @@ function Setup() {
 
     const ssUpdated = () => {
       const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-      const v1Balance = stores.stableSwapStore.getStore("v1TokenBalance");
-      if (v1Balance !== "0" && fromAssetValue.balance === "0") {
-        setFromAssetValue({
-          ...flowV1,
-          balance: v1Balance,
-        });
-      }
+      // const v1Balance = stores.stableSwapStore.getStore("v1TokenBalance");
+      // if (v1Balance !== "0" && fromAssetValue.balance === "0") {
+      //   setFromAssetValue({
+      //     ...flowV1,
+      //     balance: v1Balance,
+      //   });
+      // }
 
       const swapAsset = swapAssets.find((asset) => asset.symbol === "FLOW");
 
