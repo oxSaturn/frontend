@@ -310,19 +310,15 @@ class Helper {
   resolveUnstoppableDomain = async () => {
     const address = stores.accountStore.getStore("account").address;
     if (!address) return undefined;
-    const res = await fetch(
-      `https://resolve.unstoppabledomains.com/reverse/${address.toLowerCase()}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer 7cdcaf3c-57bc-4cb8-b6e3-2db7ac24e60f",
-        },
-      }
-    );
-    const resJson = await res.json();
-    if (!resJson?.meta?.domain || resJson?.meta?.domain === "")
-      return undefined;
-    return resJson?.meta?.domain as string;
+    const res = await fetch("/api/u-domains", {
+      method: "POST",
+      body: JSON.stringify({
+        address,
+      }),
+    });
+    const resJson = (await res.json()) as { domain: string };
+    if (!resJson?.domain || resJson?.domain === "") return undefined;
+    return resJson?.domain as string;
   };
 }
 
