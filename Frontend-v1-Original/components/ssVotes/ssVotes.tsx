@@ -22,7 +22,7 @@ import WarningModal from "../warning/warning";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-import { Pair, VeToken, Vote } from "../../stores/types/types";
+import { Pair, VeToken, Vote, Votes } from "../../stores/types/types";
 
 const initialEmptyToken = {
   id: "0",
@@ -41,9 +41,7 @@ export default function ssVotes() {
 
   const [gauges, setGauges] = useState<Pair[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState<
-    Array<Pick<Vote, "address"> & { value: number }>
-  >([]);
+  const [votes, setVotes] = useState<Votes>([]);
   const [veToken, setVeToken] = useState<VeToken>(null);
   const [token, setToken] = useState(initialEmptyToken);
   const [vestNFTs, setVestNFTs] = useState([]);

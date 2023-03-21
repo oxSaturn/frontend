@@ -7,7 +7,7 @@ import {
 import Web3 from "web3";
 
 import { CONTRACTS } from "../../stores/constants/constants";
-import { RouteAsset } from "../../stores/types/types";
+import { AmountsOut } from "../../stores/types/types";
 
 const web3 = new Web3(
   process.env.VELOCIMETER_NODE ?? "https://canto.slingshot.finance/"
@@ -17,17 +17,6 @@ const multicall = new Multicall({
   tryAggregate: true,
   multicallCustomContractAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
 });
-
-interface AmountOut {
-  routes: {
-    from: string;
-    to: string;
-    stable: boolean;
-  }[];
-  routeAsset: null | RouteAsset;
-}
-
-type AmountsOut = AmountOut[];
 
 // TODO why is that...
 interface WeirdBigNumber {

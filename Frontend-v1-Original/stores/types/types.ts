@@ -28,6 +28,9 @@ type TokenForPrice = Omit<
   Partial<RouteAsset>;
 
 type VeToken = Omit<BaseAsset, "balance" | "local">;
+type GovToken = Omit<BaseAsset, "local"> & {
+  balanceOf: string;
+};
 
 interface VestNFT {
   id: string;
@@ -179,6 +182,8 @@ type Vote = {
   votePercent: string;
 };
 
+type Votes = Array<Pick<Vote, "address"> & { value: number }>;
+
 interface DexScrennerPair {
   chainId: string;
   dexId: string;
@@ -263,6 +268,17 @@ type EthWindow = Window &
     ethereum?: any;
   };
 
+interface AmountOut {
+  routes: {
+    from: string;
+    to: string;
+    stable: boolean;
+  }[];
+  routeAsset: null | RouteAsset;
+}
+
+type AmountsOut = AmountOut[];
+
 export type {
   BaseAsset,
   Pair,
@@ -273,10 +289,14 @@ export type {
   CantoContracts,
   ArbitrumContracts,
   VeToken,
+  GovToken,
   Vote,
+  Votes,
   VestNFT,
   DexScrennerPair,
   DefiLlamaTokenPrice,
   ITransaction,
   EthWindow,
+  AmountOut,
+  AmountsOut,
 };
