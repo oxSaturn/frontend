@@ -254,6 +254,20 @@ class Helper {
 
     return parseFloat(price);
   };
+
+  resolveUnstoppableDomain = async () => {
+    const address = stores.accountStore.getStore("account").address;
+    if (!address) return undefined;
+    const res = await fetch("/api/u-domains", {
+      method: "POST",
+      body: JSON.stringify({
+        address,
+      }),
+    });
+    const resJson = (await res.json()) as { domain: string };
+    if (!resJson?.domain || resJson?.domain === "") return undefined;
+    return resJson?.domain as string;
+  };
 }
 
 export default Helper;
