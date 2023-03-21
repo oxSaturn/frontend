@@ -493,9 +493,11 @@ export default function EnhancedTable({
                   <TableCell className={classes.cell} align="right">
                     <div className="relative flex items-center justify-end gap-1">
                       <Tooltip
-                        title={`Voting APR: ${formatCurrency(
-                          row?.gauge?.votingApr
-                        )} %`}
+                        title={`Voting APR: ${
+                          row?.gauge?.votingApr === Infinity
+                            ? "∞"
+                            : formatCurrency(row?.gauge?.votingApr)
+                        } %`}
                         followCursor
                         placement="right"
                         className="flex transition-all duration-200  hover:scale-105 hover:fill-cantoGreen"

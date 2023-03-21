@@ -983,7 +983,6 @@ class Store {
         u_domain: await stores.helper.resolveUnstoppableDomain(),
       });
 
-
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
 
@@ -1376,7 +1375,8 @@ class Store {
                   token.address.toLowerCase()
                 );
 
-                votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
+                votingApr =
+                  votes > 0 ? (perVotePerYear / flowPrice) * 100 : Infinity;
               }
 
               pair.gauge.balance = BigNumber(gaugeBalance)
