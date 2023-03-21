@@ -48,8 +48,6 @@ class Store {
     swapAssets: BaseAsset[];
     routeAssets: RouteAsset[];
     govToken: Omit<BaseAsset, "local"> & { balanceOf: string };
-    v1TokenBalance: string;
-    flowConvertorBalance: string;
     veToken: VeToken;
     pairs: Pair[];
     vestNFTs: VestNFT[];
@@ -75,8 +73,6 @@ class Store {
       swapAssets: [],
       routeAssets: [],
       govToken: null,
-      v1TokenBalance: "0",
-      flowConvertorBalance: "0",
       veToken: null,
       pairs: [],
       vestNFTs: [],
@@ -986,6 +982,7 @@ class Store {
       this.setStore({
         u_domain: await stores.helper.resolveUnstoppableDomain(),
       });
+
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
