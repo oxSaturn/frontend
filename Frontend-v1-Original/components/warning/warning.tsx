@@ -24,12 +24,11 @@ export default function WarningModal({
           Voting information
         </div>
         <div className="text-left text-base font-normal text-lime-50">
-          You must cast votes each epoch in order to get voting rewards.
+          You must cast votes each epoch in order to get bribes.
           <br />
-          UI represents weights of your votes in the pool. Weights do move to
-          the next epoch. However, in order to get voting rewards you need to
-          cast votes each epoch. If you don&apos;t want to change your votes,
-          just press 'Cast Votes' button.
+          However, voting weights do carry over to the next epoch and direct
+          FLOW emissions. If you don&apos;t want to change your votes, just
+          press 'Cast&nbsp;Votes' button.
         </div>
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-1">
