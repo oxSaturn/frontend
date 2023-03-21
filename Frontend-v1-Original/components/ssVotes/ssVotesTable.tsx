@@ -14,7 +14,7 @@ import {
   Slider,
   Tooltip,
 } from "@mui/material";
-import { CurrencyExchangeOutlined } from "@mui/icons-material";
+import { InsertChartOutlinedOutlined } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
@@ -35,16 +35,16 @@ const headCells = [
     label: "Total Liquidity",
   },
   {
-    id: "votes_apr",
-    numeric: true,
-    disablePadding: false,
-    label: "Voting APR",
-  },
-  {
     id: "totalVotes",
     numeric: true,
     disablePadding: false,
     label: "Total Votes",
+  },
+  {
+    id: "totalBribesUSD",
+    numeric: true,
+    disablePadding: false,
+    label: "Total Bribe Value",
   },
   {
     id: "apy",
@@ -217,7 +217,7 @@ export default function EnhancedTable({
   const classes = useStyles();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState<OrderBy>("votes_apr");
+  const [orderBy, setOrderBy] = useState<OrderBy>("totalBribesUSD");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
   const [disabledSort, setDisabledSort] = useState(false);
@@ -480,11 +480,6 @@ export default function EnhancedTable({
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
                     <Typography variant="h2" className={classes.textSpaced}>
-                      {formatCurrency(row?.gauge?.votingApr)} %
-                    </Typography>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <Typography variant="h2" className={classes.textSpaced}>
                       {formatCurrency(row?.gauge?.weight)}
                     </Typography>
                     <Typography
@@ -496,43 +491,46 @@ export default function EnhancedTable({
                     </Typography>
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
-                    <div className="flex items-center justify-between gap-1">
+                    <div className="relative flex items-center justify-end gap-1">
                       <Tooltip
-                        title={`Total bribes value: $${formatCurrency(
-                          row?.gauge?.bribesInUsd
-                        )} USD`}
+                        title={`Voting APR: ${formatCurrency(
+                          row?.gauge?.votingApr
+                        )} %`}
                         followCursor
                         placement="right"
                         className="flex transition-all duration-200  hover:scale-105 hover:fill-cantoGreen"
                         enterTouchDelay={500}
                       >
-                        <CurrencyExchangeOutlined className="relative ml-6 inline-block h-4" />
+                        <InsertChartOutlinedOutlined className="absolute top-0 right-1/2 inline-block h-5" />
                       </Tooltip>
-                      <div>
-                        {row?.gauge?.bribes.map((bribe, idx) => {
-                          return (
-                            <div
-                              className={classes.inlineEnd}
-                              key={bribe.token.symbol}
-                            >
-                              <Typography
-                                variant="h2"
-                                className={classes.textSpaced}
-                              >
-                                {formatCurrency(bribe.rewardAmount)}
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                className={classes.textSpaced}
-                                color="textSecondary"
-                              >
-                                {bribe.token.symbol}
-                              </Typography>
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <Typography variant="h2" className={classes.textSpaced}>
+                        <div>${formatCurrency(row?.gauge?.bribesInUsd)}</div>
+                      </Typography>
                     </div>
+                  </TableCell>
+                  <TableCell className={classes.cell} align="right">
+                    {row?.gauge?.bribes.map((bribe, idx) => {
+                      return (
+                        <div
+                          className={classes.inlineEnd}
+                          key={bribe.token.symbol}
+                        >
+                          <Typography
+                            variant="h2"
+                            className={classes.textSpaced}
+                          >
+                            {formatCurrency(bribe.rewardAmount)}
+                          </Typography>
+                          <Typography
+                            variant="h5"
+                            className={classes.textSpaced}
+                            color="textSecondary"
+                          >
+                            {bribe.token.symbol}
+                          </Typography>
+                        </div>
+                      );
+                    })}
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
                     <Typography variant="h2" className={classes.textSpaced}>
@@ -616,14 +614,6 @@ function descendingComparator(
       }
       return 0;
 
-    case "votes_apr":
-      if (BigNumber(b?.gauge?.votingApr).lt(a?.gauge?.votingApr)) {
-        return -1;
-      }
-      if (BigNumber(b?.gauge?.votingApr).gt(a?.gauge?.votingApr)) {
-        return 1;
-      }
-      return 0;
     case "totalVotes":
       if (BigNumber(b?.gauge?.weightPercent).lt(a?.gauge?.weightPercent)) {
         return -1;
@@ -633,6 +623,7 @@ function descendingComparator(
       }
       return 0;
 
+    case "totalBribesUSD":
     case "apy":
       if (BigNumber(b?.gauge?.bribesInUsd).lt(a?.gauge?.bribesInUsd)) {
         return -1;
