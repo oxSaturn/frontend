@@ -21,7 +21,7 @@ export default function WarningModal({
       <div className="flex max-w-lg flex-col items-center justify-center rounded-[10px] border border-cantoGreen p-10">
         <img src="/images/icon-warning.svg" className="mb-4 h-10" />
         <div className="mb-4 text-xl font-extrabold leading-none tracking-tight text-white md:text-2xl lg:text-4xl">
-          Voting information
+          Voting Information
         </div>
         <div className="text-left text-base font-normal text-lime-50">
           You must cast votes each epoch in order to get bribes.
