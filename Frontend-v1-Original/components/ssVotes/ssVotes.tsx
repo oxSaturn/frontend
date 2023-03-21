@@ -18,6 +18,7 @@ import classes from "./ssVotes.module.css";
 import { formatCurrency } from "../../utils/utils";
 
 import GaugesTable from "./ssVotesTable";
+import WarningModal from "../warning/warning";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
@@ -32,6 +33,8 @@ const initialEmptyToken = {
 
 export default function ssVotes() {
   const router = useRouter();
+
+  const [showWarning, setShowWarning] = useState(false);
 
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
@@ -120,6 +123,17 @@ export default function ssVotes() {
     // stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
     stores.emitter.on(ACTIONS.VEST_BALANCES_RETURNED, vestBalancesReturned);
 
+    const localStorageWarningAccepted =
+      window.localStorage.getItem("voting.warning");
+    if (
+      !localStorageWarningAccepted ||
+      localStorageWarningAccepted !== "accepted"
+    ) {
+      setShowWarning(true);
+      return;
+    }
+    setShowWarning(false);
+
     return () => {
       stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
       stores.emitter.removeListener(ACTIONS.VOTE_RETURNED, voteReturned);
@@ -142,6 +156,10 @@ export default function ssVotes() {
       type: ACTIONS.VOTE,
       content: { votes, tokenID: token.id },
     });
+  };
+
+  const acceptWarning = () => {
+    window.localStorage.setItem("voting.warning", "accepted");
   };
 
   let totalVotes = votes.reduce((acc, curr) => {
@@ -341,6 +359,12 @@ export default function ssVotes() {
           </Button>
         </div>
       </Paper>
+      {showWarning && (
+        <WarningModal
+          close={() => setShowWarning(false)}
+          acceptWarning={acceptWarning}
+        />
+      )}
     </div>
   );
 }
