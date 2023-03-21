@@ -986,10 +986,6 @@ class Store {
       this.setStore({
         u_domain: await stores.helper.resolveUnstoppableDomain(),
       });
-      this.setStore({ v1TokenBalance: await stores.helper.getV1Balance() }); //FIXME temporary
-      this.setStore({
-        flowConvertorBalance: await stores.helper.getFlowConvertorBalance(),
-      }); //FIXME temporary
 
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
