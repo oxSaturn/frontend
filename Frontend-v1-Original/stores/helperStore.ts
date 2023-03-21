@@ -31,61 +31,9 @@ class Helper {
     "https://api.dev.dex.guru/v1/chain/10/tokens/%/market";
   private tokenPricesMap = new Map<string, number>();
 
-  // TEMPORARY
-  getV1Balance = async () => {
-    const web3 = await stores.accountStore.getWeb3Provider();
-    if (!web3) {
-      console.warn("web3 not found");
-      return null;
-    }
-    const account = stores.accountStore.getStore("account");
-    if (!account) {
-      console.warn("account not found");
-      return null;
-    }
-
-    const v1Contract = new web3.eth.Contract(
-      CONTRACTS.GOV_TOKEN_ABI as AbiItem[],
-      (CONTRACTS as CantoContracts).FLOW_V1_ADDRESS
-    );
-    const balance = await v1Contract.methods.balanceOf(account.address).call();
-    const _v1Balance = BigNumber(balance)
-      .div(10 ** 18)
-      .toString();
-    return _v1Balance;
-  };
-  getFlowConvertorBalance = async () => {
-    const web3 = await stores.accountStore.getWeb3Provider();
-    if (!web3) {
-      console.warn("web3 not found");
-      return null;
-    }
-    const account = stores.accountStore.getStore("account");
-    if (!account) {
-      console.warn("account not found");
-      return null;
-    }
-
-    const flowv2 = new web3.eth.Contract(
-      CONTRACTS.GOV_TOKEN_ABI as AbiItem[],
-      CONTRACTS.GOV_TOKEN_ADDRESS
-    );
-    const balance = await flowv2.methods
-      .balanceOf((CONTRACTS as CantoContracts).FLOW_CONVERTOR_ADDRESS)
-      .call();
-    return BigNumber(balance)
-      .div(10 ** 18)
-      .toString();
-  };
-
   get getTokenPricesMap() {
     return this.tokenPricesMap;
   }
-
-  // TODO: understand token prices in python
-  // setTokenPricesMap = async (tokenPrices: Map<string, number>) => {
-  //   this.tokenPricesMap = tokenPrices;
-  // };
 
   getProtocolDefiLlama = async () => {
     const data = await fetch(`${this.defiLlamaBaseUrl}/protocol/velocimeter`);
