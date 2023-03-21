@@ -1319,6 +1319,10 @@ class Store {
                 pair.gauge.address
               );
 
+              const isAliveGauge: boolean = await gaugesContract.methods
+                .isAlive(pair.gauge.address)
+                .call();
+
               const [totalSupply, gaugeBalance, gaugeWeight] =
                 await multicall.aggregate([
                   gaugeContract.methods.totalSupply(),
@@ -1405,6 +1409,7 @@ class Store {
               pair.gaugebribes = bribes;
               pair.gauge.votingApr = votingApr;
               pair.gauge.bribesInUsd = totalUSDValueOfBribes;
+              pair.isAliveGauge = isAliveGauge;
             }
 
             return pair;

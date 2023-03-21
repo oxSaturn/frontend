@@ -30,6 +30,7 @@ import {
   Search,
   AddCircleOutline,
   InfoOutlined,
+  WarningOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -337,7 +338,7 @@ const useStyles = makeStyles((theme) => ({
     borderBottom: "1px solid rgba(126,153,176,0.2)",
   },
   infoIcon: {
-    color: "#06D3D7",
+    color: "yellow",
     fontSize: "16px",
     marginLeft: "10px",
   },
@@ -659,15 +660,6 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
 
   const onView = (pair) => {
     router.push(`/liquidity/${pair.address}`);
-  };
-
-  const renderTooltip = (pair) => {
-    return (
-      <div>
-        <Typography>Ve Emissions</Typography>
-        <Typography>0.00</Typography>
-      </div>
-    );
   };
 
   const handleChangePage = (event, newPage) => {
@@ -1213,11 +1205,13 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
                               {row.apr.toFixed(2)}%
                             </Typography>
                           </Grid>
-                          <Grid item lg={2}>
-                            <Tooltip title={renderTooltip(row)}>
-                              <InfoOutlined className={classes.infoIcon} />
-                            </Tooltip>
-                          </Grid>
+                          {row && row.isAliveGauge === false && (
+                            <Grid item lg={2}>
+                              <Tooltip title="Gauge has been killed">
+                                <WarningOutlined className={classes.infoIcon} />
+                              </Tooltip>
+                            </Grid>
+                          )}
                         </Grid>
                       </TableCell>
                     )}
