@@ -174,5 +174,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
     "name": "Multichain BTC",
     "symbol": "multiBTC"
+  },
+  {
+    "address": "0x2bf9b864cdc97b08b6d79ad4663e71b8ab65c45c",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17881/small/tarot-200px.png",
+    "name": "Tarot",
+    "symbol": "TAROT"
   }
 ]
