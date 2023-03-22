@@ -182,5 +182,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/17881/small/tarot-200px.png",
     "name": "Tarot",
     "symbol": "TAROT"
+  },
+  {
+    "address": "0x461d52769884ca6235B685EF2040F47d30C94EB5",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/acryptos/acryptos-assets/master/icon-circle-1500.png ",
+    "name": "ACryptoS",
+    "symbol": "ACS"
   }
 ]
