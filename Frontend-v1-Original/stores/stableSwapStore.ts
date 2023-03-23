@@ -5025,6 +5025,7 @@ class Store {
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let rewardsTXID = this.getTXUUID();
+      let rebaseTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
@@ -5034,7 +5035,12 @@ class Store {
         transactions: [
           {
             uuid: rewardsTXID,
-            description: `Checking unclaimed rewards`,
+            description: `Checking unclaimed bribes`,
+            status: "WAITING",
+          },
+          {
+            uuid: rebaseTXID,
+            description: `Checking unclaimed rebase distribution`,
             status: "WAITING",
           },
           {
@@ -5046,18 +5052,18 @@ class Store {
       });
 
       // CHECK unclaimed bribes
-      await this.getRewardBalances({ content: tokenID });
+      await this.getRewardBalances({ content: { tokenID } });
       const rewards = this.getStore("rewards");
 
       if (rewards.bribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
-          description: `Unclaimed rewards found, claiming`,
+          description: `Unclaimed bribes found, claiming`,
         });
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
-          description: `No unclaimed rewards found, skipping claim`,
+          description: `No unclaimed bribes found`,
           status: "DONE",
         });
       }
@@ -5101,6 +5107,52 @@ class Store {
 
         await claimPromise;
       }
+
+      if (rewards.veDist.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `Claiming rebase distribution`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `No unclaimed rebase`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.veDist.length > 0) {
+        // SUBMIT CLAIM TRANSACTION
+      const veDistContract = new web3.eth.Contract(
+        CONTRACTS.VE_DIST_ABI as AbiItem[],
+        CONTRACTS.VE_DIST_ADDRESS
+      );
+
+      const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+        this._callContractWait(
+          web3,
+          veDistContract,
+          "claim",
+          [tokenID],
+          account,
+          undefined,
+          null,
+          null,
+          rebaseTXID,
+          (err) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+
+            resolve();
+          }
+        );
+      });
+
+        await claimVeDistPromise;
+      }
+
 
       // SUBMIT RESET TRANSACTION
       const voterContract = new web3.eth.Contract(
@@ -5158,7 +5210,7 @@ class Store {
         transactions: [
           {
             uuid: rewardsTXID,
-            description: `Checking unclaimed rewards`,
+            description: `Checking unclaimed bribes`,
             status: "WAITING",
           },
           {
@@ -5175,13 +5227,13 @@ class Store {
       });
 
       // CHECK unclaimed bribes
-      await this.getRewardBalances({ content: tokenID });
+      await this.getRewardBalances({ content: { tokenID } });
       const rewards = this.getStore("rewards");
 
       if (rewards.bribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
-          description: `Unclaimed rewards found, claiming`,
+          description: `Unclaimed bribes found, claiming`,
         });
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
