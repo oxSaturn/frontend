@@ -276,7 +276,7 @@ class Store {
           const lockValue = await vestingContract.methods
             .balanceOfNFT(tokenIndex)
             .call();
-
+          const attached = await this._checkNFTAttached(web3, tokenIndex);
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -287,6 +287,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            attached,
           };
         })
       );
@@ -340,6 +341,7 @@ class Store {
 
       const locked = await vestingContract.methods.locked(id).call();
       const lockValue = await vestingContract.methods.balanceOfNFT(id).call();
+      const attached = await this._checkNFTAttached(web3, id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -352,6 +354,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            attached,
           };
         }
 
@@ -4644,6 +4647,8 @@ class Store {
             .balanceOfNFT(tokenIndex)
             .call();
 
+          const attached = await this._checkNFTAttached(web3, tokenIndex);
+
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -4654,6 +4659,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            attached,
           };
         })
       );
@@ -5123,36 +5129,35 @@ class Store {
 
       if (rewards.veDist.length > 0) {
         // SUBMIT CLAIM TRANSACTION
-      const veDistContract = new web3.eth.Contract(
-        CONTRACTS.VE_DIST_ABI as AbiItem[],
-        CONTRACTS.VE_DIST_ADDRESS
-      );
-
-      const claimVeDistPromise = new Promise<void>((resolve, reject) => {
-        this._callContractWait(
-          web3,
-          veDistContract,
-          "claim",
-          [tokenID],
-          account,
-          undefined,
-          null,
-          null,
-          rebaseTXID,
-          (err) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-
-            resolve();
-          }
+        const veDistContract = new web3.eth.Contract(
+          CONTRACTS.VE_DIST_ABI as AbiItem[],
+          CONTRACTS.VE_DIST_ADDRESS
         );
-      });
+
+        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            veDistContract,
+            "claim",
+            [tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rebaseTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
 
         await claimVeDistPromise;
       }
-
 
       // SUBMIT RESET TRANSACTION
       const voterContract = new web3.eth.Contract(
@@ -5174,6 +5179,10 @@ class Store {
           if (err) {
             return this.emitter.emit(ACTIONS.ERROR, err);
           }
+
+          this._updateVestNFTByID(tokenID);
+
+          this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
         }
       );
     } catch (e) {
@@ -5200,6 +5209,7 @@ class Store {
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let rewardsTXID = this.getTXUUID();
+      let rebaseTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
@@ -5211,6 +5221,11 @@ class Store {
           {
             uuid: rewardsTXID,
             description: `Checking unclaimed bribes`,
+            status: "WAITING",
+          },
+          {
+            uuid: rebaseTXID,
+            description: `Checking unclaimed rebase distribution`,
             status: "WAITING",
           },
           {
@@ -5238,7 +5253,7 @@ class Store {
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
-          description: `No unclaimed rewards found, skipping claim`,
+          description: `No unclaimed bribes found`,
           status: "DONE",
         });
       }
@@ -5283,6 +5298,51 @@ class Store {
         await claimPromise;
       }
 
+      if (rewards.veDist.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `Claiming rebase distribution`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `No unclaimed rebase`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.veDist.length > 0) {
+        // SUBMIT CLAIM TRANSACTION
+        const veDistContract = new web3.eth.Contract(
+          CONTRACTS.VE_DIST_ABI as AbiItem[],
+          CONTRACTS.VE_DIST_ADDRESS
+        );
+
+        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            veDistContract,
+            "claim",
+            [tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rebaseTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimVeDistPromise;
+      }
+
       // CHECK if veNFT is attached
       const attached = await this._checkNFTAttached(web3, tokenID);
 
@@ -5294,7 +5354,7 @@ class Store {
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is not attached, skipping reset`,
+          description: `NFT is not attached`,
           status: "DONE",
         });
       }
@@ -5378,7 +5438,7 @@ class Store {
       .attachments(tokenID)
       .call();
 
-    return attached !== 0;
+    return attached !== "0";
   };
 
   vote = async (payload) => {
@@ -6334,7 +6394,7 @@ class Store {
               uuid,
               txHash: receipt.transactionHash,
             });
-            if (method !== "approve") {
+            if (method !== "approve" && method !== "reset") {
               setTimeout(() => {
                 context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
               }, 1);

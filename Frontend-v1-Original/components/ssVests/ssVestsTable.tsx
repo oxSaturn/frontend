@@ -16,9 +16,10 @@ import {
   Typography,
   Toolbar,
   Grid,
+  Tooltip,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { EnhancedEncryptionOutlined } from "@mui/icons-material";
+import { EnhancedEncryptionOutlined, Check, Close } from "@mui/icons-material";
 import moment from "moment";
 
 import stores from "../../stores";
@@ -56,7 +57,8 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-  { id: "NFT", numeric: false, disablePadding: false, label: "Pair" },
+  { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
+  { id: "Attached", numeric: false, disablePadding: false, label: "Attached" },
   {
     id: "Locked Amount",
     numeric: true,
@@ -470,6 +472,11 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell className={classes.cell}>
+                        <Typography variant="h2" className={classes.textSpaced}>
+                          {!!row.attached ? <Check /> : <Close />}
+                        </Typography>
+                      </TableCell>
                       <TableCell className={classes.cell} align="right">
                         <Typography variant="h2" className={classes.textSpaced}>
                           {formatCurrency(row.lockAmount)}
@@ -507,16 +514,22 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                         </Typography>
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          onClick={() => {
-                            onReset(row);
-                          }}
-                          className="mr-2"
+                        <Tooltip
+                          title="Resetting disables voting until next epoch"
+                          placement="right"
+                          enterTouchDelay={500}
                         >
-                          Reset
-                        </Button>
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                              onReset(row);
+                            }}
+                            className="mr-2"
+                          >
+                            Reset
+                          </Button>
+                        </Tooltip>
                         <Button
                           variant="outlined"
                           color="primary"
