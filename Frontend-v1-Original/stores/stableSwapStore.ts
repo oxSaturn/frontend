@@ -1410,6 +1410,7 @@ class Store {
               pair.gauge.votingApr = votingApr;
               pair.gauge.bribesInUsd = totalUSDValueOfBribes;
               pair.isAliveGauge = isAliveGauge;
+              if (isAliveGauge === false) pair.apr = 0;
             }
 
             return pair;
