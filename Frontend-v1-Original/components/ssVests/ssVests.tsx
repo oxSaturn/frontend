@@ -40,12 +40,18 @@ export default function ssVests() {
       stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
     }, 1);
 
+    const resetVestReturned = () => {
+      stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
+    }
+
     stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned);
+    stores.emitter.on(ACTIONS.RESET_VEST_RETURNED, resetVestReturned);
     return () => {
       stores.emitter.removeListener(
         ACTIONS.VEST_NFTS_RETURNED,
         vestNFTsReturned
-      );
+        );
+        stores.emitter.removeListener(ACTIONS.RESET_VEST_RETURNED, resetVestReturned);
     };
   }, []);
 

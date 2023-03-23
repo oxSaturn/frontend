@@ -8,22 +8,23 @@ import {
   Table,
   TableBody,
   TableCell,
-  InputAdornment,
   TableContainer,
   TableHead,
   TableRow,
   TableSortLabel,
   TablePagination,
   Typography,
-  Tooltip,
   Toolbar,
   Grid,
+  Tooltip,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { EnhancedEncryptionOutlined } from "@mui/icons-material";
+import { EnhancedEncryptionOutlined, Check, Close } from "@mui/icons-material";
 import moment from "moment";
 
+import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
+import { ACTIONS } from "../../stores/constants/constants";
 
 function descendingComparator(a, b, orderBy) {
   if (!a || !b) {
@@ -56,7 +57,8 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-  { id: "NFT", numeric: false, disablePadding: false, label: "Pair" },
+  { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
+  { id: "Attached", numeric: false, disablePadding: false, label: "Attached" },
   {
     id: "Locked Amount",
     numeric: true,
@@ -395,6 +397,18 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
     router.push(`/vest/${nft.id}`);
   };
 
+  const onReset = (nft: {
+    lockAmount: string;
+    lockValue: string;
+    lockEnds: string;
+    id: string;
+  }) => {
+    stores.dispatcher.dispatch({
+      type: ACTIONS.RESET_VEST,
+      content: { tokenID: nft.id },
+    });
+  };
+
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
 
@@ -458,6 +472,11 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell className={classes.cell}>
+                        <Typography variant="h2" className={classes.textSpaced}>
+                          {!!row.attached ? <Check /> : <Close />}
+                        </Typography>
+                      </TableCell>
                       <TableCell className={classes.cell} align="right">
                         <Typography variant="h2" className={classes.textSpaced}>
                           {formatCurrency(row.lockAmount)}
@@ -495,6 +514,28 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                         </Typography>
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
+                        <Tooltip
+                          title={
+                            <div>
+                              Only reset it if you want to do NFT merge.
+                              <br />
+                              Reset disables voting until next epoch.
+                            </div>
+                          }
+                          placement="right"
+                          enterTouchDelay={500}
+                        >
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                              onReset(row);
+                            }}
+                            className="mr-2"
+                          >
+                            Reset
+                          </Button>
+                        </Tooltip>
                         <Button
                           variant="outlined"
                           color="primary"
