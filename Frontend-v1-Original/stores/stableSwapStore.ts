@@ -53,7 +53,6 @@ class Store {
     vestNFTs: VestNFT[];
     rewards: {
       bribes: any[];
-      fees: any[];
       rewards: any[];
       veDist: any[];
     };
@@ -78,7 +77,6 @@ class Store {
       vestNFTs: [],
       rewards: {
         bribes: [],
-        fees: [],
         rewards: [],
         veDist: [],
       },
@@ -174,6 +172,9 @@ class Store {
             break;
           case ACTIONS.INCREASE_VEST_DURATION:
             this.increaseVestDuration(payload);
+            break;
+          case ACTIONS.RESET_VEST:
+            this.resetVest(payload);
             break;
           case ACTIONS.WITHDRAW_VEST:
             this.withdrawVest(payload);
@@ -273,7 +274,7 @@ class Store {
           const lockValue = await vestingContract.methods
             .balanceOfNFT(tokenIndex)
             .call();
-
+          const attached = await this._checkNFTAttached(web3, tokenIndex);
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -284,6 +285,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            attached,
           };
         })
       );
@@ -337,6 +339,7 @@ class Store {
 
       const locked = await vestingContract.methods.locked(id).call();
       const lockValue = await vestingContract.methods.balanceOfNFT(id).call();
+      const attached = await this._checkNFTAttached(web3, id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -349,6 +352,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            attached,
           };
         }
 
@@ -1410,6 +1414,7 @@ class Store {
               pair.gauge.votingApr = votingApr;
               pair.gauge.bribesInUsd = totalUSDValueOfBribes;
               pair.isAliveGauge = isAliveGauge;
+              if (isAliveGauge === false) pair.apr = 0;
             }
 
             return pair;
@@ -4646,6 +4651,8 @@ class Store {
             .balanceOfNFT(tokenIndex)
             .call();
 
+          const attached = await this._checkNFTAttached(web3, tokenIndex);
+
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -4656,6 +4663,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            attached,
           };
         })
       );
@@ -5010,6 +5018,183 @@ class Store {
     }
   };
 
+  resetVest = async (payload) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { tokenID } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let rewardsTXID = this.getTXUUID();
+      let rebaseTXID = this.getTXUUID();
+      let resetTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Reset veNFT #${tokenID}`,
+        type: "Reset",
+        verb: "Vest Reseted",
+        transactions: [
+          {
+            uuid: rewardsTXID,
+            description: `Checking unclaimed bribes`,
+            status: "WAITING",
+          },
+          {
+            uuid: rebaseTXID,
+            description: `Checking unclaimed rebase distribution`,
+            status: "WAITING",
+          },
+          {
+            uuid: resetTXID,
+            description: `Resetting your veNFT`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ content: { tokenID } });
+      const rewards = this.getStore("rewards");
+
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `Unclaimed bribes found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `No unclaimed bribes found`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge.bribesEarned.map((bribe) => {
+            return bribe.token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rewardsTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
+
+      if (rewards.veDist.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `Claiming rebase distribution`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `No unclaimed rebase`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.veDist.length > 0) {
+        // SUBMIT CLAIM TRANSACTION
+        const veDistContract = new web3.eth.Contract(
+          CONTRACTS.VE_DIST_ABI as AbiItem[],
+          CONTRACTS.VE_DIST_ADDRESS
+        );
+
+        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            veDistContract,
+            "claim",
+            [tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rebaseTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimVeDistPromise;
+      }
+
+      // SUBMIT RESET TRANSACTION
+      const voterContract = new web3.eth.Contract(
+        CONTRACTS.VOTER_ABI as AbiItem[],
+        CONTRACTS.VOTER_ADDRESS
+      );
+
+      this._callContractWait(
+        web3,
+        voterContract,
+        "reset",
+        [tokenID],
+        account,
+        undefined,
+        null,
+        null,
+        resetTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+
+          this._updateVestNFTByID(tokenID);
+
+          this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
+        }
+      );
+    } catch (e) {
+      console.log(e);
+      console.log("RESET VEST ERROR");
+    }
+  };
+
   withdrawVest = async (payload) => {
     try {
       const account = stores.accountStore.getStore("account");
@@ -5027,6 +5212,8 @@ class Store {
       const { tokenID } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let rewardsTXID = this.getTXUUID();
+      let rebaseTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
@@ -5035,6 +5222,16 @@ class Store {
         type: "Vest",
         verb: "Vest Withdrawn",
         transactions: [
+          {
+            uuid: rewardsTXID,
+            description: `Checking unclaimed bribes`,
+            status: "WAITING",
+          },
+          {
+            uuid: rebaseTXID,
+            description: `Checking unclaimed rebase distribution`,
+            status: "WAITING",
+          },
           {
             uuid: resetTXID,
             description: `Checking if your nft is attached`,
@@ -5048,6 +5245,108 @@ class Store {
         ],
       });
 
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ content: { tokenID } });
+      const rewards = this.getStore("rewards");
+
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `Unclaimed bribes found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `No unclaimed bribes found`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge.bribesEarned.map((bribe) => {
+            return bribe.token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rewardsTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
+
+      if (rewards.veDist.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `Claiming rebase distribution`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `No unclaimed rebase`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.veDist.length > 0) {
+        // SUBMIT CLAIM TRANSACTION
+        const veDistContract = new web3.eth.Contract(
+          CONTRACTS.VE_DIST_ABI as AbiItem[],
+          CONTRACTS.VE_DIST_ADDRESS
+        );
+
+        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            veDistContract,
+            "claim",
+            [tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rebaseTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimVeDistPromise;
+      }
+
       // CHECK if veNFT is attached
       const attached = await this._checkNFTAttached(web3, tokenID);
 
@@ -5059,7 +5358,7 @@ class Store {
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is not attached, skipping reset`,
+          description: `NFT is not attached`,
           status: "DONE",
         });
       }
@@ -5143,7 +5442,7 @@ class Store {
       .attachments(tokenID)
       .call();
 
-    return attached !== 0;
+    return attached !== "0";
   };
 
   vote = async (payload) => {
@@ -6099,7 +6398,7 @@ class Store {
               uuid,
               txHash: receipt.transactionHash,
             });
-            if (method !== "approve") {
+            if (method !== "approve" && method !== "reset") {
               setTimeout(() => {
                 context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
               }, 1);
@@ -6117,7 +6416,7 @@ class Store {
               if (error.message) {
                 context.emitter.emit(ACTIONS.TX_REJECTED, {
                   uuid,
-                  error: error.message,
+                  error: this._mapError(error.message),
                 });
                 return callback(error.message);
               }
@@ -6133,7 +6432,7 @@ class Store {
               if (error.message) {
                 context.emitter.emit(ACTIONS.TX_REJECTED, {
                   uuid,
-                  error: error.message,
+                  error: this._mapError(error.message),
                 });
                 return callback(error.message);
               }
@@ -6148,7 +6447,10 @@ class Store {
       .catch((ex) => {
         console.log(ex);
         if (ex.message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: ex.message });
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid,
+            error: this._mapError(ex.message),
+          });
           return callback(ex.message);
         }
         this.emitter.emit(ACTIONS.TX_REJECTED, {
@@ -6157,6 +6459,60 @@ class Store {
         });
         callback(ex);
       });
+  };
+
+  protected _mapError = (error: string) => {
+    const errorMap = new Map<string, string>([
+      // this happens with slingshot and metamask
+      [
+        "invalid height",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      ["attached", "You need to reset your nft first"],
+      ["TOKEN ALREADY VOTED", "You have already voted with this token"],
+      [
+        "TOKEN_ALREADY_VOTED_THIS_EPOCH",
+        "You have already voted with this token",
+      ],
+      [
+        "INSUFFICIENT A BALANCE",
+        "Router doesn't have enough 'token in' balance",
+      ],
+      [
+        "INSUFFICIENT_A_BALANCE",
+        "Router doesn't have enough 'token in' balance",
+      ],
+      [
+        "INSUFFICIENT B BALANCE",
+        "Router doesn't have enough 'token out' balance",
+      ],
+      [
+        "INSUFFICIENT_B_BALANCE",
+        "Router doesn't have enough 'token out' balance",
+      ],
+      // some wallet some rpc not sure
+      [
+        "EIP-1559",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      // this happens in rubby
+      [
+        "request failed with status code 502",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      [
+        "Request failed with status code 429",
+        "RPC is being rate limited. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+    ]);
+
+    for (const [key, value] of errorMap) {
+      if (error.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+
+    return error;
   };
 }
 
