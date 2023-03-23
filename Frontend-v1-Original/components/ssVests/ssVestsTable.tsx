@@ -515,7 +515,13 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
                         <Tooltip
-                          title="Resetting disables voting until next epoch"
+                          title={
+                            <div>
+                              Only reset it if you want to do NFT merge.
+                              <br />
+                              Reset disables voting until next epoch.
+                            </div>
+                          }
                           placement="right"
                           enterTouchDelay={500}
                         >
