@@ -983,7 +983,6 @@ class Store {
         u_domain: await stores.helper.resolveUnstoppableDomain(),
       });
 
-
       this.emitter.emit(ACTIONS.UPDATED);
       this.emitter.emit(ACTIONS.CONFIGURED_SS);
 
@@ -6118,7 +6117,7 @@ class Store {
               if (error.message) {
                 context.emitter.emit(ACTIONS.TX_REJECTED, {
                   uuid,
-                  error: error.message,
+                  error: this._mapError(error.message),
                 });
                 return callback(error.message);
               }
@@ -6134,7 +6133,7 @@ class Store {
               if (error.message) {
                 context.emitter.emit(ACTIONS.TX_REJECTED, {
                   uuid,
-                  error: error.message,
+                  error: this._mapError(error.message),
                 });
                 return callback(error.message);
               }
@@ -6149,7 +6148,10 @@ class Store {
       .catch((ex) => {
         console.log(ex);
         if (ex.message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: ex.message });
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid,
+            error: this._mapError(ex.message),
+          });
           return callback(ex.message);
         }
         this.emitter.emit(ACTIONS.TX_REJECTED, {
@@ -6158,6 +6160,60 @@ class Store {
         });
         callback(ex);
       });
+  };
+
+  protected _mapError = (error: string) => {
+    const errorMap = new Map<string, string>([
+      // this happens with slingshot and metamask
+      [
+        "invalid height",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      ["attached", "You need to reset your nft first"],
+      ["TOKEN ALREADY VOTED", "You have already voted with this token"],
+      [
+        "TOKEN_ALREADY_VOTED_THIS_EPOCH",
+        "You have already voted with this token",
+      ],
+      [
+        "INSUFFICIENT A BALANCE",
+        "Router doesn't have enough 'token in' balance",
+      ],
+      [
+        "INSUFFICIENT_A_BALANCE",
+        "Router doesn't have enough 'token in' balance",
+      ],
+      [
+        "INSUFFICIENT B BALANCE",
+        "Router doesn't have enough 'token out' balance",
+      ],
+      [
+        "INSUFFICIENT_B_BALANCE",
+        "Router doesn't have enough 'token out' balance",
+      ],
+      // some wallet some rpc not sure
+      [
+        "EIP-1559",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      // this happens in rubby
+      [
+        "request failed with status code 502",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      [
+        "Request failed with status code 429",
+        "RPC is being rate limited. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+    ]);
+
+    for (const [key, value] of errorMap) {
+      if (error.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+
+    return error;
   };
 }
 
