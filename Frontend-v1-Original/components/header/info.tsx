@@ -21,9 +21,9 @@ export default function Info() {
       );
       setMCap(stores.stableSwapStore.getStore("marketCap"));
 
-      const _flowPrice = stores.helper.getTokenPricesMap.get(
-        CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
-      );
+      const _flowPrice = stores.stableSwapStore
+        .getStore("tokenPrices")
+        .get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
       if (_flowPrice) {
         setFlowPrice(_flowPrice);
       }
@@ -37,9 +37,9 @@ export default function Info() {
     };
 
     setTvl(stores.stableSwapStore.getStore("tvl"));
-    const _flowPrice = stores.helper.getTokenPricesMap.get(
-      CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
-    );
+    const _flowPrice = stores.stableSwapStore
+      .getStore("tokenPrices")
+      .get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
     if (_flowPrice) {
       setFlowPrice(_flowPrice);
     }
