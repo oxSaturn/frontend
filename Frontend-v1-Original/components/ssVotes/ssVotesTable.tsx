@@ -28,11 +28,17 @@ const headCells = [
     disablePadding: false,
     label: "My Stake",
   },
+  // {
+  //   id: "liquidity",
+  //   numeric: true,
+  //   disablePadding: false,
+  //   label: "Total Liquidity",
+  // },
   {
-    id: "liquidity",
+    id: "rewardEstimate",
     numeric: true,
     disablePadding: false,
-    label: "Total Liquidity",
+    label: "Reward Estimate",
   },
   {
     id: "totalVotes",
@@ -333,7 +339,7 @@ export default function EnhancedTable({
     }
     votesRef.current = stableSort(
       gauges,
-      getComparator(order, orderBy, defaultVotes)
+      getComparator(order, orderBy, defaultVotes, token)
     ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     return votesRef.current;
   }, [gauges, order, orderBy, page, rowsPerPage, defaultVotes, disabledSort]);
@@ -365,6 +371,18 @@ export default function EnhancedTable({
               } else {
                 sliderValue = 0;
               }
+              const votesCasting =
+                (sliderValue / 100) * parseFloat(token?.lockValue);
+              const rewardEstimateBefore =
+                row.gauge?.bribesInUsd > 0 && sliderValue > 0
+                  ? (row.gauge?.bribesInUsd * votesCasting) /
+                    (votesCasting + parseFloat(row?.gauge?.weight))
+                  : 0;
+              const rewardEstimateAfter =
+                row.gauge?.bribesInUsd > 0 && sliderValue > 0
+                  ? (row.gauge?.bribesInUsd * votesCasting) /
+                    parseFloat(row?.gauge?.weight)
+                  : 0;
 
               return (
                 <TableRow key={row?.gauge?.address}>
@@ -454,27 +472,27 @@ export default function EnhancedTable({
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
                     <div className={classes.inlineEnd}>
-                      <Typography variant="h2" className={classes.textSpaced}>
-                        {formatCurrency(BigNumber(row?.reserve0))}
-                      </Typography>
                       <Typography
                         variant="h5"
-                        className={classes.textSpaced}
+                        className="pr-1 text-xs font-extralight"
                         color="textSecondary"
                       >
-                        {row?.token0?.symbol}
+                        will vote
+                      </Typography>
+                      <Typography variant="h2" className={classes.textSpaced}>
+                        ${formatCurrency(rewardEstimateBefore)}
                       </Typography>
                     </div>
                     <div className={classes.inlineEnd}>
-                      <Typography variant="h5" className={classes.textSpaced}>
-                        {formatCurrency(BigNumber(row?.reserve1))}
-                      </Typography>
                       <Typography
                         variant="h5"
-                        className={classes.textSpaced}
+                        className="pr-1 text-xs font-extralight"
                         color="textSecondary"
                       >
-                        {row?.token1?.symbol}
+                        voted
+                      </Typography>
+                      <Typography variant="h2" className={classes.textSpaced}>
+                        ${formatCurrency(rewardEstimateAfter)}
                       </Typography>
                     </div>
                   </TableCell>
@@ -536,9 +554,7 @@ export default function EnhancedTable({
                   </TableCell>
                   <TableCell className={classes.cell} align="right">
                     <Typography variant="h2" className={classes.textSpaced}>
-                      {formatCurrency(
-                        BigNumber(sliderValue).div(100).times(token?.lockValue)
-                      )}
+                      {formatCurrency(votesCasting)}
                     </Typography>
                     <Typography
                       variant="h5"
@@ -588,7 +604,8 @@ function descendingComparator(
   a: Pair,
   b: Pair,
   orderBy: OrderBy,
-  defaultVotes?: Array<Pick<Vote, "address"> & { value: number }>
+  defaultVotes?: Array<Pick<Vote, "address"> & { value: number }>,
+  token?: VestNFT
 ) {
   if (!a || !b) {
     return 0;
@@ -604,14 +621,43 @@ function descendingComparator(
       }
       return 0;
 
-    case "liquidity":
-      let reserveA = BigNumber(a?.reserve0).plus(a?.reserve1).toNumber();
-      let reserveB = BigNumber(b?.reserve0).plus(b?.reserve1).toNumber();
+    // case "liquidity":
+    //   let reserveA = BigNumber(a?.reserve0).plus(a?.reserve1).toNumber();
+    //   let reserveB = BigNumber(b?.reserve0).plus(b?.reserve1).toNumber();
 
-      if (BigNumber(reserveB).lt(reserveA)) {
+    //   if (BigNumber(reserveB).lt(reserveA)) {
+    //     return -1;
+    //   }
+    //   if (BigNumber(reserveB).gt(reserveA)) {
+    //     return 1;
+    //   }
+    //   return 0;
+
+    case "rewardEstimate":
+      const sliderValueA = defaultVotes.find(
+        (el) => el.address === a?.address
+      )?.value;
+      const sliderValueB = defaultVotes.find(
+        (el) => el.address === b?.address
+      )?.value;
+      const votesToCastA =
+        (sliderValueA / 100) * parseFloat(token?.lockValue ?? "0");
+      const rewardEstimateA =
+        a.gauge?.bribesInUsd > 0 && sliderValueA > 0
+          ? (a.gauge?.bribesInUsd * votesToCastA) /
+            (votesToCastA + parseFloat(a?.gauge?.weight))
+          : 0;
+      const votesToCastB =
+        (sliderValueB / 100) * parseFloat(token?.lockValue ?? "0");
+      const rewardEstimateB =
+        b.gauge?.bribesInUsd > 0 && sliderValueB > 0
+          ? (b.gauge?.bribesInUsd * votesToCastB) /
+            (votesToCastB + parseFloat(b?.gauge?.weight))
+          : 0;
+      if (rewardEstimateB < rewardEstimateA) {
         return -1;
       }
-      if (BigNumber(reserveB).gt(reserveA)) {
+      if (rewardEstimateB > rewardEstimateA) {
         return 1;
       }
       return 0;
@@ -637,10 +683,10 @@ function descendingComparator(
 
     case "myVotes":
     case "mvp":
-      let sliderValue1 = defaultVotes.find(
+      const sliderValue1 = defaultVotes.find(
         (el) => el.address === a?.address
       )?.value;
-      let sliderValue2 = defaultVotes.find(
+      const sliderValue2 = defaultVotes.find(
         (el) => el.address === b?.address
       )?.value;
       if (sliderValue2 < sliderValue1) {
@@ -659,11 +705,14 @@ function descendingComparator(
 function getComparator(
   order: "asc" | "desc",
   orderBy: OrderBy,
-  defaultVotes?: Array<Pick<Vote, "address"> & { value: number }>
+  defaultVotes?: Array<Pick<Vote, "address"> & { value: number }>,
+  token?: VestNFT
 ) {
   return order === "desc"
-    ? (a: Pair, b: Pair) => descendingComparator(a, b, orderBy, defaultVotes)
-    : (a: Pair, b: Pair) => -descendingComparator(a, b, orderBy, defaultVotes);
+    ? (a: Pair, b: Pair) =>
+        descendingComparator(a, b, orderBy, defaultVotes, token)
+    : (a: Pair, b: Pair) =>
+        -descendingComparator(a, b, orderBy, defaultVotes, token);
 }
 
 function stableSort(array: Pair[], comparator: (a: Pair, b: Pair) => number) {
