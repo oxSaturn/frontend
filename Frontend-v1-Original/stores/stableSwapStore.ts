@@ -1359,9 +1359,9 @@ class Store {
               // const votes = BigNumber(gaugeWeight)
               //   .div(10 ** 18)
               //   .toNumber();
-              const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
-                return acc + bribe.tokenPrice * bribe.rewardAmount;
-              }, 0);
+              // const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
+              //   return acc + bribe.tokenPrice * bribe.rewardAmount;
+              // }, 0);
               // if (totalUSDValueOfBribes > 0) {
               //   const perVote = totalUSDValueOfBribes / votes;
               //   const perVotePerYear = perVote * 52.179;
@@ -1374,6 +1374,8 @@ class Store {
 
               //   votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
               // }
+
+              const totalUSDValueOfBribes = pair.gauge.tbv;
 
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
