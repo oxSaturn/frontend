@@ -26,10 +26,11 @@ import stores from "../../stores";
 import {
   ACTIONS,
   ETHERSCAN_URL,
+  NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
 import BigNumber from "bignumber.js";
-import type { BaseAsset } from "../../stores/types/types";
+import type { BaseAsset, QuoteSwapResponse } from "../../stores/types/types";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -57,7 +58,7 @@ function Setup() {
   const [slippageError, setSlippageError] = useState(false);
 
   const [quoteError, setQuoteError] = useState(null);
-  const [quote, setQuote] = useState(null);
+  const [quote, setQuote] = useState<QuoteSwapResponse>(null);
 
   const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
 
@@ -110,7 +111,8 @@ function Setup() {
         setQuoteLoading(false);
       };
 
-      const quoteReturned = (val) => {
+      const quoteReturned = (val: QuoteSwapResponse) => {
+        console.log(val);
         if (!val) {
           setQuoteLoading(false);
           setQuote(null);
@@ -122,14 +124,25 @@ function Setup() {
         }
         if (
           val &&
-          val.inputs &&
-          val.output &&
-          val.inputs.fromAmount === fromAmountValue &&
-          val.inputs.fromAsset.address === fromAssetValue.address &&
-          val.inputs.toAsset.address === toAssetValue.address
+          val.encodedData &&
+          val.maxReturn &&
+          val.maxReturn.totalFrom ===
+            BigNumber(fromAmountValue)
+              .multipliedBy(10 ** fromAssetValue.decimals)
+              .toFixed(0) &&
+          (val.maxReturn.from.toLowerCase() ===
+            fromAssetValue.address.toLowerCase() ||
+            (val.maxReturn.from ===
+              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+              fromAssetValue.address === NATIVE_TOKEN.address)) &&
+          (val.maxReturn.to.toLowerCase() ===
+            toAssetValue.address.toLowerCase() ||
+            (val.maxReturn.to ===
+              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+              toAssetValue.address === NATIVE_TOKEN.address))
         ) {
           setQuoteLoading(false);
-          if (BigNumber(val.output.finalValue).eq(0)) {
+          if (BigNumber(val.maxReturn.totalTo).eq(0)) {
             setQuote(null);
             setToAmountValue("");
             setToAmountValueUsd("");
@@ -139,12 +152,17 @@ function Setup() {
             return;
           }
 
-          setToAmountValue(BigNumber(val.output.finalValue).toFixed(8));
+          setToAmountValue(
+            BigNumber(val.maxReturn.totalTo)
+              .div(10 ** fromAssetValue.decimals)
+              .toFixed(fromAssetValue.decimals, BigNumber.ROUND_DOWN)
+          );
           const toAddressLookUp =
-            val.inputs.toAsset.address === "CANTO"
+            val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
               ? W_NATIVE_ADDRESS.toLowerCase()
-              : val.inputs.toAsset.address.toLowerCase();
-          const toUsdValue = BigNumber(val.output.finalValue)
+              : val.maxReturn.to.toLowerCase();
+          const toUsdValue = BigNumber(val.maxReturn.totalTo)
+            .div(10 ** toAssetValue.decimals)
             .multipliedBy(tokenPrices.get(toAddressLookUp))
             .toFixed(2);
           setToAmountValueUsd(toUsdValue);
@@ -308,6 +326,7 @@ function Setup() {
           fromAsset: from,
           toAsset: to,
           fromAmount: amount,
+          slippage: parseFloat(slippage) / 100,
         },
       });
     }
@@ -361,10 +380,7 @@ function Setup() {
         content: {
           fromAsset: fromAssetValue,
           toAsset: toAssetValue,
-          fromAmount: fromAmountValue,
-          toAmount: toAmountValue,
-          quote: quote,
-          slippage: slippage,
+          quote,
         },
       });
     }
@@ -478,8 +494,8 @@ function Setup() {
           <div className={classes.priceInfo}>
             <Typography className={classes.title}>
               {formatCurrency(
-                BigNumber(quote.inputs.fromAmount)
-                  .div(quote.output.finalValue)
+                BigNumber(quote.maxReturn.totalFrom)
+                  .div(quote.maxReturn.totalTo)
                   .toFixed(18)
               )}
             </Typography>
@@ -490,8 +506,8 @@ function Setup() {
           <div className={classes.priceInfo}>
             <Typography className={classes.title}>
               {formatCurrency(
-                BigNumber(quote.output.finalValue)
-                  .div(quote.inputs.fromAmount)
+                BigNumber(quote.maxReturn.totalTo)
+                  .div(quote.maxReturn.totalFrom)
                   .toFixed(18)
               )}
             </Typography>
@@ -524,41 +540,7 @@ function Setup() {
             <div className={classes.routeArrow}>
               <ArrowForwardIos className={classes.routeArrowIcon} />
             </div>
-            <div className={classes.stabIndicatorContainer}>
-              <Typography className={classes.stabIndicator}>
-                {quote.output.routes[0].stable ? "Stable" : "Volatile"}
-              </Typography>
-            </div>
           </div>
-          {quote && quote.output && quote.output.routeAsset && (
-            <>
-              <img
-                className={classes.displayAssetIconSmall}
-                alt=""
-                src={
-                  quote.output.routeAsset
-                    ? `${quote.output.routeAsset.logoURI}`
-                    : ""
-                }
-                height="40px"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-              <div className={classes.line}>
-                <div className={classes.routeArrow}>
-                  <ArrowForwardIos className={classes.routeArrowIcon} />
-                </div>
-                <div className={classes.stabIndicatorContainer}>
-                  <Typography className={classes.stabIndicator}>
-                    {quote.output.routes[1].stable ? "Stable" : "Volatile"}
-                  </Typography>
-                </div>
-              </div>
-            </>
-          )}
           <img
             className={classes.displayAssetIconSmall}
             alt=""
@@ -570,20 +552,6 @@ function Setup() {
             }}
           />
         </div>
-        {BigNumber(quote.priceImpact).gt(0.5) && (
-          <div className={classes.warningContainer}>
-            <Typography
-              className={
-                BigNumber(quote.priceImpact).gt(5)
-                  ? classes.warningError
-                  : classes.warningWarning
-              }
-              align="center"
-            >
-              Price impact {formatCurrency(quote.priceImpact)}%
-            </Typography>
-          </div>
-        )}
       </div>
     );
   };
