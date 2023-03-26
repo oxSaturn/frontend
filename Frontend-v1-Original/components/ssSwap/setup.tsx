@@ -156,8 +156,8 @@ function Setup() {
 
         setToAmountValue(
           BigNumber(val.maxReturn.totalTo)
-            .div(10 ** fromAssetValue.decimals)
-            .toFixed(fromAssetValue.decimals, BigNumber.ROUND_DOWN)
+            .div(10 ** toAssetValue.decimals)
+            .toFixed(toAssetValue.decimals, BigNumber.ROUND_DOWN)
         );
         const toAddressLookUp =
           val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
