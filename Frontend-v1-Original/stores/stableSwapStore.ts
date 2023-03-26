@@ -979,8 +979,6 @@ class Store {
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
       this.setStore({ updateDate: await stores.helper.getActivePeriod() });
-      this.setStore({ tokenPrices: this._updateTokenPrices() });
-      this.setStore({ tvl: this._updateTVL() });
       this.setStore({
         circulatingSupply: await stores.helper.getCirculatingSupply(), // TODO move to api
       });
@@ -1001,39 +999,6 @@ class Store {
       console.log(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
-  };
-
-  _updateTokenPrices = () => {
-    const pairs = this.getStore("pairs");
-    const tokenPricesMap = this.getStore("tokenPrices");
-
-    for (const pair of pairs) {
-      if (!tokenPricesMap.has(pair.token0.address.toLowerCase())) {
-        tokenPricesMap.set(
-          pair.token0.address.toLowerCase(),
-          (pair.token0 as RouteAsset).price
-        );
-      }
-      if (!tokenPricesMap.has(pair.token1.address.toLowerCase())) {
-        tokenPricesMap.set(
-          pair.token1.address.toLowerCase(),
-          (pair.token1 as RouteAsset).price
-        );
-      }
-    }
-
-    return tokenPricesMap;
-  };
-
-  _updateTVL = () => {
-    const pairs = this.getStore("pairs");
-    let tvl = 0;
-
-    for (const pair of pairs) {
-      tvl += pair.tvl;
-    }
-
-    return tvl;
   };
 
   _getBaseAssets = async () => {
@@ -1065,15 +1030,7 @@ class Store {
 
   _getRouteAssets = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/configuration`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/routes`);
       const routeAssetsCall = await response.json();
       return routeAssetsCall.data as RouteAsset[];
     } catch (ex) {
@@ -1084,17 +1041,13 @@ class Store {
 
   _getPairs = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/pairs`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/pairs`);
 
       const pairsCall = await response.json();
+
+      this.setStore({ tokenPrices: new Map(pairsCall.prices) });
+      this.setStore({ tvl: pairsCall.tvl });
+
       return pairsCall.data;
     } catch (ex) {
       console.log(ex);
@@ -2322,15 +2275,8 @@ class Store {
 
   updatePairsCall = async (web3, account) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/updatePairs`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      // update pairs is same endpoint in API. Pairs are updated in sync on backend
+      const response = await fetch(`/api/pairs`);
       const pairsCall = await response.json();
       this.setStore({ pairs: pairsCall.data });
 
