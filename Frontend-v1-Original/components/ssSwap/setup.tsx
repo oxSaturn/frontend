@@ -261,6 +261,16 @@ function Setup() {
         setFromAssetValue(value);
         calculateReceiveAmount(fromAmountValue, value, toAssetValue);
       }
+      setFromAmountValueUsd(
+        (
+          parseFloat(fromAmountValue) *
+          tokenPrices.get(
+            value.address === "CANTO"
+              ? W_NATIVE_ADDRESS.toLowerCase()
+              : value.address.toLowerCase()
+          )
+        ).toFixed(2)
+      );
     } else {
       if (value.address === fromAssetValue.address) {
         setFromAssetError(false);
@@ -482,6 +492,16 @@ function Setup() {
     const ta = toAssetValue;
     setFromAssetValue(ta);
     setToAssetValue(fa);
+    setFromAmountValueUsd(
+      (
+        parseFloat(fromAmountValue) *
+        tokenPrices.get(
+          ta.address === "CANTO"
+            ? W_NATIVE_ADDRESS.toLowerCase()
+            : ta.address.toLowerCase()
+        )
+      ).toFixed(2)
+    );
     calculateReceiveAmount(fromAmountValue, ta, fa);
   };
 
