@@ -17,6 +17,7 @@ import {
   SettingsOutlined,
   CloseOutlined,
 } from "@mui/icons-material";
+import BigNumber from "bignumber.js";
 
 import { withTheme } from "@mui/styles";
 
@@ -29,11 +30,11 @@ import {
   NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
-import BigNumber from "bignumber.js";
 import type {
   BaseAsset,
   Path,
   QuoteSwapResponse,
+  FireBirdTokens,
 } from "../../stores/types/types";
 
 function Setup() {
@@ -514,13 +515,21 @@ function Setup() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {isWrapUnwrap ? "1.00" : "0.00"}
               </Typography>
-              <Typography className="text-xs text-[#7e99b0]">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">
+                {toAssetValue && fromAssetValue
+                  ? `${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`
+                  : "-"}
+              </Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <Typography className="pb-[6px] text-sm font-bold">
                 {isWrapUnwrap ? "1.00" : "0.00"}
               </Typography>
-              <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
+              <Typography className="text-xs text-[#7e99b0]">
+                {toAssetValue && fromAssetValue
+                  ? `${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`
+                  : "-"}
+              </Typography>
             </div>
           </div>
           <div className="flex w-full items-center justify-between">
@@ -529,7 +538,12 @@ function Setup() {
         </div>
       );
     }
-
+    const totalFromInEth = BigNumber(quote.maxReturn.totalFrom).div(
+      10 ** fromAssetValue.decimals
+    );
+    const totalToInEth = BigNumber(quote.maxReturn.totalTo).div(
+      10 ** toAssetValue.decimals
+    );
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -539,9 +553,7 @@ function Setup() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.maxReturn.totalFrom)
-                  .div(quote.maxReturn.totalTo)
-                  .toFixed(18)
+                BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-[#7e99b0]">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
@@ -549,14 +561,24 @@ function Setup() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.maxReturn.totalTo)
-                  .div(quote.maxReturn.totalFrom)
-                  .toFixed(18)
+                BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
+        {Math.abs(parseFloat(usdDiff)) > 10 && (
+          <>
+            <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500">
+              Warning
+            </Typography>
+            <div className="grid w-full grid-cols-1">
+              <div className="flex flex-col items-center justify-center py-6 px-0 text-sm font-bold text-red-500">
+                Potential low liquidity swap! Price difference is {usdDiff}%
+              </div>
+            </div>
+          </>
+        )}
         <div
           className="flex w-full cursor-pointer items-center justify-between"
           onClick={() => setRoutesOpen(true)}
@@ -774,8 +796,11 @@ function Setup() {
         onClose={() => setRoutesOpen(false)}
         open={routesOpen}
         paths={quote?.maxReturn.paths}
+        tokens={quote?.maxReturn.tokens}
         fromAssetValue={fromAssetValue}
+        fromAmountValue={fromAmountValue}
         toAssetValue={toAssetValue}
+        toAmountValue={toAmountValue}
       />
     </>
   );
@@ -1063,14 +1088,20 @@ function RoutesDialog({
   onClose,
   open,
   paths,
+  tokens,
   fromAssetValue,
   toAssetValue,
+  fromAmountValue,
+  toAmountValue,
 }: {
   onClose: () => void;
   open: boolean;
   paths: Path[] | undefined;
+  tokens: FireBirdTokens | undefined;
   fromAssetValue: BaseAsset;
   toAssetValue: BaseAsset;
+  fromAmountValue: string;
+  toAmountValue: string;
 }) {
   const handleClose = () => {
     onClose();
@@ -1084,39 +1115,67 @@ function RoutesDialog({
     >
       {paths ? (
         <div className="relative flex w-full min-w-[576px] flex-col justify-between p-6">
-          <div>Routes</div>
+          <div className="text-center">Routes</div>
           <div className="flex w-full items-center justify-between">
-            <img
-              className="h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
-              alt=""
-              src={fromAssetValue ? `${fromAssetValue.logoURI}` : ""}
-              height="40px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-            <img
-              className="h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
-              alt=""
-              src={toAssetValue ? `${toAssetValue.logoURI}` : ""}
-              height="40px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
+            <div>
+              <img
+                className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
+                alt=""
+                src={fromAssetValue ? `${fromAssetValue.logoURI}` : ""}
+                height="40px"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+              <span className="ml-1 align-middle text-sm">
+                {formatCurrency(fromAmountValue)} {fromAssetValue.symbol}
+              </span>
+            </div>
+            <div>
+              <span className="mr-1 align-middle text-sm">
+                {formatCurrency(toAmountValue)} {toAssetValue.symbol}
+              </span>
+              <img
+                className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
+                alt=""
+                src={toAssetValue ? `${toAssetValue.logoURI}` : ""}
+                height="40px"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+            </div>
           </div>
           <div className="px-6">
-            <div className="relative flex py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-11 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border before:border-t-0 before:border-dashed before:border-cantoGreen">
-              <div className="relative flex flex-grow">
-                <div className="flex flex-grow justify-between gap-4">
-                  <div>80%</div>
-                  <div>FLOW</div>
-                  <div>FLOW</div>
+            {paths.map((path, idx) => (
+              <div
+                key={path.amountFrom + idx}
+                className="relative flex border-cantoGreen py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-cantoGreen after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
+              >
+                <div className="relative flex flex-grow">
+                  <div className="flex flex-grow justify-between gap-4">
+                    <div>
+                      {BigNumber(path.amountFrom)
+                        .div(10 ** fromAssetValue.decimals)
+                        .div(fromAmountValue)
+                        .multipliedBy(100)
+                        .toFixed()}
+                      %
+                    </div>
+                    {path.swaps.map((swap, idx) => {
+                      if (idx === path.swaps.length - 1) return null;
+                      return (
+                        <div key={swap.to + idx}>{tokens[swap.to].symbol}</div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       ) : (

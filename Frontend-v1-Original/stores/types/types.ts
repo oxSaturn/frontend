@@ -344,4 +344,5 @@ export type {
   QuoteSwapResponse,
   Path,
   Swap,
+  FireBirdTokens,
 };
