@@ -253,13 +253,29 @@ function Setup() {
 
   const onAssetSelect = (type, value) => {
     if (type === "From") {
+      let fromAmountValueWithNewDecimals: string;
+      if (fromAmountValue !== "" && value.decimals < fromAssetValue.decimals) {
+        fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
+          value.decimals,
+          BigNumber.ROUND_DOWN
+        );
+        setFromAmountValue(fromAmountValueWithNewDecimals);
+      }
       if (value.address === toAssetValue.address) {
         setToAssetValue(fromAssetValue);
         setFromAssetValue(toAssetValue);
-        calculateReceiveAmount(fromAmountValue, toAssetValue, fromAssetValue);
+        calculateReceiveAmount(
+          fromAmountValueWithNewDecimals ?? fromAmountValue,
+          toAssetValue,
+          fromAssetValue
+        );
       } else {
         setFromAssetValue(value);
-        calculateReceiveAmount(fromAmountValue, value, toAssetValue);
+        calculateReceiveAmount(
+          fromAmountValueWithNewDecimals ?? fromAmountValue,
+          value,
+          toAssetValue
+        );
       }
       setFromAmountValueUsd(
         (
@@ -488,8 +504,16 @@ function Setup() {
   };
 
   const swapAssets = () => {
+    let fromAmountValueWithNewDecimals: string;
     const fa = fromAssetValue;
     const ta = toAssetValue;
+    if (fromAmountValue !== "" && ta.decimals < fa.decimals) {
+      fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
+        ta.decimals,
+        BigNumber.ROUND_DOWN
+      );
+      setFromAmountValue(fromAmountValueWithNewDecimals);
+    }
     setFromAssetValue(ta);
     setToAssetValue(fa);
     setFromAmountValueUsd(
@@ -502,7 +526,11 @@ function Setup() {
         )
       ).toFixed(2)
     );
-    calculateReceiveAmount(fromAmountValue, ta, fa);
+    calculateReceiveAmount(
+      fromAmountValueWithNewDecimals ?? fromAmountValue,
+      ta,
+      fa
+    );
   };
 
   const renderSwapInformation = () => {
