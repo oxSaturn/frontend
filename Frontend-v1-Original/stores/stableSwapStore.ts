@@ -31,6 +31,7 @@ import type {
   Vote,
   VestNFT,
   CantoContracts,
+  QuoteSwapResponse,
 } from "./types/types";
 import {
   FLOW_CONVERTOR_ADDRESS,
@@ -274,7 +275,7 @@ class Store {
           const lockValue = await vestingContract.methods
             .balanceOfNFT(tokenIndex)
             .call();
-          const attached = await this._checkNFTAttached(web3, tokenIndex);
+          const voted = await this._checkNFTVotedEpoch(web3, tokenIndex);
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -285,7 +286,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
-            attached,
+            voted,
           };
         })
       );
@@ -339,7 +340,7 @@ class Store {
 
       const locked = await vestingContract.methods.locked(id).call();
       const lockValue = await vestingContract.methods.balanceOfNFT(id).call();
-      const attached = await this._checkNFTAttached(web3, id);
+      const voted = await this._checkNFTVotedEpoch(web3, id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -352,7 +353,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
-            attached,
+            voted,
           };
         }
 
@@ -3839,272 +3840,19 @@ class Store {
   };
 
   quoteSwap = async (payload) => {
+    const address = stores.accountStore.getStore("account").address;
+    if (!address) throw new Error("no address");
     try {
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
-        return null;
-      }
-
-      // route assets are USDC, WCANTO and FLOW
-      const routeAssets = this.getStore("routeAssets");
-      const { fromAsset, toAsset, fromAmount } = payload.content;
-
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-      const sendFromAmount = BigNumber(fromAmount)
-        .times(10 ** fromAsset.decimals)
-        .toFixed();
-
-      if (
-        !fromAsset ||
-        !toAsset ||
-        !fromAmount ||
-        !fromAsset.address ||
-        !toAsset.address ||
-        fromAmount === ""
-      ) {
-        return null;
-      }
-
-      let addy0 = fromAsset.address;
-      let addy1 = toAsset.address;
-
-      if (fromAsset.address === NATIVE_TOKEN.symbol) {
-        addy0 = W_NATIVE_ADDRESS;
-      }
-      if (toAsset.address === NATIVE_TOKEN.symbol) {
-        addy1 = W_NATIVE_ADDRESS;
-      }
-
-      const includesRouteAddress = routeAssets.filter((asset) => {
-        return (
-          asset.address.toLowerCase() == addy0.toLowerCase() ||
-          asset.address.toLowerCase() == addy1.toLowerCase()
-        );
+      const res = await fetch("/api/firebird-router", {
+        method: "POST",
+        body: JSON.stringify({
+          payload,
+          address,
+        }),
       });
+      const resJson = (await res.json()) as QuoteSwapResponse;
 
-      let amountOuts = [];
-      // In case router multicall will break make sure you have stable pair with some $$ in it
-      if (includesRouteAddress.length === 0) {
-        amountOuts = routeAssets
-          .map((routeAsset) => {
-            return [
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: true,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: true,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: false,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: false,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: true,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: false,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: false,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: true,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-            ];
-          })
-          .flat();
-      }
-
-      amountOuts.push({
-        routes: [
-          {
-            from: addy0,
-            to: addy1,
-            stable: true,
-          },
-        ],
-        routeAsset: null,
-      });
-
-      amountOuts.push({
-        routes: [
-          {
-            from: addy0,
-            to: addy1,
-            stable: false,
-          },
-        ],
-        routeAsset: null,
-      });
-
-      // Example of how we can use next api with private velocimeter node
-      // const quoteFetch = await fetch("/api/routes-multicall", {
-      //   method: "POST",
-      //   body: JSON.stringify({
-      //     sendFromAmount,
-      //     routes: amountOuts,
-      //   }),
-      // });
-      // const receiveAmounts = await quoteFetch.json();
-
-      const multicall3 = await stores.accountStore.getMulticall3(true);
-      const calls = amountOuts.map((route) => {
-        return {
-          reference: route.routes[0].from + route.routes[0].to,
-          methodName: "getAmountsOut",
-          methodParameters: [sendFromAmount, route.routes],
-        };
-      });
-
-      const contractCallContext: ContractCallContext[] = [
-        {
-          reference: "routerContract",
-          contractAddress: CONTRACTS.ROUTER_ADDRESS,
-          abi: CONTRACTS.ROUTER_ABI,
-          calls,
-        },
-      ];
-
-      const results: ContractCallResults = await multicall3.call(
-        contractCallContext
-      );
-
-      const returnValuesBigNumbers =
-        results.results.routerContract.callsReturnContext.map((retCtx) => {
-          if (retCtx.success) {
-            return retCtx.returnValues as {
-              hex: string;
-              type: "BigNumber";
-            }[];
-          }
-        });
-
-      let receiveAmounts = [];
-
-      for (const returnValue of returnValuesBigNumbers) {
-        if (!returnValue) {
-          receiveAmounts.push([sendFromAmount, "0", "0"]);
-          continue;
-        }
-        const arr = returnValue.map((bignumber) => {
-          return web3.utils.hexToNumberString(bignumber.hex);
-        });
-        receiveAmounts.push(arr);
-      }
-
-      for (let i = 0; i < receiveAmounts.length; i++) {
-        amountOuts[i].receiveAmounts = receiveAmounts[i];
-        amountOuts[i].finalValue = BigNumber(
-          receiveAmounts[i][receiveAmounts[i].length - 1]
-        )
-          .div(10 ** toAsset.decimals)
-          .toFixed(toAsset.decimals);
-      }
-
-      const bestAmountOut = amountOuts
-        .filter((ret) => {
-          return ret != null;
-        })
-        .reduce((best, current) => {
-          if (!best) {
-            return current;
-          }
-          return BigNumber(best.finalValue).gt(current.finalValue)
-            ? best
-            : current;
-        }, 0);
-
-      if (!bestAmountOut) {
-        this.emitter.emit(
-          ACTIONS.ERROR,
-          "No valid route found to complete swap"
-        );
-        return null;
-      }
-
-      let totalRatio = "1";
-
-      for (let i = 0; i < bestAmountOut.routes.length; i++) {
-        if (bestAmountOut.routes[i].stable == true) {
-        } else {
-          const reserves = await routerContract.methods
-            .getReserves(
-              bestAmountOut.routes[i].from,
-              bestAmountOut.routes[i].to,
-              bestAmountOut.routes[i].stable
-            )
-            .call();
-          let amountIn = "0";
-          let amountOut = "0";
-          if (i == 0) {
-            amountIn = sendFromAmount;
-            amountOut = bestAmountOut.receiveAmounts[i + 1];
-          } else {
-            amountIn = bestAmountOut.receiveAmounts[i];
-            amountOut = bestAmountOut.receiveAmounts[i + 1];
-          }
-
-          const amIn = BigNumber(amountIn).div(reserves.reserveA);
-          const amOut = BigNumber(amountOut).div(reserves.reserveB);
-          const ratio = BigNumber(amOut).div(amIn);
-
-          totalRatio = BigNumber(totalRatio).times(ratio).toFixed(18);
-        }
-      }
-
-      const priceImpact = BigNumber(1).minus(totalRatio).times(100).toFixed(18);
-
-      const returnValue = {
-        inputs: {
-          fromAmount: fromAmount,
-          fromAsset: fromAsset,
-          toAsset: toAsset,
-        },
-        output: bestAmountOut,
-        priceImpact: priceImpact,
-      };
+      const returnValue = resJson;
 
       this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, returnValue);
     } catch (ex) {
@@ -4116,8 +3864,6 @@ class Store {
 
   swap = async (payload) => {
     try {
-      const context = this;
-
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
@@ -4130,8 +3876,19 @@ class Store {
         return null;
       }
 
-      const { fromAsset, toAsset, fromAmount, quote, slippage } =
-        payload.content;
+      const {
+        quote,
+        fromAsset,
+        toAsset,
+      }: {
+        quote: QuoteSwapResponse;
+        fromAsset: BaseAsset;
+        toAsset: BaseAsset;
+      } = payload.content;
+
+      const fromAmount = BigNumber(quote.maxReturn.totalFrom)
+        .div(10 ** fromAsset.decimals)
+        .toFixed(fromAsset.decimals);
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let allowanceTXID = this.getTXUUID();
@@ -4161,7 +3918,12 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (fromAsset.address !== NATIVE_TOKEN.symbol) {
-        allowance = await this._getSwapAllowance(web3, fromAsset, account);
+        allowance = await this._getFirebirdSwapAllowance(
+          web3,
+          fromAsset,
+          account,
+          quote
+        );
 
         if (BigNumber(allowance).lt(fromAmount)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -4194,11 +3956,11 @@ class Store {
         );
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
+          this._callContractWait(
             web3,
             tokenContract,
             "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
+            [quote.encodedData.router, MAX_UINT256],
             account,
             undefined,
             null,
@@ -4221,68 +3983,28 @@ class Store {
       const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT SWAP TRANSACTION
-      const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const sendFromAmount = BigNumber(fromAmount)
-        .times(10 ** fromAsset.decimals)
-        .toFixed(0);
-      const sendMinAmountOut = BigNumber(quote.output.finalValue)
-        .times(10 ** toAsset.decimals)
-        .times(sendSlippage)
-        .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const tx = {
+        from: account.address, // signer address
+        to: quote.encodedData.router, // router address
+        gasPrice: quote.maxReturn.gasPrice,
+        data: quote.encodedData.data, // encoded contract data
+        value:
+          quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            ? quote.maxReturn.totalFrom
+            : undefined,
+      };
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
+      this._sendTransactionWait(web3, account, tx, swapTXID, (err) => {
+        if (err) {
+          return this.emitter.emit(ACTIONS.ERROR, err);
+        }
 
-      let func = "swapExactTokensForTokens";
-      let params = [
-        sendFromAmount,
-        sendMinAmountOut,
-        quote.output.routes,
-        account.address,
-        deadline,
-      ];
-      let sendValue = null;
+        this._getSpecificAssetInfo(web3, account, fromAsset.address);
+        this._getSpecificAssetInfo(web3, account, toAsset.address); // TODO use this
+        this._getPairInfo(web3, account);
 
-      if (fromAsset.address === NATIVE_TOKEN.symbol) {
-        func = "swapExactETHForTokens";
-        params = [
-          sendMinAmountOut,
-          quote.output.routes,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendFromAmount;
-      }
-      if (toAsset.address === NATIVE_TOKEN.symbol) {
-        func = "swapExactTokensForETH";
-      }
-
-      this._callContractWait(
-        web3,
-        routerContract,
-        func,
-        params,
-        account,
-        undefined,
-        null,
-        null,
-        swapTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._getSpecificAssetInfo(web3, account, fromAsset.address);
-          this._getSpecificAssetInfo(web3, account, toAsset.address); // TODO use this
-          this._getPairInfo(web3, account);
-
-          this.emitter.emit(ACTIONS.SWAP_RETURNED);
-        },
-        sendValue
-      );
+        this.emitter.emit(ACTIONS.SWAP_RETURNED);
+      });
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4576,6 +4298,29 @@ class Store {
     }
   };
 
+  _getFirebirdSwapAllowance = async (
+    web3: Web3,
+    token: BaseAsset,
+    account: { address: string },
+    quote: QuoteSwapResponse
+  ) => {
+    try {
+      const tokenContract = new web3.eth.Contract(
+        CONTRACTS.ERC20_ABI,
+        token.address
+      );
+      const allowance = await tokenContract.methods
+        .allowance(account.address, quote.encodedData.router)
+        .call();
+      return BigNumber(allowance)
+        .div(10 ** token.decimals)
+        .toFixed(token.decimals);
+    } catch (ex) {
+      console.error(ex);
+      return null;
+    }
+  };
+
   _getSwapAllowance = async (web3, token, account) => {
     try {
       const tokenContract = new web3.eth.Contract(
@@ -4651,7 +4396,7 @@ class Store {
             .balanceOfNFT(tokenIndex)
             .call();
 
-          const attached = await this._checkNFTAttached(web3, tokenIndex);
+          const voted = await this._checkNFTVotedEpoch(web3, tokenIndex);
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -4663,7 +4408,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
-            attached,
+            voted,
           };
         })
       );
@@ -5234,7 +4979,7 @@ class Store {
           },
           {
             uuid: resetTXID,
-            description: `Checking if your nft is attached`,
+            description: `Checking if your has votes`,
             status: "WAITING",
           },
           {
@@ -5347,25 +5092,25 @@ class Store {
         await claimVeDistPromise;
       }
 
-      // CHECK if veNFT is attached
-      const attached = await this._checkNFTAttached(web3, tokenID);
+      // CHECK if veNFT has votes
+      const voted = await this._checkNFTVoted(web3, tokenID);
 
-      if (!!attached) {
+      if (!!voted) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is attached, resetting`,
+          description: `NFT has votes, resetting`,
         });
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is not attached`,
+          description: `NFT doesn't have votes`,
           status: "DONE",
         });
       }
 
       const resetCallsPromise = [];
 
-      if (!!attached) {
+      if (!!voted) {
         const voterContract = new web3.eth.Contract(
           CONTRACTS.VOTER_ABI as AbiItem[],
           CONTRACTS.VOTER_ADDRESS
@@ -5430,7 +5175,27 @@ class Store {
     }
   };
 
-  _checkNFTAttached = async (web3, tokenID) => {
+  _checkNFTVotedEpoch = async (web3, tokenID) => {
+    if (!web3) return;
+
+    const voterContract = new web3.eth.Contract(
+      CONTRACTS.VOTER_ABI as AbiItem[],
+      CONTRACTS.VOTER_ADDRESS
+    );
+
+    const lastVoted = await voterContract.methods.lastVoted(tokenID).call();
+    // if last voted eq 0, means never voted
+    if (lastVoted === "0") return false;
+
+    const blockTimestamp = (await web3.eth.getBlock("latest")).timestamp;
+
+    // 7 days epoch length
+    const votedThisEpoch = (blockTimestamp / 7) * 7 > lastVoted;
+
+    return votedThisEpoch;
+  };
+
+  _checkNFTVoted = async (web3, tokenID) => {
     if (!web3) return;
 
     const votingEscrowContract = new web3.eth.Contract(
@@ -5438,11 +5203,9 @@ class Store {
       CONTRACTS.VE_TOKEN_ADDRESS
     );
 
-    const attached = await votingEscrowContract.methods
-      .attachments(tokenID)
-      .call();
+    const voted = await votingEscrowContract.methods.voted(tokenID).call();
 
-    return attached !== "0";
+    return voted;
   };
 
   vote = async (payload) => {
@@ -6485,6 +6248,55 @@ class Store {
       });
   };
 
+  _sendTransactionWait = (web3: Web3, account, tx, uuid, callback) => {
+    this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
+    const sendTx = web3.eth.sendTransaction(tx);
+    sendTx.on("transactionHash", (txHash) => {
+      this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
+    });
+    sendTx.on("receipt", (receipt) => {
+      this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+        uuid,
+        txHash: receipt.transactionHash,
+      });
+      setTimeout(() => {
+        this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+      }, 1);
+      callback(null, receipt.transactionHash);
+    });
+    sendTx.on("error", (error) => {
+      if (!error.toString().includes("-32601")) {
+        if (error.message) {
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid,
+            error: this._mapError(error.message),
+          });
+          return callback(error.message);
+        }
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid,
+          error: error,
+        });
+        callback(error);
+      }
+    });
+    sendTx.catch((ex) => {
+      console.log(ex);
+      if (ex.message) {
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid,
+          error: this._mapError(ex.message),
+        });
+        return callback(ex.message);
+      }
+      this.emitter.emit(ACTIONS.TX_REJECTED, {
+        uuid,
+        error: "Error estimating gas",
+      });
+      callback(ex);
+    });
+  };
+
   protected _mapError = (error: string) => {
     const errorMap = new Map<string, string>([
       // this happens with slingshot and metamask
@@ -6492,7 +6304,10 @@ class Store {
         "invalid height",
         "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
       ],
-      ["attached", "You need to reset your nft first"],
+      [
+        "attached",
+        "You have already voted with this token or your nft is attached",
+      ],
       ["TOKEN ALREADY VOTED", "You have already voted with this token"],
       [
         "TOKEN_ALREADY_VOTED_THIS_EPOCH",

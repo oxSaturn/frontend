@@ -29,7 +29,7 @@ const initialEmptyToken = {
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
-  attached: false,
+  voted: false,
 };
 
 export default function ssVotes() {
