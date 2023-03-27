@@ -12,8 +12,10 @@ import {
 import {
   Search,
   ArrowDownward,
-  ArrowForwardIos,
+  UpdateOutlined,
   DeleteOutline,
+  SettingsOutlined,
+  CloseOutlined,
 } from "@mui/icons-material";
 
 import { withTheme } from "@mui/styles";
@@ -227,7 +229,7 @@ function Setup() {
     ssUpdated();
 
     const interval = setInterval(() => {
-      updateQuote();
+      if (!loading && !quoteLoading) updateQuote();
     }, 10000);
 
     return () => {
@@ -239,7 +241,14 @@ function Setup() {
       stores.emitter.removeListener(ACTIONS.SWAP_ASSETS_UPDATED, assetsUpdated);
       clearInterval(interval);
     };
-  }, [fromAmountValue, fromAssetValue, toAssetValue, slippage]);
+  }, [
+    fromAmountValue,
+    fromAssetValue,
+    toAssetValue,
+    slippage,
+    loading,
+    quoteLoading,
+  ]);
 
   const onAssetSelect = (type, value) => {
     if (type === "From") {
@@ -530,7 +539,7 @@ function Setup() {
           onClick={() => setRoutesOpen(true)}
         >
           <div className="text-sm font-bold text-cantoGreen underline transition-all hover:text-green-300 hover:no-underline">
-            Open Routes
+            Show Routes
           </div>
         </div>
       </div>
@@ -539,16 +548,11 @@ function Setup() {
 
   const renderSmallInput = (type, amountValue, amountError, amountChanged) => {
     return (
-      <div className="relative mb-1">
-        <div className="absolute top-1">
-          <div className="pl-3">
-            <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
-              Slippage
-            </Typography>
-          </div>
-        </div>
-        <div className="flex min-h-[50px] w-full max-w-[112px] flex-wrap items-center rounded-[10px] bg-[#272826]">
+      <div className="mb-1">
+        <label htmlFor="slippage">Slippage</label>
+        <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-[#272826]">
           <TextField
+            id="slippage"
             placeholder="0.00"
             fullWidth
             error={!!amountError}
@@ -654,11 +658,14 @@ function Setup() {
           className={`${
             !settingsOpen
               ? "hidden"
-              : "absolute z-20 h-full w-full bg-[#040105] p-4"
+              : "absolute z-20 flex h-full w-full flex-col gap-4 bg-[#040105] p-4"
           }`}
         >
-          <div onClick={closeSettings} className="cursor-pointer">
-            Close
+          <div
+            onClick={closeSettings}
+            className="w-full cursor-pointer text-end"
+          >
+            <CloseOutlined />
           </div>
           {renderSmallInput(
             "slippage",
@@ -667,9 +674,13 @@ function Setup() {
             onSlippageChanged
           )}
         </div>
-        <div>
-          <button onClick={updateQuote}>Update</button>
-          <button onClick={() => setSettingsOpen(true)}>Settings</button>
+        <div className="mb-1 flex items-center justify-end">
+          <button onClick={updateQuote}>
+            <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+          </button>
+          <button onClick={() => setSettingsOpen(true)}>
+            <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+          </button>
         </div>
         {renderMassiveInput(
           "From",
@@ -721,16 +732,16 @@ function Setup() {
             )}
           </Button>
         </div>
-        <div className="flex items-center gap-1 text-xs">
-          <div>Powered by</div>
+        <div className="mt-2 text-end text-xs">
+          <span className="align-middle text-[#7e99b0]">Powered by </span>
           <a
             href="https://firebird.finance/"
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex cursor-pointer items-center gap-1 underline grayscale transition-all hover:text-[#f66432] hover:no-underline hover:grayscale-0"
+            className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
           >
-            <img src="/images/logo-firebird.svg" className="" />
-            <div>Firebird</div>
+            <img src="/images/logo-firebird.svg" className="inline" />{" "}
+            <span className="align-middle">Firebird</span>
           </a>
         </div>
       </div>
