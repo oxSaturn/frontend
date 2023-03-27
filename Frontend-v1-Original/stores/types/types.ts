@@ -34,7 +34,7 @@ interface VestNFT {
   lockAmount: string;
   lockEnds: string;
   lockValue: string;
-  attached: boolean;
+  voted: boolean;
 }
 
 interface Bribe {

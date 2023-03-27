@@ -274,7 +274,7 @@ class Store {
           const lockValue = await vestingContract.methods
             .balanceOfNFT(tokenIndex)
             .call();
-          const attached = await this._checkNFTAttached(web3, tokenIndex);
+          const voted = await this._checkNFTVotedEpoch(web3, tokenIndex);
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -285,7 +285,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
-            attached,
+            voted,
           };
         })
       );
@@ -339,7 +339,7 @@ class Store {
 
       const locked = await vestingContract.methods.locked(id).call();
       const lockValue = await vestingContract.methods.balanceOfNFT(id).call();
-      const attached = await this._checkNFTAttached(web3, id);
+      const voted = await this._checkNFTVotedEpoch(web3, id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -352,7 +352,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
-            attached,
+            voted,
           };
         }
 
@@ -4650,7 +4650,7 @@ class Store {
             .balanceOfNFT(tokenIndex)
             .call();
 
-          const attached = await this._checkNFTAttached(web3, tokenIndex);
+          const voted = await this._checkNFTVotedEpoch(web3, tokenIndex);
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -4662,7 +4662,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
-            attached,
+            voted,
           };
         })
       );
@@ -5233,7 +5233,7 @@ class Store {
           },
           {
             uuid: resetTXID,
-            description: `Checking if your nft is attached`,
+            description: `Checking if your has votes`,
             status: "WAITING",
           },
           {
@@ -5346,25 +5346,25 @@ class Store {
         await claimVeDistPromise;
       }
 
-      // CHECK if veNFT is attached
-      const attached = await this._checkNFTAttached(web3, tokenID);
+      // CHECK if veNFT has votes
+      const voted = await this._checkNFTVoted(web3, tokenID);
 
-      if (!!attached) {
+      if (!!voted) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is attached, resetting`,
+          description: `NFT has votes, resetting`,
         });
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is not attached`,
+          description: `NFT doesn't have votes`,
           status: "DONE",
         });
       }
 
       const resetCallsPromise = [];
 
-      if (!!attached) {
+      if (!!voted) {
         const voterContract = new web3.eth.Contract(
           CONTRACTS.VOTER_ABI as AbiItem[],
           CONTRACTS.VOTER_ADDRESS
@@ -5429,7 +5429,27 @@ class Store {
     }
   };
 
-  _checkNFTAttached = async (web3, tokenID) => {
+  _checkNFTVotedEpoch = async (web3, tokenID) => {
+    if (!web3) return;
+
+    const voterContract = new web3.eth.Contract(
+      CONTRACTS.VOTER_ABI as AbiItem[],
+      CONTRACTS.VOTER_ADDRESS
+    );
+
+    const lastVoted = await voterContract.methods.lastVoted(tokenID).call();
+    // if last voted eq 0, means never voted
+    if (lastVoted === "0") return false;
+
+    const blockTimestamp = (await web3.eth.getBlock("latest")).timestamp;
+
+    // 7 days epoch length
+    const votedThisEpoch = (blockTimestamp / 7) * 7 > lastVoted;
+
+    return votedThisEpoch;
+  };
+
+  _checkNFTVoted = async (web3, tokenID) => {
     if (!web3) return;
 
     const votingEscrowContract = new web3.eth.Contract(
@@ -5437,11 +5457,9 @@ class Store {
       CONTRACTS.VE_TOKEN_ADDRESS
     );
 
-    const attached = await votingEscrowContract.methods
-      .attachments(tokenID)
-      .call();
+    const voted = await votingEscrowContract.methods.voted(tokenID).call();
 
-    return attached !== "0";
+    return voted;
   };
 
   vote = async (payload) => {
@@ -6467,7 +6485,10 @@ class Store {
         "invalid height",
         "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
       ],
-      ["attached", "You need to reset your nft first"],
+      [
+        "attached",
+        "You have already voted with this token or your nft is attached",
+      ],
       ["TOKEN ALREADY VOTED", "You have already voted with this token"],
       [
         "TOKEN_ALREADY_VOTED_THIS_EPOCH",

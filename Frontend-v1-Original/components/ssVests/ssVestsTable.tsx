@@ -58,7 +58,7 @@ function stableSort(array, comparator) {
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
-  { id: "Attached", numeric: false, disablePadding: false, label: "Attached" },
+  { id: "Voted", numeric: false, disablePadding: false, label: "Voted" },
   {
     id: "Locked Amount",
     numeric: true,
@@ -474,7 +474,7 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                       </TableCell>
                       <TableCell className={classes.cell}>
                         <Typography variant="h2" className={classes.textSpaced}>
-                          {!!row.attached ? <Check /> : <Close />}
+                          {!!row.voted ? <Check /> : <Close />}
                         </Typography>
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
