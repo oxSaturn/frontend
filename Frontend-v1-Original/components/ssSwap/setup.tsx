@@ -497,14 +497,37 @@ function Setup() {
 
     if (quoteLoading) {
       return (
-        <div className="flex min-h-full items-center justify-center">
-          <CircularProgress size={20} className="ml-2 fill-white" />
+        <div className="flex min-h-full items-center justify-center text-cantoGreen">
+          <CircularProgress size={20} className="ml-2" color="inherit" />
         </div>
       );
     }
 
     if (!quote) {
-      return null;
+      return (
+        <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
+            Price Info
+          </Typography>
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
+                {isWrapUnwrap ? "1.00" : "0.00"}
+              </Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
+            </div>
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
+                {isWrapUnwrap ? "1.00" : "0.00"}
+              </Typography>
+              <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
+            </div>
+          </div>
+          <div className="flex w-full items-center justify-between">
+            <div className="text-sm font-bold text-gray-400">Show Routes</div>
+          </div>
+        </div>
+      );
     }
 
     return (
@@ -714,7 +737,9 @@ function Setup() {
           toAssetOptions,
           onAssetSelect
         )}
-        {renderSwapInformation()}
+        <div className="flex min-h-[176px] flex-col items-center justify-center">
+          {renderSwapInformation()}
+        </div>
         <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0">
           <Button
             variant="contained"
