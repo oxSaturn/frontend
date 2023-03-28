@@ -153,9 +153,6 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: "12px",
     marginTop: "24px",
   },
-  tableContainer: {
-    overflowX: "hidden",
-  },
   overrideTableHead: {
     borderBottom: "1px solid rgba(104,108,122,0.2) !important",
   },
@@ -325,7 +322,7 @@ export default function EnhancedTable({
 
   return (
     <div className={classes.root}>
-      <TableContainer className={classes.tableContainer}>
+      <TableContainer>
         <Table
           aria-labelledby="tableTitle"
           size={"medium"}
