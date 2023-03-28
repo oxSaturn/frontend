@@ -58,6 +58,7 @@ class Store {
       veDist: any[];
     };
     updateDate: number;
+    tokenPrices: Map<string, number>;
     tvl: number;
     circulatingSupply: number;
     marketCap: number;
@@ -82,6 +83,7 @@ class Store {
         veDist: [],
       },
       updateDate: 0,
+      tokenPrices: new Map(),
       tvl: 0,
       circulatingSupply: 0,
       marketCap: 0,
@@ -514,6 +516,7 @@ class Store {
         reserve1: BigNumber(reserve1)
           .div(10 ** token1Decimals)
           .toFixed(parseInt(token1Decimals)),
+        tvl: 0,
       };
 
       if (gaugeAddress !== ZERO_ADDRESS) {
@@ -977,7 +980,6 @@ class Store {
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
       this.setStore({ updateDate: await stores.helper.getActivePeriod() });
-      this.setStore({ tvl: await stores.helper.getCurrentTvl() });
       this.setStore({
         circulatingSupply: await stores.helper.getCirculatingSupply(), // TODO move to api
       });
@@ -1029,15 +1031,7 @@ class Store {
 
   _getRouteAssets = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/configuration`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/routes`);
       const routeAssetsCall = await response.json();
       return routeAssetsCall.data as RouteAsset[];
     } catch (ex) {
@@ -1048,17 +1042,13 @@ class Store {
 
   _getPairs = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/pairs`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/pairs`);
 
       const pairsCall = await response.json();
+
+      this.setStore({ tokenPrices: new Map(pairsCall.prices) });
+      this.setStore({ tvl: pairsCall.tvl });
+
       return pairsCall.data;
     } catch (ex) {
       console.log(ex);
@@ -1291,29 +1281,6 @@ class Store {
       this.setStore({ pairs: ps });
       this.emitter.emit(ACTIONS.UPDATED);
 
-      // TODO make api calculate valid token prices and send it pack to us so we can just assign it
-      const tokensPricesMap = new Map<string, RouteAsset>();
-      for (const pair of ps) {
-        if (pair.gauge?.bribes) {
-          for (const bribe of pair.gauge.bribes) {
-            if (bribe.token) {
-              tokensPricesMap.set(
-                bribe.token.address.toLowerCase(),
-                bribe.token
-              );
-            }
-          }
-        }
-      }
-
-      // TODO understand api token prices
-      // stores.helper.setTokenPricesMap(tokensPricesMap);
-      await Promise.all(
-        [...tokensPricesMap.values()].map(
-          async (token) => await stores.helper.updateTokenPrice(token)
-        )
-      );
-
       const ps1 = await Promise.all(
         ps.map(async (pair) => {
           try {
@@ -1334,55 +1301,35 @@ class Store {
                   gaugesContract.methods.weights(pair.address),
                 ]);
 
-              // const bribeContract = new web3.eth.Contract(
-              //   CONTRACTS.BRIBE_ABI,
-              //   pair.gauge.bribeAddress
-              // );
-
-              // const bribes = await Promise.all(
-              //   pair.gauge.bribes.map(async (bribe, idx) => {
-              //     const rewardRate = await bribeContract.methods
-              //       .rewardRate(bribe.token.address)
-              //       .call();
-
-              //     --------- can't get past this line setting reward amount to reward amount from python api
-              //     bribe.rewardRate = BigNumber(rewardRate)
-              //       .div(10 ** bribe.token.decimals)
-              //       .toFixed(bribe.token.decimals);
-              //     bribe.rewardAmount = bribe.rewardAmmount;
-
-              //     return bribe;
-              //   })
-              // );
-
               const bribes = pair.gauge.bribes.map((bribe) => {
                 bribe.rewardAmount = bribe.rewardAmmount;
-                bribe.tokenPrice = stores.helper.getTokenPricesMap.get(
+                bribe.tokenPrice = this.getStore("tokenPrices").get(
                   bribe.token.address.toLowerCase()
                 );
                 return bribe;
               });
 
-              let votingApr = 0;
-              const votes = BigNumber(gaugeWeight)
-                .div(10 ** 18)
-                .toNumber();
-              const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
-                return acc + bribe.tokenPrice * bribe.rewardAmount;
-              }, 0);
-              if (totalUSDValueOfBribes > 0) {
-                const perVote = totalUSDValueOfBribes / votes;
-                const perVotePerYear = perVote * 52.179;
-                const token = this.getStore("routeAssets").filter(
-                  (asset) => asset.symbol === "FLOW"
-                )[0];
-                const flowPrice = stores.helper.getTokenPricesMap.get(
-                  token.address.toLowerCase()
-                );
+              // let votingApr = 0;
+              // const votes = BigNumber(gaugeWeight)
+              //   .div(10 ** 18)
+              //   .toNumber();
+              // const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
+              //   return acc + bribe.tokenPrice * bribe.rewardAmount;
+              // }, 0);
+              // if (totalUSDValueOfBribes > 0) {
+              //   const perVote = totalUSDValueOfBribes / votes;
+              //   const perVotePerYear = perVote * 52.179;
+              //   const token = this.getStore("routeAssets").filter(
+              //     (asset) => asset.symbol === "FLOW"
+              //   )[0];
+              //   const flowPrice = stores.helper.getTokenPricesMap.get(
+              //     token.address.toLowerCase()
+              //   );
 
-                votingApr =
-                  votes > 0 ? (perVotePerYear / flowPrice) * 100 : Infinity;
-              }
+              //   votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
+              // }
+
+              const totalUSDValueOfBribes = pair.gauge.tbv;
 
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
@@ -1412,7 +1359,7 @@ class Store {
                 .div(totalWeight)
                 .toFixed(2);
               pair.gaugebribes = bribes;
-              pair.gauge.votingApr = votingApr;
+              pair.gauge.votingApr = pair.gauge.apr;
               pair.gauge.bribesInUsd = totalUSDValueOfBribes;
               pair.isAliveGauge = isAliveGauge;
               if (isAliveGauge === false) pair.apr = 0;
@@ -2329,15 +2276,8 @@ class Store {
 
   updatePairsCall = async (web3, account) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/updatePairs`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      // update pairs is same endpoint in API. Pairs are updated in sync on backend
+      const response = await fetch(`/api/pairs`);
       const pairsCall = await response.json();
       this.setStore({ pairs: pairsCall.data });
 

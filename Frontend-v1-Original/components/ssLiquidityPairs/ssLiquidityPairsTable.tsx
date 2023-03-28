@@ -1323,13 +1323,13 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       return 0;
 
     case "poolAmount":
-      let reserveA = BigNumber(a?.reserve0).plus(a?.reserve1).toNumber();
-      let reserveB = BigNumber(b?.reserve0).plus(b?.reserve1).toNumber();
+      let reserveA = a.tvl;
+      let reserveB = b.tvl;
 
-      if (BigNumber(reserveB).lt(reserveA)) {
+      if (reserveB < reserveA) {
         return -1;
       }
-      if (BigNumber(reserveB).gt(reserveA)) {
+      if (reserveB > reserveA) {
         return 1;
       }
       return 0;
