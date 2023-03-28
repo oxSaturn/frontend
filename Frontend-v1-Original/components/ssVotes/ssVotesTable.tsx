@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef } from "react";
-import { makeStyles } from "@mui/styles";
 import {
   Skeleton,
   Table,
@@ -72,7 +71,7 @@ function EnhancedTableHead(props: {
   onRequestSort: (event: any, property: OrderBy) => void;
 }) {
   const { order, orderBy, onRequestSort } = props;
-  const classes = useStyles();
+
   const createSortHandler = (property: OrderBy) => (event) => {
     onRequestSort(event, property);
   };
@@ -82,7 +81,7 @@ function EnhancedTableHead(props: {
       <TableRow>
         {headCells.map((headCell) => (
           <TableCell
-            className={classes.overrideTableHead}
+            className="border-b border-b-[rgba(104,108,122,0.2)]"
             key={headCell.id}
             align={headCell.numeric ? "right" : "left"}
             padding={"normal"}
@@ -93,11 +92,11 @@ function EnhancedTableHead(props: {
               direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >
-              <Typography variant="h5" className={classes.headerText}>
+              <Typography variant="h5" className="text-xs font-extralight">
                 {headCell.label}
               </Typography>
               {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
+                <span className="absolute top-5 m-[-1px] h-[1px] w-[1px] overflow-hidden text-clip border-0 border-none p-0">
                   {order === "desc" ? "sorted descending" : "sorted ascending"}
                 </span>
               ) : null}
@@ -108,89 +107,6 @@ function EnhancedTableHead(props: {
     </TableHead>
   );
 }
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-  },
-  paper: {
-    width: "100%",
-    // @ts-expect-error The default theme interface, augment this to avoid having to set the theme type everywhere.
-    marginBottom: theme.spacing(2),
-  },
-  visuallyHidden: {
-    border: 0,
-    clip: "rect(0 0 0 0)",
-    height: 1,
-    margin: -1,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    top: 20,
-    width: 1,
-  },
-  inline: {
-    display: "flex",
-    alignItems: "center",
-  },
-  inlineBetween: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "12px 0px",
-  },
-  textSpaced: {
-    lineHeight: "1.5",
-    fontWeight: "200",
-    fontSize: "12px",
-  },
-  cell: {},
-  skelly: {
-    marginBottom: "12px",
-    marginTop: "12px",
-  },
-  skelly1: {
-    marginBottom: "12px",
-    marginTop: "24px",
-  },
-  overrideTableHead: {
-    borderBottom: "1px solid rgba(104,108,122,0.2) !important",
-  },
-  headerText: {
-    fontWeight: "200",
-    fontSize: "12px",
-  },
-  tooltipContainer: {
-    minWidth: "240px",
-    padding: "0px 15px",
-  },
-  doubleImages: {
-    display: "flex",
-    position: "relative",
-    width: "70px",
-    height: "35px",
-  },
-  img1Logo: {
-    position: "absolute",
-    left: "0px",
-    top: "0px",
-    border: "3px solid rgb(25, 33, 56)",
-    borderRadius: "30px",
-  },
-  img2Logo: {
-    position: "absolute",
-    left: "23px",
-    zIndex: "1",
-    top: "0px",
-    border: "3px solid rgb(25, 33, 56)",
-    borderRadius: "30px",
-  },
-  inlineEnd: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-  },
-}));
 
 export default function EnhancedTable({
   gauges,
@@ -209,8 +125,6 @@ export default function EnhancedTable({
   defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
   token: VestNFT;
 }) {
-  const classes = useStyles();
-
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState<OrderBy>("votingAPR");
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -263,49 +177,6 @@ export default function EnhancedTable({
     setPage(0);
   };
 
-  if (!gauges) {
-    return (
-      <div className={classes.root}>
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className={classes.skelly1}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={70}
-          className={classes.skelly}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={70}
-          className={classes.skelly}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={70}
-          className={classes.skelly}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={70}
-          className={classes.skelly}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={70}
-          className={classes.skelly}
-        />
-      </div>
-    );
-  }
-
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, gauges.length - page * rowsPerPage);
 
@@ -320,8 +191,44 @@ export default function EnhancedTable({
     return votesRef.current;
   }, [gauges, order, orderBy, page, rowsPerPage, defaultVotes, disabledSort]);
 
+  if (gauges.length === 0) {
+    return (
+      <div className="w-full">
+        <TableContainer className="px-6 lg:overflow-x-hidden">
+          <Table
+            aria-labelledby="tableTitle"
+            size={"medium"}
+            aria-label="enhanced table"
+          >
+            <TableBody>
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+              <Skeleton variant="rounded" height={40} className="my-3 w-full" />
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={gauges.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className={classes.root}>
+    <div className="w-full">
       <TableContainer className="lg:overflow-x-hidden">
         <Table
           aria-labelledby="tableTitle"
@@ -375,8 +282,6 @@ function VotesRow({
   defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
   onSliderChange: (event: any, value: any, asset: any) => void;
 }) {
-  const classes = useStyles();
-
   if (!row) {
     return null;
   }
@@ -407,11 +312,11 @@ function VotesRow({
   return useMemo(() => {
     return (
       <TableRow key={row?.gauge?.address}>
-        <TableCell className={classes.cell}>
-          <div className={classes.inline}>
-            <div className={classes.doubleImages}>
+        <TableCell>
+          <div className="flex items-center">
+            <div className="relative flex h-[35px] w-[70px]">
               <img
-                className={classes.img1Logo}
+                className="absolute left-0 top-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                 src={
                   row && row.token0 && row.token0.logoURI
                     ? row.token0.logoURI
@@ -427,7 +332,7 @@ function VotesRow({
                 }}
               />
               <img
-                className={classes.img2Logo}
+                className="absolute left-6 top-0 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                 src={
                   row && row.token1 && row.token1.logoURI
                     ? row.token1.logoURI
@@ -444,12 +349,12 @@ function VotesRow({
               />
             </div>
             <div>
-              <Typography variant="h2" className={classes.textSpaced}>
+              <Typography variant="h2" className="text-xs font-extralight">
                 {row?.symbol}
               </Typography>
               <Typography
                 variant="h5"
-                className={classes.textSpaced}
+                className="text-xs font-extralight"
                 color="textSecondary"
               >
                 {row?.isStable ? "Stable Pool" : "Volatile Pool"}
@@ -457,38 +362,41 @@ function VotesRow({
             </div>
           </div>
         </TableCell>
-        <TableCell className={classes.cell} align="right">
-          <Typography variant="h2" className={classes.textSpaced}>
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
             {formatCurrency(row?.gauge?.weight)}
           </Typography>
           <Typography
             variant="h5"
-            className={classes.textSpaced}
+            className="text-xs font-extralight"
             color="textSecondary"
           >
             {formatCurrency(row?.gauge?.weightPercent)} %
           </Typography>
         </TableCell>
-        <TableCell className={classes.cell} align="right">
-          <Typography variant="h2" className={classes.textSpaced}>
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
             {formatCurrency(row?.gauge?.votingApr)} %
           </Typography>
         </TableCell>
-        <TableCell className={classes.cell} align="right">
-          <Typography variant="h2" className={classes.textSpaced}>
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
             ${formatCurrency(row?.gauge?.bribesInUsd)}
           </Typography>
         </TableCell>
-        <TableCell className={classes.cell} align="right">
+        <TableCell align="right">
           {row?.gauge?.bribes.map((bribe, idx) => {
             return (
-              <div className={classes.inlineEnd} key={bribe.token.symbol}>
-                <Typography variant="h2" className={classes.textSpaced}>
+              <div
+                className="flex items-center justify-end"
+                key={bribe.token.symbol}
+              >
+                <Typography variant="h2" className="text-xs font-extralight">
                   {formatCurrency(bribe.rewardAmount)}
                 </Typography>
                 <Typography
                   variant="h5"
-                  className={classes.textSpaced}
+                  className="text-xs font-extralight"
                   color="textSecondary"
                 >
                   {bribe.token.symbol}
@@ -497,10 +405,10 @@ function VotesRow({
             );
           })}
         </TableCell>
-        <TableCell className={classes.cell} align="right">
+        <TableCell align="right">
           {!rewardEstimate ? (
             <>
-              <Typography variant="h2" className={classes.textSpaced}>
+              <Typography variant="h2" className="text-xs font-extralight">
                 $
                 {formatCurrency(
                   rewardPerThousand > row.gauge.bribesInUsd
@@ -510,31 +418,31 @@ function VotesRow({
               </Typography>
               <Typography
                 variant="h5"
-                className={classes.textSpaced}
+                className="text-xs font-extralight"
                 color="textSecondary"
               >
                 per 1000 votes
               </Typography>
             </>
           ) : (
-            <Typography variant="h2" className={classes.textSpaced}>
+            <Typography variant="h2" className="text-xs font-extralight">
               ${formatCurrency(rewardEstimate)}
             </Typography>
           )}
         </TableCell>
-        <TableCell className={classes.cell} align="right">
-          <Typography variant="h2" className={classes.textSpaced}>
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
             {formatCurrency(votesCasting)}
           </Typography>
           <Typography
             variant="h5"
-            className={classes.textSpaced}
+            className="text-xs font-extralight"
             color="textSecondary"
           >
             {formatCurrency(sliderValue)} %
           </Typography>
         </TableCell>
-        <TableCell className={classes.cell} align="right">
+        <TableCell align="right">
           <Slider
             valueLabelDisplay="auto"
             value={sliderValue}
@@ -630,19 +538,9 @@ function descendingComparator(
           return 1;
         }
       } else if (rewardEstimateB && !rewardEstimateA) {
-        if (rewardEstimateB < rewardPerThousandA) {
-          return -1;
-        }
-        if (rewardEstimateB > rewardPerThousandA) {
-          return 1;
-        }
+        return 1;
       } else if (rewardEstimateA && !rewardEstimateB) {
-        if (rewardPerThousandB < rewardEstimateA) {
-          return -1;
-        }
-        if (rewardPerThousandB > rewardEstimateA) {
-          return 1;
-        }
+        return -1;
       }
       if (rewardPerThousandB < rewardPerThousandA) {
         return -1;
