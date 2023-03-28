@@ -177,7 +177,7 @@ function Setup() {
 
     const ssUpdated = () => {
       const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-      const tokenPrices = stores.helper.getTokenPricesMap;
+      const tokenPrices = stores.stableSwapStore.getStore("tokenPrices");
 
       setToAssetOptions(swapAssets);
       setFromAssetOptions(swapAssets);
