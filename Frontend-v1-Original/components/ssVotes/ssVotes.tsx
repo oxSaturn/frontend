@@ -164,9 +164,7 @@ export default function ssVotes() {
   };
 
   let totalVotes = votes.reduce((acc, curr) => {
-    return BigNumber(acc)
-      .plus(BigNumber(curr.value).lt(0) ? curr.value * -1 : curr.value)
-      .toNumber();
+    return acc += curr.value;
   }, 0);
 
   const handleChange = (event) => {

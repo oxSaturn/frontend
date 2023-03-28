@@ -12,9 +12,7 @@ import {
   TablePagination,
   Typography,
   Slider,
-  Tooltip,
 } from "@mui/material";
-import { InsertChartOutlinedOutlined } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
@@ -23,28 +21,16 @@ import { Pair, Vote, VestNFT } from "../../stores/types/types";
 const headCells = [
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
   {
-    id: "balance",
-    numeric: true,
-    disablePadding: false,
-    label: "My Stake",
-  },
-  // {
-  //   id: "liquidity",
-  //   numeric: true,
-  //   disablePadding: false,
-  //   label: "Total Liquidity",
-  // },
-  {
-    id: "rewardEstimate",
-    numeric: true,
-    disablePadding: false,
-    label: "Reward Estimate",
-  },
-  {
     id: "totalVotes",
     numeric: true,
     disablePadding: false,
     label: "Total Votes",
+  },
+  {
+    id: "votingAPR",
+    numeric: true,
+    disablePadding: false,
+    label: "Voting APR",
   },
   {
     id: "totalBribesUSD",
@@ -57,6 +43,12 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Bribes",
+  },
+  {
+    id: "rewardEstimate",
+    numeric: true,
+    disablePadding: false,
+    label: "Reward Estimate",
   },
   {
     id: "myVotes",
@@ -75,12 +67,12 @@ const headCells = [
 type OrderBy = (typeof headCells)[number]["id"];
 
 function EnhancedTableHead(props: {
-  classes: ReturnType<typeof useStyles>;
   order: "asc" | "desc";
   orderBy: OrderBy;
   onRequestSort: (event: any, property: OrderBy) => void;
 }) {
-  const { classes, order, orderBy, onRequestSort } = props;
+  const { order, orderBy, onRequestSort } = props;
+  const classes = useStyles();
   const createSortHandler = (property: OrderBy) => (event) => {
     onRequestSort(event, property);
   };
@@ -223,14 +215,18 @@ export default function EnhancedTable({
   const classes = useStyles();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [orderBy, setOrderBy] = useState<OrderBy>("totalBribesUSD");
+  const [orderBy, setOrderBy] = useState<OrderBy>("votingAPR");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
   const [disabledSort, setDisabledSort] = useState(false);
   const votesRef = useRef(null);
 
   const onSliderChange = (event, value, asset) => {
-    if (orderBy === "mvp" || orderBy === "myVotes") {
+    if (
+      orderBy === "mvp" ||
+      orderBy === "myVotes" ||
+      orderBy === "rewardEstimate"
+    ) {
       setDisabledSort(true);
     }
     let newSliderValues = [...defaultVotes];
@@ -245,8 +241,13 @@ export default function EnhancedTable({
     setParentSliderValues(newSliderValues);
   };
 
-  const handleRequestSort = (event, property) => {
-    if (disabledSort && (property === "mvp" || property === "myVotes")) {
+  const handleRequestSort = (event, property: OrderBy) => {
+    if (
+      disabledSort &&
+      (property === "mvp" ||
+        property === "myVotes" ||
+        property === "rewardEstimate")
+    ) {
       return;
     } else if (disabledSort) {
       setDisabledSort(false);
@@ -308,32 +309,10 @@ export default function EnhancedTable({
     );
   }
 
-  // const renderTooltip = (pair) => {
-  //   return (
-  //     <div className={classes.tooltipContainer}>
-  //       {pair?.gauge?.bribes.map((bribe, idx) => {
-  //         let earned = 0;
-  //         if (pair.gauge.bribesEarned && pair.gauge.bribesEarned.length > idx) {
-  //           earned = pair.gauge.bribesEarned[idx].earned;
-  //         }
-
-  //         return (
-  //           <div className={classes.inlineBetween} key={bribe.token.symbol}>
-  //             <Typography>Bribe:</Typography>
-  //             <Typography>
-  //               {formatCurrency(bribe.rewardAmount)} {bribe.token.symbol}
-  //             </Typography>
-  //           </div>
-  //         );
-  //       })}
-  //     </div>
-  //   );
-  // };
-
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, gauges.length - page * rowsPerPage);
 
-  const sortedGauges = useMemo(() => {
+  const sortedGauges = useMemo<Pair[]>(() => {
     if (disabledSort) {
       return votesRef.current;
     }
@@ -353,232 +332,20 @@ export default function EnhancedTable({
           aria-label="enhanced table"
         >
           <EnhancedTableHead
-            classes={classes}
             order={order}
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
           />
           <TableBody>
-            {sortedGauges.map((row, index) => {
-              if (!row) {
-                return null;
-              }
-              let sliderValue = defaultVotes.find(
-                (el) => el.address === row?.address
-              )?.value;
-              if (sliderValue) {
-                sliderValue = BigNumber(sliderValue).toNumber();
-              } else {
-                sliderValue = 0;
-              }
-              const votesCasting =
-                (sliderValue / 100) * parseFloat(token?.lockValue);
-              const rewardEstimateBefore =
-                row.gauge?.bribesInUsd > 0 && sliderValue > 0
-                  ? (row.gauge?.bribesInUsd * votesCasting) /
-                    (votesCasting + parseFloat(row?.gauge?.weight))
-                  : 0;
-              const rewardEstimateAfter =
-                row.gauge?.bribesInUsd > 0 && sliderValue > 0
-                  ? (row.gauge?.bribesInUsd * votesCasting) /
-                    parseFloat(row?.gauge?.weight)
-                  : 0;
-
-              return (
-                <TableRow key={row?.gauge?.address}>
-                  <TableCell className={classes.cell}>
-                    <div className={classes.inline}>
-                      <div className={classes.doubleImages}>
-                        <img
-                          className={classes.img1Logo}
-                          src={
-                            row && row.token0 && row.token0.logoURI
-                              ? row.token0.logoURI
-                              : ``
-                          }
-                          width="37"
-                          height="37"
-                          alt=""
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).onerror = null;
-                            (e.target as HTMLImageElement).src =
-                              "/tokens/unknown-logo.png";
-                          }}
-                        />
-                        <img
-                          className={classes.img2Logo}
-                          src={
-                            row && row.token1 && row.token1.logoURI
-                              ? row.token1.logoURI
-                              : ``
-                          }
-                          width="37"
-                          height="37"
-                          alt=""
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).onerror = null;
-                            (e.target as HTMLImageElement).src =
-                              "/tokens/unknown-logo.png";
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Typography variant="h2" className={classes.textSpaced}>
-                          {row?.symbol}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className={classes.textSpaced}
-                          color="textSecondary"
-                        >
-                          {row?.isStable ? "Stable Pool" : "Volatile Pool"}
-                        </Typography>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <div className={classes.inlineEnd}>
-                      <Typography variant="h2" className={classes.textSpaced}>
-                        {formatCurrency(
-                          BigNumber(row?.gauge?.balance)
-                            .div(row?.gauge?.totalSupply)
-                            .times(row?.reserve0)
-                        )}
-                      </Typography>
-                      <Typography
-                        variant="h5"
-                        className={classes.textSpaced}
-                        color="textSecondary"
-                      >
-                        {row?.token0?.symbol}
-                      </Typography>
-                    </div>
-                    <div className={classes.inlineEnd}>
-                      <Typography variant="h5" className={classes.textSpaced}>
-                        {formatCurrency(
-                          BigNumber(row?.gauge?.balance)
-                            .div(row?.gauge?.totalSupply)
-                            .times(row?.reserve1)
-                        )}
-                      </Typography>
-                      <Typography
-                        variant="h5"
-                        className={classes.textSpaced}
-                        color="textSecondary"
-                      >
-                        {row?.token1?.symbol}
-                      </Typography>
-                    </div>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <div className={classes.inlineEnd}>
-                      <Typography
-                        variant="h5"
-                        className="pr-1 text-xs font-extralight"
-                        color="textSecondary"
-                      >
-                        will vote
-                      </Typography>
-                      <Typography variant="h2" className={classes.textSpaced}>
-                        ${formatCurrency(rewardEstimateBefore)}
-                      </Typography>
-                    </div>
-                    <div className={classes.inlineEnd}>
-                      <Typography
-                        variant="h5"
-                        className="pr-1 text-xs font-extralight"
-                        color="textSecondary"
-                      >
-                        voted
-                      </Typography>
-                      <Typography variant="h2" className={classes.textSpaced}>
-                        ${formatCurrency(rewardEstimateAfter)}
-                      </Typography>
-                    </div>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <Typography variant="h2" className={classes.textSpaced}>
-                      {formatCurrency(row?.gauge?.weight)}
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      className={classes.textSpaced}
-                      color="textSecondary"
-                    >
-                      {formatCurrency(row?.gauge?.weightPercent)} %
-                    </Typography>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <div className="relative flex items-center justify-end gap-1">
-                      <Tooltip
-                        title={`Voting APR: ${
-                          row?.gauge?.votingApr === Infinity
-                            ? "∞"
-                            : formatCurrency(row?.gauge?.votingApr)
-                        } %`}
-                        followCursor
-                        placement="right"
-                        className="flex transition-all duration-200  hover:scale-105 hover:fill-cantoGreen"
-                        enterTouchDelay={500}
-                      >
-                        <InsertChartOutlinedOutlined className="absolute top-0 right-1/2 inline-block h-5" />
-                      </Tooltip>
-                      <Typography variant="h2" className={classes.textSpaced}>
-                        <div>${formatCurrency(row?.gauge?.bribesInUsd)}</div>
-                      </Typography>
-                    </div>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    {row?.gauge?.bribes.map((bribe, idx) => {
-                      return (
-                        <div
-                          className={classes.inlineEnd}
-                          key={bribe.token.symbol}
-                        >
-                          <Typography
-                            variant="h2"
-                            className={classes.textSpaced}
-                          >
-                            {formatCurrency(bribe.rewardAmount)}
-                          </Typography>
-                          <Typography
-                            variant="h5"
-                            className={classes.textSpaced}
-                            color="textSecondary"
-                          >
-                            {bribe.token.symbol}
-                          </Typography>
-                        </div>
-                      );
-                    })}
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <Typography variant="h2" className={classes.textSpaced}>
-                      {formatCurrency(votesCasting)}
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      className={classes.textSpaced}
-                      color="textSecondary"
-                    >
-                      {formatCurrency(sliderValue)} %
-                    </Typography>
-                  </TableCell>
-                  <TableCell className={classes.cell} align="right">
-                    <Slider
-                      valueLabelDisplay="auto"
-                      value={sliderValue}
-                      onChange={(event, value) => {
-                        onSliderChange(event, value, row);
-                      }}
-                      min={0}
-                      max={100}
-                      marks
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {sortedGauges.map((row) => (
+              <VotesRow
+                row={row}
+                token={token}
+                defaultVotes={defaultVotes}
+                onSliderChange={onSliderChange}
+                key={row.address}
+              />
+            ))}
             {emptyRows > 0 && (
               <TableRow style={{ height: 61 * emptyRows }}>
                 <TableCell colSpan={7} />
@@ -600,6 +367,192 @@ export default function EnhancedTable({
   );
 }
 
+function VotesRow({
+  row,
+  token,
+  defaultVotes,
+  onSliderChange,
+}: {
+  row: Pair;
+  token: VestNFT;
+  defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
+  onSliderChange: (event: any, value: any, asset: any) => void;
+}) {
+  const classes = useStyles();
+
+  if (!row) {
+    return null;
+  }
+
+  let sliderValue = defaultVotes.find(
+    (el) => el.address === row?.address
+  )?.value;
+  if (!sliderValue) {
+    sliderValue = 0;
+  }
+
+  let rewardEstimate: number;
+  const votesCasting = (sliderValue / 100) * parseFloat(token?.lockValue);
+  if (votesCasting > 0) {
+    const divideBy = token?.voted
+      ? parseFloat(row?.gauge?.weight)
+      : votesCasting + parseFloat(row?.gauge?.weight);
+
+    rewardEstimate =
+      row.gauge?.bribesInUsd > 0 && sliderValue > 0
+        ? (row.gauge?.bribesInUsd * votesCasting) / divideBy
+        : 0;
+  }
+  const rewardPerThousand =
+    parseFloat(row?.gauge?.weight) > 0
+      ? (row.gauge.bribesInUsd / parseFloat(row?.gauge?.weight)) * 1000
+      : 0;
+  return useMemo(() => {
+    return (
+      <TableRow key={row?.gauge?.address}>
+        <TableCell className={classes.cell}>
+          <div className={classes.inline}>
+            <div className={classes.doubleImages}>
+              <img
+                className={classes.img1Logo}
+                src={
+                  row && row.token0 && row.token0.logoURI
+                    ? row.token0.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+              <img
+                className={classes.img2Logo}
+                src={
+                  row && row.token1 && row.token1.logoURI
+                    ? row.token1.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+            </div>
+            <div>
+              <Typography variant="h2" className={classes.textSpaced}>
+                {row?.symbol}
+              </Typography>
+              <Typography
+                variant="h5"
+                className={classes.textSpaced}
+                color="textSecondary"
+              >
+                {row?.isStable ? "Stable Pool" : "Volatile Pool"}
+              </Typography>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          <Typography variant="h2" className={classes.textSpaced}>
+            {formatCurrency(row?.gauge?.weight)}
+          </Typography>
+          <Typography
+            variant="h5"
+            className={classes.textSpaced}
+            color="textSecondary"
+          >
+            {formatCurrency(row?.gauge?.weightPercent)} %
+          </Typography>
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          <Typography variant="h2" className={classes.textSpaced}>
+            {formatCurrency(row?.gauge?.votingApr)} %
+          </Typography>
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          <Typography variant="h2" className={classes.textSpaced}>
+            ${formatCurrency(row?.gauge?.bribesInUsd)}
+          </Typography>
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          {row?.gauge?.bribes.map((bribe, idx) => {
+            return (
+              <div className={classes.inlineEnd} key={bribe.token.symbol}>
+                <Typography variant="h2" className={classes.textSpaced}>
+                  {formatCurrency(bribe.rewardAmount)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={classes.textSpaced}
+                  color="textSecondary"
+                >
+                  {bribe.token.symbol}
+                </Typography>
+              </div>
+            );
+          })}
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          {!rewardEstimate ? (
+            <>
+              <Typography variant="h2" className={classes.textSpaced}>
+                $
+                {formatCurrency(
+                  rewardPerThousand > row.gauge.bribesInUsd
+                    ? row.gauge.bribesInUsd
+                    : rewardPerThousand
+                )}
+              </Typography>
+              <Typography
+                variant="h5"
+                className={classes.textSpaced}
+                color="textSecondary"
+              >
+                per 1000 votes
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="h2" className={classes.textSpaced}>
+              ${formatCurrency(rewardEstimate)}
+            </Typography>
+          )}
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          <Typography variant="h2" className={classes.textSpaced}>
+            {formatCurrency(votesCasting)}
+          </Typography>
+          <Typography
+            variant="h5"
+            className={classes.textSpaced}
+            color="textSecondary"
+          >
+            {formatCurrency(sliderValue)} %
+          </Typography>
+        </TableCell>
+        <TableCell className={classes.cell} align="right">
+          <Slider
+            valueLabelDisplay="auto"
+            value={sliderValue}
+            onChange={(event, value) => {
+              onSliderChange(event, value, row);
+            }}
+            min={0}
+            max={100}
+          />
+        </TableCell>
+      </TableRow>
+    );
+  }, [token, defaultVotes, row]);
+}
+
 function descendingComparator(
   a: Pair,
   b: Pair,
@@ -612,26 +565,14 @@ function descendingComparator(
   }
 
   switch (orderBy) {
-    case "balance":
-      if (BigNumber(b?.gauge?.balance).lt(a?.gauge?.balance)) {
+    case "votingAPR":
+      if (BigNumber(b?.gauge?.votingApr).lt(a?.gauge?.votingApr)) {
         return -1;
       }
-      if (BigNumber(b?.gauge?.balance).gt(a?.gauge?.balance)) {
+      if (BigNumber(b?.gauge?.votingApr).gt(a?.gauge?.votingApr)) {
         return 1;
       }
       return 0;
-
-    // case "liquidity":
-    //   let reserveA = BigNumber(a?.reserve0).plus(a?.reserve1).toNumber();
-    //   let reserveB = BigNumber(b?.reserve0).plus(b?.reserve1).toNumber();
-
-    //   if (BigNumber(reserveB).lt(reserveA)) {
-    //     return -1;
-    //   }
-    //   if (BigNumber(reserveB).gt(reserveA)) {
-    //     return 1;
-    //   }
-    //   return 0;
 
     case "rewardEstimate":
       const sliderValueA = defaultVotes.find(
@@ -642,17 +583,21 @@ function descendingComparator(
       )?.value;
       const votesToCastA =
         (sliderValueA / 100) * parseFloat(token?.lockValue ?? "0");
+      const divideByA = token?.voted
+        ? votesToCastA
+        : votesToCastA + parseFloat(a?.gauge?.weight);
       const rewardEstimateA =
         a.gauge?.bribesInUsd > 0 && sliderValueA > 0
-          ? (a.gauge?.bribesInUsd * votesToCastA) /
-            (votesToCastA + parseFloat(a?.gauge?.weight))
+          ? (a.gauge?.bribesInUsd * votesToCastA) / divideByA
           : 0;
       const votesToCastB =
         (sliderValueB / 100) * parseFloat(token?.lockValue ?? "0");
+      const divideByB = token?.voted
+        ? votesToCastB
+        : votesToCastB + parseFloat(b?.gauge?.weight);
       const rewardEstimateB =
         b.gauge?.bribesInUsd > 0 && sliderValueB > 0
-          ? (b.gauge?.bribesInUsd * votesToCastB) /
-            (votesToCastB + parseFloat(b?.gauge?.weight))
+          ? (b.gauge?.bribesInUsd * votesToCastB) / divideByB
           : 0;
       if (rewardEstimateB < rewardEstimateA) {
         return -1;
