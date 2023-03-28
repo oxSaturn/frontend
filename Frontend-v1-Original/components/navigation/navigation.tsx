@@ -2,17 +2,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
-const migrateModeActive = process.env.NEXT_PUBLIC_MIGRATE_MODE === "true";
-
 function Navigation() {
   const router = useRouter();
   const [active, setActive] = useState("swap");
 
   useEffect(() => {
     const activePath = router.asPath;
-    if (activePath.includes("migration")) {
-      setActive("migration");
-    }
     if (activePath.includes("home")) {
       setActive("home");
     }
@@ -42,7 +37,6 @@ function Navigation() {
   const renderNavs = () => {
     return (
       <>
-        {migrateModeActive && renderSubNav("Migration", "migration")}
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
         {renderSubNav("Vest", "vest")}
