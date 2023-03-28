@@ -322,7 +322,7 @@ export default function EnhancedTable({
 
   return (
     <div className={classes.root}>
-      <TableContainer>
+      <TableContainer className="lg:overflow-x-hidden">
         <Table
           aria-labelledby="tableTitle"
           size={"medium"}
