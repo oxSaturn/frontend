@@ -615,14 +615,19 @@ function Setup() {
             <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
-        {Math.abs(parseFloat(usdDiff)) > 10 && (
+        {(Math.abs(parseFloat(usdDiff)) > 10 ||
+          (parseFloat(fromAmountValueUsd) > 0 &&
+            parseFloat(toAmountValueUsd) === 0)) && (
           <>
             <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500">
               Warning
             </Typography>
             <div className="grid w-full grid-cols-1">
               <div className="flex flex-col items-center justify-center py-6 px-0 text-sm font-bold text-red-500">
-                Potential low liquidity swap! Price difference is {usdDiff}%
+                Potential low liquidity swap!{" "}
+                {usdDiff !== ""
+                  ? `Price difference is ${usdDiff}%`
+                  : "Double check Price Info above"}
               </div>
             </div>
           </>
