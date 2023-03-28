@@ -581,28 +581,76 @@ function descendingComparator(
       const sliderValueB = defaultVotes.find(
         (el) => el.address === b?.address
       )?.value;
-      const votesToCastA =
+      let rewardEstimateA: number;
+      let rewardEstimateB: number;
+
+      const votesCastingA =
         (sliderValueA / 100) * parseFloat(token?.lockValue ?? "0");
-      const divideByA = token?.voted
-        ? votesToCastA
-        : votesToCastA + parseFloat(a?.gauge?.weight);
-      const rewardEstimateA =
-        a.gauge?.bribesInUsd > 0 && sliderValueA > 0
-          ? (a.gauge?.bribesInUsd * votesToCastA) / divideByA
-          : 0;
-      const votesToCastB =
+      if (votesCastingA > 0) {
+        const divideByA = token?.voted
+          ? parseFloat(a?.gauge?.weight)
+          : votesCastingA + parseFloat(a?.gauge?.weight);
+        rewardEstimateA =
+          a.gauge?.bribesInUsd > 0 && sliderValueA > 0
+            ? (a.gauge?.bribesInUsd * votesCastingA) / divideByA
+            : 0;
+      }
+
+      const votesCastingB =
         (sliderValueB / 100) * parseFloat(token?.lockValue ?? "0");
-      const divideByB = token?.voted
-        ? votesToCastB
-        : votesToCastB + parseFloat(b?.gauge?.weight);
-      const rewardEstimateB =
-        b.gauge?.bribesInUsd > 0 && sliderValueB > 0
-          ? (b.gauge?.bribesInUsd * votesToCastB) / divideByB
+      if (votesCastingB > 0) {
+        const divideByB = token?.voted
+          ? parseFloat(b?.gauge?.weight)
+          : votesCastingB + parseFloat(b?.gauge?.weight);
+        rewardEstimateB =
+          b.gauge?.bribesInUsd > 0 && sliderValueB > 0
+            ? (b.gauge?.bribesInUsd * votesCastingB) / divideByB
+            : 0;
+      }
+
+      const _rewardPerThousandA =
+        parseFloat(a?.gauge?.weight) > 0
+          ? (a.gauge.bribesInUsd / parseFloat(a?.gauge?.weight)) * 1000
           : 0;
-      if (rewardEstimateB < rewardEstimateA) {
+      const _rewardPerThousandB =
+        parseFloat(b?.gauge?.weight) > 0
+          ? (b.gauge.bribesInUsd / parseFloat(b?.gauge?.weight)) * 1000
+          : 0;
+      const rewardPerThousandA =
+        _rewardPerThousandA > a.gauge.bribesInUsd
+          ? a.gauge.bribesInUsd
+          : _rewardPerThousandA;
+      const rewardPerThousandB =
+        _rewardPerThousandB > b.gauge.bribesInUsd
+          ? b.gauge.bribesInUsd
+          : _rewardPerThousandB;
+
+      if (rewardEstimateB && rewardEstimateA) {
+        if (rewardEstimateB < rewardEstimateA) {
+          return -1;
+        }
+        if (rewardEstimateB > rewardEstimateA) {
+          return 1;
+        }
+      } else if (rewardEstimateB && !rewardEstimateA) {
+        if (rewardEstimateB < rewardPerThousandA) {
+          return -1;
+        }
+        if (rewardEstimateB > rewardPerThousandA) {
+          return 1;
+        }
+      } else if (rewardEstimateA && !rewardEstimateB) {
+        if (rewardPerThousandB < rewardEstimateA) {
+          return -1;
+        }
+        if (rewardPerThousandB > rewardEstimateA) {
+          return 1;
+        }
+      }
+      if (rewardPerThousandB < rewardPerThousandA) {
         return -1;
       }
-      if (rewardEstimateB > rewardEstimateA) {
+      if (rewardPerThousandB > rewardPerThousandA) {
         return 1;
       }
       return 0;
