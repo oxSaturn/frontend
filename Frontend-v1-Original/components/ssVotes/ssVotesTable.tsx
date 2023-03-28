@@ -191,7 +191,7 @@ export default function EnhancedTable({
     return votesRef.current;
   }, [gauges, order, orderBy, page, rowsPerPage, defaultVotes, disabledSort]);
 
-  if (gauges.length === 0) {
+  if (!gauges || gauges.length === 0) {
     return (
       <div className="w-full">
         <TableContainer className="px-6 lg:overflow-x-hidden">
