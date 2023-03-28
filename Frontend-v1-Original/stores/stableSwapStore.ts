@@ -5180,6 +5180,9 @@ class Store {
         ],
       });
 
+      const pairs = this.getStore("pairs");
+      let deadGauges: string[] = [];
+
       // SUBMIT INCREASE TRANSACTION
       const gaugesContract = new web3.eth.Contract(
         CONTRACTS.VOTER_ABI as AbiItem[],
@@ -5189,6 +5192,27 @@ class Store {
       let onlyVotes = votes.filter((vote) => {
         return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
       });
+
+      const votesAddresses = onlyVotes.map((vote) => vote.address);
+      const p = pairs.filter((pair) => {
+        return votesAddresses.includes(pair.address) ;
+      });
+      p.forEach((pair) => {
+        if (pair.isAliveGauge === false) {
+          deadGauges.push(pair.symbol);
+        }
+      })
+
+      if (deadGauges.length > 0) {
+        const error_message = `Gauges ${deadGauges.join(
+          ", "
+        )} are dead and cannot be voted on`;
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: voteTXID,
+          description: error_message,
+        });
+        throw new Error(error_message);
+      }
 
       let tokens = onlyVotes.map((vote) => {
         return vote.address;
