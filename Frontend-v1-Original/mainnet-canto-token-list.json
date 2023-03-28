@@ -190,5 +190,29 @@
     "logoURI": "https://raw.githubusercontent.com/acryptos/acryptos-assets/master/icon-circle-1500.png ",
     "name": "ACryptoS",
     "symbol": "ACS"
+  },
+  {
+    "address": "0x08638a74A8134c747Dce29B57472cc2B57F35653",
+    "chainId": 7700,
+    "decimals": 8,
+    "logoURI": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png",
+    "name": "Wrapped BTC",
+    "symbol": "WBTC"
+  },
+  {
+    "address": "0xFb7F77faaA3b69ef4C15d6305C79AD92B387C89F",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
+    "name": "BNB",
+    "symbol": "BNB"
+  },
+  {
+    "address": "0x381Ea7A7EE6a1e2982e01E7b6837f775a1a4B07F",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/9576/large/BUSD.png",
+    "name": "BUSD",
+    "symbol": "BUSD"
   }
 ]
