@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, MouseEvent } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -127,7 +127,7 @@ const switchChain = async () => {
       params: [{ chainId: hexChain }],
     });
   } catch (switchError) {
-    if (switchError.code === 4902) {
+    if ((switchError as any).code === 4902) {
       try {
         await (window as EthWindow).ethereum.request({
           method: "wallet_addEthereumChain",
@@ -218,13 +218,15 @@ function Header() {
     setUnlockOpen(false);
   };
 
-  const setQueueLength = (length) => {
+  const setQueueLength = (length: number) => {
     setTransactionQueueLength(length);
   };
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+    null
+  );
 
-  const handleClick = (event) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
