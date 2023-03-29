@@ -838,7 +838,7 @@ export default function EnhancedTable({
                                   className={`${classes.textSpaced} ${classes.symbol}`}
                                   color="textSecondary"
                                 >
-                                  {row.rewardToken.symbol}
+                                  {row?.lockToken?.symbol}
                                 </Typography>
                               </div>
                             </>

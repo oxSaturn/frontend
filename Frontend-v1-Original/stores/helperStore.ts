@@ -29,11 +29,11 @@ class Helper {
   private dexScrennerEndpoint = "https://api.dexscreener.com/latest/dex/tokens";
   private dexGuruEndpoint =
     "https://api.dev.dex.guru/v1/chain/10/tokens/%/market";
-  private tokenPricesMap = new Map<string, number>();
+  // private tokenPricesMap = new Map<string, number>();
 
-  get getTokenPricesMap() {
-    return this.tokenPricesMap;
-  }
+  // get getTokenPricesMap() {
+  //   return this.tokenPricesMap;
+  // }
 
   getProtocolDefiLlama = async () => {
     const data = await fetch(`${this.defiLlamaBaseUrl}/protocol/velocimeter`);
@@ -41,11 +41,11 @@ class Helper {
     return json as unknown;
   };
 
-  getCurrentTvl = async () => {
-    const response = await fetch(`${this.defiLlamaBaseUrl}/tvl/velocimeter`);
-    const json = await response.json();
-    return json as number;
-  };
+  // getCurrentTvl = async () => {
+  //   const response = await fetch(`${this.defiLlamaBaseUrl}/tvl/velocimeter`);
+  //   const json = await response.json();
+  //   return json as number;
+  // };
 
   getActivePeriod = async () => {
     try {
@@ -65,15 +65,15 @@ class Helper {
     }
   };
 
-  updateTokenPrice = async (token: TokenForPrice) => {
-    if (this.tokenPricesMap.has(token.address.toLowerCase())) {
-      return this.tokenPricesMap.get(token.address.toLowerCase());
-    }
+  // updateTokenPrice = async (token: TokenForPrice) => {
+  //   if (this.tokenPricesMap.has(token.address.toLowerCase())) {
+  //     return this.tokenPricesMap.get(token.address.toLowerCase());
+  //   }
 
-    const price = await this._getTokenPrice(token);
-    this.tokenPricesMap.set(token.address.toLowerCase(), price);
-    return price;
-  };
+  //   const price = await this._getTokenPrice(token);
+  //   this.tokenPricesMap.set(token.address.toLowerCase(), price);
+  //   return price;
+  // };
 
   getCirculatingSupply = async () => {
     const web3 = await stores.accountStore.getWeb3Provider();
@@ -119,29 +119,32 @@ class Helper {
 
   getMarketCap = async () => {
     const circulatingSupply = await this.getCirculatingSupply();
-    const price = await this.updateTokenPrice({
-      address: CONTRACTS.GOV_TOKEN_ADDRESS,
-      decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
-      symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
-    });
+    const price = stores.stableSwapStore
+      .getStore("tokenPrices")
+      .get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
+    //  await this.updateTokenPrice({
+    //   address: CONTRACTS.GOV_TOKEN_ADDRESS,
+    //   decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
+    //   symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
+    // });
     if (!price || !circulatingSupply) return 0;
     return circulatingSupply * price;
   };
 
-  protected _getTokenPrice = async (token: TokenForPrice) => {
-    let price = 0;
+  // protected _getTokenPrice = async (token: TokenForPrice) => {
+  //   let price = 0;
 
-    price = await this._getAggregatedPriceInStables(token);
+  //   price = await this._getAggregatedPriceInStables(token);
 
-    if (price === 0) {
-      price = await this._getChainPriceInStables(token);
-    }
-    // TODO this one needs api keys and is not free
-    // if (price === 0) {
-    //   price = await this._getDebankPriceInStables(token);
-    // }
-    return price;
-  };
+  //   if (price === 0) {
+  //     price = await this._getChainPriceInStables(token);
+  //   }
+  //   // TODO this one needs api keys and is not free
+  //   // if (price === 0) {
+  //   //   price = await this._getDebankPriceInStables(token);
+  //   // }
+  //   return price;
+  // };
 
   protected _getAggregatedPriceInStables = async (token: TokenForPrice) => {
     const price = await this._getDefillamaPriceInStables(token);

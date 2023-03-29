@@ -29,6 +29,7 @@ const initialEmptyToken = {
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
+  voted: false,
 };
 
 export default function ssVotes() {
@@ -36,8 +37,8 @@ export default function ssVotes() {
 
   const [showWarning, setShowWarning] = useState(false);
 
-  const [, updateState] = useState<{}>();
-  const forceUpdate = useCallback(() => updateState({}), []);
+  // const [, updateState] = useState<{}>();
+  // const forceUpdate = useCallback(() => updateState({}), []);
 
   const [gauges, setGauges] = useState<Pair[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
@@ -54,7 +55,8 @@ export default function ssVotes() {
     const filteredAssets = as.filter((asset) => {
       return asset.gauge && asset.gauge.address;
     });
-    setGauges(filteredAssets);
+    if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
+      setGauges(filteredAssets);
 
     const nfts = stores.stableSwapStore.getStore("vestNFTs");
     setVestNFTs(nfts);
@@ -73,34 +75,35 @@ export default function ssVotes() {
         type: ACTIONS.GET_VEST_VOTES,
         content: { tokenID: nfts[0].id },
       });
-      stores.dispatcher.dispatch({
-        type: ACTIONS.GET_VEST_BALANCES,
-        content: { tokenID: nfts[0].id },
-      });
+      // stores.dispatcher.dispatch({
+      //   type: ACTIONS.GET_VEST_BALANCES,
+      //   content: { tokenID: nfts[0].id },
+      // });
     }
 
-    forceUpdate();
+    // forceUpdate();
   };
 
   useEffect(() => {
-    const vestVotesReturned = (vals) => {
-      setVotes(
-        vals.map((asset) => {
-          return {
-            address: asset?.address,
-            value: BigNumber(
-              asset && asset.votePercent ? asset.votePercent : 0
-            ).toNumber(),
-          };
-        })
-      );
-      forceUpdate();
+    const vestVotesReturned = (votesReturned) => {
+      const votesReturnedMapped = votesReturned.map((vote) => {
+        return {
+          address: vote?.address,
+          value: BigNumber(
+            vote && vote.votePercent ? vote.votePercent : 0
+          ).toNumber(),
+        };
+      });
+      if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
+        setVotes(votesReturnedMapped);
+
+      // forceUpdate();
     };
 
-    const vestBalancesReturned = (vals) => {
-      setGauges(vals);
-      forceUpdate();
-    };
+    // const vestBalancesReturned = (vals) => {
+    //   setGauges(vals);
+    //   forceUpdate();
+    // };
 
     const stableSwapUpdated = () => {
       ssUpdated();
@@ -119,7 +122,7 @@ export default function ssVotes() {
     stores.emitter.on(ACTIONS.ERROR, voteReturned);
     stores.emitter.on(ACTIONS.VEST_VOTES_RETURNED, vestVotesReturned);
     // stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
-    stores.emitter.on(ACTIONS.VEST_BALANCES_RETURNED, vestBalancesReturned);
+    // stores.emitter.on(ACTIONS.VEST_BALANCES_RETURNED, vestBalancesReturned);
 
     const localStorageWarningAccepted =
       window.localStorage.getItem("voting.warning");
@@ -141,10 +144,10 @@ export default function ssVotes() {
         vestVotesReturned
       );
       // stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
-      stores.emitter.removeListener(
-        ACTIONS.VEST_BALANCES_RETURNED,
-        vestBalancesReturned
-      );
+      // stores.emitter.removeListener(
+      //   ACTIONS.VEST_BALANCES_RETURNED,
+      //   vestBalancesReturned
+      // );
     };
   }, []);
 
@@ -161,9 +164,7 @@ export default function ssVotes() {
   };
 
   let totalVotes = votes.reduce((acc, curr) => {
-    return BigNumber(acc)
-      .plus(BigNumber(curr.value).lt(0) ? curr.value * -1 : curr.value)
-      .toNumber();
+    return (acc += curr.value);
   }, 0);
 
   const handleChange = (event) => {

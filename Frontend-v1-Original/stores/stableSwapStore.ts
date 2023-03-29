@@ -31,9 +31,9 @@ import type {
   Vote,
   VestNFT,
   CantoContracts,
-  AmountsOut,
   GovToken,
   Votes,
+  QuoteSwapResponse,
 } from "./types/types";
 import {
   FLOW_CONVERTOR_ADDRESS,
@@ -56,11 +56,11 @@ class Store {
     vestNFTs: VestNFT[];
     rewards: {
       bribes: any[];
-      fees: any[];
       rewards: any[];
       veDist: any[];
     };
     updateDate: number;
+    tokenPrices: Map<string, number>;
     tvl: number;
     circulatingSupply: number;
     marketCap: number;
@@ -81,11 +81,11 @@ class Store {
       vestNFTs: [],
       rewards: {
         bribes: [],
-        fees: [],
         rewards: [],
         veDist: [],
       },
       updateDate: 0,
+      tokenPrices: new Map(),
       tvl: 0,
       circulatingSupply: 0,
       marketCap: 0,
@@ -177,6 +177,9 @@ class Store {
             break;
           case ACTIONS.INCREASE_VEST_DURATION:
             this.increaseVestDuration(payload);
+            break;
+          case ACTIONS.RESET_VEST:
+            this.resetVest(payload);
             break;
           case ACTIONS.WITHDRAW_VEST:
             this.withdrawVest(payload);
@@ -280,7 +283,7 @@ class Store {
           const lockValue = await vestingContract.methods
             .balanceOfNFT(tokenIndex)
             .call();
-
+          const voted = await this._checkNFTVotedEpoch(web3, tokenIndex);
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -291,6 +294,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            voted,
           };
         })
       );
@@ -348,6 +352,7 @@ class Store {
 
       const locked = await vestingContract.methods.locked(id).call();
       const lockValue = await vestingContract.methods.balanceOfNFT(id).call();
+      const voted = await this._checkNFTVotedEpoch(web3, id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -360,6 +365,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            voted,
           };
         }
 
@@ -520,6 +526,7 @@ class Store {
         reserve1: BigNumber(reserve1)
           .div(10 ** token1Decimals)
           .toFixed(parseInt(token1Decimals)),
+        tvl: 0,
       };
 
       if (gaugeAddress !== ZERO_ADDRESS) {
@@ -991,7 +998,6 @@ class Store {
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
       this.setStore({ updateDate: await stores.helper.getActivePeriod() });
-      this.setStore({ tvl: await stores.helper.getCurrentTvl() });
       this.setStore({
         circulatingSupply: await stores.helper.getCirculatingSupply(), // TODO move to api
       });
@@ -1043,15 +1049,7 @@ class Store {
 
   _getRouteAssets = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/configuration`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/routes`);
       const routeAssetsCall = await response.json();
       return routeAssetsCall.data as RouteAsset[];
     } catch (ex) {
@@ -1062,17 +1060,13 @@ class Store {
 
   _getPairs = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/pairs`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/pairs`);
 
       const pairsCall = await response.json();
+
+      this.setStore({ tokenPrices: new Map(pairsCall.prices) });
+      this.setStore({ tvl: pairsCall.tvl });
+
       return pairsCall.data;
     } catch (ex) {
       console.log(ex);
@@ -1312,29 +1306,6 @@ class Store {
       this.setStore({ pairs: ps });
       this.emitter.emit(ACTIONS.UPDATED);
 
-      // TODO make api calculate valid token prices and send it pack to us so we can just assign it
-      const tokensPricesMap = new Map<string, RouteAsset>();
-      for (const pair of ps) {
-        if (pair.gauge?.bribes) {
-          for (const bribe of pair.gauge.bribes) {
-            if (bribe.token) {
-              tokensPricesMap.set(
-                bribe.token.address.toLowerCase(),
-                bribe.token
-              );
-            }
-          }
-        }
-      }
-
-      // TODO understand api token prices
-      // stores.helper.setTokenPricesMap(tokensPricesMap);
-      await Promise.all(
-        [...tokensPricesMap.values()].map(
-          async (token) => await stores.helper.updateTokenPrice(token)
-        )
-      );
-
       const ps1 = await Promise.all(
         ps.map(async (pair) => {
           try {
@@ -1355,59 +1326,35 @@ class Store {
                   gaugesContract.methods.weights(pair.address),
                 ]);
 
-              // const bribeContract = new web3.eth.Contract(
-              //   CONTRACTS.BRIBE_ABI,
-              //   pair.gauge.bribeAddress
-              // );
-
-              // const bribes = await Promise.all(
-              //   pair.gauge.bribes.map(async (bribe, idx) => {
-              //     const rewardRate = await bribeContract.methods
-              //       .rewardRate(bribe.token.address)
-              //       .call();
-
-              //     --------- can't get past this line setting reward amount to reward amount from python api
-              //     bribe.rewardRate = BigNumber(rewardRate)
-              //       .div(10 ** bribe.token.decimals)
-              //       .toFixed(bribe.token.decimals);
-              //     bribe.rewardAmount = bribe.rewardAmmount;
-
-              //     return bribe;
-              //   })
-              // );
-
               const bribes = pair.gauge.bribes.map((bribe) => {
                 bribe.rewardAmount = bribe.rewardAmmount;
-                bribe.tokenPrice = stores.helper.getTokenPricesMap.get(
+                bribe.tokenPrice = this.getStore("tokenPrices").get(
                   bribe.token.address.toLowerCase()
                 );
                 return bribe;
               });
 
-              let votingApr = 0;
-              const votes = BigNumber(gaugeWeight)
-                .div(10 ** 18)
-                .toNumber();
-              const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
-                return (
-                  acc + (bribe.tokenPrice ?? 0) * (bribe.rewardAmount ?? 0)
-                );
-              }, 0);
-              if (totalUSDValueOfBribes > 0) {
-                const perVote = totalUSDValueOfBribes / votes;
-                const perVotePerYear = perVote * 52.179;
-                const token = this.getStore("routeAssets").filter(
-                  (asset) => asset.symbol === "FLOW"
-                )[0];
-                const flowPrice = stores.helper.getTokenPricesMap.get(
-                  token.address.toLowerCase()
-                );
+              // let votingApr = 0;
+              // const votes = BigNumber(gaugeWeight)
+              //   .div(10 ** 18)
+              //   .toNumber();
+              // const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
+              //   return acc + bribe.tokenPrice * bribe.rewardAmount;
+              // }, 0);
+              // if (totalUSDValueOfBribes > 0) {
+              //   const perVote = totalUSDValueOfBribes / votes;
+              //   const perVotePerYear = perVote * 52.179;
+              //   const token = this.getStore("routeAssets").filter(
+              //     (asset) => asset.symbol === "FLOW"
+              //   )[0];
+              //   const flowPrice = stores.helper.getTokenPricesMap.get(
+              //     token.address.toLowerCase()
+              //   );
 
-                votingApr =
-                  votes > 0 && flowPrice
-                    ? (perVotePerYear / flowPrice) * 100
-                    : 0;
-              }
+              //   votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
+              // }
+
+              const totalUSDValueOfBribes = pair.gauge.tbv;
 
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
@@ -1437,9 +1384,10 @@ class Store {
                 .div(totalWeight)
                 .toFixed(2);
               pair.gaugebribes = bribes;
-              pair.gauge.votingApr = votingApr;
+              pair.gauge.votingApr = pair.gauge.apr;
               pair.gauge.bribesInUsd = totalUSDValueOfBribes;
               pair.isAliveGauge = isAliveGauge;
+              if (isAliveGauge === false) pair.apr = 0;
             }
 
             return pair;
@@ -2385,15 +2333,8 @@ class Store {
 
   updatePairsCall = async (web3: Web3, account: { address: string }) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/v1/updatePairs`,
-        {
-          method: "get",
-          headers: {
-            Authorization: `Basic ${process.env.NEXT_PUBLIC_API_TOKEN}`,
-          },
-        }
-      );
+      // update pairs is same endpoint in API. Pairs are updated in sync on backend
+      const response = await fetch(`/api/pairs`);
       const pairsCall = await response.json();
       this.setStore({ pairs: pairsCall.data });
 
@@ -3993,276 +3934,20 @@ class Store {
     }
   };
 
-  quoteSwap = async (payload: {
-    type: string;
-    content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
-  }) => {
+  quoteSwap = async (payload) => {
+    const address = stores.accountStore.getStore("account").address;
+    if (!address) throw new Error("no address");
     try {
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
-        return null;
-      }
-
-      // route assets are USDC, WCANTO and FLOW
-      const routeAssets = this.getStore("routeAssets");
-      const { fromAsset, toAsset, fromAmount } = payload.content;
-
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-      const sendFromAmount = BigNumber(fromAmount)
-        .times(10 ** fromAsset.decimals)
-        .toFixed();
-
-      if (
-        !fromAsset ||
-        !toAsset ||
-        !fromAmount ||
-        !fromAsset.address ||
-        !toAsset.address ||
-        fromAmount === ""
-      ) {
-        return null;
-      }
-
-      let addy0 = fromAsset.address;
-      let addy1 = toAsset.address;
-
-      if (fromAsset.address === NATIVE_TOKEN.symbol) {
-        addy0 = W_NATIVE_ADDRESS;
-      }
-      if (toAsset.address === NATIVE_TOKEN.symbol) {
-        addy1 = W_NATIVE_ADDRESS;
-      }
-
-      const includesRouteAddress = routeAssets.filter((asset) => {
-        return (
-          asset.address.toLowerCase() == addy0.toLowerCase() ||
-          asset.address.toLowerCase() == addy1.toLowerCase()
-        );
+      const res = await fetch("/api/firebird-router", {
+        method: "POST",
+        body: JSON.stringify({
+          payload,
+          address,
+        }),
       });
+      const resJson = (await res.json()) as QuoteSwapResponse;
 
-      let amountOuts: AmountsOut = [];
-      // In case router multicall will break make sure you have stable pair with some $$ in it
-      if (includesRouteAddress.length === 0) {
-        amountOuts = routeAssets
-          .map((routeAsset) => {
-            return [
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: true,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: true,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: false,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: false,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: true,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: false,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-              {
-                routes: [
-                  {
-                    from: addy0,
-                    to: routeAsset.address,
-                    stable: false,
-                  },
-                  {
-                    from: routeAsset.address,
-                    to: addy1,
-                    stable: true,
-                  },
-                ],
-                routeAsset: routeAsset,
-              },
-            ];
-          })
-          .flat();
-      }
-
-      amountOuts.push({
-        routes: [
-          {
-            from: addy0,
-            to: addy1,
-            stable: true,
-          },
-        ],
-        routeAsset: null,
-      });
-
-      amountOuts.push({
-        routes: [
-          {
-            from: addy0,
-            to: addy1,
-            stable: false,
-          },
-        ],
-        routeAsset: null,
-      });
-
-      // Example of how we can use next api with private velocimeter node
-      // const quoteFetch = await fetch("/api/routes-multicall", {
-      //   method: "POST",
-      //   body: JSON.stringify({
-      //     sendFromAmount,
-      //     routes: amountOuts,
-      //   }),
-      // });
-      // const receiveAmounts = await quoteFetch.json();
-
-      const multicall3 = await stores.accountStore.getMulticall3(true);
-      const calls = amountOuts.map((route) => {
-        return {
-          reference: route.routes[0].from + route.routes[0].to,
-          methodName: "getAmountsOut",
-          methodParameters: [sendFromAmount, route.routes],
-        };
-      });
-
-      const contractCallContext: ContractCallContext[] = [
-        {
-          reference: "routerContract",
-          contractAddress: CONTRACTS.ROUTER_ADDRESS,
-          abi: CONTRACTS.ROUTER_ABI,
-          calls,
-        },
-      ];
-
-      const results: ContractCallResults = await multicall3.call(
-        contractCallContext
-      );
-
-      const returnValuesBigNumbers =
-        results.results.routerContract.callsReturnContext.map((retCtx) => {
-          if (retCtx.success) {
-            return retCtx.returnValues as {
-              hex: string;
-              type: "BigNumber";
-            }[];
-          }
-        });
-
-      let receiveAmounts = [];
-
-      for (const returnValue of returnValuesBigNumbers) {
-        if (!returnValue) {
-          receiveAmounts.push([sendFromAmount, "0", "0"]);
-          continue;
-        }
-        const arr = returnValue.map((bignumber) => {
-          return web3.utils.hexToNumberString(bignumber.hex);
-        });
-        receiveAmounts.push(arr);
-      }
-
-      for (let i = 0; i < receiveAmounts.length; i++) {
-        amountOuts[i].receiveAmounts = receiveAmounts[i];
-        amountOuts[i].finalValue = BigNumber(
-          receiveAmounts[i][receiveAmounts[i].length - 1]
-        )
-          .div(10 ** toAsset.decimals)
-          .toFixed(toAsset.decimals);
-      }
-
-      const bestAmountOut = amountOuts
-        .filter((ret) => {
-          return ret != null;
-        })
-        .reduce((best, current) => {
-          if (!best) {
-            return current;
-          }
-          return BigNumber(best.finalValue).gt(current.finalValue)
-            ? best
-            : current;
-        }, 0);
-
-      if (!bestAmountOut) {
-        this.emitter.emit(
-          ACTIONS.ERROR,
-          "No valid route found to complete swap"
-        );
-        return null;
-      }
-
-      let totalRatio = "1";
-
-      for (let i = 0; i < bestAmountOut.routes.length; i++) {
-        if (bestAmountOut.routes[i].stable == true) {
-        } else {
-          const reserves = await routerContract.methods
-            .getReserves(
-              bestAmountOut.routes[i].from,
-              bestAmountOut.routes[i].to,
-              bestAmountOut.routes[i].stable
-            )
-            .call();
-          let amountIn = "0";
-          let amountOut = "0";
-          if (i == 0) {
-            amountIn = sendFromAmount;
-            amountOut = bestAmountOut.receiveAmounts[i + 1];
-          } else {
-            amountIn = bestAmountOut.receiveAmounts[i];
-            amountOut = bestAmountOut.receiveAmounts[i + 1];
-          }
-
-          const amIn = BigNumber(amountIn).div(reserves.reserveA);
-          const amOut = BigNumber(amountOut).div(reserves.reserveB);
-          const ratio = BigNumber(amOut).div(amIn);
-
-          totalRatio = BigNumber(totalRatio).times(ratio).toFixed(18);
-        }
-      }
-
-      const priceImpact = BigNumber(1).minus(totalRatio).times(100).toFixed(18);
-
-      const returnValue = {
-        inputs: {
-          fromAmount: fromAmount,
-          fromAsset: fromAsset,
-          toAsset: toAsset,
-        },
-        output: bestAmountOut,
-        priceImpact: priceImpact,
-      };
+      const returnValue = resJson;
 
       this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, returnValue);
     } catch (ex) {
@@ -4278,21 +3963,19 @@ class Store {
       fromAsset: BaseAsset;
       toAsset: BaseAsset;
       fromAmount: string;
-      quote:  {
+      quote: {
         inputs: {
-          fromAmount: string,
-          fromAsset: BaseAsset,
-          toAsset: BaseAsset,
-        },
-        output: bestAmountOut,
-        priceImpact: string,
+          fromAmount: string;
+          fromAsset: BaseAsset;
+          toAsset: BaseAsset;
+        };
+        output: bestAmountOut;
+        priceImpact: string;
       };
       slippage: string;
     };
   }) => {
     try {
-      const context = this;
-
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
@@ -4305,8 +3988,19 @@ class Store {
         return null;
       }
 
-      const { fromAsset, toAsset, fromAmount, quote, slippage } =
-        payload.content;
+      const {
+        quote,
+        fromAsset,
+        toAsset,
+      }: {
+        quote: QuoteSwapResponse;
+        fromAsset: BaseAsset;
+        toAsset: BaseAsset;
+      } = payload.content;
+
+      const fromAmount = BigNumber(quote.maxReturn.totalFrom)
+        .div(10 ** fromAsset.decimals)
+        .toFixed(fromAsset.decimals);
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let allowanceTXID = this.getTXUUID();
@@ -4336,8 +4030,13 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (fromAsset.address !== NATIVE_TOKEN.symbol) {
-        allowance = await this._getSwapAllowance(web3, fromAsset, account);
-        if (!allowance) throw new Error("Error getting swap allowance");
+        allowance = await this._getFirebirdSwapAllowance(
+          web3,
+          fromAsset,
+          account,
+          quote
+        );
+
         if (BigNumber(allowance).lt(fromAmount)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowanceTXID,
@@ -4369,11 +4068,11 @@ class Store {
         );
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
+          this._callContractWait(
             web3,
             tokenContract,
             "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
+            [quote.encodedData.router, MAX_UINT256],
             account,
             undefined,
             null,
@@ -4396,68 +4095,28 @@ class Store {
       const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT SWAP TRANSACTION
-      const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const sendFromAmount = BigNumber(fromAmount)
-        .times(10 ** fromAsset.decimals)
-        .toFixed(0);
-      const sendMinAmountOut = BigNumber(quote.output.finalValue)
-        .times(10 ** toAsset.decimals)
-        .times(sendSlippage)
-        .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const tx = {
+        from: account.address, // signer address
+        to: quote.encodedData.router, // router address
+        gasPrice: quote.maxReturn.gasPrice,
+        data: quote.encodedData.data, // encoded contract data
+        value:
+          quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            ? quote.maxReturn.totalFrom
+            : undefined,
+      };
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
+      this._sendTransactionWait(web3, account, tx, swapTXID, (err) => {
+        if (err) {
+          return this.emitter.emit(ACTIONS.ERROR, err);
+        }
 
-      let func = "swapExactTokensForTokens";
-      let params = [
-        sendFromAmount,
-        sendMinAmountOut,
-        quote.output.routes,
-        account.address,
-        deadline,
-      ];
-      let sendValue = null;
+        this._getSpecificAssetInfo(web3, account, fromAsset.address);
+        this._getSpecificAssetInfo(web3, account, toAsset.address); // TODO use this
+        this._getPairInfo(web3, account);
 
-      if (fromAsset.address === NATIVE_TOKEN.symbol) {
-        func = "swapExactETHForTokens";
-        params = [
-          sendMinAmountOut,
-          quote.output.routes,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendFromAmount;
-      }
-      if (toAsset.address === NATIVE_TOKEN.symbol) {
-        func = "swapExactTokensForETH";
-      }
-
-      this._callContractWait(
-        web3,
-        routerContract,
-        func,
-        params,
-        account,
-        undefined,
-        null,
-        null,
-        swapTXID,
-        (err: Error) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._getSpecificAssetInfo(web3, account, fromAsset.address);
-          this._getSpecificAssetInfo(web3, account, toAsset.address); // TODO use this
-          this._getPairInfo(web3, account);
-
-          this.emitter.emit(ACTIONS.SWAP_RETURNED);
-        },
-        sendValue
-      );
+        this.emitter.emit(ACTIONS.SWAP_RETURNED);
+      });
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4761,11 +4420,30 @@ class Store {
     }
   };
 
-  _getSwapAllowance = async (
+  _getFirebirdSwapAllowance = async (
     web3: Web3,
     token: BaseAsset,
-    account: { address: string }
+    account: { address: string },
+    quote: QuoteSwapResponse
   ) => {
+    try {
+      const tokenContract = new web3.eth.Contract(
+        CONTRACTS.ERC20_ABI,
+        token.address
+      );
+      const allowance = await tokenContract.methods
+        .allowance(account.address, quote.encodedData.router)
+        .call();
+      return BigNumber(allowance)
+        .div(10 ** token.decimals)
+        .toFixed(token.decimals);
+    } catch (ex) {
+      console.error(ex);
+      return null;
+    }
+  };
+
+  _getSwapAllowance = async (web3, token, account) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
@@ -4843,6 +4521,8 @@ class Store {
             .balanceOfNFT(tokenIndex)
             .call();
 
+          const voted = await this._checkNFTVotedEpoch(web3, tokenIndex);
+
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
             id: tokenIndex,
@@ -4853,6 +4533,7 @@ class Store {
             lockValue: BigNumber(lockValue)
               .div(10 ** veToken.decimals)
               .toFixed(veToken.decimals),
+            voted,
           };
         })
       );
@@ -5224,10 +4905,184 @@ class Store {
     }
   };
 
-  withdrawVest = async (payload: {
-    type: string;
-    content: { tokenID: string };
-  }) => {
+  resetVest = async (payload) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { tokenID } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let rewardsTXID = this.getTXUUID();
+      let rebaseTXID = this.getTXUUID();
+      let resetTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Reset veNFT #${tokenID}`,
+        type: "Reset",
+        verb: "Vest Reseted",
+        transactions: [
+          {
+            uuid: rewardsTXID,
+            description: `Checking unclaimed bribes`,
+            status: "WAITING",
+          },
+          {
+            uuid: rebaseTXID,
+            description: `Checking unclaimed rebase distribution`,
+            status: "WAITING",
+          },
+          {
+            uuid: resetTXID,
+            description: `Resetting your veNFT`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ content: { tokenID } });
+      const rewards = this.getStore("rewards");
+
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `Unclaimed bribes found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `No unclaimed bribes found`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge.bribesEarned.map((bribe) => {
+            return bribe.token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rewardsTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
+
+      if (rewards.veDist.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `Claiming rebase distribution`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `No unclaimed rebase`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.veDist.length > 0) {
+        // SUBMIT CLAIM TRANSACTION
+        const veDistContract = new web3.eth.Contract(
+          CONTRACTS.VE_DIST_ABI as AbiItem[],
+          CONTRACTS.VE_DIST_ADDRESS
+        );
+
+        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            veDistContract,
+            "claim",
+            [tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rebaseTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimVeDistPromise;
+      }
+
+      // SUBMIT RESET TRANSACTION
+      const voterContract = new web3.eth.Contract(
+        CONTRACTS.VOTER_ABI as AbiItem[],
+        CONTRACTS.VOTER_ADDRESS
+      );
+
+      this._callContractWait(
+        web3,
+        voterContract,
+        "reset",
+        [tokenID],
+        account,
+        undefined,
+        null,
+        null,
+        resetTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+
+          this._updateVestNFTByID(tokenID);
+
+          this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
+        }
+      );
+    } catch (e) {
+      console.log(e);
+      console.log("RESET VEST ERROR");
+    }
+  };
+
+  withdrawVest = async (payload) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5244,6 +5099,8 @@ class Store {
       const { tokenID } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let rewardsTXID = this.getTXUUID();
+      let rebaseTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
@@ -5253,8 +5110,18 @@ class Store {
         verb: "Vest Withdrawn",
         transactions: [
           {
+            uuid: rewardsTXID,
+            description: `Checking unclaimed bribes`,
+            status: "WAITING",
+          },
+          {
+            uuid: rebaseTXID,
+            description: `Checking unclaimed rebase distribution`,
+            status: "WAITING",
+          },
+          {
             uuid: resetTXID,
-            description: `Checking if your nft is attached`,
+            description: `Checking if your has votes`,
             status: "WAITING",
           },
           {
@@ -5265,25 +5132,127 @@ class Store {
         ],
       });
 
-      // CHECK if veNFT is attached
-      const attached = await this._checkNFTAttached(web3, tokenID);
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ content: { tokenID } });
+      const rewards = this.getStore("rewards");
 
-      if (!!attached) {
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `Unclaimed bribes found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rewardsTXID,
+          description: `No unclaimed bribes found`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge.bribesEarned.map((bribe) => {
+            return bribe.token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rewardsTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
+
+      if (rewards.veDist.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `Claiming rebase distribution`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: rebaseTXID,
+          description: `No unclaimed rebase`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.veDist.length > 0) {
+        // SUBMIT CLAIM TRANSACTION
+        const veDistContract = new web3.eth.Contract(
+          CONTRACTS.VE_DIST_ABI as AbiItem[],
+          CONTRACTS.VE_DIST_ADDRESS
+        );
+
+        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            web3,
+            veDistContract,
+            "claim",
+            [tokenID],
+            account,
+            undefined,
+            null,
+            null,
+            rebaseTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimVeDistPromise;
+      }
+
+      // CHECK if veNFT has votes
+      const voted = await this._checkNFTVoted(web3, tokenID);
+
+      if (!!voted) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is attached, resetting`,
+          description: `NFT has votes, resetting`,
         });
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: resetTXID,
-          description: `NFT is not attached, skipping reset`,
+          description: `NFT doesn't have votes`,
           status: "DONE",
         });
       }
 
       const resetCallsPromise = [];
 
-      if (!!attached) {
+      if (!!voted) {
         const voterContract = new web3.eth.Contract(
           CONTRACTS.VOTER_ABI as AbiItem[],
           CONTRACTS.VOTER_ADDRESS
@@ -5348,7 +5317,27 @@ class Store {
     }
   };
 
-  _checkNFTAttached = async (web3: Web3, tokenID: string) => {
+  _checkNFTVotedEpoch = async (web3, tokenID) => {
+    if (!web3) return;
+
+    const voterContract = new web3.eth.Contract(
+      CONTRACTS.VOTER_ABI as AbiItem[],
+      CONTRACTS.VOTER_ADDRESS
+    );
+
+    const lastVoted = await voterContract.methods.lastVoted(tokenID).call();
+    // if last voted eq 0, means never voted
+    if (lastVoted === "0") return false;
+
+    const blockTimestamp = (await web3.eth.getBlock("latest")).timestamp;
+
+    // 7 days epoch length
+    const votedThisEpoch = (blockTimestamp / 7) * 7 > lastVoted;
+
+    return votedThisEpoch;
+  };
+
+  _checkNFTVoted = async (web3, tokenID) => {
     if (!web3) return;
 
     const votingEscrowContract = new web3.eth.Contract(
@@ -5356,11 +5345,9 @@ class Store {
       CONTRACTS.VE_TOKEN_ADDRESS
     );
 
-    const attached = await votingEscrowContract.methods
-      .attachments(tokenID)
-      .call();
+    const voted = await votingEscrowContract.methods.voted(tokenID).call();
 
-    return attached !== 0;
+    return voted;
   };
 
   vote = async (payload: {
@@ -5398,6 +5385,9 @@ class Store {
         ],
       });
 
+      const pairs = this.getStore("pairs");
+      let deadGauges: string[] = [];
+
       // SUBMIT INCREASE TRANSACTION
       const gaugesContract = new web3.eth.Contract(
         CONTRACTS.VOTER_ABI as AbiItem[],
@@ -5407,6 +5397,27 @@ class Store {
       let onlyVotes = votes.filter((vote) => {
         return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
       });
+
+      const votesAddresses = onlyVotes.map((vote) => vote.address);
+      const p = pairs.filter((pair) => {
+        return votesAddresses.includes(pair.address);
+      });
+      p.forEach((pair) => {
+        if (pair.isAliveGauge === false) {
+          deadGauges.push(pair.symbol);
+        }
+      });
+
+      if (deadGauges.length > 0) {
+        const error_message = `Gauges ${deadGauges.join(
+          ", "
+        )} are dead and cannot be voted on`;
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: voteTXID,
+          description: error_message,
+        });
+        throw new Error(error_message);
+      }
 
       let tokens = onlyVotes.map((vote) => {
         return vote.address;
@@ -6367,7 +6378,7 @@ class Store {
               uuid,
               txHash: receipt.transactionHash,
             });
-            if (method !== "approve") {
+            if (method !== "approve" && method !== "reset") {
               setTimeout(() => {
                 context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
               }, 1);
@@ -6385,7 +6396,7 @@ class Store {
               if (error.message) {
                 context.emitter.emit(ACTIONS.TX_REJECTED, {
                   uuid,
-                  error: error.message,
+                  error: this._mapError(error.message),
                 });
                 return callback(error.message);
               }
@@ -6401,7 +6412,7 @@ class Store {
               if (error.message) {
                 context.emitter.emit(ACTIONS.TX_REJECTED, {
                   uuid,
-                  error: error.message,
+                  error: this._mapError(error.message),
                 });
                 return callback(error.message);
               }
@@ -6416,7 +6427,10 @@ class Store {
       .catch((ex: Error) => {
         console.log(ex);
         if (ex.message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, { uuid, error: ex.message });
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid,
+            error: this._mapError(ex.message),
+          });
           return callback(ex.message);
         }
         this.emitter.emit(ACTIONS.TX_REJECTED, {
@@ -6425,6 +6439,112 @@ class Store {
         });
         callback(ex);
       });
+  };
+
+  _sendTransactionWait = (web3: Web3, account, tx, uuid, callback) => {
+    this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
+    const sendTx = web3.eth.sendTransaction(tx);
+    sendTx.on("transactionHash", (txHash) => {
+      this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
+    });
+    sendTx.on("receipt", (receipt) => {
+      this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+        uuid,
+        txHash: receipt.transactionHash,
+      });
+      setTimeout(() => {
+        this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+      }, 1);
+      callback(null, receipt.transactionHash);
+    });
+    sendTx.on("error", (error) => {
+      if (!error.toString().includes("-32601")) {
+        if (error.message) {
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid,
+            error: this._mapError(error.message),
+          });
+          return callback(error.message);
+        }
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid,
+          error: error,
+        });
+        callback(error);
+      }
+    });
+    sendTx.catch((ex) => {
+      console.log(ex);
+      if (ex.message) {
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid,
+          error: this._mapError(ex.message),
+        });
+        return callback(ex.message);
+      }
+      this.emitter.emit(ACTIONS.TX_REJECTED, {
+        uuid,
+        error: "Error estimating gas",
+      });
+      callback(ex);
+    });
+  };
+
+  protected _mapError = (error: string) => {
+    const errorMap = new Map<string, string>([
+      // this happens with slingshot and metamask
+      [
+        "invalid height",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      [
+        "attached",
+        "You have already voted with this token or your nft is attached",
+      ],
+      ["TOKEN ALREADY VOTED", "You have already voted with this token"],
+      [
+        "TOKEN_ALREADY_VOTED_THIS_EPOCH",
+        "You have already voted with this token",
+      ],
+      [
+        "INSUFFICIENT A BALANCE",
+        "Router doesn't have enough 'token in' balance",
+      ],
+      [
+        "INSUFFICIENT_A_BALANCE",
+        "Router doesn't have enough 'token in' balance",
+      ],
+      [
+        "INSUFFICIENT B BALANCE",
+        "Router doesn't have enough 'token out' balance",
+      ],
+      [
+        "INSUFFICIENT_B_BALANCE",
+        "Router doesn't have enough 'token out' balance",
+      ],
+      // some wallet some rpc not sure
+      [
+        "EIP-1559",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      // this happens in rubby
+      [
+        "request failed with status code 502",
+        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+      [
+        "Request failed with status code 429",
+        "RPC is being rate limited. Please try reload page/switch RPC/switch networks back and forth",
+      ],
+    ]);
+
+    for (const [key, value] of errorMap) {
+      if (error.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+
+    return error;
   };
 }
 

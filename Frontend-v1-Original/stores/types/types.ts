@@ -37,6 +37,7 @@ interface VestNFT {
   lockAmount: string;
   lockEnds: string;
   lockValue: string;
+  voted: boolean;
 }
 
 interface Bribe {
@@ -268,16 +269,65 @@ type EthWindow = Window &
     ethereum?: any;
   };
 
-interface AmountOut {
-  routes: {
-    from: string;
-    to: string;
-    stable: boolean;
-  }[];
-  routeAsset: null | RouteAsset;
+// FIREBIRD
+interface QuoteSwapPayload {
+  payload: {
+    content: {
+      fromAsset: BaseAsset;
+      toAsset: BaseAsset;
+      fromAmount: string;
+      slippage: string;
+    };
+  };
+  address: string;
 }
 
-type AmountsOut = AmountOut[];
+interface QuoteSwapResponse {
+  encodedData: {
+    router: string;
+    data: string;
+  };
+  maxReturn: {
+    from: string;
+    to: string;
+    totalFrom: string;
+    totalTo: number;
+    totalGas: number;
+    gasPrice: number;
+    paths: Path[];
+    tokens: FireBirdTokens;
+  };
+}
+
+interface Path {
+  amountFrom: string;
+  amountTo: string;
+  gas: number;
+  swaps: Swap[];
+}
+
+interface Swap {
+  from: string;
+  to: string;
+  amountFrom: string;
+  amountTo: string;
+  pool: string;
+  swapFee: number;
+  dex: string;
+  meta?: {
+    vaultAddress: string;
+  };
+}
+
+interface FireBirdTokens {
+  [address: string]: {
+    address: string;
+    decimals: number;
+    name: string;
+    symbol: string;
+    price: number;
+  };
+}
 
 export type {
   BaseAsset,
@@ -297,6 +347,9 @@ export type {
   DefiLlamaTokenPrice,
   ITransaction,
   EthWindow,
-  AmountOut,
-  AmountsOut,
+  QuoteSwapPayload,
+  QuoteSwapResponse,
+  Path,
+  Swap,
+  FireBirdTokens,
 };

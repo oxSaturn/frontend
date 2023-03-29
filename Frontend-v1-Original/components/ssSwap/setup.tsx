@@ -12,28 +12,37 @@ import {
 import {
   Search,
   ArrowDownward,
-  ArrowForwardIos,
+  UpdateOutlined,
   DeleteOutline,
+  SettingsOutlined,
+  CloseOutlined,
 } from "@mui/icons-material";
+import BigNumber from "bignumber.js";
 
 import { withTheme } from "@mui/styles";
 
 import { formatCurrency } from "../../utils/utils";
 
-import classes from "./ssSwap.module.css";
-
 import stores from "../../stores";
 import {
   ACTIONS,
   ETHERSCAN_URL,
+  NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
-import BigNumber from "bignumber.js";
-import type { BaseAsset } from "../../stores/types/types";
+import type {
+  BaseAsset,
+  Path,
+  QuoteSwapResponse,
+  FireBirdTokens,
+} from "../../stores/types/types";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [routesOpen, setRoutesOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [quoteLoading, setQuoteLoading] = useState(false);
@@ -57,7 +66,7 @@ function Setup() {
   const [slippageError, setSlippageError] = useState(false);
 
   const [quoteError, setQuoteError] = useState(null);
-  const [quote, setQuote] = useState(null);
+  const [quote, setQuote] = useState<QuoteSwapResponse>(null);
 
   const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
 
@@ -102,141 +111,182 @@ function Setup() {
     return diff.toFixed(2);
   }, [fromAmountValueUsd, toAmountValueUsd]);
 
-  useEffect(
-    function () {
-      const errorReturned = () => {
-        setLoading(false);
-        setApprovalLoading(false);
-        setQuoteLoading(false);
-      };
+  useEffect(() => {
+    const errorReturned = () => {
+      setLoading(false);
+      setApprovalLoading(false);
+      setQuoteLoading(false);
+    };
 
-      const quoteReturned = (val) => {
-        if (!val) {
-          setQuoteLoading(false);
+    const quoteReturned = (val: QuoteSwapResponse) => {
+      if (!val) {
+        setQuoteLoading(false);
+        setQuote(null);
+        setToAmountValue("");
+        setToAmountValueUsd("");
+        setQuoteError(
+          "Insufficient liquidity or no route available to complete swap"
+        );
+      }
+      if (
+        val &&
+        val.encodedData &&
+        val.maxReturn &&
+        val.maxReturn.totalFrom ===
+          BigNumber(fromAmountValue)
+            .multipliedBy(10 ** fromAssetValue.decimals)
+            .toFixed(0) &&
+        (val.maxReturn.from.toLowerCase() ===
+          fromAssetValue.address.toLowerCase() ||
+          (val.maxReturn.from ===
+            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+            fromAssetValue.address === NATIVE_TOKEN.address)) &&
+        (val.maxReturn.to.toLowerCase() ===
+          toAssetValue.address.toLowerCase() ||
+          (val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+            toAssetValue.address === NATIVE_TOKEN.address))
+      ) {
+        setQuoteLoading(false);
+        if (BigNumber(val.maxReturn.totalTo).eq(0)) {
           setQuote(null);
           setToAmountValue("");
           setToAmountValueUsd("");
           setQuoteError(
             "Insufficient liquidity or no route available to complete swap"
           );
+          return;
         }
-        if (
-          val &&
-          val.inputs &&
-          val.output &&
-          val.inputs.fromAmount === fromAmountValue &&
-          val.inputs.fromAsset.address === fromAssetValue.address &&
-          val.inputs.toAsset.address === toAssetValue.address
-        ) {
-          setQuoteLoading(false);
-          if (BigNumber(val.output.finalValue).eq(0)) {
-            setQuote(null);
-            setToAmountValue("");
-            setToAmountValueUsd("");
-            setQuoteError(
-              "Insufficient liquidity or no route available to complete swap"
-            );
-            return;
-          }
 
-          setToAmountValue(BigNumber(val.output.finalValue).toFixed(8));
-          const toAddressLookUp =
-            val.inputs.toAsset.address === "CANTO"
-              ? W_NATIVE_ADDRESS.toLowerCase()
-              : val.inputs.toAsset.address.toLowerCase();
-          const toUsdValue = BigNumber(val.output.finalValue)
-            .multipliedBy(tokenPrices.get(toAddressLookUp))
-            .toFixed(2);
-          setToAmountValueUsd(toUsdValue);
-          setQuote(val);
-        }
-      };
+        setToAmountValue(
+          BigNumber(val.maxReturn.totalTo)
+            .div(10 ** toAssetValue.decimals)
+            .toFixed(toAssetValue.decimals, BigNumber.ROUND_DOWN)
+        );
+        const toAddressLookUp =
+          val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            ? W_NATIVE_ADDRESS.toLowerCase()
+            : val.maxReturn.to.toLowerCase();
+        const toUsdValue = BigNumber(val.maxReturn.totalTo)
+          .div(10 ** toAssetValue.decimals)
+          .multipliedBy(tokenPrices.get(toAddressLookUp))
+          .toFixed(2);
+        setToAmountValueUsd(toUsdValue);
+        setQuote(val);
+      }
+    };
 
-      const ssUpdated = () => {
+    const ssUpdated = () => {
+      const swapAssets = stores.stableSwapStore.getStore("swapAssets");
+      const tokenPrices = stores.stableSwapStore.getStore("tokenPrices");
+
+      setToAssetOptions(swapAssets);
+      setFromAssetOptions(swapAssets);
+
+      if (swapAssets.length > 0 && toAssetValue == null) {
+        setToAssetValue(swapAssets[0]);
+      }
+
+      if (swapAssets.length > 0 && fromAssetValue == null) {
+        setFromAssetValue(swapAssets[1]);
+      }
+
+      if (tokenPrices.size > 0) {
+        setTokenPrices(tokenPrices);
+      }
+
+      forceUpdate();
+    };
+
+    const assetsUpdated = (payload: BaseAsset[]) => {
+      if (payload && payload.length > 0) {
+        setToAssetOptions(payload);
+        setFromAssetOptions(payload);
+      } else {
         const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-        const tokenPrices = stores.helper.getTokenPricesMap;
-
         setToAssetOptions(swapAssets);
         setFromAssetOptions(swapAssets);
+      }
+    };
 
-        if (swapAssets.length > 0 && toAssetValue == null) {
-          setToAssetValue(swapAssets[0]);
-        }
+    const swapReturned = (event) => {
+      setLoading(false);
+      setFromAmountValue("");
+      setToAmountValue("");
+      setFromAmountValueUsd("");
+      setToAmountValueUsd("");
+      calculateReceiveAmount("", fromAssetValue, toAssetValue);
+      setQuote(null);
+      setQuoteLoading(false);
+    };
 
-        if (swapAssets.length > 0 && fromAssetValue == null) {
-          setFromAssetValue(swapAssets[1]);
-        }
+    stores.emitter.on(ACTIONS.ERROR, errorReturned);
+    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
+    stores.emitter.on(ACTIONS.SWAP_RETURNED, swapReturned);
+    stores.emitter.on(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
+    stores.emitter.on(ACTIONS.SWAP_ASSETS_UPDATED, assetsUpdated);
+    // stores.emitter.on(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
+    stores.emitter.on(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
 
-        if (tokenPrices.size > 0) {
-          setTokenPrices(tokenPrices);
-        }
+    ssUpdated();
 
-        forceUpdate();
-      };
+    const interval = setInterval(() => {
+      if (!loading && !quoteLoading) updateQuote();
+    }, 10000);
 
-      const assetsUpdated = (payload: BaseAsset[]) => {
-        if (payload && payload.length > 0) {
-          setToAssetOptions(payload);
-          setFromAssetOptions(payload);
-        } else {
-          const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-          setToAssetOptions(swapAssets);
-          setFromAssetOptions(swapAssets);
-        }
-      };
-
-      const swapReturned = (event) => {
-        setLoading(false);
-        setFromAmountValue("");
-        setToAmountValue("");
-        setFromAmountValueUsd("");
-        setToAmountValueUsd("");
-        calculateReceiveAmount("", fromAssetValue, toAssetValue);
-        setQuote(null);
-        setQuoteLoading(false);
-      };
-
-      stores.emitter.on(ACTIONS.ERROR, errorReturned);
-      stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
-      stores.emitter.on(ACTIONS.SWAP_RETURNED, swapReturned);
-      stores.emitter.on(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
-      stores.emitter.on(ACTIONS.SWAP_ASSETS_UPDATED, assetsUpdated);
-      // stores.emitter.on(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
-      stores.emitter.on(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
-
-      ssUpdated();
-
-      return () => {
-        stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-        stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
-        stores.emitter.removeListener(ACTIONS.SWAP_RETURNED, swapReturned);
-        stores.emitter.removeListener(
-          ACTIONS.WRAP_UNWRAP_RETURNED,
-          swapReturned
-        );
-        stores.emitter.removeListener(
-          ACTIONS.QUOTE_SWAP_RETURNED,
-          quoteReturned
-        );
-        stores.emitter.removeListener(
-          ACTIONS.SWAP_ASSETS_UPDATED,
-          assetsUpdated
-        );
-      };
-    },
-    [fromAmountValue, fromAssetValue, toAssetValue]
-  );
+    return () => {
+      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
+      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
+      stores.emitter.removeListener(ACTIONS.SWAP_RETURNED, swapReturned);
+      stores.emitter.removeListener(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
+      stores.emitter.removeListener(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
+      stores.emitter.removeListener(ACTIONS.SWAP_ASSETS_UPDATED, assetsUpdated);
+      clearInterval(interval);
+    };
+  }, [
+    fromAmountValue,
+    fromAssetValue,
+    toAssetValue,
+    slippage,
+    loading,
+    quoteLoading,
+  ]);
 
   const onAssetSelect = (type, value) => {
     if (type === "From") {
+      let fromAmountValueWithNewDecimals: string;
+      if (fromAmountValue !== "" && value.decimals < fromAssetValue.decimals) {
+        fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
+          value.decimals,
+          BigNumber.ROUND_DOWN
+        );
+        setFromAmountValue(fromAmountValueWithNewDecimals);
+      }
       if (value.address === toAssetValue.address) {
         setToAssetValue(fromAssetValue);
         setFromAssetValue(toAssetValue);
-        calculateReceiveAmount(fromAmountValue, toAssetValue, fromAssetValue);
+        calculateReceiveAmount(
+          fromAmountValueWithNewDecimals ?? fromAmountValue,
+          toAssetValue,
+          fromAssetValue
+        );
       } else {
         setFromAssetValue(value);
-        calculateReceiveAmount(fromAmountValue, value, toAssetValue);
+        calculateReceiveAmount(
+          fromAmountValueWithNewDecimals ?? fromAmountValue,
+          value,
+          toAssetValue
+        );
       }
+      setFromAmountValueUsd(
+        (
+          parseFloat(fromAmountValue) *
+          tokenPrices.get(
+            value.address === "CANTO"
+              ? W_NATIVE_ADDRESS.toLowerCase()
+              : value.address.toLowerCase()
+          )
+        ).toFixed(2)
+      );
     } else {
       if (value.address === fromAssetValue.address) {
         setFromAssetError(false);
@@ -308,9 +358,25 @@ function Setup() {
           fromAsset: from,
           toAsset: to,
           fromAmount: amount,
+          slippage: slippage !== "" ? parseFloat(slippage) / 100 : 0.005,
         },
       });
     }
+  };
+
+  const updateQuote = () => {
+    if (fromAmountValue === "") {
+      setToAmountValue("");
+      setQuote(null);
+      setFromAmountValueUsd("");
+      setToAmountValueUsd("");
+    }
+    calculateReceiveAmount(fromAmountValue, fromAssetValue, toAssetValue);
+  };
+
+  const closeSettings = () => {
+    setSettingsOpen(false);
+    updateQuote();
   };
 
   const onSwap = () => {
@@ -361,10 +427,7 @@ function Setup() {
         content: {
           fromAsset: fromAssetValue,
           toAsset: toAssetValue,
-          fromAmount: fromAmountValue,
-          toAmount: toAmountValue,
-          quote: quote,
-          slippage: slippage,
+          quote,
         },
       });
     }
@@ -441,165 +504,153 @@ function Setup() {
   };
 
   const swapAssets = () => {
+    let fromAmountValueWithNewDecimals: string;
     const fa = fromAssetValue;
     const ta = toAssetValue;
+    if (fromAmountValue !== "" && ta.decimals < fa.decimals) {
+      fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
+        ta.decimals,
+        BigNumber.ROUND_DOWN
+      );
+      setFromAmountValue(fromAmountValueWithNewDecimals);
+    }
     setFromAssetValue(ta);
     setToAssetValue(fa);
-    calculateReceiveAmount(fromAmountValue, ta, fa);
+    setFromAmountValueUsd(
+      (
+        parseFloat(fromAmountValue) *
+        tokenPrices.get(
+          ta.address === "CANTO"
+            ? W_NATIVE_ADDRESS.toLowerCase()
+            : ta.address.toLowerCase()
+        )
+      ).toFixed(2)
+    );
+    calculateReceiveAmount(
+      fromAmountValueWithNewDecimals ?? fromAmountValue,
+      ta,
+      fa
+    );
   };
 
   const renderSwapInformation = () => {
     if (quoteError) {
       return (
-        <div className={classes.quoteLoader}>
-          <Typography className={classes.quoteError}>{quoteError}</Typography>
+        <div className="flex min-h-full items-center justify-center">
+          <Typography className="min-w-full rounded-[10px] border border-cantoGreen bg-[rgb(23,52,72)] p-6 text-xs font-extralight">
+            {quoteError}
+          </Typography>
         </div>
       );
     }
 
     if (quoteLoading) {
       return (
-        <div className={classes.quoteLoader}>
-          <CircularProgress size={20} className={classes.loadingCircle} />
+        <div className="flex min-h-full items-center justify-center text-cantoGreen">
+          <CircularProgress size={20} className="ml-2" color="inherit" />
         </div>
       );
     }
 
     if (!quote) {
-      return null;
-    }
-
-    return (
-      <div className={classes.depositInfoContainer}>
-        <Typography className={classes.depositInfoHeading}>
-          Price Info
-        </Typography>
-        <div className={classes.priceInfos}>
-          <div className={classes.priceInfo}>
-            <Typography className={classes.title}>
-              {formatCurrency(
-                BigNumber(quote.inputs.fromAmount)
-                  .div(quote.output.finalValue)
-                  .toFixed(18)
-              )}
-            </Typography>
-            <Typography
-              className={classes.text}
-            >{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
-          </div>
-          <div className={classes.priceInfo}>
-            <Typography className={classes.title}>
-              {formatCurrency(
-                BigNumber(quote.output.finalValue)
-                  .div(quote.inputs.fromAmount)
-                  .toFixed(18)
-              )}
-            </Typography>
-            <Typography
-              className={classes.text}
-            >{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
-          </div>
-          <div className={classes.priceInfo}>
-            {renderSmallInput(
-              "slippage",
-              slippage,
-              slippageError,
-              onSlippageChanged
-            )}
-          </div>
-        </div>
-        <Typography className={classes.depositInfoHeading}>Route</Typography>
-        <div className={classes.route}>
-          <img
-            className={classes.displayAssetIconSmall}
-            alt=""
-            src={fromAssetValue ? `${fromAssetValue.logoURI}` : ""}
-            height="40px"
-            onError={(e) => {
-              (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-            }}
-          />
-          <div className={classes.line}>
-            <div className={classes.routeArrow}>
-              <ArrowForwardIos className={classes.routeArrowIcon} />
+      return (
+        <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
+            Price Info
+          </Typography>
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
+                {isWrapUnwrap ? "1.00" : "0.00"}
+              </Typography>
+              <Typography className="text-xs text-[#7e99b0]">
+                {toAssetValue && fromAssetValue
+                  ? `${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`
+                  : "-"}
+              </Typography>
             </div>
-            <div className={classes.stabIndicatorContainer}>
-              <Typography className={classes.stabIndicator}>
-                {quote.output.routes[0].stable ? "Stable" : "Volatile"}
+            <div className="flex flex-col items-center justify-center py-6 px-0">
+              <Typography className="pb-[6px] text-sm font-bold">
+                {isWrapUnwrap ? "1.00" : "0.00"}
+              </Typography>
+              <Typography className="text-xs text-[#7e99b0]">
+                {toAssetValue && fromAssetValue
+                  ? `${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`
+                  : "-"}
               </Typography>
             </div>
           </div>
-          {quote && quote.output && quote.output.routeAsset && (
-            <>
-              <img
-                className={classes.displayAssetIconSmall}
-                alt=""
-                src={
-                  quote.output.routeAsset
-                    ? `${quote.output.routeAsset.logoURI}`
-                    : ""
-                }
-                height="40px"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-              <div className={classes.line}>
-                <div className={classes.routeArrow}>
-                  <ArrowForwardIos className={classes.routeArrowIcon} />
-                </div>
-                <div className={classes.stabIndicatorContainer}>
-                  <Typography className={classes.stabIndicator}>
-                    {quote.output.routes[1].stable ? "Stable" : "Volatile"}
-                  </Typography>
-                </div>
-              </div>
-            </>
-          )}
-          <img
-            className={classes.displayAssetIconSmall}
-            alt=""
-            src={toAssetValue ? `${toAssetValue.logoURI}` : ""}
-            height="40px"
-            onError={(e) => {
-              (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-            }}
-          />
-        </div>
-        {BigNumber(quote.priceImpact).gt(0.5) && (
-          <div className={classes.warningContainer}>
-            <Typography
-              className={
-                BigNumber(quote.priceImpact).gt(5)
-                  ? classes.warningError
-                  : classes.warningWarning
-              }
-              align="center"
-            >
-              Price impact {formatCurrency(quote.priceImpact)}%
-            </Typography>
+          <div className="flex w-full items-center justify-between">
+            <div className="text-sm font-bold text-gray-400">Show Routes</div>
           </div>
+        </div>
+      );
+    }
+    const totalFromInEth = BigNumber(quote.maxReturn.totalFrom).div(
+      10 ** fromAssetValue.decimals
+    );
+    const totalToInEth = BigNumber(quote.maxReturn.totalTo).div(
+      10 ** toAssetValue.decimals
+    );
+    return (
+      <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
+        <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
+          Price Info
+        </Typography>
+        <div className="grid w-full grid-cols-2 gap-3">
+          <div className="flex flex-col items-center justify-center py-6 px-0">
+            <Typography className="pb-[6px] text-sm font-bold">
+              {formatCurrency(
+                BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
+              )}
+            </Typography>
+            <Typography className="text-xs text-[#7e99b0]">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
+          </div>
+          <div className="flex flex-col items-center justify-center py-6 px-0">
+            <Typography className="pb-[6px] text-sm font-bold">
+              {formatCurrency(
+                BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
+              )}
+            </Typography>
+            <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
+          </div>
+        </div>
+        {(Math.abs(parseFloat(usdDiff)) > 10 ||
+          (parseFloat(fromAmountValueUsd) > 0 &&
+            parseFloat(toAmountValueUsd) === 0)) && (
+          <>
+            <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500">
+              Warning
+            </Typography>
+            <div className="grid w-full grid-cols-1">
+              <div className="flex flex-col items-center justify-center py-6 px-0 text-sm font-bold text-red-500">
+                Potential low liquidity swap!{" "}
+                {usdDiff !== ""
+                  ? `Price difference is ${usdDiff}%`
+                  : "Double check Price Info above"}
+              </div>
+            </div>
+          </>
         )}
+        <div
+          className="flex w-full cursor-pointer items-center justify-between"
+          onClick={() => setRoutesOpen(true)}
+        >
+          <div className="text-sm font-bold text-cantoGreen underline transition-all hover:text-green-300 hover:no-underline">
+            Show Routes
+          </div>
+        </div>
       </div>
     );
   };
 
   const renderSmallInput = (type, amountValue, amountError, amountChanged) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.inputTitleContainerSlippage}>
-          <div className={classes.inputBalanceSlippage}>
-            <Typography className={classes.inputBalanceTextSlippage} noWrap>
-              Slippage
-            </Typography>
-          </div>
-        </div>
-        <div className={classes.smallInputContainer}>
+      <div className="mb-1">
+        <label htmlFor="slippage">Slippage</label>
+        <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-[#272826]">
           <TextField
+            id="slippage"
             placeholder="0.00"
             fullWidth
             error={!!amountError}
@@ -609,7 +660,6 @@ function Setup() {
             disabled={loading}
             autoComplete="off"
             InputProps={{
-              className: classes.smallInput,
               endAdornment: <InputAdornment position="end">%</InputAdornment>,
             }}
           />
@@ -631,16 +681,16 @@ function Setup() {
     onAssetSelect
   ) => {
     return (
-      <div className={classes.textField}>
+      <div className="relative mb-1">
         <div
-          className={classes.inputTitleContainer}
+          className="absolute top-2 right-2 z-[1] cursor-pointer"
           onClick={() => {
             if (type === "From") {
               setBalance100();
             }
           }}
         >
-          <Typography className={classes.inputBalanceText} noWrap>
+          <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
             Balance:
             {assetValue && assetValue.balance
               ? " " + formatCurrency(assetValue.balance)
@@ -651,10 +701,8 @@ function Setup() {
         assetValue.balance &&
         amountValueUsd &&
         amountValueUsd !== "" ? (
-          <div
-            className={`${classes.inputTitleContainer} ${classes.usdContainer}`}
-          >
-            <Typography className={classes.inputBalanceText} noWrap>
+          <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
+            <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
               {"~$" +
                 formatCurrency(amountValueUsd) +
                 (type === "To" && diffUsd && diffUsd !== ""
@@ -664,11 +712,11 @@ function Setup() {
           </div>
         ) : null}
         <div
-          className={`${classes.massiveInputContainer} ${
-            (amountError || assetError) && classes.error
+          className={`flex w-full flex-wrap items-center rounded-[10px] bg-[#272826] ${
+            (amountError || assetError) && "border border-red-500"
           }`}
         >
-          <div className={classes.massiveInputAssetSelect}>
+          <div className="h-full min-h-[128px] w-32">
             <AssetSelect
               type={type}
               value={assetValue}
@@ -676,7 +724,7 @@ function Setup() {
               onSelect={onAssetSelect}
             />
           </div>
-          <div className={classes.massiveInputAmount}>
+          <div className="h-full flex-[1] flex-grow-[0.98]">
             <TextField
               placeholder="0.00"
               fullWidth
@@ -687,10 +735,12 @@ function Setup() {
               autoComplete="off"
               disabled={loading || type === "To"}
               InputProps={{
-                className: classes.largeInput,
+                style: {
+                  fontSize: "46px !important",
+                },
               }}
             />
-            <Typography color="textSecondary" className={classes.smallerText}>
+            <Typography color="textSecondary" className="text-xs">
               {assetValue?.symbol}
             </Typography>
           </div>
@@ -700,55 +750,112 @@ function Setup() {
   };
 
   return (
-    <div className={classes.swapInputs}>
-      {renderMassiveInput(
-        "From",
-        fromAmountValue,
-        fromAmountValueUsd,
-        usdDiff,
-        fromAmountError,
-        fromAmountChanged,
-        fromAssetValue,
-        fromAssetError,
-        fromAssetOptions,
-        onAssetSelect
-      )}
-      <div className={classes.swapIconContainer}>
-        <div className={classes.swapIconSubContainer}>
-          <ArrowDownward className={classes.swapIcon} onClick={swapAssets} />
+    <>
+      <div className="relative flex w-full flex-col">
+        <div
+          className={`${
+            !settingsOpen
+              ? "hidden"
+              : "absolute z-20 flex h-full w-full flex-col gap-4 bg-[#040105] p-4"
+          }`}
+        >
+          <div
+            onClick={closeSettings}
+            className="w-full cursor-pointer text-end"
+          >
+            <CloseOutlined />
+          </div>
+          {renderSmallInput(
+            "slippage",
+            slippage,
+            slippageError,
+            onSlippageChanged
+          )}
+        </div>
+        <div className="mb-1 flex items-center justify-end">
+          <button onClick={updateQuote}>
+            <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+          </button>
+          <button onClick={() => setSettingsOpen(true)}>
+            <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+          </button>
+        </div>
+        {renderMassiveInput(
+          "From",
+          fromAmountValue,
+          fromAmountValueUsd,
+          usdDiff,
+          fromAmountError,
+          fromAmountChanged,
+          fromAssetValue,
+          fromAssetError,
+          fromAssetOptions,
+          onAssetSelect
+        )}
+        <div className="flex h-0 w-full items-center justify-center">
+          <div className="z-[1] h-9 rounded-lg bg-[#161b2c]">
+            <ArrowDownward
+              className="m-1 cursor-pointer rounded-md p-[6px] text-3xl"
+              onClick={swapAssets}
+            />
+          </div>
+        </div>
+        {renderMassiveInput(
+          "To",
+          toAmountValue,
+          toAmountValueUsd,
+          usdDiff,
+          toAmountError,
+          toAmountChanged,
+          toAssetValue,
+          toAssetError,
+          toAssetOptions,
+          onAssetSelect
+        )}
+        <div className="flex min-h-[176px] flex-col items-center justify-center">
+          {renderSwapInformation()}
+        </div>
+        <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0">
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+            disabled={loading || quoteLoading || (!quote && !isWrapUnwrap)}
+            onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
+          >
+            <Typography className="font-bold capitalize">
+              {loading ? `Loading` : isWrapUnwrap ? `Wrap/Unwrap` : `Swap`}
+            </Typography>
+            {loading && (
+              <CircularProgress size={10} className="ml-2 fill-white" />
+            )}
+          </Button>
+        </div>
+        <div className="mt-2 text-end text-xs">
+          <span className="align-middle text-[#7e99b0]">Powered by </span>
+          <a
+            href="https://firebird.finance/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
+          >
+            <img src="/images/logo-firebird.svg" className="inline" />{" "}
+            <span className="align-middle">Firebird</span>
+          </a>
         </div>
       </div>
-      {renderMassiveInput(
-        "To",
-        toAmountValue,
-        toAmountValueUsd,
-        usdDiff,
-        toAmountError,
-        toAmountChanged,
-        toAssetValue,
-        toAssetError,
-        toAssetOptions,
-        onAssetSelect
-      )}
-      {renderSwapInformation()}
-      <div className={classes.actionsContainer}>
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          className={classes.buttonOverride}
-          disabled={loading || quoteLoading || (!quote && !isWrapUnwrap)}
-          onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
-        >
-          <Typography className={classes.actionButtonText}>
-            {loading ? `Loading` : isWrapUnwrap ? `Wrap/Unwrap` : `Swap`}
-          </Typography>
-          {loading && (
-            <CircularProgress size={10} className={classes.loadingCircle} />
-          )}
-        </Button>
-      </div>
-    </div>
+      <RoutesDialog
+        onClose={() => setRoutesOpen(false)}
+        open={routesOpen}
+        paths={quote?.maxReturn.paths}
+        tokens={quote?.maxReturn.tokens}
+        fromAssetValue={fromAssetValue}
+        fromAmountValue={fromAmountValue}
+        toAssetValue={toAssetValue}
+        toAmountValue={toAmountValue}
+      />
+    </>
   );
 }
 
@@ -832,29 +939,28 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
       <MenuItem
         defaultValue={asset.address}
         key={asset.address + "_" + idx}
-        className={classes.assetSelectMenu}
+        className="flex items-center justify-between px-0"
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainerSmall}>
-            <img
-              className={classes.displayAssetIconSmall}
-              alt=""
-              src={asset ? `${asset.logoURI}` : ""}
-              height="60px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative mr-3 w-14">
+          <img
+            className="rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
+            alt=""
+            src={asset ? `${asset.logoURI}` : ""}
+            height="60px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
-        <div className={classes.assetSelectIconName}>
+
+        <div>
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className={classes.assetSelectActions}>
+        <div className="flex flex-[1] justify-end">
           <IconButton
             onClick={() => {
               deleteOption(asset);
@@ -879,32 +985,30 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
       <MenuItem
         defaultValue={asset.address}
         key={asset.address + "_" + idx}
-        className={classes.assetSelectMenu}
+        className="flex items-center justify-between px-0"
         onClick={() => {
           onLocalSelect(type, asset);
         }}
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainerSmall}>
-            <img
-              className={classes.displayAssetIconSmall}
-              alt=""
-              src={asset ? `${asset.logoURI}` : ""}
-              height="60px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative mr-3 w-14">
+          <img
+            className="rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
+            alt=""
+            src={asset ? `${asset.logoURI}` : ""}
+            height="60px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
-        <div className={classes.assetSelectIconName}>
+        <div>
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className={classes.assetSelectBalance}>
+        <div className="ml-12 flex flex-[1] flex-col items-end">
           <Typography variant="h5">
             {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
           </Typography>
@@ -919,25 +1023,24 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
   const renderManageLocal = () => {
     return (
       <>
-        <div className={classes.searchContainer}>
-          <div className={classes.searchInline}>
-            <TextField
-              autoFocus
-              variant="outlined"
-              fullWidth
-              placeholder="CANTO, MIM, 0x..."
-              value={search}
-              onChange={onSearchChanged}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </div>
-          <div className={classes.assetSearchResults}>
+        <div className="h-[600px] overflow-y-scroll p-6">
+          <TextField
+            autoFocus
+            variant="outlined"
+            fullWidth
+            placeholder="CANTO, MIM, 0x..."
+            value={search}
+            onChange={onSearchChanged}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <div className="mt-3 flex w-full min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .filter((option) => {
@@ -949,7 +1052,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
               : []}
           </div>
         </div>
-        <div className={classes.manageLocalContainer}>
+        <div className="flex w-full items-center justify-center p-[6px]">
           <Button onClick={toggleLocal}>Back to Assets</Button>
         </div>
       </>
@@ -959,25 +1062,24 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
   const renderOptions = () => {
     return (
       <>
-        <div className={classes.searchContainer}>
-          <div className={classes.searchInline}>
-            <TextField
-              autoFocus
-              variant="outlined"
-              fullWidth
-              placeholder="CANTO, MIM, 0x..."
-              value={search}
-              onChange={onSearchChanged}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </div>
-          <div className={classes.assetSearchResults}>
+        <div className="h-[600px] overflow-y-scroll p-6">
+          <TextField
+            autoFocus
+            variant="outlined"
+            fullWidth
+            placeholder="CANTO, MIM, 0x..."
+            value={search}
+            onChange={onSearchChanged}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <div className="mt-3 flex w-full min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
@@ -995,7 +1097,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
               : []}
           </div>
         </div>
-        <div className={classes.manageLocalContainer}>
+        <div className="flex w-full items-center justify-center p-[6px]">
           <Button onClick={toggleLocal}>Manage Local Assets</Button>
         </div>
       </>
@@ -1003,37 +1105,136 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
   };
 
   return (
-    <React.Fragment>
+    <>
       <div
-        className={classes.displaySelectContainer}
+        className="min-h-[100px] p-3"
         onClick={() => {
           openSearch();
         }}
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainer}>
-            <img
-              className={classes.displayAssetIcon}
-              alt=""
-              src={value ? `${value.logoURI}` : ""}
-              height="100px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative w-full cursor-pointer">
+          <img
+            className="h-full w-full rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
+            alt=""
+            src={value ? `${value.logoURI}` : ""}
+            height="100px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
       </div>
       <Dialog
         onClose={onClose}
-        aria-labelledby="simple-dialog-title"
+        aria-labelledby="asset-select-dialog-title"
         open={open}
       >
         {!manageLocal && renderOptions()}
         {manageLocal && renderManageLocal()}
       </Dialog>
-    </React.Fragment>
+    </>
+  );
+}
+
+function RoutesDialog({
+  onClose,
+  open,
+  paths,
+  tokens,
+  fromAssetValue,
+  toAssetValue,
+  fromAmountValue,
+  toAmountValue,
+}: {
+  onClose: () => void;
+  open: boolean;
+  paths: Path[] | undefined;
+  tokens: FireBirdTokens | undefined;
+  fromAssetValue: BaseAsset;
+  toAssetValue: BaseAsset;
+  fromAmountValue: string;
+  toAmountValue: string;
+}) {
+  const handleClose = () => {
+    onClose();
+  };
+
+  return (
+    <Dialog
+      onClose={handleClose}
+      open={open}
+      aria-labelledby="routes-presentation"
+    >
+      {paths ? (
+        <div className="relative flex w-full min-w-[576px] flex-col justify-between p-6">
+          <div className="text-center">Routes</div>
+          <div className="flex w-full items-center justify-between">
+            <div>
+              <img
+                className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
+                alt=""
+                src={fromAssetValue ? `${fromAssetValue.logoURI}` : ""}
+                height="40px"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+              <span className="ml-1 align-middle text-sm">
+                {formatCurrency(fromAmountValue)} {fromAssetValue.symbol}
+              </span>
+            </div>
+            <div>
+              <span className="mr-1 align-middle text-sm">
+                {formatCurrency(toAmountValue)} {toAssetValue.symbol}
+              </span>
+              <img
+                className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
+                alt=""
+                src={toAssetValue ? `${toAssetValue.logoURI}` : ""}
+                height="40px"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+            </div>
+          </div>
+          <div className="px-6">
+            {paths.map((path, idx) => (
+              <div
+                key={path.amountFrom + idx}
+                className="relative flex border-cantoGreen py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-cantoGreen after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
+              >
+                <div className="relative flex flex-grow">
+                  <div className="flex flex-grow justify-between gap-4">
+                    <div>
+                      {BigNumber(path.amountFrom)
+                        .div(10 ** fromAssetValue.decimals)
+                        .div(fromAmountValue)
+                        .multipliedBy(100)
+                        .toFixed()}
+                      %
+                    </div>
+                    {path.swaps.map((swap, idx) => {
+                      if (idx === path.swaps.length - 1) return null;
+                      return (
+                        <div key={swap.to + idx}>{tokens[swap.to].symbol}</div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        "No routes"
+      )}
+    </Dialog>
   );
 }
 
