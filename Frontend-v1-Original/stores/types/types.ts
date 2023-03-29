@@ -96,11 +96,22 @@ interface Pair {
     weight?: string;
     weightPercent?: string;
     rewardsEarned?: string;
-    bribesEarned?: Bribe[] | BribeEarned[];
+    bribesEarned?: Bribe[];
+    bribesEarnedValue?: BribeEarned[];
     votingApr?: number;
     bribesInUsd?: number;
   };
   gaugebribes?: Bribe[];
+}
+
+interface VeDistReward {
+  token: VestNFT;
+  lockToken: VeToken;
+  rewardToken: Omit<BaseAsset, "local"> & {
+    balanceOf: string;
+  };
+  earned: string;
+  rewardType: "Distribution";
 }
 
 interface GeneralContracts {
@@ -332,6 +343,8 @@ interface FireBirdTokens {
 export type {
   BaseAsset,
   Pair,
+  VeDistReward,
+  Bribe,
   RouteAsset,
   TokenForPrice,
   Contracts,
