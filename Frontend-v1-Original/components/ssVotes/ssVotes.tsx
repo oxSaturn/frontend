@@ -22,7 +22,15 @@ import WarningModal from "../warning/warning";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-import { Pair, VeToken, Vote, Votes } from "../../stores/types/types";
+import {
+  Gauge,
+  hasGauge,
+  VestNFT,
+  VeToken,
+  Vote,
+  Votes,
+} from "../../stores/types/types";
+import { SelectChangeEvent } from "@mui/material";
 
 const initialEmptyToken = {
   id: "0",
@@ -40,21 +48,19 @@ export default function ssVotes() {
   // const [, updateState] = useState<{}>();
   // const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [gauges, setGauges] = useState<Pair[]>([]);
+  const [gauges, setGauges] = useState<Gauge[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
   const [votes, setVotes] = useState<Votes>([]);
-  const [veToken, setVeToken] = useState<VeToken>(null);
-  const [token, setToken] = useState(initialEmptyToken);
-  const [vestNFTs, setVestNFTs] = useState([]);
+  const [veToken, setVeToken] = useState<VeToken | null>(null);
+  const [token, setToken] = useState<VestNFT>(initialEmptyToken);
+  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
   const [search, setSearch] = useState("");
 
   const ssUpdated = () => {
     setVeToken(stores.stableSwapStore.getStore("veToken"));
     const as = stores.stableSwapStore.getStore("pairs");
 
-    const filteredAssets = as.filter((asset) => {
-      return asset.gauge && asset.gauge.address;
-    });
+    const filteredAssets = as.filter(hasGauge);
     if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
       setGauges(filteredAssets);
 
@@ -85,7 +91,7 @@ export default function ssVotes() {
   };
 
   useEffect(() => {
-    const vestVotesReturned = (votesReturned) => {
+    const vestVotesReturned = (votesReturned: Vote[]) => {
       const votesReturnedMapped = votesReturned.map((vote) => {
         return {
           address: vote?.address,
@@ -167,15 +173,15 @@ export default function ssVotes() {
     return (acc += curr.value);
   }, 0);
 
-  const handleChange = (event) => {
-    setToken(event.target.value);
+  const handleChange = (event: SelectChangeEvent<VestNFT>) => {
+    setToken(event.target.value as VestNFT);
     stores.dispatcher.dispatch({
       type: ACTIONS.GET_VEST_VOTES,
-      content: { tokenID: event.target.value.id },
+      content: { tokenID: (event.target.value as VestNFT).id },
     });
   };
 
-  const onSearchChanged = (event) => {
+  const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
@@ -183,7 +189,7 @@ export default function ssVotes() {
     router.push("/bribe/create");
   };
 
-  const renderMediumInput = (value, options) => {
+  const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     return (
       <div className={classes.textField}>
         <div className={classes.mediumInputContainer}>
@@ -209,7 +215,11 @@ export default function ssVotes() {
                   {options &&
                     options.map((option) => {
                       return (
-                        <MenuItem key={option.id} value={option}>
+                        <MenuItem
+                          key={option.id}
+                          // FIXME possible bug here
+                          //  value={option}
+                        >
                           <div className={classes.menuOption}>
                             <Typography>Token #{option.id}</Typography>
                             <div>

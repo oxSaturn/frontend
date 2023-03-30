@@ -23,7 +23,7 @@ import {
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
 import tokenlistCan from "../mainnet-canto-token-list.json";
-import type {
+import {
   BaseAsset,
   Pair,
   RouteAsset,
@@ -37,6 +37,8 @@ import type {
   Bribe,
   VeDistReward,
   ITransaction,
+  Gauge,
+  hasGauge,
 } from "./types/types";
 import {
   FLOW_CONVERTOR_ADDRESS,
@@ -1337,28 +1339,6 @@ class Store {
                 return bribe;
               });
 
-              // let votingApr = 0;
-              // const votes = BigNumber(gaugeWeight)
-              //   .div(10 ** 18)
-              //   .toNumber();
-              // const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
-              //   return acc + bribe.tokenPrice * bribe.rewardAmount;
-              // }, 0);
-              // if (totalUSDValueOfBribes > 0) {
-              //   const perVote = totalUSDValueOfBribes / votes;
-              //   const perVotePerYear = perVote * 52.179;
-              //   const token = this.getStore("routeAssets").filter(
-              //     (asset) => asset.symbol === "FLOW"
-              //   )[0];
-              //   const flowPrice = stores.helper.getTokenPricesMap.get(
-              //     token.address.toLowerCase()
-              //   );
-
-              //   votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
-              // }
-
-              const totalUSDValueOfBribes = pair.gauge.tbv;
-
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
                 .toFixed(18);
@@ -1387,8 +1367,6 @@ class Store {
                 .div(totalWeight)
                 .toFixed(2);
               pair.gaugebribes = bribes;
-              pair.gauge.votingApr = pair.gauge.apr;
-              pair.gauge.bribesInUsd = totalUSDValueOfBribes;
               pair.isAliveGauge = isAliveGauge;
               if (isAliveGauge === false) pair.apr = 0;
             }
@@ -5526,15 +5504,12 @@ class Store {
         return;
       }
 
-      const filteredPairs = pairs.filter((pair) => {
-        return pair && pair.gauge;
-      });
+      const filteredPairs = pairs.filter(hasGauge);
 
       const bribesEarned = await Promise.all(
         filteredPairs.map(async (pair) => {
           const bribesEarned = await Promise.all(
-            // bc filteredPairs
-            pair.gauge!.bribes.map(async (bribe) => {
+            pair.gauge.bribes.map(async (bribe) => {
               const bribeContract = new web3.eth.Contract(
                 CONTRACTS.BRIBE_ABI as AbiItem[],
                 pair.gauge?.wrapped_bribe_address
@@ -5551,8 +5526,7 @@ class Store {
               };
             })
           );
-          // bc filteredPairs
-          pair.gauge!.bribesEarnedValue = bribesEarned;
+          pair.gauge.bribesEarnedValue = bribesEarned;
 
           return pair;
         })
@@ -5592,17 +5566,9 @@ class Store {
           "Error getting veToken and govToken in getRewardBalances"
         );
 
-      const filteredPairs = [
-        ...pairs.filter((pair) => {
-          return pair && pair.gauge;
-        }),
-      ];
+      const filteredPairs = [...pairs.filter(hasGauge)];
 
-      const filteredPairs2 = [
-        ...pairs.filter((pair) => {
-          return pair && pair.gauge;
-        }),
-      ];
+      const filteredPairs2 = [...pairs.filter(hasGauge)];
 
       let veDistReward: VeDistReward[] = [];
 
@@ -5612,8 +5578,7 @@ class Store {
         const bribesEarned = await Promise.all(
           filteredPairs.map(async (pair) => {
             const bribesEarned = await Promise.all(
-              // bc filteredPairs
-              pair.gauge!.bribes.map(async (bribe) => {
+              pair.gauge.bribes.map(async (bribe) => {
                 const bribeContract = new web3.eth.Contract(
                   CONTRACTS.BRIBE_ABI as AbiItem[],
                   pair.gauge?.wrapped_bribe_address
@@ -5629,8 +5594,8 @@ class Store {
                 return bribe;
               })
             );
-            // bc filteredPairs
-            pair.gauge!.bribesEarned = bribesEarned;
+
+            pair.gauge.bribesEarned = bribesEarned;
 
             return pair;
           })
@@ -5702,7 +5667,7 @@ class Store {
               .call(),
           ]);
           // bc filtered pairs
-          pair.gauge!.rewardsEarned = BigNumber(earned)
+          pair.gauge.rewardsEarned = BigNumber(earned)
             .div(10 ** 18)
             .toFixed(18);
           return pair;

@@ -98,11 +98,15 @@ interface Pair {
     rewardsEarned?: string;
     bribesEarned?: Bribe[];
     bribesEarnedValue?: BribeEarned[];
-    votingApr?: number;
-    bribesInUsd?: number;
   };
   gaugebribes?: Bribe[];
 }
+
+type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+type Gauge = WithRequired<Pair, "gauge">;
+const hasGauge = (pair: Pair): pair is Gauge =>
+  pair && pair.gauge !== undefined;
 
 interface VeDistReward {
   token: VestNFT;
@@ -343,6 +347,7 @@ interface FireBirdTokens {
 export type {
   BaseAsset,
   Pair,
+  Gauge,
   VeDistReward,
   Bribe,
   RouteAsset,
@@ -366,3 +371,5 @@ export type {
   Swap,
   FireBirdTokens,
 };
+
+export { hasGauge };
