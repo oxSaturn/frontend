@@ -214,5 +214,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/9576/large/BUSD.png",
     "name": "BUSD",
     "symbol": "BUSD"
+  },
+  {
+    "address": "0xFbdd194376de19a88118e84E279b977f165d01b8",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/27606/large/IqwOmX-c_400x400.jpeg",
+    "name": "Impermax",
+    "symbol": "IBEX"
   }
 ]
