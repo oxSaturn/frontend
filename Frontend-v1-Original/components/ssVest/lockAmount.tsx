@@ -6,8 +6,17 @@ import { formatCurrency } from "../../utils/utils";
 import classes from "./ssVest.module.css";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
+import { GovToken, VestNFT } from "../../stores/types/types";
 
-export default function ffLockAmount({ nft, govToken, updateLockAmount }) {
+export default function ffLockAmount({
+  nft,
+  govToken,
+  updateLockAmount,
+}: {
+  nft: VestNFT;
+  govToken: GovToken | null;
+  updateLockAmount: (arg: string) => void;
+}) {
   const [approvalLoading, setApprovalLoading] = useState(false);
   const [lockLoading, setLockLoading] = useState(false);
 
@@ -38,11 +47,11 @@ export default function ffLockAmount({ nft, govToken, updateLockAmount }) {
     };
   }, []);
 
-  const setAmountPercent = (percent) => {
-    const val = BigNumber(govToken.balance)
+  const setAmountPercent = (percent: number) => {
+    const val = BigNumber(govToken?.balance || "0")
       .times(percent)
       .div(100)
-      .toFixed(govToken.decimals);
+      .toFixed(govToken?.decimals ?? 18);
     setAmount(val);
     updateLockAmount(val);
   };
@@ -55,18 +64,17 @@ export default function ffLockAmount({ nft, govToken, updateLockAmount }) {
     });
   };
 
-  const amountChanged = (event) => {
+  const amountChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(event.target.value);
     updateLockAmount(event.target.value);
   };
 
   const renderMassiveInput = (
-    type,
-    amountValue,
-    amountError,
-    amountChanged,
-    balance,
-    logo
+    amountValue: string,
+    amountError: boolean,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    balance: string | null,
+    logo: string | null
   ) => {
     return (
       <div className={classes.textField}>
@@ -145,12 +153,11 @@ export default function ffLockAmount({ nft, govToken, updateLockAmount }) {
     <div className={classes.someContainer}>
       <div className={classes.inputsContainer3}>
         {renderMassiveInput(
-          "lockAmount",
           amount,
           amountError,
           amountChanged,
-          govToken?.balance,
-          govToken?.logoURI
+          govToken?.balance ?? null,
+          govToken?.logoURI ?? null
         )}
       </div>
       <div className={classes.actionsContainer3}>

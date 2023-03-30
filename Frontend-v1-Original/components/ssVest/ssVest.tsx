@@ -11,6 +11,7 @@ import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
 import classes from "./ssVest.module.css";
+import { VeToken, GovToken, VestNFT } from "../../stores/types/types";
 
 export default function ssVest() {
   const router = useRouter();
@@ -18,16 +19,18 @@ export default function ssVest() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [govToken, setGovToken] = useState(null);
-  const [veToken, setVeToken] = useState(null);
-  const [nft, setNFT] = useState(null);
+  const [govToken, setGovToken] = useState<GovToken | null>(null);
+  const [veToken, setVeToken] = useState<VeToken | null>(null);
+  const [nft, setNFT] = useState<VestNFT | null>(null);
 
   const ssUpdated = async () => {
     setGovToken(stores.stableSwapStore.getStore("govToken"));
     setVeToken(stores.stableSwapStore.getStore("veToken"));
 
-    const nft = await stores.stableSwapStore.getNFTByID(router.query.id);
-    setNFT(nft);
+    if (typeof router.query.id === "string") {
+      const nft = await stores.stableSwapStore.getNFTByID(router.query.id);
+      setNFT(nft);
+    }
     forceUpdate();
   };
 

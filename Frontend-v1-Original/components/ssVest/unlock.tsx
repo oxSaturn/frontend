@@ -7,14 +7,24 @@ import {
   CircularProgress,
   IconButton,
 } from "@mui/material";
-import classes from "./ssVest.module.css";
-
 import { ArrowBack } from "@mui/icons-material";
+
 import VestingInfo from "./vestingInfo";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants";
+import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
-export default function Unlock({ nft, govToken, veToken }) {
+import classes from "./ssVest.module.css";
+
+export default function Unlock({
+  nft,
+  govToken,
+  veToken,
+}: {
+  nft: VestNFT;
+  govToken: GovToken | null;
+  veToken: VeToken | null;
+}) {
   const router = useRouter();
 
   const [lockLoading, setLockLoading] = useState(false);

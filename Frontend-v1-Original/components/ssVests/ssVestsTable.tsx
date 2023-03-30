@@ -302,8 +302,8 @@ export default function EnhancedTable({
   veToken,
 }: {
   vestNFTs: VestNFT[];
-  govToken: GovToken;
-  veToken: VeToken;
+  govToken: GovToken | null;
+  veToken: VeToken | null;
 }) {
   const classes = useStyles();
   const router = useRouter();
