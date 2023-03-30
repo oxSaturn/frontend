@@ -273,10 +273,19 @@ interface ITransaction {
   transactions: {
     uuid: string;
     description: string;
-    status: string;
+    status: TransactionStatus;
     txHash?: string;
     error?: string;
   }[];
+}
+
+enum TransactionStatus {
+  PENDING = "PENDING",
+  SUBMITTED = "SUBMITTED",
+  CONFIRMED = "CONFIRMED",
+  REJECTED = "REJECTED",
+  DONE = "DONE",
+  WAITING = "WAITING",
 }
 
 type EthWindow = Window &
@@ -372,4 +381,4 @@ export type {
   FireBirdTokens,
 };
 
-export { hasGauge };
+export { hasGauge, TransactionStatus };

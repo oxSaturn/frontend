@@ -12,11 +12,16 @@ import {
 
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { formatAddress } from "../../utils/utils";
+import { TransactionStatus, ITransaction } from "../../stores/types/types";
 
-export default function Transaction({ transaction }) {
+export default function Transaction({
+  transaction,
+}: {
+  transaction: ITransaction["transactions"][number];
+}) {
   const [expanded, setExpanded] = useState(false);
 
-  const mapStatusToIcon = (status) => {
+  const mapStatusToIcon = (status: TransactionStatus) => {
     switch (status) {
       case "WAITING":
         return <Pause className={classes.orangeIcon} />;
@@ -31,10 +36,11 @@ export default function Transaction({ transaction }) {
       case "DONE":
         return <CheckCircle className={classes.greenIcon} />;
       default:
+        return <div />;
     }
   };
 
-  const mapStatusToTootip = (status) => {
+  const mapStatusToTootip = (status: TransactionStatus) => {
     switch (status) {
       case "WAITING":
         return "Transaction will be submitted once ready";
