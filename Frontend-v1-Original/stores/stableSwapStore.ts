@@ -61,8 +61,8 @@ class Store {
     pairs: Pair[];
     vestNFTs: VestNFT[];
     rewards: {
-      bribes: Pair[];
-      rewards: Pair[];
+      bribes: Gauge[];
+      rewards: Gauge[];
       veDist: VeDistReward[];
     };
     updateDate: number;

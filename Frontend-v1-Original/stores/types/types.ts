@@ -107,6 +107,8 @@ type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 type Gauge = WithRequired<Pair, "gauge">;
 const hasGauge = (pair: Pair): pair is Gauge =>
   pair && pair.gauge !== undefined;
+const isGaugeReward = (reward: Gauge | VeDistReward): reward is Gauge =>
+  reward && reward.rewardType !== "Distribution";
 
 interface VeDistReward {
   token: VestNFT;
@@ -381,4 +383,4 @@ export type {
   FireBirdTokens,
 };
 
-export { hasGauge, TransactionStatus };
+export { hasGauge, isGaugeReward, TransactionStatus };
