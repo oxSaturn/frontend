@@ -7,14 +7,15 @@ import VestsTable from "./ssVestsTable";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
+import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 export default function ssVests() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [vestNFTs, setVestNFTs] = useState([]);
-  const [govToken, setGovToken] = useState(null);
-  const [veToken, setVeToken] = useState(null);
+  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
+  const [govToken, setGovToken] = useState<GovToken | null>(null);
+  const [veToken, setVeToken] = useState<VeToken | null>(null);
 
   useEffect(() => {
     const ssUpdated = async () => {
@@ -31,7 +32,7 @@ export default function ssVests() {
   }, []);
 
   useEffect(() => {
-    const vestNFTsReturned = (nfts) => {
+    const vestNFTsReturned = (nfts: VestNFT[]) => {
       setVestNFTs(nfts);
       forceUpdate();
     };
@@ -42,7 +43,7 @@ export default function ssVests() {
 
     const resetVestReturned = () => {
       stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
-    }
+    };
 
     stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned);
     stores.emitter.on(ACTIONS.RESET_VEST_RETURNED, resetVestReturned);
@@ -50,8 +51,11 @@ export default function ssVests() {
       stores.emitter.removeListener(
         ACTIONS.VEST_NFTS_RETURNED,
         vestNFTsReturned
-        );
-        stores.emitter.removeListener(ACTIONS.RESET_VEST_RETURNED, resetVestReturned);
+      );
+      stores.emitter.removeListener(
+        ACTIONS.RESET_VEST_RETURNED,
+        resetVestReturned
+      );
     };
   }, []);
 

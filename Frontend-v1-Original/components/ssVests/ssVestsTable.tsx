@@ -25,36 +25,8 @@ import moment from "moment";
 import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
-
-function descendingComparator(a, b, orderBy) {
-  if (!a || !b) {
-    return 0;
-  }
-
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
+import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+import BigNumber from "bignumber.js";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -83,13 +55,25 @@ const headCells = [
     disablePadding: false,
     label: "Actions",
   },
-];
+] as const;
 
-function EnhancedTableHead(props) {
-  const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
+type OrderBy = (typeof headCells)[number]["id"];
+
+function EnhancedTableHead({
+  order,
+  orderBy,
+  onRequestSort,
+}: {
+  order: "asc" | "desc";
+  orderBy: OrderBy;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: OrderBy) => void;
+}) {
+  const classes = useStyles();
+
+  const createSortHandler =
+    (property: OrderBy) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
 
   return (
     <TableHead>
@@ -122,14 +106,6 @@ function EnhancedTableHead(props) {
     </TableHead>
   );
 }
-
-EnhancedTableHead.propTypes = {
-  classes: PropTypes.object.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
-};
-
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
@@ -289,15 +265,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EnhancedTableToolbar = (props) => {
+const EnhancedTableToolbar = () => {
   const classes = useStyles();
   const router = useRouter();
-
-  const [search, setSearch] = useState("");
-
-  const onSearchChanged = (event) => {
-    setSearch(event.target.value);
-  };
 
   const onCreate = () => {
     router.push("/vest/create");
@@ -326,25 +296,41 @@ const EnhancedTableToolbar = (props) => {
   );
 };
 
-export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
+export default function EnhancedTable({
+  vestNFTs,
+  govToken,
+  veToken,
+}: {
+  vestNFTs: VestNFT[];
+  govToken: GovToken;
+  veToken: VeToken;
+}) {
   const classes = useStyles();
   const router = useRouter();
 
-  const [order, setOrder] = React.useState("desc");
-  const [orderBy, setOrderBy] = React.useState("balance");
+  const [order, setOrder] = React.useState<"asc" | "desc">("desc");
+  const [orderBy, setOrderBy] = React.useState<OrderBy>("Lock Value");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const handleRequestSort = (event, property) => {
+  const handleRequestSort = (
+    event: React.MouseEvent<unknown, MouseEvent>,
+    property: OrderBy
+  ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -393,7 +379,7 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
     );
   }
 
-  const onView = (nft) => {
+  const onView = (nft: VestNFT) => {
     router.push(`/vest/${nft.id}`);
   };
 
@@ -423,7 +409,6 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
             aria-label="enhanced table"
           >
             <EnhancedTableHead
-              classes={classes}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
@@ -444,7 +429,7 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                           <div className={classes.doubleImages}>
                             <img
                               className={classes.img1Logo}
-                              src={govToken?.logoURI}
+                              src={govToken?.logoURI || undefined}
                               width="35"
                               height="35"
                               alt=""
@@ -503,14 +488,14 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
                         <Typography variant="h2" className={classes.textSpaced}>
-                          {moment.unix(row.lockEnds).format("YYYY-MM-DD")}
+                          {moment.unix(+row.lockEnds).format("YYYY-MM-DD")}
                         </Typography>
                         <Typography
                           variant="h5"
                           className={classes.textSpaced}
                           color="textSecondary"
                         >
-                          Expires {moment.unix(row.lockEnds).fromNow()}
+                          Expires {moment.unix(+row.lockEnds).fromNow()}
                         </Typography>
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
@@ -564,4 +549,50 @@ export default function EnhancedTable({ vestNFTs, govToken, veToken }) {
       </Paper>
     </div>
   );
+}
+
+function descendingComparator(a: VestNFT, b: VestNFT, orderBy: OrderBy) {
+  if (!a || !b) {
+    return 0;
+  }
+
+  switch (orderBy) {
+    case "NFT":
+      return 0;
+    case "Voted":
+      if (b.voted && !a.voted) {
+        return -1;
+      }
+      if (!b.voted && a.voted) {
+        return 1;
+      }
+      return 0;
+    case "Lock Expires":
+      return BigNumber(b.lockEnds).minus(a.lockEnds).toNumber();
+    case "Locked Amount":
+      return BigNumber(b.lockAmount).minus(a.lockAmount).toNumber();
+    case "Lock Value":
+      return BigNumber(b.lockValue).minus(a.lockValue).toNumber();
+  }
+
+  return 0;
+}
+
+function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
+  return order === "desc"
+    ? (a: VestNFT, b: VestNFT) => descendingComparator(a, b, orderBy)
+    : (a: VestNFT, b: VestNFT) => -descendingComparator(a, b, orderBy);
+}
+
+function stableSort(
+  array: VestNFT[],
+  comparator: (a: VestNFT, b: VestNFT) => number
+) {
+  const stabilizedThis = array.map((el, index) => [el, index] as const);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  return stabilizedThis.map((el) => el[0]);
 }
