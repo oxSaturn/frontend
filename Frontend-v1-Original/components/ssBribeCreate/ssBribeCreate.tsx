@@ -21,6 +21,7 @@ import classes from "./ssBribeCreate.module.css";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import { BaseAsset, Pair } from "../../stores/types/types";
+import { SelectChangeEvent } from "@mui/material";
 
 export default function ssBribeCreate() {
   const router = useRouter();
@@ -28,10 +29,10 @@ export default function ssBribeCreate() {
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
-  const [asset, setAsset] = useState<BaseAsset>(null);
+  const [asset, setAsset] = useState<BaseAsset | null>(null);
   const [assetOptions, setAssetOptions] = useState<BaseAsset[]>([]);
-  const [gauge, setGauge] = useState<Pair>(null);
-  const [gaugeOptions, setGaugeOptions] = useState([]);
+  const [gauge, setGauge] = useState<Pair | null>(null);
+  const [gaugeOptions, setGaugeOptions] = useState<Pair[]>([]);
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
@@ -55,7 +56,7 @@ export default function ssBribeCreate() {
   };
 
   useEffect(() => {
-    const createReturned = (res) => {
+    const createReturned = () => {
       setCreateLoading(false);
       setAmount("");
 
@@ -89,9 +90,9 @@ export default function ssBribeCreate() {
     };
   }, []);
 
-  const setAmountPercent = (input, percent) => {
+  const setAmountPercent = (input: string, percent: number) => {
     setAmountError(false);
-    if (input === "amount") {
+    if (input === "amount" && asset && asset.balance) {
       let am = BigNumber(asset.balance)
         .times(percent)
         .div(100)
@@ -110,9 +111,9 @@ export default function ssBribeCreate() {
       error = true;
     } else {
       if (
-        !asset.balance ||
-        isNaN(+asset.balance) ||
-        BigNumber(asset.balance).lte(0)
+        !asset?.balance ||
+        isNaN(+asset?.balance) ||
+        BigNumber(asset?.balance).lte(0)
       ) {
         setAmountError("Invalid balance");
         error = true;
@@ -143,28 +144,31 @@ export default function ssBribeCreate() {
     }
   };
 
-  const amountChanged = (event) => {
+  const amountChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmountError(false);
     setAmount(event.target.value);
   };
 
-  const onAssetSelect = (type, value) => {
+  const onAssetSelect = (value: BaseAsset) => {
     setAmountError(false);
     setAsset(value);
   };
 
-  const onGagugeSelect = (event) => {
-    setGauge(event.target.value);
+  const onGaugeSelect = (event: SelectChangeEvent<Pair | null>) => {
+    setGauge(event.target.value as Pair | null);
   };
 
-  const renderMassiveGaugeInput = (type, value, error, options, onChange) => {
+  const renderMassiveGaugeInput = (
+    value: Pair | null,
+    options: Pair[],
+    onChange: (
+      event: SelectChangeEvent<Pair | null>,
+      child: React.ReactNode
+    ) => void
+  ) => {
     return (
       <div className={classes.textField}>
-        <div
-          className={`${classes.massiveInputContainer} ${
-            error && classes.error
-          }`}
-        >
+        <div className={classes.massiveInputContainer}>
           <div className={classes.massiveInputAmount}>
             <Select
               fullWidth
@@ -178,7 +182,11 @@ export default function ssBribeCreate() {
               {options &&
                 options.map((option) => {
                   return (
-                    <MenuItem key={option.id} value={option}>
+                    <MenuItem
+                      key={option.address}
+                      // FIXME possible bug here
+                      // value={option}
+                    >
                       <div className={classes.menuOption}>
                         <div className={classes.doubleImages}>
                           <img
@@ -235,14 +243,12 @@ export default function ssBribeCreate() {
   };
 
   const renderMassiveInput = (
-    type,
-    amountValue,
-    amountError,
-    amountChanged,
-    assetValue,
-    assetError,
-    assetOptions,
-    onAssetSelect
+    type: string,
+    amountError: string | false,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    assetValue: BaseAsset | null,
+    assetOptions: BaseAsset[],
+    onAssetSelect: (value: BaseAsset) => void
   ) => {
     return (
       <div className={classes.textField}>
@@ -264,12 +270,11 @@ export default function ssBribeCreate() {
         </div>
         <div
           className={`${classes.massiveInputContainer} ${
-            (amountError || assetError) && classes.error
+            amountError && classes.error
           }`}
         >
           <div className={classes.massiveInputAssetSelect}>
             <AssetSelect
-              type={type}
               value={assetValue}
               assetOptions={assetOptions}
               onSelect={onAssetSelect}
@@ -279,7 +284,7 @@ export default function ssBribeCreate() {
             <TextField
               placeholder="0.00"
               fullWidth
-              error={amountError}
+              error={!!amountError}
               helperText={amountError}
               value={amount}
               onChange={amountChanged}
@@ -331,20 +336,12 @@ export default function ssBribeCreate() {
         </div>
         <div className={classes.reAddPadding}>
           <div className={classes.inputsContainer}>
-            {renderMassiveGaugeInput(
-              "gauge",
-              gauge,
-              null,
-              gaugeOptions,
-              onGagugeSelect
-            )}
+            {renderMassiveGaugeInput(gauge, gaugeOptions, onGaugeSelect)}
             {renderMassiveInput(
               "amount",
-              amount,
               amountError,
               amountChanged,
               asset,
-              null,
               assetOptions,
               onAssetSelect
             )}
@@ -377,10 +374,20 @@ export default function ssBribeCreate() {
   );
 }
 
-function AssetSelect({ type, value, assetOptions, onSelect }) {
+function AssetSelect({
+  value,
+  assetOptions,
+  onSelect,
+}: {
+  value: BaseAsset | null;
+  assetOptions: BaseAsset[];
+  onSelect: (value: BaseAsset) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filteredAssetOptions, setFilteredAssetOptions] = useState([]);
+  const [filteredAssetOptions, setFilteredAssetOptions] = useState<BaseAsset[]>(
+    []
+  );
 
   const [manageLocal, setManageLocal] = useState(false);
 
@@ -410,15 +417,15 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
     [assetOptions, search]
   );
 
-  const onSearchChanged = async (event) => {
+  const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  const onLocalSelect = (type, asset) => {
+  const onLocalSelect = (asset: BaseAsset) => {
     setSearch("");
     setManageLocal(false);
     setOpen(false);
-    onSelect(type, asset);
+    onSelect(asset);
   };
 
   const onClose = () => {
@@ -431,15 +438,15 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
     setManageLocal(!manageLocal);
   };
 
-  const deleteOption = (token) => {
+  const deleteOption = (token: BaseAsset) => {
     stores.stableSwapStore.removeBaseAsset(token);
   };
 
-  const viewOption = (token) => {
+  const viewOption = (token: BaseAsset) => {
     window.open(`${ETHERSCAN_URL}token/${token.address}`, "_blank");
   };
 
-  const renderManageOption = (type, asset, idx) => {
+  const renderManageOption = (asset: BaseAsset, idx: number) => {
     return (
       <MenuItem
         key={asset.address + "_" + idx}
@@ -485,13 +492,13 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
     );
   };
 
-  const renderAssetOption = (type, asset, idx) => {
+  const renderAssetOption = (asset: BaseAsset, idx: number) => {
     return (
       <MenuItem
         key={asset.address + "_" + idx}
         className={classes.assetSelectMenu}
         onClick={() => {
-          onLocalSelect(type, asset);
+          onLocalSelect(asset);
         }}
       >
         <div className={classes.assetSelectMenuItem}>
@@ -554,7 +561,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
                     return option.local === true;
                   })
                   .map((asset, idx) => {
-                    return renderManageOption(type, asset, idx);
+                    return renderManageOption(asset, idx);
                   })
               : []}
           </div>
@@ -591,6 +598,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
+                    if (!a.balance || !b.balance) return 0;
                     if (BigNumber(a.balance).lt(b.balance)) return 1;
                     if (BigNumber(a.balance).gt(b.balance)) return -1;
                     if (a.symbol.toLowerCase() < b.symbol.toLowerCase())
@@ -600,7 +608,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
                     return 0;
                   })
                   .map((asset, idx) => {
-                    return renderAssetOption(type, asset, idx);
+                    return renderAssetOption(asset, idx);
                   })
               : []}
           </div>
@@ -613,7 +621,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
   };
 
   return (
-    <React.Fragment>
+    <>
       <div
         className={classes.displaySelectContainer}
         onClick={() => {
@@ -643,6 +651,6 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
         {!manageLocal && renderOptions()}
         {manageLocal && renderManageLocal()}
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }

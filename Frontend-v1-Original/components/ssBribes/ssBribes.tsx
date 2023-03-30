@@ -5,16 +5,15 @@ import { AddCircleOutline } from "@mui/icons-material";
 
 import classes from "./ssBribes.module.css";
 
-import BribeCard from "../ssBribeCard/ssBribeCard";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
+import { Pair } from "../../stores/types/types";
 
 export default function ssBribes() {
   const [, updateState] = useState<undefined | {}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [pairs, setPairs] = useState([]);
+  const [pairs, setPairs] = useState<Pair[]>([]);
 
   useEffect(() => {
     const stableSwapUpdated = () => {

@@ -39,6 +39,7 @@ import {
   ITransaction,
   Gauge,
   hasGauge,
+  TransactionStatus,
 } from "./types/types";
 import {
   FLOW_CONVERTOR_ADDRESS,
@@ -5847,7 +5848,7 @@ class Store {
         sendOBJ.transactions.push({
           uuid: claimTXID,
           description: `Claiming all your available bribes`,
-          status: "WAITING",
+          status: TransactionStatus.WAITING,
         });
       }
 
@@ -5859,7 +5860,7 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming reward for ${rewardPairs[i].symbol}`,
-            status: "WAITING",
+            status: TransactionStatus.WAITING,
           });
         }
       }
@@ -5872,7 +5873,7 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming distribution for NFT #${distribution[i].token.id}`,
-            status: "WAITING",
+            status: TransactionStatus.WAITING,
           });
         }
       }

@@ -5,10 +5,10 @@ import { PieChart } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 import classes from "./ssBribeCard.module.css";
 
-import stores from "../../stores/index";
-import { formatCurrency } from "../../utils/utils";
+import stores from "../../../stores/index";
+import { formatCurrency } from "../../../utils/utils";
 
-import { ACTIONS } from "../../stores/constants/constants";
+import { ACTIONS } from "../../../stores/constants/constants";
 
 const theme = createTheme({
   palette: {

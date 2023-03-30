@@ -22,7 +22,7 @@ import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 import { FilterList, Search } from "@mui/icons-material";
 
-import { formatCurrency } from "../../utils/utils";
+import { formatCurrency } from "../../../utils/utils";
 
 function descendingComparator(a, b, orderBy) {
   if (!a || !b) {
