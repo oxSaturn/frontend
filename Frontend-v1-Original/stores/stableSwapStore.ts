@@ -5135,16 +5135,19 @@ class Store {
       CONTRACTS.VOTER_ADDRESS
     );
 
-    const lastVoted = await voterContract.methods.lastVoted(tokenID).call();
+    const _lastVoted = await voterContract.methods.lastVoted(tokenID).call();
     // if last voted eq 0, means never voted
-    if (lastVoted === "0") return false;
+    if (_lastVoted === "0") return false;
+    const lastVoted = parseInt(_lastVoted);
 
-    const blockTimestamp = (await web3.eth.getBlock("latest"))
-      .timestamp as number;
+    let nextEpochTimestamp = this.getStore("updateDate");
+    // if user goes straight to vest page, updateDate maybe not set yet
+    if (nextEpochTimestamp === 0) {
+      nextEpochTimestamp = await stores.helper.getActivePeriod();
+    }
 
     // 7 days epoch length
-    const votedThisEpoch = (blockTimestamp / 7) * 7 > lastVoted;
-
+    const votedThisEpoch = lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
     return votedThisEpoch;
   };
 
