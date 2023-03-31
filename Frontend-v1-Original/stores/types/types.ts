@@ -109,8 +109,9 @@ const hasGauge = (pair: Pair): pair is Gauge =>
   pair && pair.gauge !== undefined;
 const isGaugeReward = (reward: Gauge | VeDistReward): reward is Gauge =>
   reward && reward.rewardType !== "Distribution";
-const isBaseAsset = (asset: BaseAsset | RouteAsset): asset is BaseAsset =>
-  "balance" in asset;
+const isBaseAsset = (
+  asset: BaseAsset | RouteAsset | Pair | null
+): asset is BaseAsset => !!asset && "balance" in asset && "name" in asset;
 
 interface VeDistReward {
   token: VestNFT;

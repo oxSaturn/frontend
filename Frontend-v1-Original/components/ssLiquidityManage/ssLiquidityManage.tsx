@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -31,15 +31,16 @@ import {
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
+import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
 
 export default function ssLiquidityManage() {
   const router = useRouter();
-  const amount0Ref = useRef(null);
-  const amount1Ref = useRef(null);
+  const amount0Ref = useRef<HTMLInputElement>(null);
+  const amount1Ref = useRef<HTMLInputElement>(null);
 
   const [pairReadOnly, setPairReadOnly] = useState(false);
 
-  const [pair, setPair] = useState(null);
+  const [pair, setPair] = useState<Pair | null>(null);
 
   const [depositLoading, setDepositLoading] = useState(false);
   const [stakeLoading, setStakeLoading] = useState(false);
@@ -53,12 +54,12 @@ export default function ssLiquidityManage() {
 
   const [stable, setStable] = useState(false);
 
-  const [asset0, setAsset0] = useState(null);
-  const [asset1, setAsset1] = useState(null);
-  const [assetOptions, setAssetOptions] = useState([]);
+  const [asset0, setAsset0] = useState<BaseAsset | null>(null);
+  const [asset1, setAsset1] = useState<BaseAsset | null>(null);
+  const [assetOptions, setAssetOptions] = useState<BaseAsset[]>([]);
 
-  const [withdrawAsset, setWithdrawAsset] = useState(null);
-  const [withdrawAassetOptions, setWithdrawAssetOptions] = useState([]);
+  const [withdrawAsset, setWithdrawAsset] = useState<Pair | null>(null);
+  const [withdrawAassetOptions, setWithdrawAssetOptions] = useState<Pair[]>([]);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawAmountError, setWithdrawAmountError] = useState<
     string | false
@@ -71,10 +72,13 @@ export default function ssLiquidityManage() {
   // const [withdrawAmount1Percent, setWithdrawAmount1Percent] = useState("");
 
   const [activeTab, setActiveTab] = useState("deposit");
-  const [quote, setQuote] = useState(null);
-  const [withdrawQuote, setWithdrawQuote] = useState(null);
+  const [quote, setQuote] = useState<string | null>(null);
+  const [withdrawQuote, setWithdrawQuote] = useState<{
+    amount0: string;
+    amount1: string;
+  } | null>(null);
 
-  const [priorityAsset, setPriorityAsset] = useState(0);
+  const [priorityAsset, setPriorityAsset] = useState<0 | 1>(0);
   const [advanced, setAdvanced] = useState(true);
 
   const [slippage, setSlippage] = useState("2");
@@ -86,15 +90,19 @@ export default function ssLiquidityManage() {
 
     const onlyWithBalance = pairs.filter((ppp) => {
       return (
-        BigNumber(ppp.balance).gt(0) ||
-        (ppp.gauge && BigNumber(ppp.gauge.balance).gt(0))
+        (ppp.balance && BigNumber(ppp.balance).gt(0)) ||
+        (ppp.gauge?.balance && BigNumber(ppp.gauge.balance).gt(0))
       );
     });
 
     setWithdrawAssetOptions(onlyWithBalance);
     setAssetOptions(storeAssetOptions);
 
-    if (router.query.address && router.query.address !== "create") {
+    if (
+      router.query.address &&
+      router.query.address !== "create" &&
+      !Array.isArray(router.query.address)
+    ) {
       setPairReadOnly(true);
 
       const pp = await stores.stableSwapStore.getPairByAddress(
@@ -168,11 +176,29 @@ export default function ssLiquidityManage() {
       setCreateLoading(false);
     };
 
-    const quoteAddReturned = (res) => {
+    const quoteAddReturned = (res: {
+      inputs: {
+        token0: BaseAsset;
+        token1: BaseAsset;
+        amount0: string;
+        amount1: string;
+      };
+      output: string;
+    }) => {
       setQuote(res.output);
     };
 
-    const quoteRemoveReturned = (res) => {
+    const quoteRemoveReturned = (res: {
+      inputs: {
+        token0: BaseAsset;
+        token1: BaseAsset;
+        withdrawAmount: string;
+      };
+      output: {
+        amount0: string;
+        amount1: string;
+      };
+    }) => {
       if (!res) {
         return;
       }
@@ -248,21 +274,22 @@ export default function ssLiquidityManage() {
   };
 
   const callQuoteAddLiquidity = (
-    amountA,
-    amountB,
-    pa,
-    sta,
-    pp,
-    assetA,
-    assetB
+    amountA: string,
+    amountB: string,
+    inputIndex: 0 | 1,
+    stable: boolean,
+    pp: Pair | null,
+    assetA: BaseAsset | null,
+    assetB: BaseAsset | null
   ) => {
     if (!pp) {
       return null;
     }
+    if (!assetA || !assetB) {
+      return null;
+    }
 
     let invert = false;
-
-    //TODO: Add check that asset0.address === pp.token0, otherwise we need to invert the calcs
 
     let addy0 = assetA.address;
     let addy1 = assetB.address;
@@ -275,14 +302,14 @@ export default function ssLiquidityManage() {
     }
 
     if (
-      addy1.toLowerCase() == pp.token0.address.toLowerCase() &&
-      addy0.toLowerCase() == pp.token1.address.toLowerCase()
+      addy1.toLowerCase() === pp.token0.address.toLowerCase() &&
+      addy0.toLowerCase() === pp.token1.address.toLowerCase()
     ) {
       invert = true;
     }
 
-    if (pa == 0) {
-      if (amountA == "") {
+    if (inputIndex === 0) {
+      if (amountA === "") {
         setAmount1("");
       } else {
         if (invert) {
@@ -299,8 +326,8 @@ export default function ssLiquidityManage() {
         setAmount1(amountB);
       }
     }
-    if (pa == 1) {
-      if (amountB == "") {
+    if (inputIndex === 1) {
+      if (amountB === "") {
         setAmount0("");
       } else {
         if (invert) {
@@ -321,8 +348,8 @@ export default function ssLiquidityManage() {
     if (
       BigNumber(amountA).lte(0) ||
       BigNumber(amountB).lte(0) ||
-      isNaN(amountA) ||
-      isNaN(amountB)
+      isNaN(+amountA) ||
+      isNaN(+amountB)
     ) {
       return null;
     }
@@ -335,16 +362,15 @@ export default function ssLiquidityManage() {
         token1: pp.token1,
         amount0: amountA,
         amount1: amountB,
-        stable: sta,
+        stable: stable,
       },
     });
   };
 
-  const callQuoteRemoveLiquidity = (p, amount) => {
-    if (!pair) {
-      return null;
+  const callQuoteRemoveLiquidity = (p: Pair | null, amount: string) => {
+    if (!p) {
+      return;
     }
-
     stores.dispatcher.dispatch({
       type: ACTIONS.QUOTE_REMOVE_LIQUIDITY,
       content: {
@@ -356,15 +382,19 @@ export default function ssLiquidityManage() {
     });
   };
 
-  const onSlippageChanged = (event) => {
-    if (event.target.value == "" || !isNaN(event.target.value)) {
+  const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.value == "" || !isNaN(+event.target.value)) {
       setSlippage(event.target.value);
     }
   };
 
-  const setAmountPercent = (input, percent) => {
+  const setAmountPercent = (input: string, percent: number) => {
     setAmount0Error(false);
     setAmount1Error(false);
+
+    if (!asset0?.balance || !asset1?.balance || !pair) {
+      return;
+    }
 
     if (input === "amount0") {
       let am = BigNumber(asset0.balance)
@@ -372,7 +402,7 @@ export default function ssLiquidityManage() {
         .div(100)
         .toFixed(asset0.decimals);
       setAmount0(am);
-      amount0Ref.current.focus();
+      if (!!amount0Ref.current) amount0Ref.current.focus();
       callQuoteAddLiquidity(am, amount1, 0, stable, pair, asset0, asset1);
     } else if (input === "amount1") {
       let am = BigNumber(asset1.balance)
@@ -380,14 +410,14 @@ export default function ssLiquidityManage() {
         .div(100)
         .toFixed(asset1.decimals);
       setAmount1(am);
-      amount1Ref.current.focus();
+      if (!!amount1Ref.current) amount1Ref.current.focus();
       callQuoteAddLiquidity(amount0, am, 1, stable, pair, asset0, asset1);
     } else if (input === "withdraw") {
       let am = "";
-      if (pair && pair.gauge) {
+      if (pair && pair.gauge && pair.gauge.balance) {
         am = BigNumber(pair.gauge.balance).times(percent).div(100).toFixed(18);
         setWithdrawAmount(am);
-      } else {
+      } else if (pair.balance) {
         am = BigNumber(pair.balance).times(percent).div(100).toFixed(18);
         setWithdrawAmount(am);
       }
@@ -412,9 +442,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset0.balance ||
-        isNaN(asset0.balance) ||
-        BigNumber(asset0.balance).lte(0)
+        !asset0?.balance ||
+        isNaN(+asset0?.balance) ||
+        BigNumber(asset0?.balance).lte(0)
       ) {
         setAmount0Error("Invalid balance");
         error = true;
@@ -432,9 +462,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset1.balance ||
-        isNaN(asset1.balance) ||
-        BigNumber(asset1.balance).lte(0)
+        !asset1?.balance ||
+        isNaN(+asset1?.balance) ||
+        BigNumber(asset1?.balance).lte(0)
       ) {
         setAmount1Error("Invalid balance");
         error = true;
@@ -496,9 +526,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset0.balance ||
-        isNaN(asset0.balance) ||
-        BigNumber(asset0.balance).lte(0)
+        !asset0?.balance ||
+        isNaN(+asset0?.balance) ||
+        BigNumber(asset0?.balance).lte(0)
       ) {
         setAmount0Error("Invalid balance");
         error = true;
@@ -516,9 +546,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset1.balance ||
-        isNaN(asset1.balance) ||
-        BigNumber(asset1.balance).lte(0)
+        !asset1?.balance ||
+        isNaN(+asset1?.balance) ||
+        BigNumber(asset1?.balance).lte(0)
       ) {
         setAmount1Error("Invalid balance");
         error = true;
@@ -561,9 +591,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset0.balance ||
-        isNaN(asset0.balance) ||
-        BigNumber(asset0.balance).lte(0)
+        !asset0?.balance ||
+        isNaN(+asset0?.balance) ||
+        BigNumber(asset0?.balance).lte(0)
       ) {
         setAmount0Error("Invalid balance");
         error = true;
@@ -581,9 +611,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset1.balance ||
-        isNaN(asset1.balance) ||
-        BigNumber(asset1.balance).lte(0)
+        !asset1?.balance ||
+        isNaN(+asset1?.balance) ||
+        BigNumber(asset1?.balance).lte(0)
       ) {
         setAmount1Error("Invalid balance");
         error = true;
@@ -634,9 +664,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset0.balance ||
-        isNaN(asset0.balance) ||
-        BigNumber(asset0.balance).lte(0)
+        !asset0?.balance ||
+        isNaN(+asset0?.balance) ||
+        BigNumber(asset0?.balance).lte(0)
       ) {
         setAmount0Error("Invalid balance");
         error = true;
@@ -654,9 +684,9 @@ export default function ssLiquidityManage() {
       error = true;
     } else {
       if (
-        !asset1.balance ||
-        isNaN(asset1.balance) ||
-        BigNumber(asset1.balance).lte(0)
+        !asset1?.balance ||
+        isNaN(+asset1?.balance) ||
+        BigNumber(asset1?.balance).lte(0)
       ) {
         setAmount1Error("Invalid balance");
         error = true;
@@ -706,7 +736,12 @@ export default function ssLiquidityManage() {
       error = true;
     }
 
-    if (!error) {
+    if (!pair) {
+      setWithdrawAmountError("Pair is required");
+      error = true;
+    }
+
+    if (!error && pair) {
       setDepositLoading(true);
       stores.dispatcher.dispatch({
         type: ACTIONS.REMOVE_LIQUIDITY,
@@ -734,7 +769,7 @@ export default function ssLiquidityManage() {
         withdrawAsset &&
         withdrawAsset.gauge &&
         (!withdrawAsset.gauge.balance ||
-          isNaN(withdrawAsset.gauge.balance) ||
+          isNaN(+withdrawAsset.gauge.balance) ||
           BigNumber(withdrawAsset.gauge.balance).lte(0))
       ) {
         setWithdrawAmountError("Invalid balance");
@@ -744,6 +779,7 @@ export default function ssLiquidityManage() {
         error = true;
       } else if (
         withdrawAsset &&
+        withdrawAsset.gauge?.balance &&
         BigNumber(withdrawAmount).gt(withdrawAsset.gauge.balance)
       ) {
         setWithdrawAmountError(`Greater than your available balance`);
@@ -755,8 +791,12 @@ export default function ssLiquidityManage() {
       setWithdrawAmountError("From asset is required");
       error = true;
     }
+    if (!pair) {
+      setWithdrawAmountError("Pair is not selected");
+      error = true;
+    }
 
-    if (!error) {
+    if (!error && pair) {
       setDepositStakeLoading(true);
       stores.dispatcher.dispatch({
         type: ACTIONS.UNSTAKE_AND_REMOVE_LIQUIDITY,
@@ -775,6 +815,7 @@ export default function ssLiquidityManage() {
   };
 
   const onUnstake = () => {
+    if (!pair) return;
     setStakeLoading(true);
     stores.dispatcher.dispatch({
       type: ACTIONS.UNSTAKE_LIQUIDITY,
@@ -811,7 +852,7 @@ export default function ssLiquidityManage() {
     setActiveTab("withdraw");
   };
 
-  const amount0Changed = (event) => {
+  const amount0Changed = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount0Error(false);
     setAmount0(event.target.value);
     callQuoteAddLiquidity(
@@ -825,7 +866,7 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const amount1Changed = (event) => {
+  const amount1Changed = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount1Error(false);
     setAmount1(event.target.value);
     callQuoteAddLiquidity(
@@ -839,19 +880,20 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const amount0Focused = (event) => {
+  const amount0Focused = (event: React.FocusEvent<HTMLInputElement>) => {
     setPriorityAsset(0);
     callQuoteAddLiquidity(amount0, amount1, 0, stable, pair, asset0, asset1);
   };
 
-  const amount1Focused = (event) => {
+  const amount1Focused = (event: React.FocusEvent<HTMLInputElement>) => {
     setPriorityAsset(1);
     callQuoteAddLiquidity(amount0, amount1, 1, stable, pair, asset0, asset1);
   };
 
-  const onAssetSelect = async (type, value) => {
-    if (type === "amount0") {
+  const onAssetSelect = async (type: string, value: Pair | BaseAsset) => {
+    if (type === "amount0" && isBaseAsset(value)) {
       setAsset0(value);
+      if (!asset1?.address) return;
       const p = await stores.stableSwapStore.getPair(
         value.address,
         asset1.address,
@@ -867,8 +909,9 @@ export default function ssLiquidityManage() {
         value,
         asset1
       );
-    } else if (type === "amount1") {
+    } else if (type === "amount1" && isBaseAsset(value)) {
       setAsset1(value);
+      if (!asset0?.address) return;
       const p = await stores.stableSwapStore.getPair(
         asset0.address,
         value.address,
@@ -884,7 +927,7 @@ export default function ssLiquidityManage() {
         asset0,
         value
       );
-    } else if (type === "withdraw") {
+    } else if (type === "withdraw" && !isBaseAsset(value)) {
       setWithdrawAsset(value);
       const p = await stores.stableSwapStore.getPair(
         value.token0.address,
@@ -896,8 +939,9 @@ export default function ssLiquidityManage() {
     }
   };
 
-  const setStab = async (val) => {
+  const setStab = async (val: boolean) => {
     setStable(val);
+    if (!asset0?.address || !asset1?.address) return;
     const p = await stores.stableSwapStore.getPair(
       asset0.address,
       asset1.address,
@@ -915,26 +959,32 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const withdrawAmountChanged = (event) => {
+  const withdrawAmountChanged = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setWithdrawAmountError(false);
     setWithdrawAmount(event.target.value);
     if (event.target.value === "") {
       setWithdrawAmount0("");
       setWithdrawAmount1("");
-    } else if (event.target.value !== "" && !isNaN(event.target.value)) {
+    } else if (event.target.value !== "" && !isNaN(+event.target.value)) {
       calcRemove(pair, event.target.value);
     }
   };
 
-  const calcRemove = (pear, amount) => {
-    if (!(amount && amount != "" && amount > 0)) {
+  const calcRemove = (pair: Pair | null, amount: string) => {
+    if (!(amount && amount != "" && parseFloat(amount) > 0)) {
       return;
     }
 
-    callQuoteRemoveLiquidity(pear, amount);
+    callQuoteRemoveLiquidity(pair, amount);
   };
 
-  const renderMediumInput = (type, value, logo, symbol) => {
+  const renderMediumInput = (
+    value: string,
+    logo: string | null | undefined,
+    symbol: string | undefined
+  ) => {
     return (
       <div className="relative mb-1">
         <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-[#272826]">
@@ -990,16 +1040,17 @@ export default function ssLiquidityManage() {
   };
 
   const renderMassiveInput = (
-    type,
-    amountValue,
-    amountError,
-    amountChanged,
-    assetValue,
-    assetError,
-    assetOptions,
-    onAssetSelect,
-    onFocus,
-    inputRef
+    type: string,
+    amountValue: string,
+    amountError: string | false,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    assetValue: BaseAsset | Pair | null,
+    assetOptions: BaseAsset[] | Pair[],
+    onAssetSelect: (type: string, asset: BaseAsset) => void,
+    onFocus: React.FocusEventHandler<
+      HTMLTextAreaElement | HTMLInputElement
+    > | null,
+    inputRef: React.RefObject<HTMLInputElement> | null
   ) => {
     return (
       <div className="relative mb-1">
@@ -1019,7 +1070,7 @@ export default function ssLiquidityManage() {
                   : ""}
               </Typography>
             )}
-            {type === "withdraw" && (
+            {type === "withdraw" && !isBaseAsset(assetValue) && (
               <Typography
                 className="text-xs font-thin text-[#7e99b0]"
                 noWrap
@@ -1039,7 +1090,7 @@ export default function ssLiquidityManage() {
         </div>
         <div
           className={`flex w-full flex-wrap items-center rounded-[10px] bg-[#272826] ${
-            (amountError || assetError) && "border border-red-500"
+            amountError && "border border-red-500"
           }`}
         >
           <div className="h-full min-h-[128px] w-32">
@@ -1056,12 +1107,12 @@ export default function ssLiquidityManage() {
               inputRef={inputRef}
               placeholder="0.00"
               fullWidth
-              error={amountError}
+              error={!!amountError}
               helperText={amountError}
               value={amountValue}
               onChange={amountChanged}
               disabled={createLoading}
-              onFocus={onFocus ? onFocus : null}
+              onFocus={onFocus ? onFocus : undefined}
               InputProps={{
                 style: {
                   fontSize: "46px !important",
@@ -1124,12 +1175,7 @@ export default function ssLiquidityManage() {
               <Typography className="text-xs text-[#7e99b0]">{`${pair?.token1?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
-              {renderSmallInput(
-                "slippage",
-                slippage,
-                slippageError,
-                onSlippageChanged
-              )}
+              {renderSmallInput(slippage, slippageError, onSlippageChanged)}
             </div>
           </div>
           <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -1174,12 +1220,7 @@ export default function ssLiquidityManage() {
             <Typography className="text-xs text-[#7e99b0]">{`${pair?.token1?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
-            {renderSmallInput(
-              "slippage",
-              slippage,
-              slippageError,
-              onSlippageChanged
-            )}
+            {renderSmallInput(slippage, slippageError, onSlippageChanged)}
           </div>
         </div>
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -1208,7 +1249,11 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const renderSmallInput = (type, amountValue, amountError, amountChanged) => {
+  const renderSmallInput = (
+    amountValue: string,
+    amountError: boolean,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+  ) => {
     return (
       <div className="relative mb-1">
         <div className="absolute top-1">
@@ -1241,7 +1286,7 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const renderMediumInputToggle = (type, value) => {
+  const renderMediumInputToggle = () => {
     return (
       <div className="relative mb-1">
         <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-[#272826]">
@@ -1332,7 +1377,6 @@ export default function ssLiquidityManage() {
                   amount0Error,
                   amount0Changed,
                   asset0,
-                  null,
                   assetOptions,
                   onAssetSelect,
                   amount0Focused,
@@ -1349,13 +1393,12 @@ export default function ssLiquidityManage() {
                   amount1Error,
                   amount1Changed,
                   asset1,
-                  null,
                   assetOptions,
                   onAssetSelect,
                   amount1Focused,
                   amount1Ref
                 )}
-                {renderMediumInputToggle("stable", stable)}
+                {renderMediumInputToggle()}
                 {renderDepositInformation()}
               </>
             )}
@@ -1367,7 +1410,6 @@ export default function ssLiquidityManage() {
                   withdrawAmountError,
                   withdrawAmountChanged,
                   withdrawAsset,
-                  null,
                   withdrawAassetOptions,
                   onAssetSelect,
                   null,
@@ -1380,13 +1422,11 @@ export default function ssLiquidityManage() {
                 </div>
                 <div className="grid grid-cols-[repeat(2,1fr)] gap-1">
                   {renderMediumInput(
-                    "withdrawAmount0",
                     withdrawAmount0,
                     pair?.token0?.logoURI,
                     pair?.token0?.symbol
                   )}
                   {renderMediumInput(
-                    "withdrawAmount1",
                     withdrawAmount1,
                     pair?.token1?.logoURI,
                     pair?.token1?.symbol
@@ -1539,38 +1579,41 @@ export default function ssLiquidityManage() {
                         />
                       )}
                     </Button>
-                    {pair.token0.isWhitelisted && pair.token1.isWhitelisted && (
-                      <Button
-                        variant="contained"
-                        size="large"
-                        className={
-                          createLoading ||
-                          depositLoading ||
-                          stakeLoading ||
-                          depositStakeLoading
-                            ? "min-w-[auto]"
-                            : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
-                        }
-                        color="primary"
-                        disabled={
-                          createLoading ||
-                          depositLoading ||
-                          stakeLoading ||
-                          depositStakeLoading
-                        }
-                        onClick={onCreateGauge}
-                      >
-                        <Typography className="font-bold capitalize">
-                          {createLoading ? `Creating` : `Create Gauge`}
-                        </Typography>
-                        {createLoading && (
-                          <CircularProgress
-                            size={10}
-                            className="ml-2 fill-white"
-                          />
-                        )}
-                      </Button>
-                    )}
+                    {isBaseAsset(pair.token0) &&
+                      isBaseAsset(pair.token1) &&
+                      pair.token0.isWhitelisted &&
+                      pair.token1.isWhitelisted && (
+                        <Button
+                          variant="contained"
+                          size="large"
+                          className={
+                            createLoading ||
+                            depositLoading ||
+                            stakeLoading ||
+                            depositStakeLoading
+                              ? "min-w-[auto]"
+                              : "bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                          }
+                          color="primary"
+                          disabled={
+                            createLoading ||
+                            depositLoading ||
+                            stakeLoading ||
+                            depositStakeLoading
+                          }
+                          onClick={onCreateGauge}
+                        >
+                          <Typography className="font-bold capitalize">
+                            {createLoading ? `Creating` : `Create Gauge`}
+                          </Typography>
+                          {createLoading && (
+                            <CircularProgress
+                              size={10}
+                              className="ml-2 fill-white"
+                            />
+                          )}
+                        </Button>
+                      )}
                   </>
                 )
               }
@@ -1644,7 +1687,7 @@ export default function ssLiquidityManage() {
                           variant="contained"
                           size="large"
                           className={
-                            BigNumber(pair.balance).eq(0) ||
+                            (pair.balance && BigNumber(pair.balance).eq(0)) ||
                             depositLoading ||
                             stakeLoading ||
                             depositStakeLoading
@@ -1653,7 +1696,7 @@ export default function ssLiquidityManage() {
                           }
                           color="primary"
                           disabled={
-                            BigNumber(pair.balance).eq(0) ||
+                            (pair.balance && BigNumber(pair.balance).eq(0)) ||
                             depositLoading ||
                             stakeLoading ||
                             depositStakeLoading
@@ -1661,7 +1704,7 @@ export default function ssLiquidityManage() {
                           onClick={onStake}
                         >
                           <Typography className="font-bold capitalize">
-                            {BigNumber(pair.balance).gt(0)
+                            {pair.balance && BigNumber(pair.balance).gt(0)
                               ? stakeLoading
                                 ? `Staking`
                                 : `Stake ${formatCurrency(pair.balance)} LP`
@@ -1771,7 +1814,7 @@ export default function ssLiquidityManage() {
                         variant="contained"
                         size="large"
                         className={
-                          BigNumber(pair.balance).eq(0) ||
+                          (pair.balance && BigNumber(pair.balance).eq(0)) ||
                           depositLoading ||
                           stakeLoading ||
                           depositStakeLoading
@@ -1780,7 +1823,7 @@ export default function ssLiquidityManage() {
                         }
                         color="primary"
                         disabled={
-                          BigNumber(pair.balance).eq(0) ||
+                          (pair.balance && BigNumber(pair.balance).eq(0)) ||
                           depositLoading ||
                           stakeLoading ||
                           depositStakeLoading
@@ -1788,7 +1831,7 @@ export default function ssLiquidityManage() {
                         onClick={onWithdraw}
                       >
                         <Typography className="font-bold capitalize">
-                          {BigNumber(pair.balance).gt(0)
+                          {pair.balance && BigNumber(pair.balance).gt(0)
                             ? depositLoading
                               ? `Withdrawing`
                               : `Withdraw ${formatCurrency(pair.balance)} LP`
@@ -1813,10 +1856,24 @@ export default function ssLiquidityManage() {
   );
 }
 
-function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
+function AssetSelect({
+  type,
+  value,
+  assetOptions,
+  onSelect,
+  disabled,
+}: {
+  type: string;
+  value: BaseAsset | Pair | null;
+  assetOptions: BaseAsset[] | Pair[];
+  onSelect: (type: string, asset: BaseAsset) => void;
+  disabled: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filteredAssetOptions, setFilteredAssetOptions] = useState([]);
+  const [filteredAssetOptions, setFilteredAssetOptions] = useState<BaseAsset[]>(
+    []
+  );
 
   const [manageLocal, setManageLocal] = useState(false);
 
@@ -1831,7 +1888,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
   // TODO this useEffect needs to be refactored.
   useEffect(() => {
     const filter = async () => {
-      let ao = assetOptions
+      let ao = (assetOptions as BaseAsset[])
         .filter((asset) => {
           if (search && search !== "") {
             return (
@@ -1844,8 +1901,10 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           }
         })
         .sort((a, b) => {
-          if (BigNumber(a.balance).lt(b.balance)) return 1;
-          if (BigNumber(a.balance).gt(b.balance)) return -1;
+          if (a.balance && b.balance && BigNumber(a.balance).lt(b.balance))
+            return 1;
+          if (a.balance && b.balance && BigNumber(a.balance).gt(b.balance))
+            return -1;
           if (a.symbol < b.symbol) return -1;
           if (a.symbol > b.symbol) return 1;
           return 0;
@@ -1866,11 +1925,11 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
     return () => {};
   }, [assetOptions, search]);
 
-  const onSearchChanged = async (event) => {
+  const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  const onLocalSelect = (type, asset) => {
+  const onLocalSelect = (type: string, asset: BaseAsset) => {
     setSearch("");
     setManageLocal(false);
     setOpen(false);
@@ -1887,15 +1946,15 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
     setManageLocal(!manageLocal);
   };
 
-  const deleteOption = (token) => {
+  const deleteOption = (token: BaseAsset) => {
     stores.stableSwapStore.removeBaseAsset(token);
   };
 
-  const viewOption = (token) => {
+  const viewOption = (token: BaseAsset) => {
     window.open(`${ETHERSCAN_URL}token/${token.address}`, "_blank");
   };
 
-  const renderManageOption = (type, asset, idx) => {
+  const renderManageOption = (asset: BaseAsset, idx: number) => {
     return (
       <MenuItem
         key={asset.address + "_" + idx}
@@ -1939,7 +1998,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
     );
   };
 
-  const renderAssetOption = (type, asset, idx) => {
+  const renderAssetOption = (type: string, asset: BaseAsset, idx: number) => {
     return (
       <MenuItem
         key={asset.address + "_" + idx}
@@ -2006,7 +2065,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
                     return option.local === true;
                   })
                   .map((asset, idx) => {
-                    return renderManageOption(type, asset, idx);
+                    return renderManageOption(asset, idx);
                   })
               : []}
           </div>
@@ -2042,8 +2101,18 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
-                    if (BigNumber(a.balance).lt(b.balance)) return 1;
-                    if (BigNumber(a.balance).gt(b.balance)) return -1;
+                    if (
+                      a.balance &&
+                      b.balance &&
+                      BigNumber(a.balance).lt(b.balance)
+                    )
+                      return 1;
+                    if (
+                      a.balance &&
+                      b.balance &&
+                      BigNumber(a.balance).gt(b.balance)
+                    )
+                      return -1;
                     if (a.symbol.toLowerCase() < b.symbol.toLowerCase())
                       return -1;
                     if (a.symbol.toLowerCase() > b.symbol.toLowerCase())
@@ -2075,7 +2144,7 @@ function AssetSelect({ type, value, assetOptions, onSelect, disabled }) {
           <img
             className="h-full w-full rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
             alt=""
-            src={value ? `${value.logoURI}` : ""}
+            src={value && isBaseAsset(value) ? `${value.logoURI}` : ""}
             height="100px"
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
