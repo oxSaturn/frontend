@@ -119,7 +119,7 @@ function Setup() {
     };
 
     const quoteReturned = (val: QuoteSwapResponse) => {
-      if (!val) {
+      if (!val || !fromAssetValue || !toAssetValue) {
         setQuoteLoading(false);
         setQuote(null);
         setToAmountValue("");
@@ -127,6 +127,7 @@ function Setup() {
         setQuoteError(
           "Insufficient liquidity or no route available to complete swap"
         );
+        return;
       }
       if (
         val &&
@@ -168,7 +169,7 @@ function Setup() {
             : val.maxReturn.to.toLowerCase();
         const toUsdValue = BigNumber(val.maxReturn.totalTo)
           .div(10 ** toAssetValue.decimals)
-          .multipliedBy(tokenPrices.get(toAddressLookUp))
+          .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
           .toFixed(2);
         setToAmountValueUsd(toUsdValue);
         setQuote(val);
@@ -254,14 +255,18 @@ function Setup() {
   const onAssetSelect = (type: string, value: BaseAsset) => {
     if (type === "From") {
       let fromAmountValueWithNewDecimals: string | undefined;
-      if (fromAmountValue !== "" && value.decimals < fromAssetValue.decimals) {
+      if (
+        fromAssetValue &&
+        fromAmountValue !== "" &&
+        value.decimals < fromAssetValue.decimals
+      ) {
         fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
           value.decimals,
           BigNumber.ROUND_DOWN
         );
         setFromAmountValue(fromAmountValueWithNewDecimals);
       }
-      if (value.address === toAssetValue.address) {
+      if (value.address === toAssetValue?.address) {
         setToAssetValue(fromAssetValue);
         setFromAssetValue(toAssetValue);
         calculateReceiveAmount(
@@ -280,15 +285,15 @@ function Setup() {
       setFromAmountValueUsd(
         (
           parseFloat(fromAmountValue) *
-          tokenPrices.get(
+          (tokenPrices?.get(
             value.address === "CANTO"
               ? W_NATIVE_ADDRESS.toLowerCase()
               : value.address.toLowerCase()
-          )
+          ) ?? 0)
         ).toFixed(2)
       );
     } else {
-      if (value.address === fromAssetValue.address) {
+      if (value.address === fromAssetValue?.address) {
         setFromAssetError(false);
         setToAssetValue(fromAssetValue);
         calculateReceiveAmount(fromAmountValue, toAssetValue, fromAssetValue);
@@ -313,11 +318,13 @@ function Setup() {
       setFromAmountValueUsd(
         (
           parseFloat(event.target.value) *
-          tokenPrices.get(
-            fromAssetValue.address === "CANTO"
+          (tokenPrices?.get(
+            fromAssetValue?.address === "CANTO"
               ? W_NATIVE_ADDRESS.toLowerCase()
-              : fromAssetValue.address.toLowerCase()
-          )
+              : fromAssetValue
+              ? fromAssetValue?.address.toLowerCase()
+              : ""
+          ) ?? 0)
         ).toFixed(2)
       );
       calculateReceiveAmount(event.target.value, fromAssetValue, toAssetValue);
@@ -489,16 +496,19 @@ function Setup() {
   };
 
   const setBalance100 = () => {
+    if (!fromAssetValue || fromAssetValue.balance === null) return;
     const am = BigNumber(fromAssetValue.balance).toString();
     setFromAmountValue(am);
     setFromAmountValueUsd(
       (
         parseFloat(am) *
-        tokenPrices.get(
-          fromAssetValue.address === "CANTO"
+        (tokenPrices?.get(
+          fromAssetValue?.address === "CANTO"
             ? W_NATIVE_ADDRESS.toLowerCase()
-            : fromAssetValue.address.toLowerCase()
-        )
+            : fromAssetValue
+            ? fromAssetValue.address.toLowerCase()
+            : ""
+        ) ?? 0)
       ).toFixed(2)
     );
     calculateReceiveAmount(am, fromAssetValue, toAssetValue);
@@ -508,6 +518,7 @@ function Setup() {
     let fromAmountValueWithNewDecimals: string | undefined;
     const fa = fromAssetValue;
     const ta = toAssetValue;
+    if (!fa || !ta) return;
     if (fromAmountValue !== "" && ta.decimals < fa.decimals) {
       fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
         ta.decimals,
@@ -520,11 +531,11 @@ function Setup() {
     setFromAmountValueUsd(
       (
         parseFloat(fromAmountValue) *
-        tokenPrices.get(
+        (tokenPrices?.get(
           ta.address === "CANTO"
             ? W_NATIVE_ADDRESS.toLowerCase()
             : ta.address.toLowerCase()
-        )
+        ) ?? 0)
       ).toFixed(2)
     );
     calculateReceiveAmount(
@@ -587,12 +598,12 @@ function Setup() {
         </div>
       );
     }
-    const totalFromInEth = BigNumber(quote.maxReturn.totalFrom).div(
-      10 ** fromAssetValue.decimals
-    );
-    const totalToInEth = BigNumber(quote.maxReturn.totalTo).div(
-      10 ** toAssetValue.decimals
-    );
+    const totalFromInEth = fromAssetValue
+      ? BigNumber(quote.maxReturn.totalFrom).div(10 ** fromAssetValue.decimals)
+      : BigNumber(0);
+    const totalToInEth = toAssetValue
+      ? BigNumber(quote.maxReturn.totalTo).div(10 ** toAssetValue.decimals)
+      : BigNumber(0);
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
