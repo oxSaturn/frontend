@@ -217,8 +217,8 @@ export default function ssVotes() {
                       return (
                         <MenuItem
                           key={option.id}
-                          // FIXME possible bug here
-                          //  value={option}
+                          // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
+                          value={option as any}
                         >
                           <div className={classes.menuOption}>
                             <Typography>Token #{option.id}</Typography>
