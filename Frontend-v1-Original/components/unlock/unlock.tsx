@@ -1,10 +1,10 @@
 import React from "react";
-import { withStyles } from "@mui/styles";
 import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
-import { Web3Provider } from "@ethersproject/providers";
+import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
+import { AbstractConnector } from "@web3-react/abstract-connector";
 
 import { ACTIONS } from "../../stores/constants/constants";
 const { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE_SS } =
@@ -12,75 +12,17 @@ const { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE_SS } =
 
 import stores from "../../stores";
 
-const styles = (theme) =>
-  ({
-    root: {
-      flex: 1,
-      height: "auto",
-      display: "flex",
-      position: "relative",
-    },
-    contentContainer: {
-      margin: "auto",
-      textAlign: "center",
-      padding: "12px",
-      display: "flex",
-      flexWrap: "wrap",
-
-      "@media (max-width: 960px)": {
-        paddingTop: "160px",
-      },
-    },
-    cardContainer: {
-      marginTop: "60px",
-      minHeight: "260px",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-around",
-      alignItems: "center",
-    },
-    unlockCard: {
-      padding: "24px",
-    },
-    buttonText: {
-      marginLeft: "12px",
-      fontWeight: "700",
-    },
-    instruction: {
-      maxWidth: "400px",
-      marginBottom: "32px",
-      marginTop: "32px",
-    },
-    actionButton: {
-      padding: "12px",
-      backgroundColor: "white",
-      borderRadius: "3rem",
-      border: "1px solid #E1E1E1",
-      fontWeight: 500,
-      [theme.breakpoints.up("md")]: {
-        padding: "15px",
-      },
-    },
-    connect: {
-      width: "100%",
-    },
-    closeIcon: {
-      position: "absolute",
-      right: "-8px",
-      top: "-8px",
-      cursor: "pointer",
-    },
-  } as const);
-
-const Unlock = (props) => {
-  const { classes, closeModal } = props;
-  const [state, setState] = React.useState({
+const Unlock = ({ closeModal }: { closeModal: () => void }) => {
+  const [state, setState] = React.useState<{
+    loading: boolean;
+    error: Error | null;
+  }>({
     loading: false,
     error: null,
   });
 
   React.useEffect(() => {
-    const error = (err) => {
+    const error = (err: Error) => {
       setState({ loading: false, error: err });
     };
 
@@ -90,8 +32,8 @@ const Unlock = (props) => {
         content: { connected: true },
       });
 
-      if (props.closeModal != null) {
-        props.closeModal();
+      if (closeModal != null) {
+        closeModal();
       }
     };
 
@@ -100,8 +42,8 @@ const Unlock = (props) => {
         type: CONFIGURE_SS,
         content: { connected: false },
       });
-      if (props.closeModal != null) {
-        props.closeModal();
+      if (closeModal != null) {
+        closeModal();
       }
     };
 
@@ -119,11 +61,14 @@ const Unlock = (props) => {
   }, []);
 
   return (
-    <div className={classes.root}>
-      <div className={classes.closeIcon} onClick={closeModal}>
+    <div className="relative flex h-auto flex-[1]">
+      <div
+        className="absolute -right-2 -top-2 cursor-pointer"
+        onClick={closeModal}
+      >
         <Close />
       </div>
-      <div className={classes.contentContainer}>
+      <div className="m-auto flex flex-wrap p-3 pt-40 text-center lg:pt-3">
         <Web3ReactProvider getLibrary={getLibrary}>
           <MyComponent closeModal={closeModal} />
         </Web3ReactProvider>
@@ -132,49 +77,35 @@ const Unlock = (props) => {
   );
 };
 
-function getLibrary(provider) {
+function getLibrary(provider: ExternalProvider) {
   const library = new Web3Provider(provider);
   library.pollingInterval = 8000;
   return library;
 }
 
 function onConnectionClicked(
-  currentConnector,
-  name,
-  setActivatingConnector,
-  activate
+  currentConnector: (typeof stores.accountStore.store)["connectorsByName"][keyof (typeof stores.accountStore.store)["connectorsByName"]],
+  name: keyof (typeof stores.accountStore.store)["connectorsByName"],
+  setActivatingConnector: (connect: AbstractConnector) => void,
+  activate: (
+    connector: AbstractConnector,
+    onError?: ((error: Error) => void) | undefined,
+    throwErrors?: boolean | undefined
+  ) => Promise<void>
 ) {
   const connectorsByName = stores.accountStore.getStore("connectorsByName");
   setActivatingConnector(currentConnector);
   activate(connectorsByName[name]);
 }
 
-function onDeactivateClicked(deactivate, connector) {
-  if (deactivate) {
-    deactivate();
-  }
-  if (connector && connector.close) {
-    connector.close();
-  }
-  stores.accountStore.setStore({ account: {}, web3context: null });
-  stores.emitter.emit(CONNECTION_DISCONNECTED);
-}
-
-function MyComponent(props) {
+function MyComponent({ closeModal }: { closeModal: () => void }) {
   const context = useWeb3React();
-  const localContext = stores.accountStore.getStore("web3context");
-  let localConnector = null;
-  // FIXME connector is always undefined
-  // if (localContext) {
-  //   localConnector = localContext.connector;
-  // }
-  const { connector, library, account, activate, deactivate, active, error } =
-    context;
+
+  const { connector, library, account, activate, active, error } = context;
   const connectorsByName = stores.accountStore.getStore("connectorsByName");
 
-  const { closeModal } = props;
-
-  const [activatingConnector, setActivatingConnector] = React.useState();
+  const [activatingConnector, setActivatingConnector] =
+    React.useState<AbstractConnector>();
   React.useEffect(() => {
     if (activatingConnector && activatingConnector === connector) {
       setActivatingConnector(undefined);
@@ -204,10 +135,12 @@ function MyComponent(props) {
       }}
     >
       {Object.keys(connectorsByName).map((name) => {
-        const currentConnector = connectorsByName[name];
+        const currentConnector =
+          connectorsByName[
+            name as keyof (typeof stores.accountStore.store)["connectorsByName"]
+          ];
         const activating = currentConnector === activatingConnector;
-        const connected =
-          currentConnector === connector || currentConnector === localConnector;
+        const connected = currentConnector === connector;
         const disabled = !!activatingConnector || !!error;
 
         let url;
@@ -272,7 +205,7 @@ function MyComponent(props) {
               onClick={() => {
                 onConnectionClicked(
                   currentConnector,
-                  name,
+                  name as keyof (typeof stores.accountStore.store)["connectorsByName"],
                   setActivatingConnector,
                   activate
                 );
@@ -334,4 +267,4 @@ function MyComponent(props) {
   );
 }
 
-export default withStyles(styles)(Unlock);
+export default Unlock;
