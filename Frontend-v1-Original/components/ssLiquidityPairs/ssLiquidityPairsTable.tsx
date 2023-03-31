@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { makeStyles } from "@mui/styles";
 import {
   Skeleton,
@@ -29,12 +29,17 @@ import {
   FilterList,
   Search,
   AddCircleOutline,
-  InfoOutlined,
   WarningOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
-import { Pair, BaseAsset, RouteAsset } from "../../stores/types/types";
+import {
+  Pair,
+  BaseAsset,
+  RouteAsset,
+  hasGauge,
+  isBaseAsset,
+} from "../../stores/types/types";
 
 const headCells = [
   { id: "pair", numeric: false, disablePadding: false, label: "Pair" },
@@ -88,12 +93,13 @@ function EnhancedTableHead(props: {
   classes: ReturnType<typeof useStyles>;
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (_e: any, property: OrderBy) => void;
+  onRequestSort: (_e: React.MouseEvent<unknown>, property: OrderBy) => void;
 }) {
   const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property: OrderBy) => (_e) => {
-    onRequestSort(_e, property);
-  };
+  const createSortHandler =
+    (property: OrderBy) => (_e: React.MouseEvent<unknown>) => {
+      onRequestSort(_e, property);
+    };
 
   return (
     <TableHead>
@@ -384,7 +390,19 @@ const getLocalToggles = () => {
   return localToggles;
 };
 
-const EnhancedTableToolbar = (props) => {
+interface PairsTableProps {
+  pairs: Pair[];
+}
+
+interface PairsTableToolbarProps {
+  setSearch: (search: string) => void;
+  setToggleActive: (toggleActive: boolean) => void;
+  setToggleActiveGauge: (toggleActiveGauge: boolean) => void;
+  setToggleStable: (toggleStable: boolean) => void;
+  setToggleVariable: (toggleVariable: boolean) => void;
+}
+
+const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
   const classes = useStyles();
   const router = useRouter();
 
@@ -400,12 +418,12 @@ const EnhancedTableToolbar = (props) => {
     localToggles.toggleVariable
   );
 
-  const onSearchChanged = (event) => {
+  const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
     props.setSearch(event.target.value);
   };
 
-  const onToggle = (event) => {
+  const onToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const localToggles = getLocalToggles();
 
     switch (event.target.name) {
@@ -447,9 +465,9 @@ const EnhancedTableToolbar = (props) => {
     router.push("/liquidity/create");
   };
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-  const handleClick = (event) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
@@ -588,7 +606,7 @@ const EnhancedTableToolbar = (props) => {
   );
 };
 
-export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
+export default function EnhancedTable({ pairs }: PairsTableProps) {
   const classes = useStyles();
   const router = useRouter();
 
@@ -609,7 +627,10 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
     localToggles.toggleVariable
   );
 
-  const handleRequestSort = (_e, property: OrderBy) => {
+  const handleRequestSort = (
+    _e: React.MouseEvent<unknown>,
+    property: OrderBy
+  ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -658,15 +679,20 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
     );
   }
 
-  const onView = (pair) => {
+  const onView = (pair: Pair) => {
     router.push(`/liquidity/${pair.address}`);
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (
+    _event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -703,16 +729,13 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
           if (toggleVariable !== true && pair.stable === false) {
             return false;
           }
-          if (
-            toggleActiveGauge === true &&
-            (!pair.gauge || !pair.gauge.address)
-          ) {
+          if (toggleActiveGauge === true && !pair.gauge) {
             return false;
           }
           if (toggleActive === true) {
             if (
-              !BigNumber(pair?.gauge?.balance).gt(0) &&
-              !BigNumber(pair?.balance).gt(0)
+              (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
+              (!pair.balance || !BigNumber(pair.balance).gt(0))
             ) {
               return false;
             }
@@ -959,13 +982,13 @@ export default function EnhancedTable({ pairs }: { pairs: Pair[] }) {
                         </div>
                       )}
                     </TableCell>
-                    {row && row.gauge && row.gauge.address && (
+                    {row && hasGauge(row) && (
                       <TableCell
                         className={(classes.cell, classes.hiddenMobile)}
                         align="right"
                       >
-                        {row &&
-                          row.gauge &&
+                        {row.gauge.reserve0 &&
+                          row.gauge.reserve1 &&
                           row.gauge.balance &&
                           row.gauge.totalSupply && (
                             <>
@@ -1271,12 +1294,23 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
 
   switch (orderBy) {
     case "balance":
-      if (!("balance" in a.token0 || "balance" in a.token1)) return 0;
-      let balanceA = BigNumber((a?.token0 as BaseAsset)?.balance)
-        .plus((a?.token1 as BaseAsset)?.balance)
+      if (
+        !isBaseAsset(a.token0) ||
+        !isBaseAsset(b.token0) ||
+        a.token0.balance === null ||
+        b.token0.balance === null ||
+        !isBaseAsset(a.token1) ||
+        !isBaseAsset(b.token1) ||
+        a.token1.balance === null ||
+        b.token1.balance === null
+      ) {
+        return 0;
+      }
+      let balanceA = BigNumber(a.token0.balance)
+        .plus(a.token1.balance)
         .toNumber();
-      let balanceB = BigNumber((b?.token0 as BaseAsset)?.balance)
-        .plus((b?.token1 as BaseAsset)?.balance)
+      let balanceB = BigNumber(b.token0.balance)
+        .plus(b.token1.balance)
         .toNumber();
 
       if (BigNumber(balanceB).lt(balanceA)) {
@@ -1297,27 +1331,37 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       return 0;
 
     case "poolBalance":
-      if (BigNumber(b?.balance).lt(a?.balance)) {
+      if (!a.balance || !b.balance) {
+        return 0;
+      }
+      if (BigNumber(b.balance).lt(a.balance)) {
         return -1;
       }
-      if (BigNumber(b?.balance).gt(a?.balance)) {
+      if (BigNumber(b.balance).gt(a.balance)) {
         return 1;
       }
       return 0;
 
     case "stakedBalance":
-      if (!(a && a.gauge)) {
+      if (!hasGauge(a)) {
         return 1;
       }
 
-      if (!(b && b.gauge)) {
+      if (!hasGauge(b)) {
         return -1;
       }
 
-      if (BigNumber(b?.gauge?.balance).lt(a?.gauge?.balance)) {
+      if (!a.gauge.balance) {
+        return 1;
+      }
+      if (!b.gauge.balance) {
         return -1;
       }
-      if (BigNumber(b?.gauge?.balance).gt(a?.gauge?.balance)) {
+
+      if (BigNumber(b.gauge.balance).lt(a.gauge.balance)) {
+        return -1;
+      }
+      if (BigNumber(b.gauge.balance).gt(a.gauge.balance)) {
         return 1;
       }
       return 0;
@@ -1335,19 +1379,26 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       return 0;
 
     case "stakedAmount":
-      if (!(a && a.gauge)) {
+      if (!hasGauge(a)) {
         return 1;
       }
 
-      if (!(b && b.gauge)) {
+      if (!hasGauge(b)) {
         return -1;
       }
 
-      let reserveAA = BigNumber(a?.gauge?.reserve0)
-        .plus(a?.gauge?.reserve1)
+      if (!a.gauge.reserve0 || !a.gauge.reserve1) {
+        return 1;
+      }
+      if (!b.gauge.reserve0 || !b.gauge.reserve1) {
+        return -1;
+      }
+
+      let reserveAA = BigNumber(a.gauge.reserve0)
+        .plus(a.gauge.reserve1)
         .toNumber();
-      let reserveBB = BigNumber(b?.gauge?.reserve0)
-        .plus(b?.gauge?.reserve1)
+      let reserveBB = BigNumber(b.gauge.reserve0)
+        .plus(b.gauge.reserve1)
         .toNumber();
 
       if (BigNumber(reserveBB).lt(reserveAA)) {

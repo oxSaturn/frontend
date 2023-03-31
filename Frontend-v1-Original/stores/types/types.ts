@@ -109,6 +109,8 @@ const hasGauge = (pair: Pair): pair is Gauge =>
   pair && pair.gauge !== undefined;
 const isGaugeReward = (reward: Gauge | VeDistReward): reward is Gauge =>
   reward && reward.rewardType !== "Distribution";
+const isBaseAsset = (asset: BaseAsset | RouteAsset): asset is BaseAsset =>
+  "balance" in asset;
 
 interface VeDistReward {
   token: VestNFT;
@@ -383,4 +385,4 @@ export type {
   FireBirdTokens,
 };
 
-export { hasGauge, isGaugeReward, TransactionStatus };
+export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };
