@@ -386,6 +386,7 @@
   top: 10px;
   border: 5px solid #212b48;
   border-radius: 100px;
+  height: 70px;
 }
 .img2Logo {
   position: absolute;
@@ -394,6 +395,7 @@
   top: 10px;
   border: 5px solid #212b48;
   border-radius: 100px;
+  height: 70px;
 }
 .doubleImages {
   display: flex;
