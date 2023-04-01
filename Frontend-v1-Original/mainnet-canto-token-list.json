@@ -222,5 +222,125 @@
     "logoURI": "https://assets.coingecko.com/coins/images/27606/large/IqwOmX-c_400x400.jpeg",
     "name": "Impermax",
     "symbol": "IBEX"
+  },
+  {
+    "address": "0xD32eB974468ed767338533842D2D4Cc90B9BAb46",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
+    "name": "qSTARS",
+    "symbol": "qSTARS"
+  },
+  {
+    "address": "0x9d6F2a9fDB32708e1AC07788cc29D6125ac73027",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
+    "name": "qATOM",
+    "symbol": "qATOM"
+  },
+  {
+    "address": "0xB5124FA2b2cF92B2D469b249433BA1c96BDF536D",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
+    "name": "qREGEN",
+    "symbol": "qREGEN"
+  },
+  {
+    "address": "0xF0965c8f0755CF080a61C91EDd6707F0532c8fE7",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/26857/small/quicksilver-logo-icon-render.png?1660484191",
+    "name": "QCK",
+    "symbol": "QCK"
+  },
+  {
+    "address": "0x205CF44075E77A3543abC690437F3b2819bc450a",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/markets/images/887/small/evmoswap.png?1654269660s",
+    "name": "stEVMOS",
+    "symbol": "stEVMOS"
+  },
+  {
+    "address": "0x4A2a90D444DbB7163B5861b772f882BbA394Ca67",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/26316/small/stATOM.png?1663309183",
+    "name": "stATOM",
+    "symbol": "stATOM"
+  },
+  {
+    "address": "0xe01C6D4987Fc8dCE22988DADa92d56dA701d0Fe0",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28700/small/stJUNO_800.png?1673414957",
+    "name": "stJUNO",
+    "symbol": "stJUNO"
+  },
+  {
+    "address": "0x3515F25AB7637adcF1b69F4D384ed5936B83431F",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28698/small/stOSMO_800.png?1673414720",
+    "name": "stOSMO",
+    "symbol": "stOSMO"
+  },
+  {
+    "address": "0x4AF57825b86Abf93D4F9D720bEF7c1C1b300A6F3",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/22363/small/stars.png?1645256657",
+    "name": "stSTARS",
+    "symbol": "stSTARS"
+  },
+  {
+    "address": "0x13974cf36984216C90D1F4FC815C156092feA396",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/27275/small/STRD_800.png?1663116708",
+    "name": "STRD",
+    "symbol": "STRD"
+  },
+  {
+    "address": "0x50dE24B3f0B3136C50FA8A3B8ebc8BD80a269ce5",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28289/small/B5712581-7546-47FA-8ECA-B256CD8F8F34.png?1669213326",
+    "name": "stkAtom",
+    "symbol": "stkAtom"
+  },
+  {
+    "address": "0xc8B4d3e67238e38B20d38908646fF6F4F48De5EC",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/14582/small/512_Light.png?1617149658",
+    "name": "xprt",
+    "symbol": "xprt"
+  },
+  {
+    "address": "0x15C3Eb3B621d1Bff62CbA1c9536B7c1AE9149b57",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/14879/small/Sentinel_512X512.png?1622174499",
+    "name": "DVPN",
+    "symbol": "DVPN"
+  },
+  {
+    "address": "0xF5b24c0093b65408ACE53df7ce86a02448d53b25",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/24023/small/evmos.png?1653958927",
+    "name": "EVMOS",
+    "symbol": "EVMOS"
+  },
+  {
+    "address": "0xc71aAf8e486e3F33841BB56Ca3FD2aC3fa8D29a8",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
+    "name": "WSTETH",
+    "symbol": "WSTETH"
   }
 ]
