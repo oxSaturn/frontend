@@ -342,5 +342,13 @@
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
     "name": "WSTETH",
     "symbol": "WSTETH"
+  },
+  {
+    "address": "0xc9BAA8cfdDe8E328787E29b4B078abf2DaDc2055",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/22568/small/cropped-FINALwithbrick-2-1-1.png?1642060468",
+    "name": "CRE8R",
+    "symbol": "CRE8R"
   }
 ]
