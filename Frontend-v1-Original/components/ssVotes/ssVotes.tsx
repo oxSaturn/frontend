@@ -288,7 +288,7 @@ export default function ssVotes() {
           <Typography variant="h1">Vote</Typography>
           <Typography variant="body2">
             Select your veNFT and use 100% of your votes for one or more pools
-            to earn bribes and trading fees (<span className="text-red-500">${filteredGauges.reduce((acc, row) => acc + row.gauge.tbv, 0).toFixed(2)}</span> in total).
+            to earn bribes and trading fees (<span className="text-cantoGreen">${filteredGauges.reduce((acc, row) => acc + row.gauge.tbv, 0).toFixed(2)}</span> in total).
           </Typography>
         </div>
       </div>
