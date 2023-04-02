@@ -10,9 +10,18 @@ import { ArrowBack } from "@mui/icons-material";
 import LockAmount from "./lockAmount";
 import LockDuration from "./lockDuration";
 import VestingInfo from "./vestingInfo";
+import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
-export default function existingLock({ nft, govToken, veToken }) {
-  const [futureNFT, setFutureNFT] = useState(null);
+export default function existingLock({
+  nft,
+  govToken,
+  veToken,
+}: {
+  nft: VestNFT;
+  govToken: GovToken | null;
+  veToken: VeToken | null;
+}) {
+  const [futureNFT, setFutureNFT] = useState<VestNFT | null>(null);
 
   const router = useRouter();
 
@@ -20,12 +29,14 @@ export default function existingLock({ nft, govToken, veToken }) {
     router.push("/vest");
   };
 
-  const updateLockAmount = (amount) => {
+  const updateLockAmount = (amount: string) => {
     if (amount === "") {
       let tmpNFT = {
+        id: "future",
         lockAmount: nft.lockAmount,
         lockValue: nft.lockValue,
         lockEnds: nft.lockEnds,
+        voted: false,
       };
 
       setFutureNFT(tmpNFT);
@@ -33,13 +44,15 @@ export default function existingLock({ nft, govToken, veToken }) {
     }
 
     let tmpNFT = {
+      id: "future",
       lockAmount: nft.lockAmount,
       lockValue: nft.lockValue,
       lockEnds: nft.lockEnds,
+      voted: false,
     };
 
     const now = moment();
-    const expiry = moment.unix(tmpNFT.lockEnds);
+    const expiry = moment.unix(+tmpNFT.lockEnds);
     const dayToExpire = expiry.diff(now, "days");
 
     tmpNFT.lockAmount = BigNumber(nft.lockAmount).plus(amount).toFixed(18);
@@ -51,18 +64,20 @@ export default function existingLock({ nft, govToken, veToken }) {
     setFutureNFT(tmpNFT);
   };
 
-  const updateLockDuration = (val) => {
+  const updateLockDuration = (val: string) => {
     let tmpNFT = {
+      id: "future",
       lockAmount: nft.lockAmount,
       lockValue: nft.lockValue,
       lockEnds: nft.lockEnds,
+      voted: false,
     };
 
     const now = moment();
     const expiry = moment(val);
     const dayToExpire = expiry.diff(now, "days");
 
-    tmpNFT.lockEnds = expiry.unix();
+    tmpNFT.lockEnds = expiry.unix().toString();
     tmpNFT.lockValue = BigNumber(tmpNFT.lockAmount)
       .times(parseInt(dayToExpire.toString()))
       .div(1460)
@@ -89,7 +104,7 @@ export default function existingLock({ nft, govToken, veToken }) {
       <LockDuration nft={nft} updateLockDuration={updateLockDuration} />
       <VestingInfo
         currentNFT={nft}
-        futureNFT={futureNFT}
+        futureNFT={futureNFT || undefined}
         veToken={veToken}
         showVestingStructure={false}
         govToken={govToken}

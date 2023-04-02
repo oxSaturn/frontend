@@ -51,22 +51,22 @@ function Setup() {
   const [fromAmountValue, setFromAmountValue] = useState("");
   const [fromAmountValueUsd, setFromAmountValueUsd] = useState("");
   const [fromAmountError, setFromAmountError] = useState<false | string>(false);
-  const [fromAssetValue, setFromAssetValue] = useState<BaseAsset>(null);
+  const [fromAssetValue, setFromAssetValue] = useState<BaseAsset | null>(null);
   const [fromAssetError, setFromAssetError] = useState<false | string>(false);
   const [fromAssetOptions, setFromAssetOptions] = useState<BaseAsset[]>([]);
 
   const [toAmountValue, setToAmountValue] = useState("");
   const [toAmountValueUsd, setToAmountValueUsd] = useState("");
-  const [toAmountError, setToAmountError] = useState(false);
-  const [toAssetValue, setToAssetValue] = useState<BaseAsset>(null);
-  const [toAssetError, setToAssetError] = useState(false);
+  const [toAmountError, setToAmountError] = useState<string | false>(false);
+  const [toAssetValue, setToAssetValue] = useState<BaseAsset | null>(null);
+  const [toAssetError, setToAssetError] = useState<string | false>(false);
   const [toAssetOptions, setToAssetOptions] = useState<BaseAsset[]>([]);
 
   const [slippage, setSlippage] = useState("2");
   const [slippageError, setSlippageError] = useState(false);
 
-  const [quoteError, setQuoteError] = useState(null);
-  const [quote, setQuote] = useState<QuoteSwapResponse>(null);
+  const [quoteError, setQuoteError] = useState<string | null | false>(null);
+  const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
 
   const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
 
@@ -119,7 +119,7 @@ function Setup() {
     };
 
     const quoteReturned = (val: QuoteSwapResponse) => {
-      if (!val) {
+      if (!val || !fromAssetValue || !toAssetValue) {
         setQuoteLoading(false);
         setQuote(null);
         setToAmountValue("");
@@ -127,6 +127,7 @@ function Setup() {
         setQuoteError(
           "Insufficient liquidity or no route available to complete swap"
         );
+        return;
       }
       if (
         val &&
@@ -168,7 +169,7 @@ function Setup() {
             : val.maxReturn.to.toLowerCase();
         const toUsdValue = BigNumber(val.maxReturn.totalTo)
           .div(10 ** toAssetValue.decimals)
-          .multipliedBy(tokenPrices.get(toAddressLookUp))
+          .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
           .toFixed(2);
         setToAmountValueUsd(toUsdValue);
         setQuote(val);
@@ -208,7 +209,7 @@ function Setup() {
       }
     };
 
-    const swapReturned = (event) => {
+    const swapReturned = () => {
       setLoading(false);
       setFromAmountValue("");
       setToAmountValue("");
@@ -251,17 +252,21 @@ function Setup() {
     quoteLoading,
   ]);
 
-  const onAssetSelect = (type, value) => {
+  const onAssetSelect = (type: string, value: BaseAsset) => {
     if (type === "From") {
-      let fromAmountValueWithNewDecimals: string;
-      if (fromAmountValue !== "" && value.decimals < fromAssetValue.decimals) {
+      let fromAmountValueWithNewDecimals: string | undefined;
+      if (
+        fromAssetValue &&
+        fromAmountValue !== "" &&
+        value.decimals < fromAssetValue.decimals
+      ) {
         fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
           value.decimals,
           BigNumber.ROUND_DOWN
         );
         setFromAmountValue(fromAmountValueWithNewDecimals);
       }
-      if (value.address === toAssetValue.address) {
+      if (value.address === toAssetValue?.address) {
         setToAssetValue(fromAssetValue);
         setFromAssetValue(toAssetValue);
         calculateReceiveAmount(
@@ -280,15 +285,15 @@ function Setup() {
       setFromAmountValueUsd(
         (
           parseFloat(fromAmountValue) *
-          tokenPrices.get(
+          (tokenPrices?.get(
             value.address === "CANTO"
               ? W_NATIVE_ADDRESS.toLowerCase()
               : value.address.toLowerCase()
-          )
+          ) ?? 0)
         ).toFixed(2)
       );
     } else {
-      if (value.address === fromAssetValue.address) {
+      if (value.address === fromAssetValue?.address) {
         setFromAssetError(false);
         setToAssetValue(fromAssetValue);
         calculateReceiveAmount(fromAmountValue, toAssetValue, fromAssetValue);
@@ -301,7 +306,7 @@ function Setup() {
     forceUpdate();
   };
 
-  const fromAmountChanged = (event) => {
+  const fromAmountChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFromAmountError(false);
     setFromAmountValue(event.target.value);
     if (event.target.value == "") {
@@ -313,35 +318,38 @@ function Setup() {
       setFromAmountValueUsd(
         (
           parseFloat(event.target.value) *
-          tokenPrices.get(
-            fromAssetValue.address === "CANTO"
+          (tokenPrices?.get(
+            fromAssetValue?.address === "CANTO"
               ? W_NATIVE_ADDRESS.toLowerCase()
-              : fromAssetValue.address.toLowerCase()
-          )
+              : fromAssetValue
+              ? fromAssetValue?.address.toLowerCase()
+              : ""
+          ) ?? 0)
         ).toFixed(2)
       );
       calculateReceiveAmount(event.target.value, fromAssetValue, toAssetValue);
     }
   };
 
-  const toAmountChanged = (event) => {};
+  const toAmountChanged = () => {};
 
-  const onSlippageChanged = (event) => {
-    if (event.target.value == "" || !isNaN(event.target.value)) {
+  const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.value == "" || !isNaN(+event.target.value)) {
       setSlippage(event.target.value);
     }
   };
 
   const calculateReceiveAmount = (
     amount: string,
-    from: BaseAsset,
-    to: BaseAsset
+    from: BaseAsset | null,
+    to: BaseAsset | null
   ) => {
     if (
       amount !== "" &&
       !isNaN(+amount) &&
-      to != null &&
-      parseFloat(amount) !== 0
+      to !== null &&
+      parseFloat(amount) !== 0 &&
+      from !== null
     ) {
       setQuoteLoading(true);
       setQuoteError(false);
@@ -391,9 +399,9 @@ function Setup() {
       error = true;
     } else {
       if (
-        !fromAssetValue.balance ||
-        isNaN(+fromAssetValue.balance) || // TODO probably dont neet it
-        BigNumber(fromAssetValue.balance).lte(0)
+        !fromAssetValue?.balance ||
+        isNaN(+fromAssetValue?.balance) || // TODO probably dont neet it
+        BigNumber(fromAssetValue?.balance).lte(0)
       ) {
         setFromAmountError("Invalid balance");
         error = true;
@@ -445,9 +453,9 @@ function Setup() {
       error = true;
     } else {
       if (
-        !fromAssetValue.balance ||
-        isNaN(+fromAssetValue.balance) || // TODO probably dont neet it
-        BigNumber(fromAssetValue.balance).lte(0)
+        !fromAssetValue?.balance ||
+        isNaN(+fromAssetValue?.balance) || // TODO probably dont neet it
+        BigNumber(fromAssetValue?.balance).lte(0)
       ) {
         setFromAmountError("Invalid balance");
         error = true;
@@ -488,25 +496,29 @@ function Setup() {
   };
 
   const setBalance100 = () => {
+    if (!fromAssetValue || fromAssetValue.balance === null) return;
     const am = BigNumber(fromAssetValue.balance).toString();
     setFromAmountValue(am);
     setFromAmountValueUsd(
       (
         parseFloat(am) *
-        tokenPrices.get(
-          fromAssetValue.address === "CANTO"
+        (tokenPrices?.get(
+          fromAssetValue?.address === "CANTO"
             ? W_NATIVE_ADDRESS.toLowerCase()
-            : fromAssetValue.address.toLowerCase()
-        )
+            : fromAssetValue
+            ? fromAssetValue.address.toLowerCase()
+            : ""
+        ) ?? 0)
       ).toFixed(2)
     );
     calculateReceiveAmount(am, fromAssetValue, toAssetValue);
   };
 
   const swapAssets = () => {
-    let fromAmountValueWithNewDecimals: string;
+    let fromAmountValueWithNewDecimals: string | undefined;
     const fa = fromAssetValue;
     const ta = toAssetValue;
+    if (!fa || !ta) return;
     if (fromAmountValue !== "" && ta.decimals < fa.decimals) {
       fromAmountValueWithNewDecimals = BigNumber(fromAmountValue).toFixed(
         ta.decimals,
@@ -519,11 +531,11 @@ function Setup() {
     setFromAmountValueUsd(
       (
         parseFloat(fromAmountValue) *
-        tokenPrices.get(
+        (tokenPrices?.get(
           ta.address === "CANTO"
             ? W_NATIVE_ADDRESS.toLowerCase()
             : ta.address.toLowerCase()
-        )
+        ) ?? 0)
       ).toFixed(2)
     );
     calculateReceiveAmount(
@@ -586,12 +598,12 @@ function Setup() {
         </div>
       );
     }
-    const totalFromInEth = BigNumber(quote.maxReturn.totalFrom).div(
-      10 ** fromAssetValue.decimals
-    );
-    const totalToInEth = BigNumber(quote.maxReturn.totalTo).div(
-      10 ** toAssetValue.decimals
-    );
+    const totalFromInEth = fromAssetValue
+      ? BigNumber(quote.maxReturn.totalFrom).div(10 ** fromAssetValue.decimals)
+      : BigNumber(0);
+    const totalToInEth = toAssetValue
+      ? BigNumber(quote.maxReturn.totalTo).div(10 ** toAssetValue.decimals)
+      : BigNumber(0);
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -615,7 +627,7 @@ function Setup() {
             <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
-        {(Math.abs(parseFloat(usdDiff)) > 10 ||
+        {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
           (parseFloat(fromAmountValueUsd) > 0 &&
             parseFloat(toAmountValueUsd) === 0)) && (
           <>
@@ -644,7 +656,12 @@ function Setup() {
     );
   };
 
-  const renderSmallInput = (type, amountValue, amountError, amountChanged) => {
+  const renderSmallInput = (
+    type: string,
+    amountValue: string,
+    amountError: boolean,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+  ) => {
     return (
       <div className="mb-1">
         <label htmlFor="slippage">Slippage</label>
@@ -669,16 +686,16 @@ function Setup() {
   };
 
   const renderMassiveInput = (
-    type,
-    amountValue,
-    amountValueUsd,
-    diffUsd,
-    amountError,
-    amountChanged,
-    assetValue,
-    assetError,
-    assetOptions,
-    onAssetSelect
+    type: string,
+    amountValue: string,
+    amountValueUsd: string,
+    diffUsd: string | undefined,
+    amountError: string | false,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    assetValue: BaseAsset | null,
+    assetError: string | false,
+    assetOptions: BaseAsset[],
+    onAssetSelect: (type: string, value: BaseAsset) => void
   ) => {
     return (
       <div className="relative mb-1">
@@ -859,10 +876,22 @@ function Setup() {
   );
 }
 
-function AssetSelect({ type, value, assetOptions, onSelect }) {
+function AssetSelect({
+  type,
+  value,
+  assetOptions,
+  onSelect,
+}: {
+  type: string;
+  value: BaseAsset | null;
+  assetOptions: BaseAsset[];
+  onSelect: (type: string, asset: BaseAsset) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filteredAssetOptions, setFilteredAssetOptions] = useState([]);
+  const [filteredAssetOptions, setFilteredAssetOptions] = useState<BaseAsset[]>(
+    []
+  );
 
   const [manageLocal, setManageLocal] = useState(false);
 
@@ -905,11 +934,11 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
     return () => {};
   }, [assetOptions, search]);
 
-  const onSearchChanged = async (event) => {
+  const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  const onLocalSelect = (type, asset) => {
+  const onLocalSelect = (type: string, asset: BaseAsset) => {
     setSearch("");
     setManageLocal(false);
     setOpen(false);
@@ -926,15 +955,15 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
     setManageLocal(!manageLocal);
   };
 
-  const deleteOption = (token) => {
+  const deleteOption = (token: BaseAsset) => {
     stores.stableSwapStore.removeBaseAsset(token);
   };
 
-  const viewOption = (token) => {
+  const viewOption = (token: BaseAsset) => {
     window.open(`${ETHERSCAN_URL}token/${token.address}`, "_blank");
   };
 
-  const renderManageOption = (type, asset, idx) => {
+  const renderManageOption = (type: string, asset: BaseAsset, idx: number) => {
     return (
       <MenuItem
         defaultValue={asset.address}
@@ -980,7 +1009,7 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
     );
   };
 
-  const renderAssetOption = (type, asset, idx) => {
+  const renderAssetOption = (type: string, asset: BaseAsset, idx: number) => {
     return (
       <MenuItem
         defaultValue={asset.address}
@@ -1083,8 +1112,8 @@ function AssetSelect({ type, value, assetOptions, onSelect }) {
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
-                    if (BigNumber(a.balance).lt(b.balance)) return 1;
-                    if (BigNumber(a.balance).gt(b.balance)) return -1;
+                    if (BigNumber(a.balance || 0).lt(b.balance || 0)) return 1;
+                    if (BigNumber(a.balance || 0).gt(b.balance || 0)) return -1;
                     if (a.symbol.toLowerCase() < b.symbol.toLowerCase())
                       return -1;
                     if (a.symbol.toLowerCase() > b.symbol.toLowerCase())
@@ -1151,8 +1180,8 @@ function RoutesDialog({
   open: boolean;
   paths: Path[] | undefined;
   tokens: FireBirdTokens | undefined;
-  fromAssetValue: BaseAsset;
-  toAssetValue: BaseAsset;
+  fromAssetValue: BaseAsset | null;
+  toAssetValue: BaseAsset | null;
   fromAmountValue: string;
   toAmountValue: string;
 }) {
@@ -1166,7 +1195,7 @@ function RoutesDialog({
       open={open}
       aria-labelledby="routes-presentation"
     >
-      {paths ? (
+      {paths && fromAssetValue && toAssetValue ? (
         <div className="relative flex w-full min-w-[576px] flex-col justify-between p-6">
           <div className="text-center">Routes</div>
           <div className="flex w-full items-center justify-between">
@@ -1222,7 +1251,11 @@ function RoutesDialog({
                     {path.swaps.map((swap, idx) => {
                       if (idx === path.swaps.length - 1) return null;
                       return (
-                        <div key={swap.to + idx}>{tokens[swap.to].symbol}</div>
+                        tokens && (
+                          <div key={swap.to + idx}>
+                            {tokens[swap.to].symbol}
+                          </div>
+                        )
                       );
                     })}
                   </div>

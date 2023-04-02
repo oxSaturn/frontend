@@ -31,7 +31,7 @@ export default async function handler(
       {
         method: "GET",
         headers: {
-          "API-KEY": process.env.FIREBIRD_API_KEY,
+          "API-KEY": process.env.FIREBIRD_API_KEY!,
         },
       }
     );

@@ -29,16 +29,20 @@ const Transition = React.forwardRef(function Transition(
 import classes from "./transactionQueue.module.css";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
-import { ITransaction } from "../../stores/types/types";
+import { ITransaction, TransactionStatus } from "../../stores/types/types";
 
-export default function TransactionQueue({ setQueueLength }) {
+export default function TransactionQueue({
+  setQueueLength,
+}: {
+  setQueueLength: (length: number) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [transactions, setTransactions] = useState<
     ITransaction["transactions"]
   >([]);
-  const [purpose, setPurpose] = useState(null);
-  const [type, setType] = useState(null);
-  const [action, setAction] = useState(null);
+  const [purpose, setPurpose] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
+  const [action, setAction] = useState<string | null>(null);
 
   const handleClose = () => {
     setOpen(false);
@@ -71,7 +75,7 @@ export default function TransactionQueue({ setQueueLength }) {
   ) => {
     let txs = transactions.map((tx) => {
       if (tx.uuid === params.uuid) {
-        tx.status = "PENDING";
+        tx.status = TransactionStatus.PENDING;
       }
       return tx;
     });
@@ -83,7 +87,7 @@ export default function TransactionQueue({ setQueueLength }) {
   ) => {
     let txs = transactions.map((tx) => {
       if (tx.uuid === params.uuid) {
-        tx.status = "SUBMITTED";
+        tx.status = TransactionStatus.SUBMITTED;
         tx.txHash = params.txHash;
       }
       return tx;
@@ -96,7 +100,7 @@ export default function TransactionQueue({ setQueueLength }) {
   ) => {
     let txs = transactions.map((tx) => {
       if (tx.uuid === params.uuid) {
-        tx.status = "CONFIRMED";
+        tx.status = TransactionStatus.CONFIRMED;
         tx.txHash = params.txHash;
         tx.description = tx.description;
       }
@@ -110,7 +114,7 @@ export default function TransactionQueue({ setQueueLength }) {
   ) => {
     let txs = transactions.map((tx) => {
       if (tx.uuid === params.uuid) {
-        tx.status = "REJECTED";
+        tx.status = TransactionStatus.REJECTED;
         tx.error = params.error;
       }
       return tx;
@@ -160,7 +164,7 @@ export default function TransactionQueue({ setQueueLength }) {
     };
   }, [transactions]);
 
-  const renderDone = (txs) => {
+  const renderDone = (txs: ITransaction["transactions"]) => {
     if (
       !(
         transactions &&
@@ -237,7 +241,7 @@ export default function TransactionQueue({ setQueueLength }) {
     );
   };
 
-  const renderTransactions = (transactions) => {
+  const renderTransactions = (transactions: ITransaction["transactions"]) => {
     if (
       transactions &&
       transactions.filter((tx) => {

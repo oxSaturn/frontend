@@ -21,6 +21,7 @@ import BigNumber from "bignumber.js";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
+import { Gauge, VeDistReward, isGaugeReward } from "../../stores/types/types";
 
 const headCells = [
   { id: "reward", numeric: false, disablePadding: false, label: "Pool" },
@@ -42,13 +43,24 @@ const headCells = [
     disablePadding: false,
     label: "Actions",
   },
-];
+] as const;
 
-function EnhancedTableHead(props) {
-  const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
+type OrderBy = (typeof headCells)[number]["id"];
+
+function EnhancedTableHead({
+  order,
+  orderBy,
+  onRequestSort,
+}: {
+  order: "asc" | "desc";
+  orderBy: OrderBy;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: OrderBy) => void;
+}) {
+  const classes = useStyles();
+  const createSortHandler =
+    (property: OrderBy) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
 
   return (
     <TableHead>
@@ -81,13 +93,6 @@ function EnhancedTableHead(props) {
     </TableHead>
   );
 }
-
-EnhancedTableHead.propTypes = {
-  classes: PropTypes.object.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
-};
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -312,26 +317,34 @@ export default function EnhancedTable({
   rewards,
   tokenID,
 }: {
-  rewards: (typeof stores.stableSwapStore)["store"]["rewards"][];
+  rewards: (Gauge | VeDistReward)[];
   tokenID: string;
 }) {
   const classes = useStyles();
 
-  const [order, setOrder] = React.useState("desc");
-  const [orderBy, setOrderBy] = React.useState("balance");
+  const [order, setOrder] = React.useState<"asc" | "desc">("desc");
+  const [orderBy, setOrderBy] = React.useState<OrderBy>("balance");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const handleRequestSort = (event, property) => {
+  const handleRequestSort = (
+    event: React.MouseEvent<unknown>,
+    property: OrderBy
+  ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -380,17 +393,12 @@ export default function EnhancedTable({
     );
   }
 
-  const onClaim = (reward) => {
+  const onClaim = (reward: Gauge | VeDistReward) => {
     if (reward.rewardType === "Bribe") {
       stores.dispatcher.dispatch({
         type: ACTIONS.CLAIM_BRIBE,
         content: { pair: reward, tokenID },
       });
-      // } else if (reward.rewardType === "Fees") {
-      //   stores.dispatcher.dispatch({
-      //     type: ACTIONS.CLAIM_PAIR_FEES,
-      //     content: { pair: reward, tokenID },
-      //   });
     } else if (reward.rewardType === "Reward") {
       stores.dispatcher.dispatch({
         type: ACTIONS.CLAIM_REWARD,
@@ -417,7 +425,6 @@ export default function EnhancedTable({
             aria-label="enhanced table"
           >
             <EnhancedTableHead
-              classes={classes}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
@@ -436,102 +443,107 @@ export default function EnhancedTable({
                       className={classes.assetTableRow}
                     >
                       <TableCell className={classes.cell}>
-                        {[
-                          "Bribe",
-                          // "Fees",
-                          "Reward",
-                        ].includes(row.rewardType) && (
-                          <div className={classes.inline}>
-                            <div className={classes.doubleImages}>
-                              <img
-                                className={classes.img1Logo}
-                                src={
-                                  row && row.token0 && row.token0.logoURI
-                                    ? row.token0.logoURI
-                                    : ``
-                                }
-                                width="37"
-                                height="37"
-                                alt=""
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).onerror = null;
-                                  (e.target as HTMLImageElement).src =
-                                    "/tokens/unknown-logo.png";
-                                }}
-                              />
-                              <img
-                                className={classes.img2Logo}
-                                src={
-                                  row && row.token1 && row.token1.logoURI
-                                    ? row.token1.logoURI
-                                    : ``
-                                }
-                                width="37"
-                                height="37"
-                                alt=""
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).onerror = null;
-                                  (e.target as HTMLImageElement).src =
-                                    "/tokens/unknown-logo.png";
-                                }}
-                              />
+                        {isGaugeReward(row) &&
+                          ["Bribe", "Reward"].includes(
+                            row.rewardType ?? ""
+                          ) && (
+                            <div className={classes.inline}>
+                              <div className={classes.doubleImages}>
+                                <img
+                                  className={classes.img1Logo}
+                                  src={
+                                    row && row.token0 && row.token0.logoURI
+                                      ? row.token0.logoURI
+                                      : ``
+                                  }
+                                  width="37"
+                                  height="37"
+                                  alt=""
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).onerror =
+                                      null;
+                                    (e.target as HTMLImageElement).src =
+                                      "/tokens/unknown-logo.png";
+                                  }}
+                                />
+                                <img
+                                  className={classes.img2Logo}
+                                  src={
+                                    row && row.token1 && row.token1.logoURI
+                                      ? row.token1.logoURI
+                                      : ``
+                                  }
+                                  width="37"
+                                  height="37"
+                                  alt=""
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).onerror =
+                                      null;
+                                    (e.target as HTMLImageElement).src =
+                                      "/tokens/unknown-logo.png";
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <Typography
+                                  variant="h2"
+                                  noWrap
+                                  className={classes.textSpaced}
+                                >
+                                  {row?.symbol}
+                                </Typography>
+                                <Typography
+                                  variant="h5"
+                                  className={classes.textSpaced}
+                                  color="textSecondary"
+                                >
+                                  {row?.rewardType}
+                                </Typography>
+                              </div>
                             </div>
-                            <div>
-                              <Typography
-                                variant="h2"
-                                noWrap
-                                className={classes.textSpaced}
-                              >
-                                {row?.symbol}
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                className={classes.textSpaced}
-                                color="textSecondary"
-                              >
-                                {row?.rewardType}
-                              </Typography>
+                          )}
+                        {!isGaugeReward(row) &&
+                          ["Distribution"].includes(row.rewardType ?? "") && (
+                            <div className={classes.inline}>
+                              <div className={classes.doubleImages}>
+                                <img
+                                  className={classes.img1Logo}
+                                  src={
+                                    row &&
+                                    row.lockToken &&
+                                    row.lockToken.logoURI
+                                      ? row.lockToken.logoURI
+                                      : ``
+                                  }
+                                  width="37"
+                                  height="37"
+                                  alt=""
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).onerror =
+                                      null;
+                                    (e.target as HTMLImageElement).src =
+                                      "/tokens/unknown-logo.png";
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <Typography
+                                  variant="h2"
+                                  noWrap
+                                  className={classes.textSpaced}
+                                >
+                                  {row?.lockToken?.symbol}
+                                </Typography>
+                                <Typography
+                                  variant="h5"
+                                  className={classes.textSpaced}
+                                  color="textSecondary"
+                                >
+                                  {row?.rewardType}
+                                </Typography>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        {["Distribution"].includes(row.rewardType) && (
-                          <div className={classes.inline}>
-                            <div className={classes.doubleImages}>
-                              <img
-                                className={classes.img1Logo}
-                                src={
-                                  row && row.lockToken && row.lockToken.logoURI
-                                    ? row.lockToken.logoURI
-                                    : ``
-                                }
-                                width="37"
-                                height="37"
-                                alt=""
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).onerror = null;
-                                  (e.target as HTMLImageElement).src =
-                                    "/tokens/unknown-logo.png";
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <Typography
-                                variant="h2"
-                                noWrap
-                                className={classes.textSpaced}
-                              >
-                                {row?.lockToken?.symbol}
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                className={classes.textSpaced}
-                                color="textSecondary"
-                              >
-                                {row?.rewardType}
-                              </Typography>
-                            </div>
-                          </div>
-                        )}
+                          )}
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
                         <div>
@@ -549,7 +561,7 @@ export default function EnhancedTable({
                                     {formatCurrency(
                                       BigNumber(row.gauge.balance)
                                         .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve0)
+                                        .times(row.gauge.reserve0 ?? 0)
                                     )}
                                   </Typography>
                                   <Typography
@@ -568,7 +580,7 @@ export default function EnhancedTable({
                                     {formatCurrency(
                                       BigNumber(row.gauge.balance)
                                         .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve1)
+                                        .times(row.gauge.reserve1 ?? 0)
                                     )}
                                   </Typography>
                                   <Typography
@@ -581,51 +593,6 @@ export default function EnhancedTable({
                                 </div>
                               </>
                             )}
-                          {/* {row &&
-                            row.rewardType === "Fees" &&
-                            row.balance &&
-                            row.totalSupply && (
-                              <>
-                                <div className={classes.inlineEnd}>
-                                  <Typography
-                                    variant="h2"
-                                    className={classes.textSpaced}
-                                  >
-                                    {formatCurrency(
-                                      BigNumber(row.balance)
-                                        .div(row.totalSupply)
-                                        .times(row.reserve0)
-                                    )}
-                                  </Typography>
-                                  <Typography
-                                    variant="h5"
-                                    className={`${classes.textSpaced} ${classes.symbol}`}
-                                    color="textSecondary"
-                                  >
-                                    {row.token0.symbol}
-                                  </Typography>
-                                </div>
-                                <div className={classes.inlineEnd}>
-                                  <Typography
-                                    variant="h5"
-                                    className={classes.textSpaced}
-                                  >
-                                    {formatCurrency(
-                                      BigNumber(row.balance)
-                                        .div(row.totalSupply)
-                                        .times(row.reserve1)
-                                    )}
-                                  </Typography>
-                                  <Typography
-                                    variant="h5"
-                                    className={`${classes.textSpaced} ${classes.symbol}`}
-                                    color="textSecondary"
-                                  >
-                                    {row.token1.symbol}
-                                  </Typography>
-                                </div>
-                              </>
-                            )} */}
                           {row &&
                             row.rewardType === "Reward" &&
                             row.gauge &&
@@ -640,7 +607,7 @@ export default function EnhancedTable({
                                     {formatCurrency(
                                       BigNumber(row.gauge.balance)
                                         .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve0)
+                                        .times(row.gauge.reserve0 ?? 0)
                                     )}
                                   </Typography>
                                   <Typography
@@ -659,7 +626,7 @@ export default function EnhancedTable({
                                     {formatCurrency(
                                       BigNumber(row.gauge.balance)
                                         .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve1)
+                                        .times(row.gauge.reserve1 ?? 0)
                                     )}
                                   </Typography>
                                   <Typography
@@ -672,25 +639,27 @@ export default function EnhancedTable({
                                 </div>
                               </>
                             )}
-                          {row && row.rewardType === "Distribution" && (
-                            <>
-                              <div className={classes.inlineEnd}>
-                                <Typography
-                                  variant="h5"
-                                  className={classes.textSpaced}
-                                >
-                                  {formatCurrency(row.token?.lockValue)}
-                                </Typography>
-                                <Typography
-                                  variant="h5"
-                                  className={`${classes.textSpaced} ${classes.symbol}`}
-                                  color="textSecondary"
-                                >
-                                  {row.lockToken.symbol}
-                                </Typography>
-                              </div>
-                            </>
-                          )}
+                          {row &&
+                            !isGaugeReward(row) &&
+                            row.rewardType === "Distribution" && (
+                              <>
+                                <div className={classes.inlineEnd}>
+                                  <Typography
+                                    variant="h5"
+                                    className={classes.textSpaced}
+                                  >
+                                    {formatCurrency(row.token?.lockValue)}
+                                  </Typography>
+                                  <Typography
+                                    variant="h5"
+                                    className={`${classes.textSpaced} ${classes.symbol}`}
+                                    color="textSecondary"
+                                  >
+                                    {row.lockToken.symbol}
+                                  </Typography>
+                                </div>
+                              </>
+                            )}
                         </div>
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
@@ -737,74 +706,6 @@ export default function EnhancedTable({
                                 </div>
                               );
                             })}
-                          {/* {row && row.rewardType === "Fees" && (
-                            <>
-                              <div className={classes.inlineEnd}>
-                                <img
-                                  className={classes.imgLogo}
-                                  src={
-                                    row.token0 && row.token0.logoURI
-                                      ? row.token0.logoURI
-                                      : ``
-                                  }
-                                  width="24"
-                                  height="24"
-                                  alt=""
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).onerror =
-                                      null;
-                                    (e.target as HTMLImageElement).src =
-                                      "/tokens/unknown-logo.png";
-                                  }}
-                                />
-                                <Typography
-                                  variant="h2"
-                                  className={classes.textSpacedPadded}
-                                >
-                                  {formatCurrency(row.claimable0)}
-                                </Typography>
-                                <Typography
-                                  variant="h5"
-                                  className={classes.textSpacedPadded}
-                                  color="textSecondary"
-                                >
-                                  {row.token0?.symbol}
-                                </Typography>
-                              </div>
-                              <div className={classes.inlineEnd}>
-                                <img
-                                  className={classes.imgLogo}
-                                  src={
-                                    row.token1 && row.token1.logoURI
-                                      ? row.token1.logoURI
-                                      : ``
-                                  }
-                                  width="24"
-                                  height="24"
-                                  alt=""
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).onerror =
-                                      null;
-                                    (e.target as HTMLImageElement).src =
-                                      "/tokens/unknown-logo.png";
-                                  }}
-                                />
-                                <Typography
-                                  variant="h2"
-                                  className={classes.textSpacedPadded}
-                                >
-                                  {formatCurrency(row.claimable1)}
-                                </Typography>
-                                <Typography
-                                  variant="h5"
-                                  className={classes.textSpacedPadded}
-                                  color="textSecondary"
-                                >
-                                  {row.token1?.symbol}
-                                </Typography>
-                              </div>
-                            </>
-                          )} */}
                           {row && row.rewardType === "Reward" && (
                             <>
                               <div className={classes.inlineEnd}>
@@ -824,25 +725,27 @@ export default function EnhancedTable({
                               </div>
                             </>
                           )}
-                          {row && row.rewardType === "Distribution" && (
-                            <>
-                              <div className={classes.inlineEnd}>
-                                <Typography
-                                  variant="h5"
-                                  className={classes.textSpaced}
-                                >
-                                  {formatCurrency(row.earned)}
-                                </Typography>
-                                <Typography
-                                  variant="h5"
-                                  className={`${classes.textSpaced} ${classes.symbol}`}
-                                  color="textSecondary"
-                                >
-                                  {row?.lockToken?.symbol}
-                                </Typography>
-                              </div>
-                            </>
-                          )}
+                          {row &&
+                            !isGaugeReward(row) &&
+                            row.rewardType === "Distribution" && (
+                              <>
+                                <div className={classes.inlineEnd}>
+                                  <Typography
+                                    variant="h5"
+                                    className={classes.textSpaced}
+                                  >
+                                    {formatCurrency(row.earned)}
+                                  </Typography>
+                                  <Typography
+                                    variant="h5"
+                                    className={`${classes.textSpaced} ${classes.symbol}`}
+                                    color="textSecondary"
+                                  >
+                                    {row?.lockToken?.symbol}
+                                  </Typography>
+                                </div>
+                              </>
+                            )}
                         </div>
                       </TableCell>
                       <TableCell className={classes.cell} align="right">
@@ -876,7 +779,11 @@ export default function EnhancedTable({
   );
 }
 
-function descendingComparator(a, b, orderBy) {
+function descendingComparator(
+  a: Gauge | VeDistReward,
+  b: Gauge | VeDistReward,
+  orderBy: OrderBy
+) {
   if (!a || !b) {
     return 0;
   }
@@ -886,31 +793,35 @@ function descendingComparator(a, b, orderBy) {
 
   switch (orderBy) {
     case "reward":
-      if (b.rewardType < a.rewardType) {
-        return -1;
+      if (a.rewardType && b.rewardType) {
+        if (b.rewardType < a.rewardType) {
+          return -1;
+        }
+        if (b.rewardType > a.rewardType) {
+          return 1;
+        }
       }
-      if (b.rewardType > a.rewardType) {
-        return 1;
-      }
-      if (b.symbol < a.symbol) {
-        return -1;
-      }
-      if (b.symbol > a.symbol) {
-        return 1;
+      if (isGaugeReward(a) && isGaugeReward(b)) {
+        if (b.symbol < a.symbol) {
+          return -1;
+        }
+        if (b.symbol > a.symbol) {
+          return 1;
+        }
       }
       return 0;
 
     case "balance":
-      if (a.rewardType === "Bribe") {
-        aAmount = a.gauge.balance;
-      } else {
-        aAmount = a.balance;
+      if (isGaugeReward(a) && a.rewardType === "Bribe" && a.gauge.balance) {
+        aAmount = +a.gauge.balance;
+      } else if (isGaugeReward(a) && a.balance) {
+        aAmount = +a.balance;
       }
 
-      if (b.rewardType === "Bribe") {
-        bAmount = b.gauge.balance;
-      } else {
-        bAmount = b.balance;
+      if (isGaugeReward(b) && b.rewardType === "Bribe" && b.gauge.balance) {
+        bAmount = +b.gauge.balance;
+      } else if (isGaugeReward(b) && b.balance) {
+        bAmount = +b.balance;
       }
 
       if (BigNumber(bAmount).lt(aAmount)) {
@@ -923,13 +834,13 @@ function descendingComparator(a, b, orderBy) {
 
     case "earned":
       if (a.rewardType === "Bribe") {
-        aAmount = a.gauge.bribes.length;
+        aAmount = a.gauge?.bribes.length;
       } else {
         aAmount = 2;
       }
 
       if (b.rewardType === "Bribe") {
-        bAmount = b.gauge.bribes.length;
+        bAmount = b.gauge?.bribes.length;
       } else {
         bAmount = 2;
       }
@@ -947,14 +858,19 @@ function descendingComparator(a, b, orderBy) {
   }
 }
 
-function getComparator(order, orderBy) {
+function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
   return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    ? (a: Gauge | VeDistReward, b: Gauge | VeDistReward) =>
+        descendingComparator(a, b, orderBy)
+    : (a: Gauge | VeDistReward, b: Gauge | VeDistReward) =>
+        -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
+function stableSort(
+  array: (Gauge | VeDistReward)[],
+  comparator: (a: Gauge | VeDistReward, b: Gauge | VeDistReward) => number
+) {
+  const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) return order;

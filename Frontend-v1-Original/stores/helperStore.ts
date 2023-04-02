@@ -259,7 +259,7 @@ class Helper {
   };
 
   resolveUnstoppableDomain = async () => {
-    const address = stores.accountStore.getStore("account").address;
+    const address = stores.accountStore.getStore("account")?.address;
     if (!address) return undefined;
     const res = await fetch("/api/u-domains", {
       method: "POST",

@@ -14,16 +14,23 @@ import BigNumber from "bignumber.js";
 import classes from "./ssVest.module.css";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
+import { VestNFT } from "../../stores/types/types";
 
-export default function ffLockDuration({ nft, updateLockDuration }) {
-  const inputEl = useRef(null);
+export default function ffLockDuration({
+  nft,
+  updateLockDuration,
+}: {
+  nft: VestNFT;
+  updateLockDuration: (arg: string) => void;
+}) {
+  const inputEl = useRef<HTMLInputElement | null>(null);
   const [lockLoading, setLockLoading] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
     moment().add(8, "days").format("YYYY-MM-DD")
   );
   const [selectedDateError, setSelectedDateError] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(null);
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -49,19 +56,19 @@ export default function ffLockDuration({ nft, updateLockDuration }) {
 
   useEffect(() => {
     if (nft && nft.lockEnds) {
-      setSelectedDate(moment.unix(nft.lockEnds).format("YYYY-MM-DD"));
+      setSelectedDate(moment.unix(+nft.lockEnds).format("YYYY-MM-DD"));
       setSelectedValue(null);
     }
   }, [nft]);
 
-  const handleDateChange = (event) => {
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedDate(event.target.value);
     setSelectedValue(null);
 
     updateLockDuration(event.target.value);
   };
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedValue(event.target.value);
 
     let days = 0;
@@ -100,21 +107,18 @@ export default function ffLockDuration({ nft, updateLockDuration }) {
   };
 
   const focus = () => {
-    inputEl.current.focus();
+    inputEl.current?.focus();
   };
 
   let min = moment().add(7, "days").format("YYYY-MM-DD");
   if (BigNumber(nft?.lockEnds).gt(0)) {
-    min = moment.unix(nft?.lockEnds).format("YYYY-MM-DD");
+    min = moment.unix(+nft?.lockEnds).format("YYYY-MM-DD");
   }
 
   const renderMassiveInput = (
-    type,
-    amountValue,
-    amountError,
-    amountChanged,
-    balance,
-    logo
+    amountValue: string,
+    amountError: boolean,
+    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className={classes.textField}>
@@ -164,14 +168,7 @@ export default function ffLockDuration({ nft, updateLockDuration }) {
   return (
     <div className={classes.someContainer}>
       <div className={classes.inputsContainer3}>
-        {renderMassiveInput(
-          "lockDuration",
-          selectedDate,
-          selectedDateError,
-          handleDateChange,
-          null,
-          null
-        )}
+        {renderMassiveInput(selectedDate, selectedDateError, handleDateChange)}
         <div className={classes.inline}>
           <Typography className={classes.expiresIn}>Expires: </Typography>
           <RadioGroup

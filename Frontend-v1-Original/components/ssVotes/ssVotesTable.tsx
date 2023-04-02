@@ -15,7 +15,7 @@ import {
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import { Pair, Vote, VestNFT } from "../../stores/types/types";
+import { Gauge, Vote, VestNFT } from "../../stores/types/types";
 
 const headCells = [
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
@@ -68,12 +68,12 @@ type OrderBy = (typeof headCells)[number]["id"];
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (event: any, property: OrderBy) => void;
+  onRequestSort: (event: undefined, property: OrderBy) => void;
 }) {
   const { order, orderBy, onRequestSort } = props;
 
-  const createSortHandler = (property: OrderBy) => (event) => {
-    onRequestSort(event, property);
+  const createSortHandler = (property: OrderBy) => () => {
+    onRequestSort(undefined, property);
   };
 
   return (
@@ -114,7 +114,7 @@ export default function EnhancedTable({
   defaultVotes,
   token,
 }: {
-  gauges: Pair[];
+  gauges: Gauge[];
   setParentSliderValues: React.Dispatch<
     React.SetStateAction<
       (Pick<Vote, "address"> & {
@@ -130,9 +130,13 @@ export default function EnhancedTable({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
   const [disabledSort, setDisabledSort] = useState(false);
-  const votesRef = useRef(null);
+  const votesRef = useRef<Gauge[] | null>(null);
 
-  const onSliderChange = (event, value, asset) => {
+  const onSliderChange = (
+    event: Event,
+    value: number | number[],
+    asset: Gauge
+  ) => {
     if (
       orderBy === "mvp" ||
       orderBy === "myVotes" ||
@@ -143,7 +147,7 @@ export default function EnhancedTable({
     let newSliderValues = [...defaultVotes];
 
     newSliderValues = newSliderValues.map((val) => {
-      if (asset?.address === val.address) {
+      if (asset?.address === val.address && !Array.isArray(value)) {
         val.value = value;
       }
       return val;
@@ -152,7 +156,7 @@ export default function EnhancedTable({
     setParentSliderValues(newSliderValues);
   };
 
-  const handleRequestSort = (event, property: OrderBy) => {
+  const handleRequestSort = (event: undefined, property: OrderBy) => {
     if (
       disabledSort &&
       (property === "mvp" ||
@@ -168,11 +172,16 @@ export default function EnhancedTable({
     setOrderBy(property);
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -180,7 +189,7 @@ export default function EnhancedTable({
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, gauges.length - page * rowsPerPage);
 
-  const sortedGauges = useMemo<Pair[]>(() => {
+  const sortedGauges = useMemo(() => {
     if (disabledSort) {
       return votesRef.current;
     }
@@ -241,7 +250,7 @@ export default function EnhancedTable({
             onRequestSort={handleRequestSort}
           />
           <TableBody>
-            {sortedGauges.map((row) => (
+            {sortedGauges?.map((row) => (
               <VotesRow
                 row={row}
                 token={token}
@@ -277,10 +286,10 @@ function VotesRow({
   defaultVotes,
   onSliderChange,
 }: {
-  row: Pair;
+  row: Gauge;
   token: VestNFT;
   defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
-  onSliderChange: (event: any, value: any, asset: any) => void;
+  onSliderChange: (event: Event, value: number | number[], row: Gauge) => void;
 }) {
   if (!row) {
     return null;
@@ -295,23 +304,23 @@ function VotesRow({
 
   let rewardEstimate: number;
   const votesCasting = (sliderValue / 100) * parseFloat(token?.lockValue);
-  if (votesCasting > 0) {
+  if (votesCasting > 0 && row.gauge.weight) {
     const divideBy = token?.voted
-      ? parseFloat(row?.gauge?.weight)
-      : votesCasting + parseFloat(row?.gauge?.weight);
+      ? parseFloat(row.gauge.weight)
+      : votesCasting + parseFloat(row.gauge.weight);
 
     rewardEstimate =
-      row.gauge?.bribesInUsd > 0 && sliderValue > 0
-        ? (row.gauge?.bribesInUsd * votesCasting) / divideBy
+      row.gauge.tbv > 0 && sliderValue > 0
+        ? (row.gauge.tbv * votesCasting) / divideBy
         : 0;
   }
   const rewardPerThousand =
-    parseFloat(row?.gauge?.weight) > 0
-      ? (row.gauge.bribesInUsd / parseFloat(row?.gauge?.weight)) * 1000
+    row.gauge.weight && parseFloat(row.gauge.weight) > 0
+      ? (row.gauge.tbv / parseFloat(row.gauge.weight)) * 1000
       : 0;
   return useMemo(() => {
     return (
-      <TableRow key={row?.gauge?.address}>
+      <TableRow key={row.gauge.address}>
         <TableCell>
           <div className="flex items-center">
             <div className="relative flex h-[35px] w-[70px]">
@@ -350,42 +359,42 @@ function VotesRow({
             </div>
             <div>
               <Typography variant="h2" className="text-xs font-extralight">
-                {row?.symbol}
+                {row.symbol}
               </Typography>
               <Typography
                 variant="h5"
                 className="text-xs font-extralight"
                 color="textSecondary"
               >
-                {row?.isStable ? "Stable Pool" : "Volatile Pool"}
+                {row.isStable ? "Stable Pool" : "Volatile Pool"}
               </Typography>
             </div>
           </div>
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            {formatCurrency(row?.gauge?.weight)}
+            {formatCurrency(row.gauge.weight)}
           </Typography>
           <Typography
             variant="h5"
             className="text-xs font-extralight"
             color="textSecondary"
           >
-            {formatCurrency(row?.gauge?.weightPercent)} %
+            {formatCurrency(row.gauge.weightPercent)} %
           </Typography>
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            {formatCurrency(row?.gauge?.votingApr)} %
+            {formatCurrency(row.gauge.apr)} %
           </Typography>
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            ${formatCurrency(row?.gauge?.bribesInUsd)}
+            ${formatCurrency(row.gauge.tbv)}
           </Typography>
         </TableCell>
         <TableCell align="right">
-          {row?.gauge?.bribes.map((bribe, idx) => {
+          {row.gauge.bribes.map((bribe, idx) => {
             return (
               <div
                 className="flex items-center justify-end"
@@ -411,8 +420,8 @@ function VotesRow({
               <Typography variant="h2" className="text-xs font-extralight">
                 $
                 {formatCurrency(
-                  rewardPerThousand > row.gauge.bribesInUsd
-                    ? row.gauge.bribesInUsd
+                  rewardPerThousand > row.gauge.tbv
+                    ? row.gauge.tbv
                     : rewardPerThousand
                 )}
               </Typography>
@@ -459,8 +468,8 @@ function VotesRow({
 }
 
 function descendingComparator(
-  a: Pair,
-  b: Pair,
+  a: Gauge,
+  b: Gauge,
   orderBy: OrderBy,
   defaultVotes?: Array<Pick<Vote, "address"> & { value: number }>,
   token?: VestNFT
@@ -471,64 +480,60 @@ function descendingComparator(
 
   switch (orderBy) {
     case "votingAPR":
-      if (BigNumber(b?.gauge?.votingApr).lt(a?.gauge?.votingApr)) {
+      if (BigNumber(b.gauge.apr).lt(a.gauge.apr)) {
         return -1;
       }
-      if (BigNumber(b?.gauge?.votingApr).gt(a?.gauge?.votingApr)) {
+      if (BigNumber(b.gauge.apr).gt(a.gauge.apr)) {
         return 1;
       }
       return 0;
 
     case "rewardEstimate":
-      const sliderValueA = defaultVotes.find(
+      const sliderValueA = defaultVotes?.find(
         (el) => el.address === a?.address
       )?.value;
-      const sliderValueB = defaultVotes.find(
+      const sliderValueB = defaultVotes?.find(
         (el) => el.address === b?.address
       )?.value;
-      let rewardEstimateA: number;
-      let rewardEstimateB: number;
+      let rewardEstimateA: number | undefined;
+      let rewardEstimateB: number | undefined;
 
       const votesCastingA =
-        (sliderValueA / 100) * parseFloat(token?.lockValue ?? "0");
-      if (votesCastingA > 0) {
+        (sliderValueA ?? 0 / 100) * parseFloat(token?.lockValue ?? "0");
+      if (votesCastingA > 0 && a.gauge.weight && sliderValueA) {
         const divideByA = token?.voted
-          ? parseFloat(a?.gauge?.weight)
-          : votesCastingA + parseFloat(a?.gauge?.weight);
+          ? parseFloat(a.gauge.weight)
+          : votesCastingA + parseFloat(a.gauge.weight);
         rewardEstimateA =
-          a.gauge?.bribesInUsd > 0 && sliderValueA > 0
-            ? (a.gauge?.bribesInUsd * votesCastingA) / divideByA
+          a.gauge.tbv > 0 && sliderValueA > 0
+            ? (a.gauge.tbv * votesCastingA) / divideByA
             : 0;
       }
 
       const votesCastingB =
-        (sliderValueB / 100) * parseFloat(token?.lockValue ?? "0");
-      if (votesCastingB > 0) {
+        (sliderValueB ?? 0 / 100) * parseFloat(token?.lockValue ?? "0");
+      if (votesCastingB > 0 && b.gauge.weight && sliderValueB) {
         const divideByB = token?.voted
-          ? parseFloat(b?.gauge?.weight)
-          : votesCastingB + parseFloat(b?.gauge?.weight);
+          ? parseFloat(b.gauge.weight)
+          : votesCastingB + parseFloat(b.gauge.weight);
         rewardEstimateB =
-          b.gauge?.bribesInUsd > 0 && sliderValueB > 0
-            ? (b.gauge?.bribesInUsd * votesCastingB) / divideByB
+          b.gauge.tbv > 0 && sliderValueB > 0
+            ? (b.gauge.tbv * votesCastingB) / divideByB
             : 0;
       }
 
       const _rewardPerThousandA =
-        parseFloat(a?.gauge?.weight) > 0
-          ? (a.gauge.bribesInUsd / parseFloat(a?.gauge?.weight)) * 1000
+        a.gauge.weight && parseFloat(a.gauge.weight) > 0
+          ? (a.gauge.tbv / parseFloat(a.gauge.weight)) * 1000
           : 0;
       const _rewardPerThousandB =
-        parseFloat(b?.gauge?.weight) > 0
-          ? (b.gauge.bribesInUsd / parseFloat(b?.gauge?.weight)) * 1000
+        b.gauge.weight && parseFloat(b.gauge.weight) > 0
+          ? (b.gauge.tbv / parseFloat(b.gauge.weight)) * 1000
           : 0;
       const rewardPerThousandA =
-        _rewardPerThousandA > a.gauge.bribesInUsd
-          ? a.gauge.bribesInUsd
-          : _rewardPerThousandA;
+        _rewardPerThousandA > a.gauge.tbv ? a.gauge.tbv : _rewardPerThousandA;
       const rewardPerThousandB =
-        _rewardPerThousandB > b.gauge.bribesInUsd
-          ? b.gauge.bribesInUsd
-          : _rewardPerThousandB;
+        _rewardPerThousandB > b.gauge.tbv ? b.gauge.tbv : _rewardPerThousandB;
 
       if (rewardEstimateB && rewardEstimateA) {
         if (rewardEstimateB < rewardEstimateA) {
@@ -551,36 +556,39 @@ function descendingComparator(
       return 0;
 
     case "totalVotes":
-      if (BigNumber(b?.gauge?.weightPercent).lt(a?.gauge?.weightPercent)) {
+      if (!a.gauge.weightPercent || !b.gauge.weightPercent) {
+        return 0;
+      }
+      if (BigNumber(b.gauge.weightPercent).lt(a.gauge.weightPercent)) {
         return -1;
       }
-      if (BigNumber(b?.gauge?.weightPercent).gt(a?.gauge?.weightPercent)) {
+      if (BigNumber(b.gauge.weightPercent).gt(a.gauge.weightPercent)) {
         return 1;
       }
       return 0;
 
     case "totalBribesUSD":
     case "apy":
-      if (BigNumber(b?.gauge?.bribesInUsd).lt(a?.gauge?.bribesInUsd)) {
+      if (BigNumber(b.gauge.tbv).lt(a.gauge.tbv)) {
         return -1;
       }
-      if (BigNumber(b?.gauge?.bribesInUsd).gt(a?.gauge?.bribesInUsd)) {
+      if (BigNumber(b.gauge.tbv).gt(a.gauge.tbv)) {
         return 1;
       }
       return 0;
 
     case "myVotes":
     case "mvp":
-      const sliderValue1 = defaultVotes.find(
+      const sliderValue1 = defaultVotes?.find(
         (el) => el.address === a?.address
       )?.value;
-      const sliderValue2 = defaultVotes.find(
+      const sliderValue2 = defaultVotes?.find(
         (el) => el.address === b?.address
       )?.value;
-      if (sliderValue2 < sliderValue1) {
+      if (sliderValue1 && sliderValue2 && sliderValue2 < sliderValue1) {
         return -1;
       }
-      if (sliderValue2 > sliderValue1) {
+      if (sliderValue1 && sliderValue2 && sliderValue2 > sliderValue1) {
         return 1;
       }
       return 0;
@@ -597,13 +605,16 @@ function getComparator(
   token?: VestNFT
 ) {
   return order === "desc"
-    ? (a: Pair, b: Pair) =>
+    ? (a: Gauge, b: Gauge) =>
         descendingComparator(a, b, orderBy, defaultVotes, token)
-    : (a: Pair, b: Pair) =>
+    : (a: Gauge, b: Gauge) =>
         -descendingComparator(a, b, orderBy, defaultVotes, token);
 }
 
-function stableSort(array: Pair[], comparator: (a: Pair, b: Pair) => number) {
+function stableSort(
+  array: Gauge[],
+  comparator: (a: Gauge, b: Gauge) => number
+) {
   const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);

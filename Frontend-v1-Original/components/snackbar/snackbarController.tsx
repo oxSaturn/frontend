@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import { withStyles } from "@mui/styles";
+import React from "react";
 
 import Snackbar from "./snackbar";
 
@@ -8,19 +7,19 @@ import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 const emitter = stores.emitter;
 
-const styles = (theme) => ({
-  root: {},
-});
-
-const SnackbarController = (props) => {
-  const [state, setState] = React.useState({
+const SnackbarController = () => {
+  const [state, setState] = React.useState<{
+    open: boolean;
+    snackbarType: null | string;
+    snackbarMessage: null | string;
+  }>({
     open: false,
     snackbarType: null,
     snackbarMessage: null,
   });
 
   React.useEffect(() => {
-    const showError = (error) => {
+    const showError = (error: Error) => {
       const snackbarObj = {
         snackbarMessage: null,
         snackbarType: null,
@@ -40,7 +39,7 @@ const SnackbarController = (props) => {
       }
     };
 
-    const showHash = ({ txHash }) => {
+    const showHash = ({ txHash }: { txHash: string }) => {
       const snackbarObj = {
         snackbarMessage: null,
         snackbarType: null,
@@ -98,4 +97,4 @@ const SnackbarController = (props) => {
   );
 };
 
-export default withStyles(styles)(SnackbarController);
+export default SnackbarController;

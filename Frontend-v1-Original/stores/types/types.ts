@@ -28,6 +28,9 @@ type TokenForPrice = Omit<
   Partial<RouteAsset>;
 
 type VeToken = Omit<BaseAsset, "balance" | "local">;
+type GovToken = Omit<BaseAsset, "local"> & {
+  balanceOf: string;
+};
 
 interface VestNFT {
   id: string;
@@ -93,11 +96,31 @@ interface Pair {
     weight?: string;
     weightPercent?: string;
     rewardsEarned?: string;
-    bribesEarned?: Bribe[] | BribeEarned[];
-    votingApr?: number;
-    bribesInUsd?: number;
+    bribesEarned?: Bribe[];
+    bribesEarnedValue?: BribeEarned[];
   };
   gaugebribes?: Bribe[];
+}
+
+type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+type Gauge = WithRequired<Pair, "gauge">;
+const hasGauge = (pair: Pair): pair is Gauge =>
+  pair && pair.gauge !== undefined;
+const isGaugeReward = (reward: Gauge | VeDistReward): reward is Gauge =>
+  reward && reward.rewardType !== "Distribution";
+const isBaseAsset = (
+  asset: BaseAsset | RouteAsset | Pair | null
+): asset is BaseAsset => !!asset && "balance" in asset && "name" in asset;
+
+interface VeDistReward {
+  token: VestNFT;
+  lockToken: VeToken;
+  rewardToken: Omit<BaseAsset, "local"> & {
+    balanceOf: string;
+  };
+  earned: string;
+  rewardType: "Distribution";
 }
 
 interface GeneralContracts {
@@ -180,6 +203,8 @@ type Vote = {
   votePercent: string;
 };
 
+type Votes = Array<Pick<Vote, "address"> & { value: number }>;
+
 interface DexScrennerPair {
   chainId: string;
   dexId: string;
@@ -253,10 +278,19 @@ interface ITransaction {
   transactions: {
     uuid: string;
     description: string;
-    status: string;
+    status: TransactionStatus;
     txHash?: string;
     error?: string;
   }[];
+}
+
+enum TransactionStatus {
+  PENDING = "PENDING",
+  SUBMITTED = "SUBMITTED",
+  CONFIRMED = "CONFIRMED",
+  REJECTED = "REJECTED",
+  DONE = "DONE",
+  WAITING = "WAITING",
 }
 
 type EthWindow = Window &
@@ -327,6 +361,9 @@ interface FireBirdTokens {
 export type {
   BaseAsset,
   Pair,
+  Gauge,
+  VeDistReward,
+  Bribe,
   RouteAsset,
   TokenForPrice,
   Contracts,
@@ -334,7 +371,9 @@ export type {
   CantoContracts,
   ArbitrumContracts,
   VeToken,
+  GovToken,
   Vote,
+  Votes,
   VestNFT,
   DexScrennerPair,
   DefiLlamaTokenPrice,
@@ -346,3 +385,5 @@ export type {
   Swap,
   FireBirdTokens,
 };
+
+export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };

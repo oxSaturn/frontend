@@ -4,7 +4,7 @@ import type { Contract } from "web3-eth-contract";
 import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
 import Web3 from "web3";
-import { ContractCallContext, ContractCallResults } from "ethereum-multicall";
+import { TransactionReceipt } from "@ethersproject/providers";
 
 import { Dispatcher } from "flux";
 import EventEmitter from "events";
@@ -23,7 +23,7 @@ import {
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
 import tokenlistCan from "../mainnet-canto-token-list.json";
-import type {
+import {
   BaseAsset,
   Pair,
   RouteAsset,
@@ -31,7 +31,15 @@ import type {
   Vote,
   VestNFT,
   CantoContracts,
+  GovToken,
+  Votes,
   QuoteSwapResponse,
+  Bribe,
+  VeDistReward,
+  ITransaction,
+  Gauge,
+  hasGauge,
+  TransactionStatus,
 } from "./types/types";
 import {
   FLOW_CONVERTOR_ADDRESS,
@@ -48,14 +56,14 @@ class Store {
     baseAssets: BaseAsset[];
     swapAssets: BaseAsset[];
     routeAssets: RouteAsset[];
-    govToken: Omit<BaseAsset, "local"> & { balanceOf: string };
-    veToken: VeToken;
+    govToken: GovToken | null;
+    veToken: VeToken | null;
     pairs: Pair[];
     vestNFTs: VestNFT[];
     rewards: {
-      bribes: any[];
-      rewards: any[];
-      veDist: any[];
+      bribes: Gauge[];
+      rewards: Gauge[];
+      veDist: VeDistReward[];
     };
     updateDate: number;
     tokenPrices: Map<string, number>;
@@ -91,14 +99,14 @@ class Store {
     };
 
     dispatcher.register(
-      function (this: Store, payload) {
+      function (this: Store, payload: { type: string; content: any }) {
         console.log("<< Payload of dispatched event", payload);
         switch (payload.type) {
           case ACTIONS.CONFIGURE_SS:
-            this.configure(payload);
+            this.configure();
             break;
           case ACTIONS.GET_BALANCES:
-            this.getBalances(payload);
+            this.getBalances();
             break;
           case ACTIONS.SEARCH_ASSET:
             this.searchBaseAsset(payload);
@@ -165,7 +173,7 @@ class Store {
 
           // VESTING
           case ACTIONS.GET_VEST_NFTS:
-            this.getVestNFTs(payload);
+            this.getVestNFTs();
             break;
           case ACTIONS.CREATE_VEST:
             this.createVest(payload);
@@ -231,7 +239,7 @@ class Store {
     return this.emitter.emit(ACTIONS.STORE_UPDATED);
   };
 
-  getNFTByID = async (id) => {
+  getNFTByID = async (id: string) => {
     try {
       const vestNFTs = this.getStore("vestNFTs");
       let theNFT = vestNFTs.filter((vestNFT) => {
@@ -255,6 +263,10 @@ class Store {
 
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
+      if (!veToken || !govToken) {
+        console.warn("veToken or govToken not found");
+        return null;
+      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -310,7 +322,7 @@ class Store {
     }
   };
 
-  _updateVestNFTByID = async (id) => {
+  _updateVestNFTByID = async (id: string) => {
     try {
       const vestNFTs = this.getStore("vestNFTs");
       let theNFT = vestNFTs.filter((vestNFT) => {
@@ -334,6 +346,10 @@ class Store {
 
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
+      if (!veToken || !govToken) {
+        console.warn("veToken or govToken not found");
+        return null;
+      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -371,7 +387,7 @@ class Store {
     }
   };
 
-  getPairByAddress = async (pairAddress) => {
+  getPairByAddress = async (pairAddress: string) => {
     try {
       const web3 = await stores.accountStore.getWeb3Provider();
       if (!web3) {
@@ -550,6 +566,9 @@ class Store {
               .rewards(idx)
               .call();
             const token = await this.getBaseAsset(tokenAddress);
+            if (!token) {
+              return null;
+            }
 
             const rewardRate = await gaugeContract.methods
               .rewardRate(tokenAddress)
@@ -596,7 +615,7 @@ class Store {
     }
   };
 
-  getPair = async (addressA, addressB, stab) => {
+  getPair = async (addressA: string, addressB: string, stab: boolean) => {
     if (addressA === NATIVE_TOKEN.symbol) {
       addressA = W_NATIVE_ADDRESS;
     }
@@ -793,6 +812,7 @@ class Store {
               .rewards(idx)
               .call();
             const token = await this.getBaseAsset(tokenAddress);
+            if (!token) return null;
 
             const rewardRate = await gaugeContract.methods
               .rewardRate(tokenAddress)
@@ -841,15 +861,15 @@ class Store {
     return null;
   };
 
-  removeBaseAsset = (asset) => {
+  removeBaseAsset = (asset: BaseAsset) => {
     try {
-      let localBaseAssets = [];
+      let localBaseAssets: BaseAsset[] = [];
       const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
       if (localBaseAssetsString && localBaseAssetsString !== "") {
         localBaseAssets = JSON.parse(localBaseAssetsString);
 
-        localBaseAssets = localBaseAssets.filter(function (obj) {
+        localBaseAssets = localBaseAssets.filter((obj) => {
           return obj.address.toLowerCase() !== asset.address.toLowerCase();
         });
 
@@ -859,7 +879,7 @@ class Store {
         );
 
         let baseAssets = this.getStore("baseAssets");
-        baseAssets = baseAssets.filter(function (obj) {
+        baseAssets = baseAssets.filter((obj) => {
           return (
             obj.address.toLowerCase() !== asset.address.toLowerCase() &&
             asset.local === true
@@ -892,7 +912,11 @@ class Store {
     }
   };
 
-  getBaseAsset = async (address, save?, getBalance?) => {
+  getBaseAsset = async (
+    address: string,
+    save?: boolean,
+    getBalance?: boolean
+  ) => {
     try {
       const baseAssets = this.getStore("baseAssets");
 
@@ -971,7 +995,7 @@ class Store {
   };
 
   // DISPATCHER FUNCTIONS
-  configure = async (payload) => {
+  configure = async () => {
     try {
       this.setStore({ govToken: this._getGovTokenBase() });
       this.setStore({ veToken: this._getVeTokenBase() });
@@ -1105,7 +1129,7 @@ class Store {
     };
   };
 
-  getBalances = async (payload) => {
+  getBalances = async () => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -1128,10 +1152,13 @@ class Store {
     }
   };
 
-  _getVestNFTs = async (web3, account) => {
+  _getVestNFTs = async (web3: Web3, account: { address: string }) => {
     try {
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
+      if (!veToken || !govToken) {
+        throw new Error("veToken or govToken not found");
+      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI,
@@ -1208,7 +1235,11 @@ class Store {
     }
   };
 
-  _getPairInfo = async (web3, account, overridePairs?) => {
+  _getPairInfo = async (
+    web3: Web3,
+    account: { address: string },
+    overridePairs?: Pair[]
+  ) => {
     try {
       const multicall = await stores.accountStore.getMulticall();
 
@@ -1309,28 +1340,6 @@ class Store {
                 return bribe;
               });
 
-              // let votingApr = 0;
-              // const votes = BigNumber(gaugeWeight)
-              //   .div(10 ** 18)
-              //   .toNumber();
-              // const totalUSDValueOfBribes = bribes.reduce((acc, bribe) => {
-              //   return acc + bribe.tokenPrice * bribe.rewardAmount;
-              // }, 0);
-              // if (totalUSDValueOfBribes > 0) {
-              //   const perVote = totalUSDValueOfBribes / votes;
-              //   const perVotePerYear = perVote * 52.179;
-              //   const token = this.getStore("routeAssets").filter(
-              //     (asset) => asset.symbol === "FLOW"
-              //   )[0];
-              //   const flowPrice = stores.helper.getTokenPricesMap.get(
-              //     token.address.toLowerCase()
-              //   );
-
-              //   votingApr = votes > 0 ? (perVotePerYear / flowPrice) * 100 : 0;
-              // }
-
-              const totalUSDValueOfBribes = pair.gauge.tbv;
-
               pair.gauge.balance = BigNumber(gaugeBalance)
                 .div(10 ** 18)
                 .toFixed(18);
@@ -1359,8 +1368,6 @@ class Store {
                 .div(totalWeight)
                 .toFixed(2);
               pair.gaugebribes = bribes;
-              pair.gauge.votingApr = pair.gauge.apr;
-              pair.gauge.bribesInUsd = totalUSDValueOfBribes;
               pair.isAliveGauge = isAliveGauge;
               if (isAliveGauge === false) pair.apr = 0;
             }
@@ -1382,7 +1389,7 @@ class Store {
     }
   };
 
-  _getBaseAssetInfo = async (web3, account) => {
+  _getBaseAssetInfo = async (web3: Web3, account: { address: string }) => {
     try {
       const baseAssets = this.getStore("baseAssets");
       if (!baseAssets) {
@@ -1446,9 +1453,12 @@ class Store {
     }
   };
 
-  searchBaseAsset = async (payload) => {
+  searchBaseAsset = async (payload: {
+    type: string;
+    content: { address: string };
+  }) => {
     try {
-      let localBaseAssets = [];
+      let localBaseAssets: BaseAsset[] = [];
       const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
       if (localBaseAssetsString && localBaseAssetsString !== "") {
@@ -1480,11 +1490,14 @@ class Store {
         baseAssetContract.methods.name().call(),
       ]);
 
-      const newBaseAsset = {
+      const newBaseAsset: BaseAsset = {
         address: payload.content.address,
         symbol: symbol,
         name: name,
         decimals: parseInt(decimals),
+        balance: null,
+        local: true,
+        logoURI: "",
       };
 
       localBaseAssets = [...localBaseAssets, newBaseAsset];
@@ -1505,7 +1518,18 @@ class Store {
     }
   };
 
-  createPairStake = async (payload) => {
+  createPairStake = async (payload: {
+    type: string;
+    content: {
+      token0: BaseAsset;
+      token1: BaseAsset;
+      amount0: string;
+      amount1: string;
+      isStable: boolean;
+      token: any; // any coz we are not using it
+      slippage: string;
+    };
+  }) => {
     try {
       const context = this;
 
@@ -1602,12 +1626,13 @@ class Store {
         ],
       });
 
-      let allowance0 = "0";
-      let allowance1 = "0";
+      let allowance0: string | null = "0";
+      let allowance1: string | null = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
+        if (!allowance0) throw new Error("Couldnt get allowance");
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance0TXID,
@@ -1631,6 +1656,7 @@ class Store {
 
       if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
+        if (!allowance1) throw new Error("Couldnt get allowance");
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance1TXID,
@@ -1665,14 +1691,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
-            null,
-            null,
             allowance0TXID,
             (err) => {
               if (err) {
@@ -1696,14 +1718,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            gasPrice,
-            null,
-            null,
             allowance1TXID,
             (err) => {
               if (err) {
@@ -1785,14 +1803,10 @@ class Store {
         CONTRACTS.ROUTER_ADDRESS
       );
       this._callContractWait(
-        web3,
         routerContract,
         func,
         params,
         account,
-        gasPrice,
-        null,
-        null,
         depositTXID,
         async (err) => {
           if (err) {
@@ -1818,14 +1832,10 @@ class Store {
             CONTRACTS.VOTER_ADDRESS
           );
           this._callContractWait(
-            web3,
             gaugesContract,
             "createGauge",
             [pairFor],
             account,
-            gasPrice,
-            null,
-            null,
             createGaugeTXID,
             async (err) => {
               if (err) {
@@ -1856,7 +1866,7 @@ class Store {
                 account,
                 pairFor
               );
-
+              if (!stakeAllowance) throw new Error("stakeAllowance is null");
               if (
                 BigNumber(stakeAllowance).lt(
                   BigNumber(balanceOf)
@@ -1887,14 +1897,10 @@ class Store {
               ) {
                 const stakePromise = new Promise<void>((resolve, reject) => {
                   context._callContractWait(
-                    web3,
                     pairContract,
                     "approve",
                     [pair.gauge.address, MAX_UINT256],
                     account,
-                    gasPrice,
-                    null,
-                    null,
                     stakeAllowanceTXID,
                     (err) => {
                       if (err) {
@@ -1918,14 +1924,10 @@ class Store {
               // }
 
               this._callContractWait(
-                web3,
                 gaugeContract,
                 "deposit",
                 [balanceOf, sendTok],
                 account,
-                gasPrice,
-                null,
-                null,
                 stakeTXID,
                 async (err) => {
                   if (err) {
@@ -1948,7 +1950,18 @@ class Store {
     }
   };
 
-  createPairDeposit = async (payload) => {
+  createPairDeposit = async (payload: {
+    type: string;
+    content: {
+      token0: BaseAsset;
+      token1: BaseAsset;
+      amount0: string;
+      amount1: string;
+      isStable: boolean;
+      token: any; // any coz we are not using it
+      slippage: string;
+    };
+  }) => {
     try {
       const context = this;
 
@@ -2032,12 +2045,13 @@ class Store {
         ],
       });
 
-      let allowance0 = "0";
-      let allowance1 = "0";
+      let allowance0: string | null = "0";
+      let allowance1: string | null = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
+        if (!allowance0) throw new Error("Error getting allowance0");
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance0TXID,
@@ -2061,6 +2075,7 @@ class Store {
 
       if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
+        if (!allowance1) throw new Error("couldnt get allowance");
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance1TXID,
@@ -2093,14 +2108,10 @@ class Store {
         console.log(CONTRACTS.ROUTER_ADDRESS);
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowance0TXID,
             (err) => {
               if (err) {
@@ -2124,14 +2135,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowance1TXID,
             (err) => {
               if (err) {
@@ -2213,14 +2220,10 @@ class Store {
         CONTRACTS.ROUTER_ADDRESS
       );
       this._callContractWait(
-        web3,
         routerContract,
         func,
         params,
         account,
-        undefined,
-        null,
-        null,
         depositTXID,
         async (err) => {
           if (err) {
@@ -2246,14 +2249,10 @@ class Store {
             CONTRACTS.VOTER_ADDRESS
           );
           this._callContractWait(
-            web3,
             gaugesContract,
             "createGauge",
             [pairFor],
             account,
-            undefined,
-            null,
-            null,
             createGaugeTXID,
             async (err) => {
               if (err) {
@@ -2274,7 +2273,7 @@ class Store {
     }
   };
 
-  updatePairsCall = async (web3, account) => {
+  updatePairsCall = async (web3: Web3, account: { address: string }) => {
     try {
       // update pairs is same endpoint in API. Pairs are updated in sync on backend
       const response = await fetch(`/api/pairs`);
@@ -2287,7 +2286,7 @@ class Store {
     }
   };
 
-  sleep = (ms) => {
+  sleep = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
 
@@ -2295,7 +2294,18 @@ class Store {
     return uuidv4();
   };
 
-  addLiquidity = async (payload) => {
+  addLiquidity = async (payload: {
+    type: string;
+    content: {
+      token0: BaseAsset;
+      token1: BaseAsset;
+      amount0: string;
+      amount1: string;
+      minLiquidity: any;
+      pair: Pair;
+      slippage: string;
+    };
+  }) => {
     try {
       const context = this;
 
@@ -2342,12 +2352,13 @@ class Store {
         ],
       });
 
-      let allowance0 = "0";
-      let allowance1 = "0";
+      let allowance0: string | null = "0";
+      let allowance1: string | null = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
+        if (!allowance0) throw new Error("Error getting allowance");
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance0TXID,
@@ -2371,6 +2382,7 @@ class Store {
 
       if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
+        if (!allowance1) throw new Error("couldnt get allowance");
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance1TXID,
@@ -2403,14 +2415,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowance0TXID,
             (err) => {
               if (err) {
@@ -2435,14 +2443,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowance1TXID,
             (err) => {
               if (err) {
@@ -2526,14 +2530,10 @@ class Store {
       }
 
       this._callContractWait(
-        web3,
         routerContract,
         func,
         params,
         account,
-        undefined,
-        null,
-        null,
         depositTXID,
         (err) => {
           if (err) {
@@ -2552,7 +2552,10 @@ class Store {
     }
   };
 
-  stakeLiquidity = async (payload) => {
+  stakeLiquidity = async (payload: {
+    type: string;
+    content: { pair: Pair; token: any };
+  }) => {
     try {
       const context = this;
 
@@ -2592,6 +2595,7 @@ class Store {
       });
 
       const stakeAllowance = await this._getStakeAllowance(web3, pair, account);
+      if (!stakeAllowance) throw new Error("Error getting stake allowance");
 
       const pairContract = new web3.eth.Contract(
         CONTRACTS.PAIR_ABI as AbiItem[],
@@ -2622,6 +2626,8 @@ class Store {
 
       const allowanceCallsPromises = [];
 
+      if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
+
       if (
         BigNumber(stakeAllowance).lt(
           BigNumber(balanceOf)
@@ -2631,14 +2637,10 @@ class Store {
       ) {
         const stakePromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             pairContract,
             "approve",
-            [pair.gauge.address, MAX_UINT256],
+            [pair.gauge?.address, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             stakeAllowanceTXID,
             (err) => {
               if (err) {
@@ -2667,14 +2669,10 @@ class Store {
       // }
 
       this._callContractWait(
-        web3,
         gaugeContract,
         "deposit",
         [balanceOf, sendTok],
         account,
-        undefined,
-        null,
-        null,
         stakeTXID,
         (err) => {
           if (err) {
@@ -2692,7 +2690,19 @@ class Store {
     }
   };
 
-  addLiquidityAndStake = async (payload) => {
+  addLiquidityAndStake = async (payload: {
+    type: string;
+    content: {
+      token0: BaseAsset;
+      token1: BaseAsset;
+      amount0: string;
+      amount1: string;
+      minLiquidity: string;
+      pair: Pair;
+      token: any;
+      slippage: string;
+    };
+  }) => {
     try {
       const context = this;
 
@@ -2759,12 +2769,13 @@ class Store {
         ],
       });
 
-      let allowance0 = "0";
-      let allowance1 = "0";
+      let allowance0: string | null = "0";
+      let allowance1: string | null = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (token0.address !== NATIVE_TOKEN.symbol) {
         allowance0 = await this._getDepositAllowance(web3, token0, account);
+        if (!allowance0) throw new Error();
         if (BigNumber(allowance0).lt(amount0)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance0TXID,
@@ -2788,6 +2799,7 @@ class Store {
 
       if (token1.address !== NATIVE_TOKEN.symbol) {
         allowance1 = await this._getDepositAllowance(web3, token1, account);
+        if (!allowance1) throw new Error("couldnt get allowance");
         if (BigNumber(allowance1).lt(amount1)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowance1TXID,
@@ -2810,6 +2822,7 @@ class Store {
       }
 
       const stakeAllowance = await this._getStakeAllowance(web3, pair, account);
+      if (!stakeAllowance) throw new Error("Error getting stake allowance");
 
       if (BigNumber(stakeAllowance).lt(minLiquidity)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -2835,14 +2848,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowance0TXID,
             (err) => {
               if (err) {
@@ -2866,14 +2875,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowance1TXID,
             (err) => {
               if (err) {
@@ -2889,6 +2894,8 @@ class Store {
         allowanceCallsPromises.push(tokenPromise);
       }
 
+      if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
+
       if (BigNumber(stakeAllowance).lt(minLiquidity)) {
         const pairContract = new web3.eth.Contract(
           CONTRACTS.ERC20_ABI as AbiItem[],
@@ -2897,14 +2904,10 @@ class Store {
 
         const stakePromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             pairContract,
             "approve",
-            [pair.gauge.address, MAX_UINT256],
+            [pair.gauge?.address, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             stakeAllowanceTXID,
             (err) => {
               if (err) {
@@ -2995,14 +2998,10 @@ class Store {
       }
 
       this._callContractWait(
-        web3,
         routerContract,
         func,
         params,
         account,
-        undefined,
-        null,
-        null,
         depositTXID,
         async (err) => {
           if (err) {
@@ -3019,14 +3018,10 @@ class Store {
           // }
 
           this._callContractWait(
-            web3,
             gaugeContract,
             "deposit",
             [balanceOf, sendTok],
             account,
-            undefined,
-            null,
-            null,
             stakeTXID,
             (err) => {
               if (err) {
@@ -3047,7 +3042,11 @@ class Store {
     }
   };
 
-  _getDepositAllowance = async (web3, token, account) => {
+  _getDepositAllowance = async (
+    web3: Web3,
+    token: BaseAsset,
+    account: { address: string }
+  ) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
@@ -3065,7 +3064,12 @@ class Store {
     }
   };
 
-  _getStakeAllowance = async (web3, pair, account, pairAddress?) => {
+  _getStakeAllowance = async (
+    web3: Web3,
+    pair: Pair,
+    account: { address: string },
+    pairAddress?: string
+  ) => {
     try {
       let tokenContract;
       if (pair === null && !!pairAddress) {
@@ -3077,7 +3081,7 @@ class Store {
         );
       }
       const allowance = await tokenContract.methods
-        .allowance(account.address, pair.gauge.address)
+        .allowance(account.address, pair.gauge?.address)
         .call();
       return BigNumber(allowance)
         .div(10 ** PAIR_DECIMALS)
@@ -3088,7 +3092,11 @@ class Store {
     }
   };
 
-  _getWithdrawAllowance = async (web3, pair, account) => {
+  _getWithdrawAllowance = async (
+    web3: Web3,
+    pair: Pair,
+    account: { address: string }
+  ) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
@@ -3106,7 +3114,16 @@ class Store {
     }
   };
 
-  quoteAddLiquidity = async (payload) => {
+  quoteAddLiquidity = async (payload: {
+    type: string;
+    content: {
+      pair: Pair;
+      token0: BaseAsset;
+      token1: BaseAsset;
+      amount0: string;
+      amount1: string;
+    };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -3170,7 +3187,10 @@ class Store {
     }
   };
 
-  getLiquidityBalances = async (payload) => {
+  getLiquidityBalances = async (payload: {
+    type: string;
+    content: { pair: Pair };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -3222,7 +3242,12 @@ class Store {
       const [token0Balance, token1Balance, poolBalance, gaugeBalance] =
         await Promise.all(balanceCalls);
 
-      const returnVal = {
+      const returnVal: {
+        token0: string;
+        token1: string;
+        pool: string;
+        gauge: string | null;
+      } = {
         token0: BigNumber(token0Balance)
           .div(10 ** pair.token0.decimals)
           .toFixed(pair.token0.decimals),
@@ -3250,7 +3275,15 @@ class Store {
     }
   };
 
-  removeLiquidity = async (payload) => {
+  removeLiquidity = async (payload: {
+    type: string;
+    content: {
+      token0: BaseAsset;
+      token1: BaseAsset;
+      pair: Pair;
+      slippage: string;
+    };
+  }) => {
     try {
       const context = this;
 
@@ -3292,7 +3325,8 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       const allowance = await this._getWithdrawAllowance(web3, pair, account);
-
+      if (!allowance) throw new Error("Error getting withdraw allowance");
+      if (!pair.balance) throw new Error("No pair balance");
       if (BigNumber(allowance).lt(pair.balance)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: allowanceTXID,
@@ -3317,14 +3351,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -3372,7 +3402,6 @@ class Store {
         .toFixed(0);
 
       this._callContractWait(
-        web3,
         routerContract,
         "removeLiquidity",
         [
@@ -3386,9 +3415,6 @@ class Store {
           deadline,
         ],
         account,
-        undefined,
-        null,
-        null,
         withdrawTXID,
         (err) => {
           if (err) {
@@ -3406,7 +3432,18 @@ class Store {
     }
   };
 
-  unstakeAndRemoveLiquidity = async (payload) => {
+  unstakeAndRemoveLiquidity = async (payload: {
+    type: string;
+    content: {
+      token0: BaseAsset;
+      token1: BaseAsset;
+      amount: string;
+      amount0: string;
+      amount1: string;
+      pair: Pair;
+      slippage: string;
+    };
+  }) => {
     try {
       const context = this;
 
@@ -3455,6 +3492,7 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       const allowance = await this._getWithdrawAllowance(web3, pair, account);
+      if (!allowance) throw new Error("Error getting withdraw allowance");
 
       if (BigNumber(allowance).lt(amount)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -3480,14 +3518,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -3526,7 +3560,7 @@ class Store {
       );
       const gaugeContract = new web3.eth.Contract(
         CONTRACTS.GAUGE_ABI as AbiItem[],
-        pair.gauge.address
+        pair.gauge?.address
       );
       const pairContract = new web3.eth.Contract(
         CONTRACTS.PAIR_ABI as AbiItem[],
@@ -3534,14 +3568,10 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         gaugeContract,
         "withdraw",
         [sendAmount],
         account,
-        undefined,
-        null,
-        null,
         unstakeTXID,
         async (err) => {
           if (err) {
@@ -3553,7 +3583,6 @@ class Store {
             .call();
 
           this._callContractWait(
-            web3,
             routerContract,
             "removeLiquidity",
             [
@@ -3567,9 +3596,6 @@ class Store {
               deadline,
             ],
             account,
-            undefined,
-            null,
-            null,
             withdrawTXID,
             (err) => {
               if (err) {
@@ -3589,7 +3615,10 @@ class Store {
     }
   };
 
-  unstakeLiquidity = async (payload) => {
+  unstakeLiquidity = async (payload: {
+    type: string;
+    content: { amount: string; pair: Pair };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -3628,18 +3657,14 @@ class Store {
 
       const gaugeContract = new web3.eth.Contract(
         CONTRACTS.GAUGE_ABI as AbiItem[],
-        pair.gauge.address
+        pair.gauge?.address
       );
 
       this._callContractWait(
-        web3,
         gaugeContract,
         "withdraw",
         [sendAmount],
         account,
-        undefined,
-        null,
-        null,
         unstakeTXID,
         async (err) => {
           if (err) {
@@ -3657,7 +3682,15 @@ class Store {
     }
   };
 
-  quoteRemoveLiquidity = async (payload) => {
+  quoteRemoveLiquidity = async (payload: {
+    type: string;
+    content: {
+      pair: Pair;
+      token0: BaseAsset;
+      token1: BaseAsset;
+      withdrawAmount: string;
+    };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -3717,7 +3750,7 @@ class Store {
     }
   };
 
-  createGauge = async (payload) => {
+  createGauge = async (payload: { type: string; content: { pair: Pair } }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -3754,14 +3787,10 @@ class Store {
         CONTRACTS.VOTER_ADDRESS
       );
       this._callContractWait(
-        web3,
         gaugesContract,
         "createGauge",
         [pair.address],
         account,
-        undefined,
-        null,
-        null,
         createGaugeTXID,
         async (err) => {
           if (err) {
@@ -3779,8 +3808,16 @@ class Store {
     }
   };
 
-  quoteSwap = async (payload) => {
-    const address = stores.accountStore.getStore("account").address;
+  quoteSwap = async (payload: {
+    type: string;
+    content: {
+      fromAsset: BaseAsset;
+      toAsset: BaseAsset;
+      fromAmount: string;
+      slippage: number;
+    };
+  }) => {
+    const address = stores.accountStore.getStore("account")?.address;
     if (!address) throw new Error("no address");
     try {
       const res = await fetch("/api/firebird-router", {
@@ -3802,7 +3839,14 @@ class Store {
     }
   };
 
-  swap = async (payload) => {
+  swap = async (payload: {
+    type: string;
+    content: {
+      quote: QuoteSwapResponse;
+      fromAsset: BaseAsset;
+      toAsset: BaseAsset;
+    };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -3816,15 +3860,7 @@ class Store {
         return null;
       }
 
-      const {
-        quote,
-        fromAsset,
-        toAsset,
-      }: {
-        quote: QuoteSwapResponse;
-        fromAsset: BaseAsset;
-        toAsset: BaseAsset;
-      } = payload.content;
+      const { quote, fromAsset, toAsset } = payload.content;
 
       const fromAmount = BigNumber(quote.maxReturn.totalFrom)
         .div(10 ** fromAsset.decimals)
@@ -3854,7 +3890,7 @@ class Store {
         ],
       });
 
-      let allowance = "0";
+      let allowance: string | null = "0";
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (fromAsset.address !== NATIVE_TOKEN.symbol) {
@@ -3864,7 +3900,7 @@ class Store {
           account,
           quote
         );
-
+        if (!allowance) throw new Error("Couldn't fetch allowance");
         if (BigNumber(allowance).lt(fromAmount)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
             uuid: allowanceTXID,
@@ -3887,7 +3923,7 @@ class Store {
       }
 
       const allowanceCallsPromises = [];
-
+      if (!allowance) throw new Error("Couldn't fetch allowance");
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(fromAmount)) {
         const tokenContract = new web3.eth.Contract(
@@ -3897,14 +3933,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [quote.encodedData.router, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -3934,7 +3966,7 @@ class Store {
             : undefined,
       };
 
-      this._sendTransactionWait(web3, account, tx, swapTXID, (err) => {
+      this._sendTransactionWait(web3, tx, swapTXID, (err) => {
         if (err) {
           return this.emitter.emit(ACTIONS.ERROR, err);
         }
@@ -3951,7 +3983,10 @@ class Store {
     }
   };
 
-  wrapOrUnwrap = async (payload) => {
+  wrapOrUnwrap = async (payload: {
+    type: string;
+    content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4030,14 +4065,10 @@ class Store {
       }
 
       this._callContractWait(
-        web3,
         wethContract,
         func,
         params,
         account,
-        undefined,
-        null,
-        null,
         wrapUnwrapTXID,
         (err) => {
           if (err) {
@@ -4057,7 +4088,10 @@ class Store {
     }
   };
 
-  redeem = async (payload) => {
+  redeem = async (payload: {
+    type: string;
+    content: { fromAmount: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4095,11 +4129,11 @@ class Store {
         ],
       });
 
-      let allowance = "0";
+      let allowance: string | null = "0";
 
       // // CHECK ALLOWANCES AND SET TX DISPLAY
       allowance = await this._getRedeemAllowance(web3, account);
-
+      if (!allowance) throw new Error("Error getting allowance");
       if (BigNumber(allowance).lt(fromAmount)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: allowanceTXID,
@@ -4124,14 +4158,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [FLOW_CONVERTOR_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -4163,14 +4193,10 @@ class Store {
       let params = [sendFromAmount];
 
       this._callContractWait(
-        web3,
         flowConvertor,
         func,
         params,
         account,
-        undefined,
-        null,
-        null,
         redeemTXID,
         (err) => {
           if (err) {
@@ -4194,7 +4220,11 @@ class Store {
     }
   };
 
-  _getSpecificAssetInfo = async (web3, account, assetAddress) => {
+  _getSpecificAssetInfo = async (
+    web3: Web3,
+    account: { address: string },
+    assetAddress: string
+  ) => {
     try {
       const baseAssets = this.getStore("baseAssets");
       if (!baseAssets) {
@@ -4261,7 +4291,11 @@ class Store {
     }
   };
 
-  _getSwapAllowance = async (web3, token, account) => {
+  _getSwapAllowance = async (
+    web3: Web3,
+    token: BaseAsset,
+    account: { address: string }
+  ) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
@@ -4279,7 +4313,7 @@ class Store {
     }
   };
 
-  _getRedeemAllowance = async (web3, account) => {
+  _getRedeemAllowance = async (web3: Web3, account: { address: string }) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
@@ -4297,7 +4331,7 @@ class Store {
     }
   };
 
-  getVestNFTs = async (payload) => {
+  getVestNFTs = async () => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4313,6 +4347,9 @@ class Store {
 
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
+      if (!veToken || !govToken) {
+        throw new Error("veToken or govToken not found");
+      }
 
       const vestingContract = new web3.eth.Contract(
         CONTRACTS.VE_TOKEN_ABI as AbiItem[],
@@ -4361,7 +4398,10 @@ class Store {
     }
   };
 
-  createVest = async (payload) => {
+  createVest = async (payload: {
+    type: string;
+    content: { amount: string; unlockTime: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4376,6 +4416,7 @@ class Store {
       }
 
       const govToken = this.getStore("govToken");
+      if (!govToken) throw new Error("No gov token");
       const { amount, unlockTime } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
@@ -4406,7 +4447,7 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       const allowance = await this._getVestAllowance(web3, govToken, account);
-
+      if (!allowance) throw new Error("Error getting allowance in create vest");
       if (BigNumber(allowance).lt(amount)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: allowanceTXID,
@@ -4431,14 +4472,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.VE_TOKEN_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -4467,14 +4504,10 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         veTokenContract,
         "create_lock",
         [sendAmount, unlockTime + ""],
         account,
-        undefined,
-        null,
-        null,
         vestTXID,
         (err) => {
           if (err) {
@@ -4493,7 +4526,11 @@ class Store {
     }
   };
 
-  _getVestAllowance = async (web3, token, account) => {
+  _getVestAllowance = async (
+    web3: Web3,
+    token: GovToken,
+    account: { address: string }
+  ) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
@@ -4511,7 +4548,10 @@ class Store {
     }
   };
 
-  increaseVestAmount = async (payload) => {
+  increaseVestAmount = async (payload: {
+    type: string;
+    content: { amount: string; tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4526,6 +4566,8 @@ class Store {
       }
 
       const govToken = this.getStore("govToken");
+      if (!govToken)
+        throw new Error("Error getting gov token in increase vest");
       const { amount, tokenID } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
@@ -4552,7 +4594,8 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       const allowance = await this._getVestAllowance(web3, govToken, account);
-
+      if (!allowance)
+        throw new Error("Error getting allowance in increase vest");
       if (BigNumber(allowance).lt(amount)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: allowanceTXID,
@@ -4577,14 +4620,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             tokenContract,
             "approve",
             [CONTRACTS.VE_TOKEN_ADDRESS, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -4613,14 +4652,10 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         veTokenContract,
         "increase_amount",
         [tokenID, sendAmount],
         account,
-        undefined,
-        null,
-        null,
         vestTXID,
         (err) => {
           if (err) {
@@ -4639,7 +4674,10 @@ class Store {
     }
   };
 
-  increaseVestDuration = async (payload) => {
+  increaseVestDuration = async (payload: {
+    type: string;
+    content: { unlockTime: string; tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4678,14 +4716,10 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         veTokenContract,
         "increase_unlock_time",
         [tokenID, unlockTime + ""],
         account,
-        undefined,
-        null,
-        null,
         vestTXID,
         (err) => {
           if (err) {
@@ -4703,7 +4737,10 @@ class Store {
     }
   };
 
-  resetVest = async (payload) => {
+  resetVest = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4747,7 +4784,7 @@ class Store {
       });
 
       // CHECK unclaimed bribes
-      await this.getRewardBalances({ content: { tokenID } });
+      await this.getRewardBalances({ type: "internal", content: { tokenID } });
       const rewards = this.getStore("rewards");
 
       if (rewards.bribes.length > 0) {
@@ -4765,11 +4802,11 @@ class Store {
 
       if (rewards.bribes.length > 0) {
         const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge.wrapped_bribe_address;
+          return pair.gauge?.wrapped_bribe_address;
         });
         const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge.bribesEarned.map((bribe) => {
-            return bribe.token.address;
+          return pair.gauge?.bribesEarned?.map((bribe) => {
+            return (bribe as Bribe).token.address;
           });
         });
 
@@ -4780,14 +4817,10 @@ class Store {
 
         const claimPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             voterContract,
             "claimBribes",
             [sendGauges, sendTokens, tokenID],
             account,
-            undefined,
-            null,
-            null,
             rewardsTXID,
             (err) => {
               if (err) {
@@ -4825,14 +4858,10 @@ class Store {
 
         const claimVeDistPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             veDistContract,
             "claim",
             [tokenID],
             account,
-            undefined,
-            null,
-            null,
             rebaseTXID,
             (err) => {
               if (err) {
@@ -4855,14 +4884,10 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         voterContract,
         "reset",
         [tokenID],
         account,
-        undefined,
-        null,
-        null,
         resetTXID,
         (err) => {
           if (err) {
@@ -4880,7 +4905,10 @@ class Store {
     }
   };
 
-  withdrawVest = async (payload) => {
+  withdrawVest = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -4931,7 +4959,7 @@ class Store {
       });
 
       // CHECK unclaimed bribes
-      await this.getRewardBalances({ content: { tokenID } });
+      await this.getRewardBalances({ type: "internal", content: { tokenID } });
       const rewards = this.getStore("rewards");
 
       if (rewards.bribes.length > 0) {
@@ -4949,11 +4977,11 @@ class Store {
 
       if (rewards.bribes.length > 0) {
         const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge.wrapped_bribe_address;
+          return pair.gauge?.wrapped_bribe_address;
         });
         const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge.bribesEarned.map((bribe) => {
-            return bribe.token.address;
+          return pair.gauge?.bribesEarned?.map((bribe) => {
+            return (bribe as Bribe).token.address;
           });
         });
 
@@ -4964,14 +4992,10 @@ class Store {
 
         const claimPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             voterContract,
             "claimBribes",
             [sendGauges, sendTokens, tokenID],
             account,
-            undefined,
-            null,
-            null,
             rewardsTXID,
             (err) => {
               if (err) {
@@ -5009,14 +5033,10 @@ class Store {
 
         const claimVeDistPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             veDistContract,
             "claim",
             [tokenID],
             account,
-            undefined,
-            null,
-            null,
             rebaseTXID,
             (err) => {
               if (err) {
@@ -5058,14 +5078,10 @@ class Store {
 
         const resetPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             voterContract,
             "reset",
             [tokenID],
             account,
-            undefined,
-            null,
-            null,
             resetTXID,
             (err) => {
               if (err) {
@@ -5090,14 +5106,10 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         veTokenContract,
         "withdraw",
         [tokenID],
         account,
-        undefined,
-        null,
-        null,
         vestTXID,
         (err) => {
           if (err) {
@@ -5115,8 +5127,8 @@ class Store {
     }
   };
 
-  _checkNFTVotedEpoch = async (web3, tokenID) => {
-    if (!web3) return;
+  _checkNFTVotedEpoch = async (web3: Web3, tokenID: string) => {
+    if (!web3) return false;
 
     const voterContract = new web3.eth.Contract(
       CONTRACTS.VOTER_ABI as AbiItem[],
@@ -5139,7 +5151,7 @@ class Store {
     return votedThisEpoch;
   };
 
-  _checkNFTVoted = async (web3, tokenID) => {
+  _checkNFTVoted = async (web3: Web3, tokenID: string) => {
     if (!web3) return;
 
     const votingEscrowContract = new web3.eth.Contract(
@@ -5152,7 +5164,10 @@ class Store {
     return voted;
   };
 
-  vote = async (payload) => {
+  vote = async (payload: {
+    type: string;
+    content: { votes: Votes; tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5227,14 +5242,10 @@ class Store {
       });
 
       this._callContractWait(
-        web3,
         gaugesContract,
         "vote",
         [parseInt(tokenID), tokens, voteCounts],
         account,
-        undefined,
-        null,
-        null,
         voteTXID,
         (err) => {
           if (err) {
@@ -5250,7 +5261,10 @@ class Store {
     }
   };
 
-  getVestVotes = async (payload) => {
+  getVestVotes = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5318,7 +5332,10 @@ class Store {
     }
   };
 
-  createBribe = async (payload) => {
+  createBribe = async (payload: {
+    type: string;
+    content: { asset: BaseAsset; amount: string; gauge: Pair };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5362,7 +5379,7 @@ class Store {
         gauge,
         account
       );
-
+      if (!allowance) throw new Error("Error getting bribe allowance");
       if (BigNumber(allowance).lt(amount)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: allowanceTXID,
@@ -5387,14 +5404,10 @@ class Store {
 
         const tokenPromise = new Promise<void>((resolve, reject) => {
           this._callContractWait(
-            web3,
             tokenContract,
             "approve",
-            [gauge.gauge.wrapped_bribe_address, MAX_UINT256],
+            [gauge.gauge?.wrapped_bribe_address, MAX_UINT256],
             account,
-            undefined,
-            null,
-            null,
             allowanceTXID,
             (err) => {
               if (err) {
@@ -5415,7 +5428,7 @@ class Store {
       // SUBMIT BRIBE TRANSACTION
       const bribeContract = new web3.eth.Contract(
         CONTRACTS.BRIBE_ABI as AbiItem[],
-        gauge.gauge.wrapped_bribe_address
+        gauge.gauge?.wrapped_bribe_address
       );
 
       const sendAmount = BigNumber(amount)
@@ -5423,14 +5436,10 @@ class Store {
         .toFixed(0);
 
       this._callContractWait(
-        web3,
         bribeContract,
         "notifyRewardAmount",
         [asset.address, sendAmount],
         account,
-        undefined,
-        null,
-        null,
         bribeTXID,
         async (err) => {
           if (err) {
@@ -5448,14 +5457,19 @@ class Store {
     }
   };
 
-  _getBribeAllowance = async (web3, token, pair, account) => {
+  _getBribeAllowance = async (
+    web3: Web3,
+    token: BaseAsset,
+    pair: Pair,
+    account: { address: string }
+  ) => {
     try {
       const tokenContract = new web3.eth.Contract(
         CONTRACTS.ERC20_ABI,
         token.address
       );
       const allowance = await tokenContract.methods
-        .allowance(account.address, pair.gauge.wrapped_bribe_address)
+        .allowance(account.address, pair.gauge?.wrapped_bribe_address)
         .call();
       return BigNumber(allowance)
         .div(10 ** token.decimals)
@@ -5466,7 +5480,10 @@ class Store {
     }
   };
 
-  getVestBalances = async (payload) => {
+  getVestBalances = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5491,9 +5508,7 @@ class Store {
         return;
       }
 
-      const filteredPairs = pairs.filter((pair) => {
-        return pair && pair.gauge;
-      });
+      const filteredPairs = pairs.filter(hasGauge);
 
       const bribesEarned = await Promise.all(
         filteredPairs.map(async (pair) => {
@@ -5501,7 +5516,7 @@ class Store {
             pair.gauge.bribes.map(async (bribe) => {
               const bribeContract = new web3.eth.Contract(
                 CONTRACTS.BRIBE_ABI as AbiItem[],
-                pair.gauge.wrapped_bribe_address
+                pair.gauge?.wrapped_bribe_address
               );
 
               const earned = await bribeContract.methods
@@ -5515,8 +5530,7 @@ class Store {
               };
             })
           );
-
-          pair.gauge.bribesEarned = bribesEarned;
+          pair.gauge.bribesEarnedValue = bribesEarned;
 
           return pair;
         })
@@ -5529,7 +5543,10 @@ class Store {
     }
   };
 
-  getRewardBalances = async (payload) => {
+  getRewardBalances = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5548,28 +5565,16 @@ class Store {
       const pairs = this.getStore("pairs");
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
+      if (!veToken || !govToken)
+        throw new Error(
+          "Error getting veToken and govToken in getRewardBalances"
+        );
 
-      const filteredPairs = [
-        ...pairs.filter((pair) => {
-          return pair && pair.gauge;
-        }),
-      ];
+      const filteredPairs = [...pairs.filter(hasGauge)];
 
-      const filteredPairs2 = [
-        ...pairs.filter((pair) => {
-          return pair && pair.gauge;
-        }),
-      ];
+      const filteredPairs2 = [...pairs.filter(hasGauge)];
 
-      let veDistReward: {
-        token: VestNFT;
-        lockToken: VeToken;
-        rewardToken: Omit<BaseAsset, "local"> & {
-          balanceOf: string;
-        };
-        earned: string;
-        rewardType: "Distribution";
-      }[] = [];
+      let veDistReward: VeDistReward[] = [];
 
       let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
 
@@ -5580,7 +5585,7 @@ class Store {
               pair.gauge.bribes.map(async (bribe) => {
                 const bribeContract = new web3.eth.Contract(
                   CONTRACTS.BRIBE_ABI as AbiItem[],
-                  pair.gauge.wrapped_bribe_address
+                  pair.gauge?.wrapped_bribe_address
                 );
 
                 const earned = await bribeContract.methods
@@ -5593,6 +5598,7 @@ class Store {
                 return bribe;
               })
             );
+
             pair.gauge.bribesEarned = bribesEarned;
 
             return pair;
@@ -5609,7 +5615,10 @@ class Store {
               let shouldReturn = false;
 
               for (let i = 0; i < pair.gauge.bribesEarned.length; i++) {
-                if (BigNumber(pair.gauge.bribesEarned[i].earned).gt(0)) {
+                if (
+                  pair.gauge.bribesEarned[i].earned &&
+                  BigNumber(pair.gauge.bribesEarned[i].earned!).gt(0)
+                ) {
                   shouldReturn = true;
                 }
               }
@@ -5653,7 +5662,7 @@ class Store {
         filteredPairs2.map(async (pair) => {
           const gaugeContract = new web3.eth.Contract(
             CONTRACTS.GAUGE_ABI as AbiItem[],
-            pair.gauge.address
+            pair.gauge?.address
           );
 
           const [earned] = await Promise.all([
@@ -5661,7 +5670,7 @@ class Store {
               .earned(CONTRACTS.GOV_TOKEN_ADDRESS, account.address)
               .call(),
           ]);
-
+          // bc filtered pairs
           pair.gauge.rewardsEarned = BigNumber(earned)
             .div(10 ** 18)
             .toFixed(18);
@@ -5699,7 +5708,13 @@ class Store {
     }
   };
 
-  claimBribes = async (payload) => {
+  claimBribes = async (payload: {
+    type: string;
+    content: {
+      pair: Pair;
+      tokenID: string;
+    };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5736,29 +5751,28 @@ class Store {
         CONTRACTS.VOTER_ADDRESS
       );
 
-      const sendGauges = [pair.gauge.wrapped_bribe_address];
+      const sendGauges = [pair.gauge?.wrapped_bribe_address];
       const sendTokens = [
-        pair.gauge.bribesEarned.map((bribe) => {
-          return bribe.token.address;
+        pair.gauge?.bribesEarned?.map((bribe) => {
+          return (bribe as Bribe).token.address;
         }),
       ];
 
       this._callContractWait(
-        web3,
         gaugesContract,
         "claimBribes",
         [sendGauges, sendTokens, tokenID],
         account,
-        undefined,
-        null,
-        null,
         claimTXID,
-        async (err) => {
+        (err) => {
           if (err) {
             return this.emitter.emit(ACTIONS.ERROR, err);
           }
 
-          this.getRewardBalances({ content: { tokenID } });
+          this.getRewardBalances({
+            type: "Internal rewards balances",
+            content: { tokenID },
+          });
           this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
         }
       );
@@ -5768,7 +5782,13 @@ class Store {
     }
   };
 
-  claimAllRewards = async (payload) => {
+  claimAllRewards = async (payload: {
+    type: string;
+    content: {
+      pairs: Store["store"]["rewards"][keyof Store["store"]["rewards"]];
+      tokenID: string;
+    };
+  }) => {
     try {
       const context = this;
       const account = stores.accountStore.getStore("account");
@@ -5787,27 +5807,27 @@ class Store {
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
-      let rewardClaimTXIDs = [];
-      let distributionClaimTXIDs = [];
+      let rewardClaimTXIDs: string[] = [];
+      let distributionClaimTXIDs: string[] = [];
 
-      let bribePairs = pairs.filter((pair) => {
+      let bribePairs = (pairs as Pair[]).filter((pair) => {
         return pair.rewardType === "Bribe";
       });
 
-      let rewardPairs = pairs.filter((pair) => {
+      let rewardPairs = (pairs as Pair[]).filter((pair) => {
         return pair.rewardType === "Reward";
       });
 
-      let distribution = pairs.filter((pair) => {
+      let distribution = (pairs as VeDistReward[]).filter((pair) => {
         return pair.rewardType === "Distribution";
       });
 
       const sendGauges = bribePairs.map((pair) => {
-        return pair.gauge.wrapped_bribe_address;
+        return pair.gauge?.wrapped_bribe_address;
       });
       const sendTokens = bribePairs.map((pair) => {
-        return pair.gauge.bribesEarned.map((bribe) => {
-          return bribe.token.address;
+        return pair.gauge?.bribesEarned?.map((bribe) => {
+          return (bribe as Bribe).token.address;
         });
       });
 
@@ -5817,7 +5837,11 @@ class Store {
         return;
       }
 
-      let sendOBJ = {
+      let sendOBJ: {
+        title: string;
+        verb: string;
+        transactions: ITransaction["transactions"];
+      } = {
         title: `Claim all rewards`,
         verb: "Rewards Claimed",
         transactions: [],
@@ -5827,7 +5851,7 @@ class Store {
         sendOBJ.transactions.push({
           uuid: claimTXID,
           description: `Claiming all your available bribes`,
-          status: "WAITING",
+          status: TransactionStatus.WAITING,
         });
       }
 
@@ -5839,7 +5863,7 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming reward for ${rewardPairs[i].symbol}`,
-            status: "WAITING",
+            status: TransactionStatus.WAITING,
           });
         }
       }
@@ -5852,7 +5876,7 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming distribution for NFT #${distribution[i].token.id}`,
-            status: "WAITING",
+            status: TransactionStatus.WAITING,
           });
         }
       }
@@ -5868,14 +5892,10 @@ class Store {
 
         const claimPromise = new Promise<void>((resolve, reject) => {
           context._callContractWait(
-            web3,
             gaugesContract,
             "claimBribes",
             [sendGauges, sendTokens, tokenID],
             account,
-            undefined,
-            null,
-            null,
             claimTXID,
             (err) => {
               if (err) {
@@ -5895,20 +5915,16 @@ class Store {
         for (let i = 0; i < rewardPairs.length; i++) {
           const gaugeContract = new web3.eth.Contract(
             CONTRACTS.GAUGE_ABI as AbiItem[],
-            rewardPairs[i].gauge.address
+            rewardPairs[i].gauge?.address
           );
           const sendTok = [CONTRACTS.GOV_TOKEN_ADDRESS];
 
           const rewardPromise = new Promise<void>((resolve, reject) => {
             context._callContractWait(
-              web3,
               gaugeContract,
               "getReward",
               [account.address, sendTok],
               account,
-              undefined,
-              null,
-              null,
               rewardClaimTXIDs[i],
               (err) => {
                 if (err) {
@@ -5933,14 +5949,10 @@ class Store {
         for (let i = 0; i < distribution.length; i++) {
           const rewardPromise = new Promise<void>((resolve, reject) => {
             context._callContractWait(
-              web3,
               veDistContract,
               "claim",
               [tokenID],
               account,
-              undefined,
-              null,
-              null,
               distributionClaimTXIDs[i],
               (err) => {
                 if (err) {
@@ -5957,7 +5969,10 @@ class Store {
         }
       }
 
-      this.getRewardBalances({ content: { tokenID } });
+      this.getRewardBalances({
+        type: "Internal reward balances",
+        content: { tokenID },
+      });
       this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
     } catch (ex) {
       console.error(ex);
@@ -5965,7 +5980,10 @@ class Store {
     }
   };
 
-  claimRewards = async (payload) => {
+  claimRewards = async (payload: {
+    type: string;
+    content: { pair: Pair; tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -5999,27 +6017,26 @@ class Store {
       // SUBMIT CLAIM TRANSACTION
       const gaugeContract = new web3.eth.Contract(
         CONTRACTS.GAUGE_ABI as AbiItem[],
-        pair.gauge.address
+        pair.gauge?.address
       );
 
       const sendTokens = [CONTRACTS.GOV_TOKEN_ADDRESS];
 
       this._callContractWait(
-        web3,
         gaugeContract,
         "getReward",
         [account.address, sendTokens],
         account,
-        undefined,
-        null,
-        null,
         claimTXID,
-        async (err) => {
+        (err) => {
           if (err) {
             return this.emitter.emit(ACTIONS.ERROR, err);
           }
 
-          this.getRewardBalances({ content: { tokenID } });
+          this.getRewardBalances({
+            type: "internal reward balances",
+            content: { tokenID },
+          });
           this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
         }
       );
@@ -6029,7 +6046,10 @@ class Store {
     }
   };
 
-  claimVeDist = async (payload) => {
+  claimVeDist = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -6067,21 +6087,20 @@ class Store {
       );
 
       this._callContractWait(
-        web3,
         veDistContract,
         "claim",
         [tokenID],
         account,
-        undefined,
-        null,
-        null,
         claimTXID,
-        async (err) => {
+        (err) => {
           if (err) {
             return this.emitter.emit(ACTIONS.ERROR, err);
           }
 
-          this.getRewardBalances({ content: { tokenID } });
+          this.getRewardBalances({
+            type: "internal reward balances",
+            content: { tokenID },
+          });
           this.emitter.emit(ACTIONS.CLAIM_VE_DIST_RETURNED);
         }
       );
@@ -6092,90 +6111,86 @@ class Store {
   };
 
   _callContractWait = (
-    web3: Web3,
     contract: Contract,
     method: string,
     params: any[],
-    account,
-    gasPrice,
-    dispatchEvent,
-    dispatchContent,
-    uuid,
-    callback,
-    sendValue = null
+    account: { address: string },
+    uuid: string,
+    callback: (arg0: Error | string | null) => void | Promise<any> | boolean,
+    sendValue: string | null | undefined = null
   ) => {
     this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
     const gasCost = contract.methods[method](...params)
       .estimateGas({ from: account.address, value: sendValue })
-      .then(async (estimatedGas) => [
+      .then(async (estimatedGas: BigNumber) => [
         ...(await stores.accountStore.getGasPriceEIP1559()),
         estimatedGas,
       ])
-      .then(([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]) => {
-        const context = this;
-        contract.methods[method](...params)
-          .send({
-            from: account.address,
-            gas: estimatedGas,
-            value: sendValue,
-            maxFeePerGas,
-            maxPriorityFeePerGas,
-          })
-          .on("transactionHash", function (txHash) {
-            context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
-          })
-          .on("receipt", function (receipt) {
-            context.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid,
-              txHash: receipt.transactionHash,
+      .then(
+        ([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]: [
+          number,
+          number,
+          BigNumber
+        ]) => {
+          const context = this;
+          contract.methods[method](...params)
+            .send({
+              from: account.address,
+              gas: estimatedGas,
+              value: sendValue,
+              maxFeePerGas,
+              maxPriorityFeePerGas,
+            })
+            .on("transactionHash", function (txHash: string) {
+              context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
+            })
+            .on("receipt", function (receipt: TransactionReceipt) {
+              context.emitter.emit(ACTIONS.TX_CONFIRMED, {
+                uuid,
+                txHash: receipt.transactionHash,
+              });
+              if (method !== "approve" && method !== "reset") {
+                setTimeout(() => {
+                  context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+                }, 1);
+              }
+              callback(null);
+            })
+            .on("error", function (error: Error) {
+              if (!error.toString().includes("-32601")) {
+                if (error.message) {
+                  context.emitter.emit(ACTIONS.TX_REJECTED, {
+                    uuid,
+                    error: context._mapError(error.message),
+                  });
+                  return callback(error.message);
+                }
+                context.emitter.emit(ACTIONS.TX_REJECTED, {
+                  uuid,
+                  error: error,
+                });
+                callback(error);
+              }
+            })
+            .catch((error: Error) => {
+              if (!error.toString().includes("-32601")) {
+                if (error.message) {
+                  context.emitter.emit(ACTIONS.TX_REJECTED, {
+                    uuid,
+                    error: this._mapError(error.message),
+                  });
+                  return callback(error.message);
+                }
+                context.emitter.emit(ACTIONS.TX_REJECTED, {
+                  uuid,
+                  error: error,
+                });
+                callback(error);
+              }
             });
-            if (method !== "approve" && method !== "reset") {
-              setTimeout(() => {
-                context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-              }, 1);
-            }
-            callback(null, receipt.transactionHash);
-            if (dispatchEvent) {
-              context.dispatcher.dispatch({
-                type: dispatchEvent,
-                content: dispatchContent,
-              });
-            }
-          })
-          .on("error", function (error) {
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-                context.emitter.emit(ACTIONS.TX_REJECTED, {
-                  uuid,
-                  error: this._mapError(error.message),
-                });
-                return callback(error.message);
-              }
-              context.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid,
-                error: error,
-              });
-              callback(error);
-            }
-          })
-          .catch((error) => {
-            if (!error.toString().includes("-32601")) {
-              if (error.message) {
-                context.emitter.emit(ACTIONS.TX_REJECTED, {
-                  uuid,
-                  error: this._mapError(error.message),
-                });
-                return callback(error.message);
-              }
-              context.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid,
-                error: error,
-              });
-              callback(error);
-            }
-          });
-      })
-      .catch((ex) => {
+        }
+      )
+      .catch((ex: Error) => {
         console.log(ex);
         if (ex.message) {
           this.emitter.emit(ACTIONS.TX_REJECTED, {
@@ -6192,7 +6207,18 @@ class Store {
       });
   };
 
-  _sendTransactionWait = (web3: Web3, account, tx, uuid, callback) => {
+  _sendTransactionWait = (
+    web3: Web3,
+    tx: {
+      from: string;
+      to: string;
+      gasPrice: number;
+      data: string;
+      value: string | undefined;
+    },
+    uuid: string,
+    callback: (arg0: Error | null | string) => void
+  ) => {
     this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
     const sendTx = web3.eth.sendTransaction(tx);
     sendTx.on("transactionHash", (txHash) => {
@@ -6206,7 +6232,7 @@ class Store {
       setTimeout(() => {
         this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
       }, 1);
-      callback(null, receipt.transactionHash);
+      callback(null);
     });
     sendTx.on("error", (error) => {
       if (!error.toString().includes("-32601")) {

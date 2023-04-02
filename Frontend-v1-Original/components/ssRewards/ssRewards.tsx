@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Button, Typography, Grid, Select, MenuItem } from "@mui/material";
+import {
+  Button,
+  Typography,
+  Grid,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+} from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
 import RewardsTable from "./ssRewardsTable";
@@ -9,22 +16,29 @@ import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
 import classes from "./ssRewards.module.css";
+import {
+  VeDistReward,
+  VestNFT,
+  VeToken,
+  Gauge,
+} from "../../stores/types/types";
 
 const initialEmptyToken = {
   id: "0",
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
+  voted: false,
 };
 
 export default function ssRewards() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [rewards, setRewards] = useState([]);
-  const [vestNFTs, setVestNFTs] = useState([]);
-  const [token, setToken] = useState(initialEmptyToken);
-  const [veToken, setVeToken] = useState(null);
+  const [rewards, setRewards] = useState<(Gauge | VeDistReward)[]>([]);
+  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
+  const [token, setToken] = useState<VestNFT>(initialEmptyToken);
+  const [veToken, setVeToken] = useState<VeToken | null>(null);
   const [loading, setLoading] = useState(false);
 
   const stableSwapUpdated = () => {
@@ -68,19 +82,12 @@ export default function ssRewards() {
       if (
         rew &&
         rew.bribes &&
-        // rew.fees &&
         rew.rewards &&
         rew.veDist &&
         rew.bribes.length >= 0 &&
-        // rew.fees.length >= 0 &&
         rew.rewards.length >= 0
       ) {
-        setRewards([
-          ...rew.bribes,
-          // ...rew.fees,
-          ...rew.rewards,
-          ...rew.veDist,
-        ]);
+        setRewards([...rew.bribes, ...rew.rewards, ...rew.veDist]);
       }
     } else {
       let re = stores.stableSwapStore.getStore("rewards");
@@ -88,19 +95,12 @@ export default function ssRewards() {
       if (
         re &&
         re.bribes &&
-        // re.fees &&
         re.rewards &&
         re.veDist &&
         re.bribes.length >= 0 &&
-        // re.fees.length >= 0 &&
         re.rewards.length >= 0
       ) {
-        setRewards([
-          ...re.bribes,
-          // ...re.fees,
-          ...re.rewards,
-          ...re.veDist,
-        ]);
+        setRewards([...re.bribes, ...re.rewards, ...re.veDist]);
       }
     }
   };
@@ -145,10 +145,6 @@ export default function ssRewards() {
         ACTIONS.CLAIM_REWARD_RETURNED,
         claimReturned
       );
-      // stores.emitter.removeListener(
-      //   ACTIONS.CLAIM_PAIR_FEES_RETURNED,
-      //   claimReturned
-      // );
       stores.emitter.removeListener(
         ACTIONS.CLAIM_VE_DIST_RETURNED,
         claimReturned
@@ -172,15 +168,15 @@ export default function ssRewards() {
     });
   };
 
-  const handleChange = (event) => {
-    setToken(event.target.value);
+  const handleChange = (event: SelectChangeEvent<VestNFT>) => {
+    setToken(event.target.value as VestNFT);
     stores.dispatcher.dispatch({
       type: ACTIONS.GET_REWARD_BALANCES,
-      content: { tokenID: event.target.value.id },
+      content: { tokenID: (event.target.value as VestNFT).id },
     });
   };
 
-  const renderMediumInput = (value, options) => {
+  const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     return (
       <div className={classes.textField}>
         <div className={classes.mediumInputContainer}>
@@ -205,7 +201,11 @@ export default function ssRewards() {
                   {options &&
                     options.map((option) => {
                       return (
-                        <MenuItem key={option.id} value={option}>
+                        <MenuItem
+                          key={option.id}
+                          // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
+                          value={option as any}
+                        >
                           <div className={classes.menuOption}>
                             <Typography>Token #{option.id}</Typography>
                             <div>

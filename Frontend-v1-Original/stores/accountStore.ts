@@ -57,7 +57,7 @@ class Store {
         TrustWallet: injected,
         WalletConnect: walletconnect,
         WalletLink: walletlink,
-      },
+      } as const,
       currentBlock: 12906197,
       gasPrices: {
         standard: 90,
@@ -168,16 +168,19 @@ class Store {
       }
     );
 
-    (window as EthWindow).ethereum.on("chainChanged", function (chainId: string) {
-      const supportedChainIds = [process.env.NEXT_PUBLIC_CHAINID];
-      const parsedChainId = parseInt(chainId + "", 16) + "";
-      const isChainSupported = supportedChainIds.includes(parsedChainId);
-      that.setStore({ chainInvalid: !isChainSupported });
-      that.emitter.emit(ACTIONS.ACCOUNT_CHANGED);
-      that.emitter.emit(ACTIONS.ACCOUNT_CONFIGURED);
+    (window as EthWindow).ethereum.on(
+      "chainChanged",
+      function (chainId: string) {
+        const supportedChainIds = [process.env.NEXT_PUBLIC_CHAINID];
+        const parsedChainId = parseInt(chainId + "", 16) + "";
+        const isChainSupported = supportedChainIds.includes(parsedChainId);
+        that.setStore({ chainInvalid: !isChainSupported });
+        that.emitter.emit(ACTIONS.ACCOUNT_CHANGED);
+        that.emitter.emit(ACTIONS.ACCOUNT_CONFIGURED);
 
-      that.configure();
-    });
+        that.configure();
+      }
+    );
   };
 
   // getGasPrices = async (payload) => {
@@ -215,7 +218,7 @@ class Store {
   getGasPrice = async () => {
     try {
       const web3 = await this.getWeb3Provider();
-      if (!web3) throw new Error('Couldnt get web3');
+      if (!web3) throw new Error("Couldnt get web3");
       const gasPrice = await web3.eth.getGasPrice();
       const gasPriceInGwei = web3.utils.fromWei(gasPrice, "gwei");
       return gasPriceInGwei;

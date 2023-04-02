@@ -2,13 +2,14 @@ import { Typography } from "@mui/material";
 import classes from "./ssVest.module.css";
 import moment from "moment";
 import { formatCurrency } from "../../utils/utils";
+import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 interface VestingInfoProps {
-  veToken: any;
-  govToken: any;
-  currentNFT?: any;
-  futureNFT?: any;
-  showVestingStructure?: any;
+  veToken: VeToken | null;
+  govToken: GovToken | null;
+  currentNFT?: VestNFT;
+  futureNFT?: VestNFT;
+  showVestingStructure?: boolean;
 }
 
 export default function VestingInfo({
@@ -36,7 +37,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 {formatCurrency(currentNFT.lockAmount)} {govToken?.symbol}{" "}
-                locked expires {moment.unix(currentNFT?.lockEnds).fromNow()}{" "}
+                locked expires {moment.unix(+currentNFT?.lockEnds).fromNow()}{" "}
               </Typography>
               <Typography
                 color="textSecondary"
@@ -44,7 +45,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 Locked until{" "}
-                {moment.unix(currentNFT?.lockEnds).format("YYYY / MM / DD")}
+                {moment.unix(+currentNFT?.lockEnds).format("YYYY / MM / DD")}
               </Typography>
             </div>
           </div>
@@ -66,7 +67,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 {formatCurrency(futureNFT.lockAmount)} {govToken?.symbol} locked
-                expires {moment.unix(futureNFT?.lockEnds).fromNow()}{" "}
+                expires {moment.unix(+futureNFT?.lockEnds).fromNow()}{" "}
               </Typography>
               <Typography
                 color="textSecondary"
@@ -74,7 +75,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 Locked until{" "}
-                {moment.unix(futureNFT?.lockEnds).format("YYYY / MM / DD")}
+                {moment.unix(+futureNFT?.lockEnds).format("YYYY / MM / DD")}
               </Typography>
             </div>
           </div>
