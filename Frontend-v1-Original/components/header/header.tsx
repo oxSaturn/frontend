@@ -141,6 +141,7 @@ const switchChain = async () => {
                 decimals: 18,
               },
               rpcUrls: [
+                "https://canto.dexvaults.com/",
                 "https://canto.slingshot.finance/",
                 "https://canto.gravitychain.io/",
                 "https://canto.neobase.one/",
