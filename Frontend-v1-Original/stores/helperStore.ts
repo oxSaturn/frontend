@@ -79,33 +79,53 @@ class Helper {
   // };
 
   getCirculatingSupply = async () => {
-    const flowContract = getContract({
+    const flowContract = {
       abi: CONTRACTS.GOV_TOKEN_ABI,
       address: CONTRACTS.GOV_TOKEN_ADDRESS,
-      publicClient: viemClient,
+    } as const;
+
+    const [
+      totalSupply,
+      lockedSupply,
+      flowInMinter,
+      flowInMsig,
+      flowInRewardsDistributor,
+      flowInTimelockerController,
+    ] = await viemClient.multicall({
+      allowFailure: false,
+      multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+      contracts: [
+        {
+          ...flowContract,
+          functionName: "totalSupply",
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
+          args: [CONTRACTS.VE_TOKEN_ADDRESS],
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
+          args: [CONTRACTS.MINTER_ADDRESS],
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
+          args: [CONTRACTS.MSIG_ADDRESS],
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
+          args: [CONTRACTS.VE_DIST_ADDRESS],
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
+          args: ["0xd0cC9738866cd82B237A14c92ac60577602d6c18"],
+        },
+      ],
     });
-
-    const totalSupply = await flowContract.read.totalSupply();
-
-    const lockedSupply = await flowContract.read.balanceOf([
-      CONTRACTS.VE_TOKEN_ADDRESS,
-    ]);
-
-    const flowInMinter = await flowContract.read.balanceOf([
-      CONTRACTS.MINTER_ADDRESS,
-    ]);
-
-    const flowInMsig = await flowContract.read.balanceOf([
-      CONTRACTS.MSIG_ADDRESS,
-    ]);
-
-    const flowInRewardsDistributor = await flowContract.read.balanceOf([
-      CONTRACTS.VE_DIST_ADDRESS,
-    ]);
-
-    const flowInTimelockerController = await flowContract.read.balanceOf([
-      "0xd0cC9738866cd82B237A14c92ac60577602d6c18",
-    ]);
 
     const circulatingSupply = formatUnits(
       totalSupply -
