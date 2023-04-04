@@ -249,12 +249,7 @@ export default function ssVotes() {
     );
   };
 
-  interface Row {
-    gauge: {
-      tbv: number
-    }
-  }
-  const filteredGauges: Row[] = useMemo(
+  const filteredGauges = useMemo(
     () =>
       gauges.filter((pair) => {
         if (!search || search === "") {
@@ -281,6 +276,20 @@ export default function ssVotes() {
     [gauges, search]
   );
 
+  const bribesAccrued = filteredGauges
+    .reduce(
+      (
+        acc: number,
+        row: {
+          gauge: {
+            tbv: number;
+          };
+        }
+      ) => acc + row.gauge.tbv,
+      0
+    )
+    .toFixed(2);
+
   return (
     <div className={classes.container}>
       <div className={classes.descriptionTimerBox}>
@@ -288,7 +297,8 @@ export default function ssVotes() {
           <Typography variant="h1">Vote</Typography>
           <Typography variant="body2">
             Select your veNFT and use 100% of your votes for one or more pools
-            to earn bribes and trading fees (<span className="text-cantoGreen">${filteredGauges.reduce((acc, row) => acc + row.gauge.tbv, 0).toFixed(2)}</span> in total).
+            to earn bribes and trading fees (
+            <span className="text-cantoGreen">${bribesAccrued}</span> in total).
           </Typography>
         </div>
       </div>
