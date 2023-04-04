@@ -1,37 +1,42 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import Layout from "../components/layout/layout";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import { useRouter } from "next/router";
+import { CacheProvider, EmotionCache } from "@emotion/react";
+import { ThemeProvider } from "@mui/material/styles";
 
 import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
 
 import Configure from "./configure";
+import Layout from "../components/layout/layout";
 
 import stores from "../stores/index";
 
 import { ACTIONS } from "../stores/constants/constants";
+import createEmotionCache from "../utils/createEmotionCache";
+
 import "../styles/global.css";
+
+// Client-side cache, shared for the whole session of the user in the browser.
+const clientSideEmotionCache = createEmotionCache();
+
+export interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache;
+}
 
 console.log("<<<<<<<<<<<<< flow >>>>>>>>>>>>>");
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({
+  Component,
+  emotionCache = clientSideEmotionCache,
+  pageProps,
+}: MyAppProps) {
   const router = useRouter();
 
   const [themeConfig, setThemeConfig] = useState(darkTheme);
   const [stalbeSwapConfigured, setStableSwapConfigured] = useState(false);
   const [accountConfigured, setAccountConfigured] = useState(false);
-
-  useEffect(() => {
-    // Remove the server-side injected CSS.
-    const jssStyles = document.querySelector("#jss-server-side");
-    if (jssStyles) {
-      jssStyles.parentElement?.removeChild(jssStyles);
-    }
-  }, []);
 
   const accountConfigureReturned = () => {
     setAccountConfigured(true);
@@ -59,17 +64,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     };
   }, []);
 
-  const validateConfigured = () => {
-    switch (router.pathname) {
-      case "/":
-        return accountConfigured;
-      default:
-        return accountConfigured;
-    }
-  };
-
   return (
-    <React.Fragment>
+    <CacheProvider value={emotionCache}>
       <Head>
         <title>Velocimeter</title>
         <meta
@@ -78,15 +74,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         />
       </Head>
       <ThemeProvider theme={themeConfig}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        {validateConfigured() && (
+        {accountConfigured ? (
           <Layout>
             <Component {...pageProps} />
           </Layout>
+        ) : (
+          <Configure {...pageProps} />
         )}
-        {!validateConfigured() && <Configure {...pageProps} />}
       </ThemeProvider>
-    </React.Fragment>
+    </CacheProvider>
   );
 }
