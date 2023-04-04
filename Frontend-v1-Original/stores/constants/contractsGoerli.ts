@@ -54,6 +54,7 @@ export const TOKEN_ABI = abis.tokenABI;
 
 export const MULTICALL_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
-export const STABLE_TOKEN_ADDRESS = ""; // need this
+export const STABLE_TOKEN_ADDRESS =
+  "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd"; // need this
 
-export const MSIG_ADDRESS = "";
+export const MSIG_ADDRESS = "0x13eeB8EdfF60BbCcB24Ec7Dd5668aa246525Dc51";

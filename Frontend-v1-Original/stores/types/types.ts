@@ -124,72 +124,72 @@ interface VeDistReward {
 }
 
 interface GeneralContracts {
-  GOV_TOKEN_ADDRESS: string;
+  GOV_TOKEN_ADDRESS: `0x${string}`;
   GOV_TOKEN_NAME: string;
   GOV_TOKEN_SYMBOL: string;
   GOV_TOKEN_DECIMALS: number;
   GOV_TOKEN_LOGO: string;
   GOV_TOKEN_ABI: any[];
-  VE_TOKEN_ADDRESS: string;
+  VE_TOKEN_ADDRESS: `0x${string}`;
   VE_TOKEN_NAME: string;
   VE_TOKEN_SYMBOL: string;
   VE_TOKEN_DECIMALS: number;
   VE_TOKEN_LOGO: string;
   VE_TOKEN_ABI: any[];
-  FACTORY_ADDRESS: string;
+  FACTORY_ADDRESS: `0x${string}`;
   FACTORY_ABI: any[];
-  ROUTER_ADDRESS: string;
+  ROUTER_ADDRESS: `0x${string}`;
   ROUTER_ABI: any[];
-  VE_DIST_ADDRESS: string;
+  VE_DIST_ADDRESS: `0x${string}`;
   VE_DIST_ABI: any[];
-  VOTER_ADDRESS: string;
+  VOTER_ADDRESS: `0x${string}`;
   VOTER_ABI: any[];
-  MINTER_ADDRESS: string;
+  MINTER_ADDRESS: `0x${string}`;
   MINTER_ABI: any[];
   ERC20_ABI: any[];
   PAIR_ABI: any[];
   GAUGE_ABI: any[];
   BRIBE_ABI: any[];
   TOKEN_ABI: any[];
-  MULTICALL_ADDRESS: string;
-  STABLE_TOKEN_ADDRESS: string;
-  MSIG_ADDRESS: string;
+  MULTICALL_ADDRESS: `0x${string}`;
+  STABLE_TOKEN_ADDRESS: `0x${string}`;
+  MSIG_ADDRESS: `0x${string}`;
 }
 
 interface TestnetContracts extends GeneralContracts {
-  WETH_ADDRESS: string;
+  WETH_ADDRESS: `0x${string}`;
   WETH_NAME: string;
   WETH_SYMBOL: string;
   WETH_DECIMALS: number;
   WETH_ABI: any[];
-  ETH_ADDRESS: string;
+  ETH_ADDRESS: `0x${string}`;
   ETH_NAME: string;
   ETH_SYMBOL: string;
   ETH_DECIMALS: number;
   ETH_LOGO: string;
 }
 interface CantoContracts extends GeneralContracts {
-  FLOW_V1_ADDRESS: string;
-  FLOW_CONVERTOR_ADDRESS: string;
+  FLOW_V1_ADDRESS: `0x${string}`;
+  FLOW_CONVERTOR_ADDRESS: `0x${string}`;
   FLOW_CONVERTOR_ABI: any[];
-  WCANTO_ADDRESS: string;
+  WCANTO_ADDRESS: `0x${string}`;
   WCANTO_NAME: string;
   WCANTO_SYMBOL: string;
   WCANTO_DECIMALS: number;
   WCANTO_ABI: any[];
-  CANTO_ADDRESS: string;
+  CANTO_ADDRESS: `0x${string}`;
   CANTO_NAME: string;
   CANTO_SYMBOL: string;
   CANTO_DECIMALS: number;
   CANTO_LOGO: string;
 }
 interface ArbitrumContracts extends GeneralContracts {
-  WETH_ADDRESS: string;
+  WETH_ADDRESS: `0x${string}`;
   WETH_NAME: string;
   WETH_SYMBOL: string;
   WETH_DECIMALS: number;
   WETH_ABI: any[];
-  ETH_ADDRESS: string;
+  ETH_ADDRESS: `0x${string}`;
   ETH_NAME: string;
   ETH_SYMBOL: string;
   ETH_DECIMALS: number;

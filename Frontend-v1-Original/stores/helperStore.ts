@@ -1,11 +1,10 @@
-import type { AbiItem } from "web3-utils";
-import BigNumber from "bignumber.js";
+import viemClient from "./connectors/viem";
+import { getContract, formatUnits, parseUnits } from "viem";
 
 import stores from ".";
 import { CONTRACTS, NATIVE_TOKEN } from "./constants/constants";
 
 import {
-  CantoContracts,
   DefiLlamaTokenPrice,
   DexScrennerPair,
   TokenForPrice,
@@ -49,14 +48,18 @@ class Helper {
 
   getActivePeriod = async () => {
     try {
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) throw new Error("Couldn't get web3");
-      const minterContract = new web3.eth.Contract(
-        CONTRACTS.MINTER_ABI as AbiItem[],
-        CONTRACTS.MINTER_ADDRESS
-      );
-      const activePeriod = await minterContract.methods.active_period().call();
-      const activePeriodEnd = parseInt(activePeriod) + WEEK;
+      // const minterContract = new web3.eth.Contract(
+      //   CONTRACTS.MINTER_ABI as AbiItem[],
+      //   CONTRACTS.MINTER_ADDRESS
+      // );
+      const minterContract = getContract({
+        abi: CONTRACTS.MINTER_ABI,
+        address: CONTRACTS.MINTER_ADDRESS,
+        publicClient: viemClient,
+      });
+      const activePeriod = await minterContract.read.active_period();
+
+      const activePeriodEnd = parseFloat(activePeriod.toString()) + WEEK;
       return activePeriodEnd;
     } catch (ex) {
       console.log("EXCEPTION. ACTIVE PERIOD ERROR");
@@ -76,45 +79,45 @@ class Helper {
   // };
 
   getCirculatingSupply = async () => {
-    const web3 = await stores.accountStore.getWeb3Provider();
-    if (!web3) return;
+    const flowContract = getContract({
+      abi: CONTRACTS.GOV_TOKEN_ABI,
+      address: CONTRACTS.GOV_TOKEN_ADDRESS,
+      publicClient: viemClient,
+    });
 
-    const flowContract = new web3.eth.Contract(
-      CONTRACTS.GOV_TOKEN_ABI,
-      CONTRACTS.GOV_TOKEN_ADDRESS
+    const totalSupply = await flowContract.read.totalSupply();
+
+    const lockedSupply = await flowContract.read.balanceOf([
+      CONTRACTS.VE_TOKEN_ADDRESS,
+    ]);
+
+    const flowInMinter = await flowContract.read.balanceOf([
+      CONTRACTS.MINTER_ADDRESS,
+    ]);
+
+    const flowInMsig = await flowContract.read.balanceOf([
+      CONTRACTS.MSIG_ADDRESS,
+    ]);
+
+    const flowInRewardsDistributor = await flowContract.read.balanceOf([
+      CONTRACTS.VE_DIST_ADDRESS,
+    ]);
+
+    const flowInTimelockerController = await flowContract.read.balanceOf([
+      "0xd0cC9738866cd82B237A14c92ac60577602d6c18",
+    ]);
+
+    const circulatingSupply = formatUnits(
+      totalSupply -
+        lockedSupply -
+        flowInMinter -
+        flowInMsig -
+        flowInRewardsDistributor -
+        flowInTimelockerController,
+      NATIVE_TOKEN.decimals
     );
-    const totalSupply = await flowContract.methods.totalSupply().call();
 
-    const lockedSupply = await flowContract.methods
-      .balanceOf(CONTRACTS.VE_TOKEN_ADDRESS)
-      .call();
-
-    const flowInMinter = await flowContract.methods
-      .balanceOf(CONTRACTS.MINTER_ADDRESS)
-      .call();
-
-    const flowInMsig = await flowContract.methods
-      .balanceOf(CONTRACTS.MSIG_ADDRESS)
-      .call();
-
-    const flowInRewardsDistributor = await flowContract.methods
-      .balanceOf(CONTRACTS.VE_DIST_ADDRESS)
-      .call();
-
-    const flowInTimelockerController = await flowContract.methods
-      .balanceOf("0xd0cC9738866cd82B237A14c92ac60577602d6c18")
-      .call();
-
-    const circulatingSupply = BigNumber(totalSupply)
-      .minus(BigNumber(lockedSupply))
-      .minus(BigNumber(flowInMinter))
-      .minus(BigNumber(flowInMsig))
-      .minus(BigNumber(flowInRewardsDistributor))
-      .minus(BigNumber(flowInTimelockerController))
-      .div(10 ** NATIVE_TOKEN.decimals)
-      .toNumber();
-
-    return circulatingSupply;
+    return parseFloat(circulatingSupply);
   };
 
   getMarketCap = async () => {
@@ -122,29 +125,10 @@ class Helper {
     const price = stores.stableSwapStore
       .getStore("tokenPrices")
       .get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
-    //  await this.updateTokenPrice({
-    //   address: CONTRACTS.GOV_TOKEN_ADDRESS,
-    //   decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
-    //   symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
-    // });
+
     if (!price || !circulatingSupply) return 0;
     return circulatingSupply * price;
   };
-
-  // protected _getTokenPrice = async (token: TokenForPrice) => {
-  //   let price = 0;
-
-  //   price = await this._getAggregatedPriceInStables(token);
-
-  //   if (price === 0) {
-  //     price = await this._getChainPriceInStables(token);
-  //   }
-  //   // TODO this one needs api keys and is not free
-  //   // if (price === 0) {
-  //   //   price = await this._getDebankPriceInStables(token);
-  //   // }
-  //   return price;
-  // };
 
   protected _getAggregatedPriceInStables = async (token: TokenForPrice) => {
     const price = await this._getDefillamaPriceInStables(token);
@@ -181,33 +165,24 @@ class Helper {
   };
 
   protected _getChainPriceInStables = async (token: TokenForPrice) => {
-    const web3 = await stores.accountStore.getWeb3Provider();
-
-    if (!web3) return 0;
-
     if (token.address === CONTRACTS.STABLE_TOKEN_ADDRESS) {
       return 1.0;
     }
 
-    const routerContract = new web3.eth.Contract(
-      CONTRACTS.ROUTER_ABI as AbiItem[],
-      CONTRACTS.ROUTER_ADDRESS
-    );
+    const routerContract = getContract({
+      abi: CONTRACTS.ROUTER_ABI,
+      address: CONTRACTS.ROUTER_ADDRESS,
+      publicClient: viemClient,
+    });
 
     try {
-      const amountOutFromContract: {
-        amount: string;
-        stable: boolean;
-      } = await routerContract.methods
-        .getAmountOut(
-          BigNumber(10).pow(token.decimals),
-          token.address,
-          CONTRACTS.STABLE_TOKEN_ADDRESS
-        )
-        .call();
-      return BigNumber(amountOutFromContract.amount)
-        .div(BigNumber(10).pow(6)) //stablecoin decimals
-        .toNumber();
+      const amountOutFromContract = await routerContract.read.getAmountOut([
+        parseUnits("1", token.decimals),
+        token.address as `0x${string}`,
+        CONTRACTS.STABLE_TOKEN_ADDRESS,
+      ]);
+      const amountOut = formatUnits(amountOutFromContract[0], 6);
+      return parseFloat(amountOut);
     } catch (ex) {
       return 0;
     }

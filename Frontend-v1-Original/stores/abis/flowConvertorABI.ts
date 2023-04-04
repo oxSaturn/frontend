@@ -160,4 +160,4 @@ export const flowConvertorABI = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;

@@ -9,7 +9,7 @@ import type { Contracts } from "../types/types";
 let isCanto = process.env.NEXT_PUBLIC_CHAINID === "7700";
 let isGoerli = process.env.NEXT_PUBLIC_CHAINID === "421613";
 let scan = "https://arbiscan.io/";
-let cont: Contracts = contracts;
+let cont = contracts;
 let nativeETH = {
   address: cont.ETH_ADDRESS,
   decimals: cont.ETH_DECIMALS,

@@ -994,4 +994,4 @@ export const routerABI = [
     stateMutability: "payable",
     type: "receive",
   },
-];
+] as const;
