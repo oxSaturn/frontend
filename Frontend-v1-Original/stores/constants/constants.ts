@@ -4,48 +4,69 @@ import * as contractsCanto from "./contractsCanto";
 import * as contracts from "./contracts";
 import * as actions from "./actions";
 
-import type { Contracts } from "../types/types";
+let network: "7700" | "42161" | "421613" = "7700";
 
-let isCanto = process.env.NEXT_PUBLIC_CHAINID === "7700";
-let isGoerli = process.env.NEXT_PUBLIC_CHAINID === "421613";
-let scan = "https://arbiscan.io/";
-let cont = contracts;
-let nativeETH = {
-  address: cont.ETH_ADDRESS,
-  decimals: cont.ETH_DECIMALS,
-  logoURI: cont.ETH_LOGO,
-  name: cont.ETH_NAME,
-  symbol: cont.ETH_SYMBOL,
-  chainId: 42161,
-};
-let wNativeAddress = cont.WETH_ADDRESS;
-
-if (isGoerli) {
-  scan = "https://goerli.arbiscan.io/";
-  cont = contractsTestnet;
-} else if (isCanto) {
-  scan = "https://tuber.build/";
-  cont = contractsCanto;
-  nativeETH = {
-    address: cont.CANTO_ADDRESS,
-    decimals: cont.CANTO_DECIMALS,
-    logoURI: cont.CANTO_LOGO,
-    name: cont.CANTO_NAME,
-    symbol: cont.CANTO_SYMBOL,
-    chainId: 7700,
-  };
-  wNativeAddress = cont.WCANTO_ADDRESS;
+if (process.env.NEXT_PUBLIC_CHAINID === "42161") {
+  network = "42161";
+} else if (process.env.NEXT_PUBLIC_CHAINID === "421613") {
+  network = "421613";
 }
 
-export const ETHERSCAN_URL = scan;
+const config = {
+  "7700": {
+    scan: "https://tuber.build/",
+    contracts: contractsCanto,
+    nativeETH: {
+      address: contractsCanto.CANTO_ADDRESS,
+      decimals: contractsCanto.CANTO_DECIMALS,
+      logoURI: contractsCanto.CANTO_LOGO,
+      name: contractsCanto.CANTO_NAME,
+      symbol: contractsCanto.CANTO_SYMBOL,
+      chainId: 7700,
+    },
+    wNativeAddress: contractsCanto.WCANTO_ADDRESS,
+    wNativeABI: contractsCanto.WCANTO_ABI,
+  },
+  "421613": {
+    scan: "https://goerli.arbiscan.io/",
+    contracts: contractsTestnet,
+    nativeETH: {
+      address: contractsTestnet.ETH_ADDRESS,
+      decimals: contractsTestnet.ETH_DECIMALS,
+      logoURI: contractsTestnet.ETH_LOGO,
+      name: contractsTestnet.ETH_NAME,
+      symbol: contractsTestnet.ETH_SYMBOL,
+      chainId: 421613,
+    },
+    wNativeAddress: contractsTestnet.WETH_ADDRESS,
+    wNativeABI: contractsTestnet.WETH_ABI,
+  },
+  "42161": {
+    scan: "https://arbiscan.io/",
+    contracts: contracts,
+    nativeETH: {
+      address: contracts.ETH_ADDRESS,
+      decimals: contracts.ETH_DECIMALS,
+      logoURI: contracts.ETH_LOGO,
+      name: contracts.ETH_NAME,
+      symbol: contracts.ETH_SYMBOL,
+      chainId: 42161,
+    },
+    wNativeAddress: contractsTestnet.WETH_ADDRESS,
+    wNativeABI: contractsTestnet.WETH_ABI,
+  },
+};
 
-export const CONTRACTS = cont;
+export const ETHERSCAN_URL = config[network].scan;
+
+export const CONTRACTS = config[network].contracts;
 export const ACTIONS = actions;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-export const NATIVE_TOKEN = nativeETH;
-export const W_NATIVE_ADDRESS = wNativeAddress;
+export const NATIVE_TOKEN = config[network].nativeETH;
+export const W_NATIVE_ADDRESS = config[network].wNativeAddress;
+export const W_NATIVE_ABI = config[network].wNativeABI;
 
 export const PAIR_DECIMALS = 18;

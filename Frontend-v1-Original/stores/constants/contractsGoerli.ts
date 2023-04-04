@@ -43,7 +43,7 @@ export const VE_DIST_ABI = abis.veDistABI;
 export const VOTER_ADDRESS = "0x854086d39955d28317aE3856399312b8Edb1B473";
 export const VOTER_ABI = abis.voterABI;
 
-export const MINTER_ADDRESS = "";
+export const MINTER_ADDRESS = "0x41dc163DA8E280743585fde657cFC8937b0c7F9B";
 export const MINTER_ABI = abis.minterABI;
 
 export const ERC20_ABI = abis.erc20ABI;
