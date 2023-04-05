@@ -1,14 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createPublicClient, getContract, http } from "viem";
+import { createPublicClient, getContract, http, fallback } from "viem";
 import { canto } from "viem/chains";
 import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
 import Cors from "cors";
 const cors = Cors({
   methods: ["GET"],
 });
+
+const dexvaults = http("https://canto.dexvaults.com");
+const plexnode = http("https://mainnode.plexnode.org:8545");
+const nodestake = http("https://jsonrpc.canto.nodestake.top");
+const slingshot = http("https://canto.slingshot.finance");
+const neobase = http("https://canto.neobase.one");
+
 const publicClient = createPublicClient({
   chain: canto,
-  transport: http(),
+  transport: fallback([dexvaults, plexnode, nodestake, slingshot, neobase], {
+    rank: {
+      interval: 12_000,
+    },
+  }),
 });
 
 const flowContract = getContract({
