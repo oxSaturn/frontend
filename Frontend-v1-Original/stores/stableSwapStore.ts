@@ -6,7 +6,13 @@ import BigNumber from "bignumber.js";
 import Web3 from "web3";
 import { TransactionReceipt } from "@ethersproject/providers";
 import viemClient from "./connectors/viem";
-import { getContract, formatUnits, parseUnits, formatEther } from "viem";
+import {
+  getContract,
+  formatUnits,
+  parseUnits,
+  formatEther,
+  parseEther,
+} from "viem";
 
 import { Dispatcher } from "flux";
 import EventEmitter from "events";
@@ -3333,8 +3339,8 @@ class Store {
       pair: Pair;
       token0: BaseAsset;
       token1: BaseAsset;
-      amount0: string;
-      amount1: string;
+      amount0: `${number}` | "";
+      amount1: `${number}` | "";
     };
   }) => {
     try {
@@ -3350,12 +3356,8 @@ class Store {
         return null;
       }
 
-      const sendAmount0 = BigNumber(amount0)
-        .times(10 ** token0.decimals)
-        .toFixed(0);
-      const sendAmount1 = BigNumber(amount1)
-        .times(10 ** token1.decimals)
-        .toFixed(0);
+      const sendAmount0 = parseUnits(amount0, token0.decimals);
+      const sendAmount1 = parseUnits(amount1, token1.decimals);
 
       let addy0 = token0.address;
       let addy1 = token1.address;
@@ -3371,13 +3373,7 @@ class Store {
         address: CONTRACTS.ROUTER_ADDRESS,
         abi: CONTRACTS.ROUTER_ABI,
         functionName: "quoteAddLiquidity",
-        args: [
-          addy0,
-          addy1,
-          pair.stable,
-          BigInt(sendAmount0),
-          BigInt(sendAmount1),
-        ],
+        args: [addy0, addy1, pair.stable, sendAmount0, sendAmount1],
       });
 
       const returnVal = {
@@ -3897,7 +3893,7 @@ class Store {
       pair: Pair;
       token0: BaseAsset;
       token1: BaseAsset;
-      withdrawAmount: string;
+      withdrawAmount: `${number}` | "";
     };
   }) => {
     try {
@@ -3918,7 +3914,7 @@ class Store {
         address: CONTRACTS.ROUTER_ADDRESS,
       } as const;
 
-      const sendWithdrawAmount = BigInt(withdrawAmount) * BigInt(10 ** 18);
+      const sendWithdrawAmount = parseEther(withdrawAmount);
 
       const [amountA, amountB] = await viemClient.readContract({
         ...routerContract,
