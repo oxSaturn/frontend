@@ -256,7 +256,7 @@ function Header() {
                   color="secondary"
                   overlap="circular"
                   sx={{
-                    badge: {
+                    "& .MuiBadge-badge": {
                       background: "#06D3D7",
                       color: "#000",
                     },
