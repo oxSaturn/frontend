@@ -3,6 +3,7 @@ import { createPublicClient, http, fallback, formatUnits } from "viem";
 import { canto } from "viem/chains";
 import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
 import Cors from "cors";
+
 const cors = Cors({
   methods: ["GET"],
   origin: ["https://www.coingecko.com", /\.coingecko\.com$/],
@@ -18,7 +19,7 @@ const publicClient = createPublicClient({
   chain: canto,
   transport: fallback([dexvaults, plexnode, nodestake, slingshot, neobase], {
     rank: {
-      interval: 12_000,
+      interval: 900_000,
     },
   }),
 });
