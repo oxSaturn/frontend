@@ -10,6 +10,7 @@ specifiers:
   '@mui/lab': ^5.0.0-alpha.116
   '@mui/material': ^5.11.5
   '@mui/styles': ^5.11.2
+  '@types/cors': ^2.8.13
   '@types/flux': ^3.1.11
   '@types/uuid': ^9.0.0
   '@web3-react/core': ^6.1.9
@@ -20,6 +21,7 @@ specifiers:
   async: ^3.2.1
   autoprefixer: ^10.4.13
   bignumber.js: ^9.0.1
+  cors: ^2.8.5
   ethereum-multicall: ^2.15.0
   flux: ^4.0.3
   lottie-react: ^2.2.1
@@ -57,6 +59,7 @@ dependencies:
   '@web3-react/walletlink-connector': 6.2.14_@babel+core@7.21.0
   async: 3.2.4
   bignumber.js: 9.1.1
+  cors: 2.8.5
   ethereum-multicall: 2.15.0
   flux: 4.0.3_react@17.0.2
   lottie-react: 2.4.0_sfoxds7t5ydpegc3knd667wn6m
@@ -73,6 +76,7 @@ dependencies:
   web3: 1.8.2
 
 devDependencies:
+  '@types/cors': 2.8.13
   '@types/flux': 3.1.11
   '@types/uuid': 9.0.1
   autoprefixer: 10.4.14_postcss@8.4.21
@@ -1390,6 +1394,12 @@ packages:
       '@types/node': 12.20.55
     dev: false
 
+  /@types/cors/2.8.13:
+    resolution: {integrity: sha512-RG8AStHlUiV5ysZQKq97copd2UmVYw3/pRMLefISZ3S1hK104Cwm7iLQ3fTKx+lsUH2CE8FlLaYeEA2LSeqYUA==}
+    dependencies:
+      '@types/node': 18.14.2
+    dev: true
+
   /@types/fbemitter/2.0.32:
     resolution: {integrity: sha512-Hwq28bBlbmfCgLnNJvjl5ssTrbZCTSblI4vqPpqZrbbEL8vn5l2UivxhlMYfUY7a4SR8UB6RKoLjOZfljqAa6g==}
     dev: true
@@ -1417,7 +1427,6 @@ packages:
 
   /@types/node/18.14.2:
     resolution: {integrity: sha512-1uEQxww3DaghA0RxqHx0O0ppVlo43pJhepY51OxuQIKHpjbnYLA7vcdwioNPzIqmC2u3I/dmylcqjlh0e7AyUA==}
-    dev: false
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}

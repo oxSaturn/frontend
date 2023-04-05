@@ -2,7 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, getContract, http } from "viem";
 import { canto } from "viem/chains";
 import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
-
+import Cors from "cors";
+const cors = Cors({
+  methods: ["GET"],
+});
 const publicClient = createPublicClient({
   chain: canto,
   transport: http(),
@@ -273,10 +276,27 @@ const flowContract = getContract({
   publicClient: publicClient,
 });
 
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: Function
+) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+
+      return resolve(result);
+    });
+  });
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  await runMiddleware(req, res, cors);
   const totalSupply = await flowContract.read.totalSupply();
   const lockedSupply = await flowContract.read.balanceOf([
     CONTRACTS.VE_TOKEN_ADDRESS as `0x${string}`,
