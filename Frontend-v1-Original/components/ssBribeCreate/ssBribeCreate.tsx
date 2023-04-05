@@ -37,6 +37,7 @@ export default function ssBribeCreate() {
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
     let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
+      // @ts-expect-error this is a workaround for the CANTO token
       return option.address !== "CANTO";
     });
     const storePairs = stores.stableSwapStore.getStore("pairs");
@@ -70,6 +71,7 @@ export default function ssBribeCreate() {
     const assetsUpdated = () => {
       const baseAsset = stores.stableSwapStore.getStore("baseAssets");
       let filteredStoreAssetOptions = baseAsset.filter((option) => {
+        // @ts-expect-error this is a workaround for the CANTO token
         return option.address !== "CANTO";
       });
       setAssetOptions(filteredStoreAssetOptions);

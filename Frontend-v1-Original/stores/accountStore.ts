@@ -24,7 +24,7 @@ class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
   store: {
-    account: null | { address: string };
+    account: null | { address: `0x${string}` };
     chainInvalid: boolean;
     web3context: null | { library: { provider: any } };
     tokens: any[];

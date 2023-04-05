@@ -36,6 +36,7 @@ import type {
   QuoteSwapResponse,
   FireBirdTokens,
 } from "../../stores/types/types";
+import { isAddress } from "viem";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -286,6 +287,7 @@ function Setup() {
         (
           parseFloat(fromAmountValue) *
           (tokenPrices?.get(
+            // @ts-expect-error this is a workaround for the CANTO token
             value.address === "CANTO"
               ? W_NATIVE_ADDRESS.toLowerCase()
               : value.address.toLowerCase()
@@ -319,6 +321,7 @@ function Setup() {
         (
           parseFloat(event.target.value) *
           (tokenPrices?.get(
+            // @ts-expect-error this is a workaround for the CANTO token
             fromAssetValue?.address === "CANTO"
               ? W_NATIVE_ADDRESS.toLowerCase()
               : fromAssetValue
@@ -503,6 +506,7 @@ function Setup() {
       (
         parseFloat(am) *
         (tokenPrices?.get(
+          // @ts-expect-error this is a workaround for the CANTO token
           fromAssetValue?.address === "CANTO"
             ? W_NATIVE_ADDRESS.toLowerCase()
             : fromAssetValue
@@ -532,6 +536,7 @@ function Setup() {
       (
         parseFloat(fromAmountValue) *
         (tokenPrices?.get(
+          // @ts-expect-error this is a workaround for the CANTO token
           ta.address === "CANTO"
             ? W_NATIVE_ADDRESS.toLowerCase()
             : ta.address.toLowerCase()
@@ -917,7 +922,12 @@ function AssetSelect({
       setFilteredAssetOptions(ao);
 
       //no options in our default list and its an address we search for the address
-      if (ao.length === 0 && search && search.length === 42) {
+      if (
+        ao.length === 0 &&
+        search &&
+        search.length === 42 &&
+        isAddress(search)
+      ) {
         const baseAsset = await stores.stableSwapStore.getBaseAsset(
           search,
           true,

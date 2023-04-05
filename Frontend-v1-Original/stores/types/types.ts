@@ -1,5 +1,5 @@
 interface BaseAsset {
-  address: string;
+  address: `0x${string}`;
   symbol: string;
   name: string;
   decimals: number;
@@ -14,7 +14,7 @@ interface RouteAsset {
   price: number;
   nativeChainAddress: string; // if no,  set to :""
   nativeChainId: number;
-  address: string;
+  address: `0x${string}`;
   name: string;
   symbol: string;
   decimals: number;
@@ -54,15 +54,15 @@ type BribeEarned = { earned: string };
 interface Pair {
   tvl: number;
   apr: number;
-  address: string;
+  address: `0x${string}`;
   symbol: string;
   decimals: number;
   stable: boolean;
   total_supply: number;
   reserve0: number | string; // gets reassigned to string in frontend store
   reserve1: number | string; // gets reassigned to string in frontend store
-  token0_address: string;
-  token1_address: string;
+  token0_address: `0x${string}`;
+  token1_address: `0x${string}`;
   gauge_address: string; // if no,  set to :""
   isStable: boolean;
   totalSupply: number | string; // gets reassigned to string in frontend store
@@ -79,14 +79,14 @@ interface Pair {
     tbv: number;
     votes: number;
     apr: number;
-    address: string;
+    address: `0x${string}`;
     total_supply: number;
-    bribe_address: string;
-    fees_address: string;
-    wrapped_bribe_address: string;
+    bribe_address: `0x${string}`;
+    fees_address: `0x${string}`;
+    wrapped_bribe_address: `0x${string}`;
     reward: number;
-    bribeAddress: string;
-    feesAddress: string;
+    bribeAddress: `0x${string}`;
+    feesAddress: `0x${string}`;
     totalSupply: number | string; //gets reassigned to string in frontend store
     bribes: Bribe[];
     // following gets assigned in frontend store
@@ -124,7 +124,7 @@ interface VeDistReward {
 }
 
 type Vote = {
-  address: string;
+  address: `0x${string}`;
   votePercent: string;
 };
 
@@ -134,9 +134,9 @@ interface DexScrennerPair {
   chainId: string;
   dexId: string;
   url: string;
-  pairAddress: string;
+  pairAddress: `0x${string}`;
   baseToken: {
-    address: string;
+    address: `0x${string}`;
     name: string;
     symbol: string;
   };
@@ -233,17 +233,17 @@ interface QuoteSwapPayload {
       slippage: string;
     };
   };
-  address: string;
+  address: `0x${string}`;
 }
 
 interface QuoteSwapResponse {
   encodedData: {
-    router: string;
+    router: `0x${string}`;
     data: string;
   };
   maxReturn: {
-    from: string;
-    to: string;
+    from: `0x${string}`;
+    to: `0x${string}`;
     totalFrom: string;
     totalTo: number;
     totalGas: number;
@@ -261,21 +261,21 @@ interface Path {
 }
 
 interface Swap {
-  from: string;
-  to: string;
+  from: `0x${string}`;
+  to: `0x${string}`;
   amountFrom: string;
   amountTo: string;
   pool: string;
   swapFee: number;
   dex: string;
   meta?: {
-    vaultAddress: string;
+    vaultAddress: `0x${string}`;
   };
 }
 
 interface FireBirdTokens {
-  [address: string]: {
-    address: string;
+  [address: `0x${string}`]: {
+    address: `0x${string}`;
     decimals: number;
     name: string;
     symbol: string;

@@ -263,7 +263,7 @@ class Store {
       });
 
       const nftsLength = await vestingContract.read.balanceOf([
-        account.address as `0x${string}`,
+        account.address,
       ]);
       const arr = Array.from(
         { length: parseInt(nftsLength.toString()) },
@@ -273,7 +273,7 @@ class Store {
       const nfts: VestNFT[] = await Promise.all(
         arr.map(async (idx) => {
           const tokenIndex = await vestingContract.read.tokenOfOwnerByIndex([
-            account.address as `0x${string}`,
+            account.address,
             BigInt(idx),
           ]);
 
@@ -369,7 +369,7 @@ class Store {
     }
   };
 
-  getPairByAddress = async (pairAddress: string) => {
+  getPairByAddress = async (pairAddress: `0x${string}`) => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
@@ -385,7 +385,7 @@ class Store {
       if (thePair.length > 0) {
         const pc = {
           abi: CONTRACTS.PAIR_ABI,
-          address: pairAddress as `0x${string}`,
+          address: pairAddress,
         } as const;
 
         const resultsFromMulticall = await viemClient.multicall({
@@ -407,7 +407,7 @@ class Store {
             {
               ...pc,
               functionName: "balanceOf",
-              args: [account.address as `0x${string}`],
+              args: [account.address],
             },
           ],
         });
@@ -428,7 +428,7 @@ class Store {
 
       const pairContract = {
         abi: CONTRACTS.PAIR_ABI,
-        address: pairAddress as `0x${string}`,
+        address: pairAddress,
       } as const;
       const gaugesContract = {
         abi: CONTRACTS.VOTER_ABI,
@@ -488,7 +488,7 @@ class Store {
           {
             ...pairContract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           },
           {
             ...pairContract,
@@ -497,12 +497,12 @@ class Store {
           {
             ...gaugesContract,
             functionName: "gauges",
-            args: [pairAddress as `0x${string}`],
+            args: [pairAddress],
           },
           {
             ...gaugesContract,
             functionName: "weights",
-            args: [pairAddress as `0x${string}`],
+            args: [pairAddress],
           },
         ],
       });
@@ -539,7 +539,7 @@ class Store {
           {
             ...token0Contract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           },
           {
             ...token1Contract,
@@ -552,7 +552,7 @@ class Store {
           {
             ...token1Contract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           },
         ],
       });
@@ -614,7 +614,7 @@ class Store {
               {
                 ...gaugeContract,
                 functionName: "balanceOf",
-                args: [account.address as `0x${string}`],
+                args: [account.address],
               },
               {
                 ...gaugesContract,
@@ -685,12 +685,16 @@ class Store {
     }
   };
 
-  getPair = async (addressA: string, addressB: string, stab: boolean) => {
+  getPair = async (
+    addressA: `0x${string}`,
+    addressB: `0x${string}`,
+    stab: boolean
+  ) => {
     if (addressA === NATIVE_TOKEN.symbol) {
-      addressA = W_NATIVE_ADDRESS;
+      addressA = W_NATIVE_ADDRESS as `0x${string}`;
     }
     if (addressB === NATIVE_TOKEN.symbol) {
-      addressB = W_NATIVE_ADDRESS;
+      addressB = W_NATIVE_ADDRESS as `0x${string}`;
     }
 
     const account = stores.accountStore.getStore("account");
@@ -736,7 +740,7 @@ class Store {
             {
               ...pc,
               functionName: "balanceOf",
-              args: [account.address as `0x${string}`],
+              args: [account.address],
             },
           ],
         });
@@ -756,15 +760,15 @@ class Store {
       publicClient: viemClient,
     });
     const pairAddress = await factoryContract.read.getPair([
-      addressA as `0x${string}`,
-      addressB as `0x${string}`,
+      addressA,
+      addressB,
       stab,
     ]);
 
     if (pairAddress && pairAddress != ZERO_ADDRESS) {
       const pairContract = {
         abi: CONTRACTS.PAIR_ABI,
-        address: pairAddress as `0x${string}`,
+        address: pairAddress,
       } as const;
       const gaugesContract = {
         abi: CONTRACTS.VOTER_ABI,
@@ -824,7 +828,7 @@ class Store {
           {
             ...pairContract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           },
           {
             ...pairContract,
@@ -833,12 +837,12 @@ class Store {
           {
             ...gaugesContract,
             functionName: "gauges",
-            args: [pairAddress as `0x${string}`],
+            args: [pairAddress],
           },
           {
             ...gaugesContract,
             functionName: "weights",
-            args: [pairAddress as `0x${string}`],
+            args: [pairAddress],
           },
         ],
       });
@@ -875,7 +879,7 @@ class Store {
           {
             ...token0Contract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           },
           {
             ...token1Contract,
@@ -888,7 +892,7 @@ class Store {
           {
             ...token1Contract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           },
         ],
       });
@@ -950,7 +954,7 @@ class Store {
               {
                 ...gaugeContract,
                 functionName: "balanceOf",
-                args: [account.address as `0x${string}`],
+                args: [account.address],
               },
               {
                 ...gaugesContract,
@@ -1072,7 +1076,7 @@ class Store {
   };
 
   getBaseAsset = async (
-    address: string,
+    address: `0x${string}`,
     save?: boolean,
     getBalance?: boolean
   ) => {
@@ -1089,7 +1093,7 @@ class Store {
       // not found, so we search the blockchain for it.
       const baseAssetContract = {
         abi: CONTRACTS.ERC20_ABI,
-        address: address as `0x${string}`,
+        address: address,
       } as const;
 
       const [symbol, decimals, name] = await viemClient.multicall({
@@ -1129,7 +1133,7 @@ class Store {
           const balanceOf = await viemClient.readContract({
             ...baseAssetContract,
             functionName: "balanceOf",
-            args: [account.address as `0x${string}`],
+            args: [account.address],
           });
           newBaseAsset.balance = formatUnits(balanceOf, newBaseAsset.decimals);
         }
@@ -1312,7 +1316,7 @@ class Store {
     }
   };
 
-  _getVestNFTs = async (account: { address: string }) => {
+  _getVestNFTs = async (account: { address: `0x${string}` }) => {
     try {
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
@@ -1328,7 +1332,7 @@ class Store {
       const nftsLength = await viemClient.readContract({
         ...vestingContract,
         functionName: "balanceOf",
-        args: [account.address as `0x${string}`],
+        args: [account.address],
       });
 
       const arr = Array.from(
@@ -1341,7 +1345,7 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address as `0x${string}`, BigInt(idx)],
+            args: [account.address, BigInt(idx)],
           });
           const [[lockedAmount, lockedEnd], lockValue] =
             await viemClient.multicall({
@@ -1382,7 +1386,7 @@ class Store {
     }
   };
 
-  _getGovTokenInfo = async (account: { address: string }) => {
+  _getGovTokenInfo = async (account: { address: `0x${string}` }) => {
     try {
       const govToken = this.getStore("govToken");
       if (!govToken) {
@@ -1394,7 +1398,7 @@ class Store {
         abi: CONTRACTS.GOV_TOKEN_ABI,
         address: CONTRACTS.GOV_TOKEN_ADDRESS,
         functionName: "balanceOf",
-        args: [account.address as `0x${string}`],
+        args: [account.address],
       });
 
       govToken.balanceOf = balanceOf.toString();
@@ -1410,7 +1414,7 @@ class Store {
   };
 
   _getPairInfo = async (
-    account: { address: string },
+    account: { address: `0x${string}` },
     overridePairs?: Pair[]
   ) => {
     try {
@@ -1440,7 +1444,7 @@ class Store {
           try {
             const pairContract = {
               abi: CONTRACTS.PAIR_ABI,
-              address: pair.address as `0x${string}`,
+              address: pair.address,
             } as const;
             const token0 = await this.getBaseAsset(
               pair.token0.address,
@@ -1466,7 +1470,7 @@ class Store {
                   {
                     ...pairContract,
                     functionName: "balanceOf",
-                    args: [account.address as `0x${string}`],
+                    args: [account.address],
                   },
                 ],
               });
@@ -1497,13 +1501,13 @@ class Store {
             if (pair.gauge && pair.gauge.address !== ZERO_ADDRESS) {
               const gaugeContract = {
                 abi: CONTRACTS.GAUGE_ABI,
-                address: pair.gauge.address as `0x${string}`,
+                address: pair.gauge.address,
               } as const;
 
               const isAliveGauge = await viemClient.readContract({
                 ...gaugesContract,
                 functionName: "isAlive",
-                args: [pair.gauge.address as `0x${string}`],
+                args: [pair.gauge.address],
               });
 
               const [totalSupply, gaugeBalance, gaugeWeight] =
@@ -1519,12 +1523,12 @@ class Store {
                     {
                       ...gaugeContract,
                       functionName: "balanceOf",
-                      args: [account.address as `0x${string}`],
+                      args: [account.address],
                     },
                     {
                       ...gaugesContract,
                       functionName: "weights",
-                      args: [pair.address as `0x${string}`],
+                      args: [pair.address],
                     },
                   ],
                 });
@@ -1579,7 +1583,7 @@ class Store {
     }
   };
 
-  _getBaseAssetInfo = async (account: { address: string }) => {
+  _getBaseAssetInfo = async (account: { address: `0x${string}` }) => {
     try {
       const baseAssets = this.getStore("baseAssets");
       if (!baseAssets) {
@@ -1597,7 +1601,7 @@ class Store {
           try {
             if (asset.address === NATIVE_TOKEN.symbol) {
               let bal = await viemClient.getBalance({
-                address: account.address as `0x${string}`,
+                address: account.address,
               });
               return {
                 balanceOf: bal.toString(),
@@ -1607,7 +1611,7 @@ class Store {
 
             const assetContract = {
               abi: CONTRACTS.ERC20_ABI,
-              address: asset.address as `0x${string}`,
+              address: asset.address,
             } as const;
 
             const [isWhitelisted, balanceOf] = await viemClient.multicall({
@@ -1617,12 +1621,12 @@ class Store {
                 {
                   ...voterContract,
                   functionName: "isWhitelisted",
-                  args: [asset.address as `0x${string}`],
+                  args: [asset.address],
                 },
                 {
                   ...assetContract,
                   functionName: "balanceOf",
-                  args: [account.address as `0x${string}`],
+                  args: [account.address],
                 },
               ],
             });
@@ -1659,7 +1663,7 @@ class Store {
 
   searchBaseAsset = async (payload: {
     type: string;
-    content: { address: string };
+    content: { address: `0x${string}` };
   }) => {
     try {
       let localBaseAssets: BaseAsset[] = [];
@@ -1681,7 +1685,7 @@ class Store {
 
       const baseAssetContract = {
         abi: CONTRACTS.ERC20_ABI,
-        address: payload.content.address as `0x${string}`,
+        address: payload.content.address,
       } as const;
 
       const [symbol, decimals, name] = await viemClient.multicall({
@@ -1771,10 +1775,10 @@ class Store {
       let toki0 = token0.address;
       let toki1 = token1.address;
       if (token0.address === NATIVE_TOKEN.symbol) {
-        toki0 = W_NATIVE_ADDRESS;
+        toki0 = W_NATIVE_ADDRESS as `0x${string}`;
       }
       if (token1.address === NATIVE_TOKEN.symbol) {
-        toki1 = W_NATIVE_ADDRESS;
+        toki1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
       const factoryContract = new web3.eth.Contract(
@@ -2030,10 +2034,10 @@ class Store {
           let tok0 = token0.address;
           let tok1 = token1.address;
           if (token0.address === NATIVE_TOKEN.symbol) {
-            tok0 = W_NATIVE_ADDRESS;
+            tok0 = W_NATIVE_ADDRESS as `0x${string}`;
           }
           if (token1.address === NATIVE_TOKEN.symbol) {
-            tok1 = W_NATIVE_ADDRESS;
+            tok1 = W_NATIVE_ADDRESS as `0x${string}`;
           }
           const pairFor = await factoryContract.methods
             .getPair(tok0, tok1, stable)
@@ -2201,10 +2205,10 @@ class Store {
       let toki0 = token0.address;
       let toki1 = token1.address;
       if (token0.address === NATIVE_TOKEN.symbol) {
-        toki0 = W_NATIVE_ADDRESS;
+        toki0 = W_NATIVE_ADDRESS as `0x${string}`;
       }
       if (token1.address === NATIVE_TOKEN.symbol) {
-        toki1 = W_NATIVE_ADDRESS;
+        toki1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
       const factoryContract = new web3.eth.Contract(
@@ -2446,10 +2450,10 @@ class Store {
           let tok0 = token0.address;
           let tok1 = token1.address;
           if (token0.address === NATIVE_TOKEN.symbol) {
-            tok0 = W_NATIVE_ADDRESS;
+            tok0 = W_NATIVE_ADDRESS as `0x${string}`;
           }
           if (token1.address === NATIVE_TOKEN.symbol) {
-            tok1 = W_NATIVE_ADDRESS;
+            tok1 = W_NATIVE_ADDRESS as `0x${string}`;
           }
           const pairFor = await factoryContract.methods
             .getPair(tok0, tok1, stable)
@@ -2485,7 +2489,7 @@ class Store {
     }
   };
 
-  updatePairsCall = async (account: { address: string }) => {
+  updatePairsCall = async (account: { address: `0x${string}` }) => {
     try {
       // update pairs is same endpoint in API. Pairs are updated in sync on backend
       const response = await fetch(`/api/pairs`);
@@ -2766,7 +2770,7 @@ class Store {
 
   stakeLiquidity = async (payload: {
     type: string;
-    content: { pair: Pair; token: any };
+    content: { pair: Gauge; token: any };
   }) => {
     try {
       const context = this;
@@ -2910,7 +2914,7 @@ class Store {
       amount0: string;
       amount1: string;
       minLiquidity: string;
-      pair: Pair;
+      pair: Gauge;
       token: any;
       slippage: string;
     };
@@ -3256,14 +3260,14 @@ class Store {
 
   _getDepositAllowance = async (
     token: BaseAsset,
-    account: { address: string }
+    account: { address: `0x${string}` }
   ) => {
     try {
       const allowance = await viemClient.readContract({
-        address: token.address as `0x${string}`,
+        address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address as `0x${string}`, CONTRACTS.ROUTER_ADDRESS],
+        args: [account.address, CONTRACTS.ROUTER_ADDRESS],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -3274,30 +3278,27 @@ class Store {
   };
 
   _getStakeAllowance = async (
-    pair: Pair,
-    account: { address: string },
-    pairAddress?: string
+    pair: Gauge,
+    account: { address: `0x${string}` },
+    pairAddress?: `0x${string}`
   ) => {
     try {
       let tokenContract;
       if (pair === null && !!pairAddress) {
         tokenContract = {
           abi: CONTRACTS.ERC20_ABI,
-          address: pairAddress as `0x${string}`,
+          address: pairAddress,
         } as const;
       } else {
         tokenContract = {
           abi: CONTRACTS.ERC20_ABI,
-          address: pair.address as `0x${string}`,
+          address: pair.address,
         } as const;
       }
       const allowance = await viemClient.readContract({
         ...tokenContract,
         functionName: "allowance",
-        args: [
-          account.address as `0x${string}`,
-          pair.gauge?.address as `0x${string}`,
-        ],
+        args: [account.address, pair.gauge.address],
       });
 
       return formatUnits(allowance, PAIR_DECIMALS);
@@ -3307,13 +3308,16 @@ class Store {
     }
   };
 
-  _getWithdrawAllowance = async (pair: Pair, account: { address: string }) => {
+  _getWithdrawAllowance = async (
+    pair: Pair,
+    account: { address: `0x${string}` }
+  ) => {
     try {
       const allowance = await viemClient.readContract({
-        address: pair.address as `0x${string}`,
+        address: pair.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address as `0x${string}`, CONTRACTS.ROUTER_ADDRESS],
+        args: [account.address, CONTRACTS.ROUTER_ADDRESS],
       });
 
       return formatUnits(allowance, PAIR_DECIMALS);
@@ -3357,10 +3361,10 @@ class Store {
       let addy1 = token1.address;
 
       if (token0.address === NATIVE_TOKEN.symbol) {
-        addy0 = W_NATIVE_ADDRESS;
+        addy0 = W_NATIVE_ADDRESS as `0x${string}`;
       }
       if (token1.address === NATIVE_TOKEN.symbol) {
-        addy1 = W_NATIVE_ADDRESS;
+        addy1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
       const [_amountA, _amountB, liquidity] = await viemClient.readContract({
@@ -3368,8 +3372,8 @@ class Store {
         abi: CONTRACTS.ROUTER_ABI,
         functionName: "quoteAddLiquidity",
         args: [
-          addy0 as `0x${string}`,
-          addy1 as `0x${string}`,
+          addy0,
+          addy1,
           pair.stable,
           BigInt(sendAmount0),
           BigInt(sendAmount1),
@@ -3411,32 +3415,32 @@ class Store {
 
       const token0Contract = {
         abi: CONTRACTS.ERC20_ABI,
-        address: pair.token0.address as `0x${string}`,
+        address: pair.token0.address,
       } as const;
       const token1Contract = {
         abi: CONTRACTS.ERC20_ABI,
-        address: pair.token1.address as `0x${string}`,
+        address: pair.token1.address,
       } as const;
       const pairContract = {
         abi: CONTRACTS.ERC20_ABI,
-        address: pair.address as `0x${string}`,
+        address: pair.address,
       } as const;
 
       const balanceCalls = [
         {
           ...token0Contract,
           functionName: "balanceOf",
-          args: [account.address as `0x${string}`],
+          args: [account.address],
         },
         {
           ...token1Contract,
           functionName: "balanceOf",
-          args: [account.address as `0x${string}`],
+          args: [account.address],
         },
         {
           ...pairContract,
           functionName: "balanceOf",
-          args: [account.address as `0x${string}`],
+          args: [account.address],
         },
       ] as const;
 
@@ -3462,10 +3466,10 @@ class Store {
       let gaugeBalance;
       if (pair.gauge) {
         gaugeBalance = await viemClient.readContract({
-          address: pair.gauge.address as `0x${string}`,
+          address: pair.gauge.address,
           abi: CONTRACTS.ERC20_ABI,
           functionName: "balanceOf",
-          args: [account.address as `0x${string}`],
+          args: [account.address],
         });
       }
 
@@ -3919,12 +3923,7 @@ class Store {
       const [amountA, amountB] = await viemClient.readContract({
         ...routerContract,
         functionName: "quoteRemoveLiquidity",
-        args: [
-          token0.address as `0x${string}`,
-          token1.address as `0x${string}`,
-          pair.stable,
-          sendWithdrawAmount,
-        ],
+        args: [token0.address, token1.address, pair.stable, sendWithdrawAmount],
       });
 
       const returnVal = {
@@ -4283,8 +4282,8 @@ class Store {
   };
 
   _getSpecificAssetInfo = async (
-    account: { address: string },
-    assetAddress: string
+    account: { address: `0x${string}` },
+    assetAddress: `0x${string}`
   ) => {
     try {
       const baseAssets = this.getStore("baseAssets");
@@ -4298,15 +4297,15 @@ class Store {
           if (asset.address.toLowerCase() === assetAddress.toLowerCase()) {
             if (asset.address === NATIVE_TOKEN.symbol) {
               let bal = await viemClient.getBalance({
-                address: account.address as `0x${string}`,
+                address: account.address,
               });
               asset.balance = formatUnits(bal, asset.decimals);
             } else {
               const balanceOf = await viemClient.readContract({
-                address: asset.address as `0x${string}`,
+                address: asset.address,
                 abi: CONTRACTS.ERC20_ABI,
                 functionName: "balanceOf",
-                args: [account.address as `0x${string}`],
+                args: [account.address],
               });
 
               asset.balance = formatUnits(balanceOf, asset.decimals);
@@ -4327,18 +4326,15 @@ class Store {
 
   _getFirebirdSwapAllowance = async (
     token: BaseAsset,
-    account: { address: string },
+    account: { address: `0x${string}` },
     quote: QuoteSwapResponse
   ) => {
     try {
       const allowance = await viemClient.readContract({
-        address: token.address as `0x${string}`,
+        address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [
-          account.address as `0x${string}`,
-          quote.encodedData.router as `0x${string}`,
-        ],
+        args: [account.address, quote.encodedData.router],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -4354,10 +4350,10 @@ class Store {
   // ) => {
   //   try {
   //     const allowance = await viemClient.readContract({
-  //       address: token.address as `0x${string}`,
+  //       address: token.address ,
   //       abi: CONTRACTS.ERC20_ABI,
   //       functionName: "allowance",
-  //       args: [account.address as `0x${string}`, CONTRACTS.ROUTER_ADDRESS],
+  //       args: [account.address , CONTRACTS.ROUTER_ADDRESS],
   //     });
 
   //     return formatUnits(allowance, token.decimals);
@@ -4389,7 +4385,7 @@ class Store {
       const nftsLength = await viemClient.readContract({
         ...vestingContract,
         functionName: "balanceOf",
-        args: [account.address as `0x${string}`],
+        args: [account.address],
       });
 
       const arr = Array.from(
@@ -4402,7 +4398,7 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address as `0x${string}`, BigInt(idx)],
+            args: [account.address, BigInt(idx)],
           });
 
           const [[lockedAmount, lockedEnd], lockValue] =
@@ -4572,13 +4568,16 @@ class Store {
     }
   };
 
-  _getVestAllowance = async (token: GovToken, account: { address: string }) => {
+  _getVestAllowance = async (
+    token: GovToken,
+    account: { address: `0x${string}` }
+  ) => {
     try {
       const allowance = await viemClient.readContract({
-        address: token.address as `0x${string}`,
+        address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address as `0x${string}`, CONTRACTS.VE_TOKEN_ADDRESS],
+        args: [account.address, CONTRACTS.VE_TOKEN_ADDRESS],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -5333,7 +5332,7 @@ class Store {
         return {
           ...gaugesContract,
           functionName: "votes",
-          args: [BigInt(tokenID), pair.address as `0x${string}`],
+          args: [BigInt(tokenID), pair.address],
         } as const;
       });
 
@@ -5410,12 +5409,7 @@ class Store {
       });
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getBribeAllowance(
-        web3,
-        asset,
-        gauge,
-        account
-      );
+      const allowance = await this._getBribeAllowance(asset, gauge, account);
       if (!allowance) throw new Error("Error getting bribe allowance");
       if (BigNumber(allowance).lt(amount)) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -5495,20 +5489,16 @@ class Store {
   };
 
   _getBribeAllowance = async (
-    web3: Web3,
     token: BaseAsset,
     pair: Gauge,
-    account: { address: string }
+    account: { address: `0x${string}` }
   ) => {
     try {
       const allowance = await viemClient.readContract({
-        address: token.address as `0x${string}`,
+        address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [
-          account.address as `0x${string}`,
-          pair.gauge.wrapped_bribe_address as `0x${string}`,
-        ],
+        args: [account.address, pair.gauge.wrapped_bribe_address],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -5547,10 +5537,10 @@ class Store {
           const bribesEarned = await Promise.all(
             pair.gauge.bribes.map(async (bribe) => {
               const earned = await viemClient.readContract({
-                address: pair.gauge.wrapped_bribe_address as `0x${string}`,
+                address: pair.gauge.wrapped_bribe_address,
                 abi: CONTRACTS.BRIBE_ABI,
                 functionName: "earned",
-                args: [bribe.token.address as `0x${string}`, BigInt(tokenID)],
+                args: [bribe.token.address, BigInt(tokenID)],
               });
 
               return {
@@ -5606,10 +5596,10 @@ class Store {
             const bribesEarned = await Promise.all(
               pair.gauge.bribes.map(async (bribe) => {
                 const earned = await viemClient.readContract({
-                  address: pair.gauge.wrapped_bribe_address as `0x${string}`,
+                  address: pair.gauge.wrapped_bribe_address,
                   abi: CONTRACTS.BRIBE_ABI,
                   functionName: "earned",
-                  args: [bribe.token.address as `0x${string}`, BigInt(tokenID)],
+                  args: [bribe.token.address, BigInt(tokenID)],
                 });
 
                 bribe.earned = formatUnits(earned, bribe.token.decimals);
@@ -5677,13 +5667,10 @@ class Store {
       const rewardsEarned = await Promise.all(
         filteredPairs2.map(async (pair) => {
           const earned = await viemClient.readContract({
-            address: pair.gauge.address as `0x${string}`,
+            address: pair.gauge.address,
             abi: CONTRACTS.GAUGE_ABI,
             functionName: "earned",
-            args: [
-              CONTRACTS.GOV_TOKEN_ADDRESS,
-              account.address as `0x${string}`,
-            ],
+            args: [CONTRACTS.GOV_TOKEN_ADDRESS, account.address],
           });
 
           pair.gauge.rewardsEarned = formatEther(earned);

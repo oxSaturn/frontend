@@ -198,7 +198,7 @@ class Helper {
     try {
       const amountOutFromContract = await routerContract.read.getAmountOut([
         parseUnits("1", token.decimals),
-        token.address as `0x${string}`,
+        token.address,
         CONTRACTS.STABLE_TOKEN_ADDRESS,
       ]);
       const amountOut = formatUnits(amountOutFromContract[0], 6);
