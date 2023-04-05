@@ -19,8 +19,6 @@ import {
 } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
-import { withTheme } from "@mui/styles";
-
 import { formatCurrency } from "../../utils/utils";
 
 import stores from "../../stores";
@@ -1271,4 +1269,4 @@ function RoutesDialog({
   );
 }
 
-export default withTheme(Setup);
+export default Setup;

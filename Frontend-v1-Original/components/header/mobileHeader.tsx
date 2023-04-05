@@ -13,7 +13,6 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { withStyles, withTheme } from "@mui/styles";
 import {
   List,
   ArrowDropDown,
@@ -101,24 +100,6 @@ function WrongNetworkIcon(props: { className: string }) {
     </SvgIcon>
   );
 }
-
-const StyledMenuItem = withStyles((theme) => ({
-  root: {
-    "&:focus": {
-      backgroundColor: "none",
-      "& .MuiListItemIcon-root, & .MuiListItemText-primary": {
-        color: "#FFF",
-      },
-    },
-  },
-}))(MenuItem);
-
-const StyledBadge = withStyles((theme) => ({
-  badge: {
-    background: "#06D3D7",
-    color: "#000",
-  },
-}))(Badge);
 
 const switchChain = async () => {
   let hexChain = "0x" + Number(process.env.NEXT_PUBLIC_CHAINID).toString(16);
@@ -284,12 +265,24 @@ function Header() {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <StyledMenuItem onClick={onAddressClicked}>
+                <MenuItem
+                  onClick={onAddressClicked}
+                  sx={{
+                    root: {
+                      "&:focus": {
+                        backgroundColor: "none",
+                        "& .MuiListItemIcon-root, & .MuiListItemText-primary": {
+                          color: "#FFF",
+                        },
+                      },
+                    },
+                  }}
+                >
                   <ListItemIcon className="p-0 text-cantoGreen">
                     <AccountBalanceWalletOutlined fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary="Switch Wallet Provider" />
-                </StyledMenuItem>
+                </MenuItem>
               </Menu>
             </>
           ) : (
@@ -325,13 +318,19 @@ function Header() {
                 stores.emitter.emit(ACTIONS.TX_OPEN);
               }}
             >
-              <StyledBadge
+              <Badge
                 badgeContent={transactionQueueLength}
                 color="secondary"
                 overlap="circular"
+                sx={{
+                  badge: {
+                    background: "#06D3D7",
+                    color: "#000",
+                  },
+                }}
               >
                 <List className="text-white" />
-              </StyledBadge>
+              </Badge>
             </IconButton>
           )}
           {unlockOpen && (
@@ -365,4 +364,4 @@ function Header() {
   );
 }
 
-export default withTheme(Header);
+export default Header;
