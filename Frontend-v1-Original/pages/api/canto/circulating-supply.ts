@@ -5,6 +5,7 @@ import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
 import Cors from "cors";
 const cors = Cors({
   methods: ["GET"],
+  origin: ["https://www.coingecko.com", /\.coingecko\.com$/],
 });
 
 const dexvaults = http("https://canto.dexvaults.com");
