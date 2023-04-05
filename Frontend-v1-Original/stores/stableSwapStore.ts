@@ -671,10 +671,6 @@ class Store {
           totalSupply: formatEther(totalSupply),
           weight: formatEther(gaugeWeight),
           weightPercent,
-          // weightPercent: BigNumber(gaugeWeight)
-          //   .times(100)
-          //   .div(totalWeight)
-          //   .toFixed(2),
           bribes: bribes,
         };
       }
@@ -697,11 +693,6 @@ class Store {
       addressB = W_NATIVE_ADDRESS;
     }
 
-    const web3 = await stores.accountStore.getWeb3Provider();
-    if (!web3) {
-      console.warn("web3 not found");
-      return null;
-    }
     const account = stores.accountStore.getStore("account");
     if (!account) {
       console.warn("account not found");
@@ -720,54 +711,71 @@ class Store {
       );
     });
     if (thePair.length > 0) {
-      const pc = new web3.eth.Contract(
-        CONTRACTS.PAIR_ABI as unknown as AbiItem[],
-        thePair[0].address
-      );
+      const pc = {
+        abi: CONTRACTS.PAIR_ABI,
+        address: thePair[0].address,
+      } as const;
 
-      const [totalSupply, reserve0, reserve1, balanceOf] = await Promise.all([
-        pc.methods.totalSupply().call(),
-        pc.methods.reserve0().call(),
-        pc.methods.reserve1().call(),
-        pc.methods.balanceOf(account.address).call(),
-      ]);
+      const [totalSupply, reserve0, reserve1, balanceOf] =
+        await viemClient.multicall({
+          allowFailure: false,
+          multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+          contracts: [
+            {
+              ...pc,
+              functionName: "totalSupply",
+            },
+            {
+              ...pc,
+              functionName: "reserve0",
+            },
+            {
+              ...pc,
+              functionName: "reserve1",
+            },
+            {
+              ...pc,
+              functionName: "balanceOf",
+              args: [account.address as `0x${string}`],
+            },
+          ],
+        });
 
       const returnPair = thePair[0];
-      returnPair.balance = BigNumber(balanceOf)
-        .div(10 ** PAIR_DECIMALS)
-        .toFixed(PAIR_DECIMALS);
-      returnPair.totalSupply = BigNumber(totalSupply)
-        .div(10 ** PAIR_DECIMALS)
-        .toFixed(PAIR_DECIMALS);
-      returnPair.reserve0 = BigNumber(reserve0)
-        .div(10 ** returnPair.token0.decimals)
-        .toFixed(parseInt(returnPair.token0.decimals));
-      returnPair.reserve1 = BigNumber(reserve1)
-        .div(10 ** returnPair.token1.decimals)
-        .toFixed(parseInt(returnPair.token1.decimals));
+      returnPair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
+      returnPair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
+      returnPair.reserve0 = formatUnits(reserve0, returnPair.token0.decimals);
+      returnPair.reserve1 = formatUnits(reserve1, returnPair.token1.decimals);
 
       return returnPair;
     }
 
-    const factoryContract = new web3.eth.Contract(
-      CONTRACTS.FACTORY_ABI as unknown as AbiItem[],
-      CONTRACTS.FACTORY_ADDRESS
-    );
-    const pairAddress = await factoryContract.methods
-      .getPair(addressA, addressB, stab)
-      .call();
+    const factoryContract = getContract({
+      abi: CONTRACTS.FACTORY_ABI,
+      address: CONTRACTS.FACTORY_ADDRESS,
+      publicClient: viemClient,
+    });
+    const pairAddress = await factoryContract.read.getPair([
+      addressA as `0x${string}`,
+      addressB as `0x${string}`,
+      stab,
+    ]);
 
     if (pairAddress && pairAddress != ZERO_ADDRESS) {
-      const pairContract = new web3.eth.Contract(
-        CONTRACTS.PAIR_ABI as unknown as AbiItem[],
-        pairAddress
-      );
-      const gaugesContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
+      const pairContract = {
+        abi: CONTRACTS.PAIR_ABI,
+        address: pairAddress as `0x${string}`,
+      } as const;
+      const gaugesContract = {
+        abi: CONTRACTS.VOTER_ABI,
+        address: CONTRACTS.VOTER_ADDRESS,
+      } as const;
+      const gaugesContractInstance = getContract({
+        ...gaugesContract,
+        publicClient: viemClient,
+      });
 
-      const totalWeight = await gaugesContract.methods.totalWeight().call();
+      const totalWeight = await gaugesContractInstance.read.totalWeight();
 
       const [
         token0,
@@ -781,28 +789,69 @@ class Store {
         stable,
         gaugeAddress,
         gaugeWeight,
-      ] = await Promise.all([
-        pairContract.methods.token0().call(),
-        pairContract.methods.token1().call(),
-        pairContract.methods.totalSupply().call(),
-        pairContract.methods.symbol().call(),
-        pairContract.methods.reserve0().call(),
-        pairContract.methods.reserve1().call(),
-        pairContract.methods.decimals().call(),
-        pairContract.methods.balanceOf(account.address).call(),
-        pairContract.methods.stable().call(),
-        gaugesContract.methods.gauges(pairAddress).call(),
-        gaugesContract.methods.weights(pairAddress).call(),
-      ]);
+      ] = await viemClient.multicall({
+        allowFailure: false,
+        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        contracts: [
+          {
+            ...pairContract,
+            functionName: "token0",
+          },
+          {
+            ...pairContract,
+            functionName: "token1",
+          },
+          {
+            ...pairContract,
+            functionName: "totalSupply",
+          },
+          {
+            ...pairContract,
+            functionName: "symbol",
+          },
+          {
+            ...pairContract,
+            functionName: "reserve0",
+          },
+          {
+            ...pairContract,
+            functionName: "reserve1",
+          },
+          {
+            ...pairContract,
+            functionName: "decimals",
+          },
+          {
+            ...pairContract,
+            functionName: "balanceOf",
+            args: [account.address as `0x${string}`],
+          },
+          {
+            ...pairContract,
+            functionName: "stable",
+          },
+          {
+            ...gaugesContract,
+            functionName: "gauges",
+            args: [pairAddress as `0x${string}`],
+          },
+          {
+            ...gaugesContract,
+            functionName: "weights",
+            args: [pairAddress as `0x${string}`],
+          },
+        ],
+      });
 
-      const token0Contract = new web3.eth.Contract(
-        CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-        token0
-      );
-      const token1Contract = new web3.eth.Contract(
-        CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-        token1
-      );
+      const token0Contract = {
+        abi: CONTRACTS.ERC20_ABI,
+        address: token0,
+      } as const;
+
+      const token1Contract = {
+        abi: CONTRACTS.ERC20_ABI,
+        address: token1,
+      } as const;
 
       const [
         token0Symbol,
@@ -811,117 +860,153 @@ class Store {
         token1Symbol,
         token1Decimals,
         token1Balance,
-      ] = await Promise.all([
-        token0Contract.methods.symbol().call(),
-        token0Contract.methods.decimals().call(),
-        token0Contract.methods.balanceOf(account.address).call(),
-        token1Contract.methods.symbol().call(),
-        token1Contract.methods.decimals().call(),
-        token1Contract.methods.balanceOf(account.address).call(),
-      ]);
+      ] = await viemClient.multicall({
+        allowFailure: false,
+        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        contracts: [
+          {
+            ...token0Contract,
+            functionName: "symbol",
+          },
+          {
+            ...token0Contract,
+            functionName: "decimals",
+          },
+          {
+            ...token0Contract,
+            functionName: "balanceOf",
+            args: [account.address as `0x${string}`],
+          },
+          {
+            ...token1Contract,
+            functionName: "symbol",
+          },
+          {
+            ...token1Contract,
+            functionName: "decimals",
+          },
+          {
+            ...token1Contract,
+            functionName: "balanceOf",
+            args: [account.address as `0x${string}`],
+          },
+        ],
+      });
 
       thePair = {
         address: pairAddress,
         symbol: symbol,
-        decimals: parseInt(decimals),
+        decimals: decimals,
         stable,
         token0: {
           address: token0,
           symbol: token0Symbol,
-          balance: BigNumber(token0Balance)
-            .div(10 ** token0Decimals)
-            .toFixed(parseInt(token0Decimals)),
-          decimals: parseInt(token0Decimals),
+          balance: formatUnits(
+            token0Balance,
+            parseInt(token0Decimals.toString())
+          ),
+          decimals: parseInt(token0Decimals.toString()),
         },
         token1: {
           address: token1,
           symbol: token1Symbol,
-          balance: BigNumber(token1Balance)
-            .div(10 ** token1Decimals)
-            .toFixed(parseInt(token1Decimals)),
-          decimals: parseInt(token1Decimals),
+          balance: formatUnits(
+            token1Balance,
+            parseInt(token1Decimals.toString())
+          ),
+          decimals: parseInt(token1Decimals.toString()),
         },
-        balance: BigNumber(balanceOf)
-          .div(10 ** decimals)
-          .toFixed(parseInt(decimals)),
-        totalSupply: BigNumber(totalSupply)
-          .div(10 ** decimals)
-          .toFixed(parseInt(decimals)),
-        reserve0: BigNumber(reserve0)
-          .div(10 ** token0Decimals)
-          .toFixed(parseInt(token0Decimals)),
-        reserve1: BigNumber(reserve1)
-          .div(10 ** token1Decimals)
-          .toFixed(parseInt(token1Decimals)),
+        balance: formatUnits(balanceOf, decimals),
+        totalSupply: formatUnits(totalSupply, decimals),
+        reserve0: formatUnits(reserve0, parseInt(token0Decimals.toString())),
+        reserve1: formatUnits(reserve1, parseInt(token1Decimals.toString())),
+        tvl: 0,
       };
 
       if (gaugeAddress !== ZERO_ADDRESS) {
-        const gaugeContract = new web3.eth.Contract(
-          CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-          gaugeAddress
-        );
+        const gaugeContract = {
+          abi: CONTRACTS.GAUGE_ABI,
+          address: gaugeAddress,
+        } as const;
+        //wrapped bribe address is coming from api. if the api doesnt work this will break
+        const bribeContract = {
+          abi: CONTRACTS.BRIBE_ABI,
+          address: thePair.gauge.wrapped_bribe_address,
+        } as const;
+        const bribeContractInstance = getContract({
+          ...bribeContract,
+          publicClient: viemClient,
+        });
 
-        const [totalSupply, gaugeBalance, bribeAddress] = await Promise.all([
-          gaugeContract.methods.totalSupply().call(),
-          gaugeContract.methods.balanceOf(account.address).call(),
-          gaugesContract.methods.external_bribes(gaugeAddress).call(),
-        ]);
+        const [totalSupply, gaugeBalance, bribeAddress] =
+          await viemClient.multicall({
+            allowFailure: false,
+            multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+            contracts: [
+              {
+                ...gaugeContract,
+                functionName: "totalSupply",
+              },
+              {
+                ...gaugeContract,
+                functionName: "balanceOf",
+                args: [account.address as `0x${string}`],
+              },
+              {
+                ...gaugesContract,
+                functionName: "external_bribes",
+                args: [gaugeAddress],
+              },
+            ],
+          });
 
-        const bribeContract = new web3.eth.Contract(
-          CONTRACTS.BRIBE_ABI as unknown as AbiItem[],
-          thePair.gauge.wrapped_bribe_address
-        );
+        const tokensLength =
+          await bribeContractInstance.read.rewardsListLength();
 
-        const tokensLength = await bribeContract.methods
-          .rewardsListLength()
-          .call();
         const arry = Array.from(
-          { length: parseInt(tokensLength) },
+          { length: parseInt(tokensLength.toString()) },
           (v, i) => i
         );
 
         const bribes = await Promise.all(
           arry.map(async (idx) => {
-            const tokenAddress = await bribeContract.methods
-              .rewards(idx)
-              .call();
-            const token = await this.getBaseAsset(tokenAddress);
-            if (!token) return null;
+            const tokenAddress = await bribeContractInstance.read.rewards([
+              BigInt(idx),
+            ]);
 
-            const rewardRate = await gaugeContract.methods
-              .rewardRate(tokenAddress)
-              .call();
+            const token = await this.getBaseAsset(tokenAddress);
+            if (!token) {
+              return null;
+            }
+
+            const rewardRate = await viemClient.readContract({
+              ...gaugeContract,
+              functionName: "rewardRate",
+              args: [tokenAddress],
+            });
 
             return {
               token: token,
-              rewardRate: BigNumber(rewardRate)
-                .div(10 ** token.decimals)
-                .toFixed(token.decimals),
-              rewardAmount: BigNumber(rewardRate)
-                .times(604800)
-                .div(10 ** token.decimals)
-                .toFixed(token.decimals),
+              rewardAmount: formatUnits(
+                rewardRate * BigInt(604800),
+                token.decimals
+              ),
             };
           })
         );
+
+        const weightPercent = parseFloat(
+          ((gaugeWeight * BigInt(100)) / totalWeight).toString()
+        ).toFixed(2);
 
         thePair.gauge = {
           address: gaugeAddress,
           bribeAddress: bribeAddress,
           decimals: 18,
-          balance: BigNumber(gaugeBalance)
-            .div(10 ** 18)
-            .toFixed(18),
-          totalSupply: BigNumber(totalSupply)
-            .div(10 ** 18)
-            .toFixed(18),
-          weight: BigNumber(gaugeWeight)
-            .div(10 ** 18)
-            .toFixed(18),
-          weightPercent: BigNumber(gaugeWeight)
-            .times(100)
-            .div(totalWeight)
-            .toFixed(2),
+          balance: formatEther(gaugeBalance),
+          totalSupply: formatEther(totalSupply),
+          weight: formatEther(gaugeWeight),
+          weightPercent,
           bribes: bribes,
         };
       }
