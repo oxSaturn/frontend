@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { makeStyles } from "@mui/styles";
 import {
   Skeleton,
   Paper,
@@ -33,13 +32,7 @@ import {
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
-import {
-  Pair,
-  BaseAsset,
-  RouteAsset,
-  hasGauge,
-  isBaseAsset,
-} from "../../stores/types/types";
+import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
 
 const headCells = [
   { id: "pair", numeric: false, disablePadding: false, label: "Pair" },
@@ -90,12 +83,11 @@ const headCells = [
 type OrderBy = (typeof headCells)[number]["id"];
 
 function EnhancedTableHead(props: {
-  classes: ReturnType<typeof useStyles>;
   order: "asc" | "desc";
   orderBy: OrderBy;
   onRequestSort: (_e: React.MouseEvent<unknown>, property: OrderBy) => void;
 }) {
-  const { classes, order, orderBy, onRequestSort } = props;
+  const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
     (property: OrderBy) => (_e: React.MouseEvent<unknown>) => {
       onRequestSort(_e, property);
@@ -106,7 +98,7 @@ function EnhancedTableHead(props: {
       <TableRow>
         {headCells.map((headCell) => (
           <TableCell
-            className={classes.overrideTableHead}
+            className="border-b border-b-[rgba(104,108,122,0.2)]"
             key={headCell.id}
             align={headCell.numeric ? "right" : "left"}
             padding={"normal"}
@@ -117,11 +109,11 @@ function EnhancedTableHead(props: {
               direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >
-              <Typography variant="h5" className={classes.headerText}>
+              <Typography variant="h5" className="text-xs font-extralight">
                 {headCell.label}
               </Typography>
               {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
+                <span className="absolute top-5 m-[-1px] h-[1px] w-[1px] overflow-hidden text-clip border-0 border-none p-0">
                   {order === "desc" ? "sorted descending" : "sorted ascending"}
                 </span>
               ) : null}
@@ -132,243 +124,6 @@ function EnhancedTableHead(props: {
     </TableHead>
   );
 }
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-  },
-  assetTableRow: {
-    "&:hover": {
-      background: "rgba(104,108,122,0.05)",
-    },
-  },
-  paper: {
-    width: "100%",
-    //@ts-expect-error we dont have proper type for DefaultTheme
-    marginBottom: theme.spacing(2),
-  },
-  visuallyHidden: {
-    border: 0,
-    clip: "rect(0 0 0 0)",
-    height: 1,
-    margin: -1,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    top: 20,
-    width: 1,
-  },
-  inline: {
-    display: "flex",
-    alignItems: "center",
-  },
-  inlineEnd: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    "@media (max-width: 1000px)": {
-      display: "block",
-    },
-  },
-  icon: {
-    marginRight: "12px",
-  },
-  textSpaced: {
-    lineHeight: "1.5",
-    fontWeight: "200",
-    fontSize: "12px",
-  },
-  headerText: {
-    fontWeight: "200",
-    fontSize: "12px",
-  },
-  cell: {},
-  cellSuccess: {
-    color: "#4eaf0a",
-  },
-  cellAddress: {
-    cursor: "pointer",
-  },
-  aligntRight: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-  },
-  skelly: {
-    marginBottom: "12px",
-    marginTop: "12px",
-  },
-  skelly1: {
-    marginBottom: "12px",
-    marginTop: "24px",
-  },
-  skelly2: {
-    margin: "12px 6px",
-  },
-  tableBottomSkelly: {
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-  assetInfo: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flex: 1,
-    padding: "24px",
-    width: "100%",
-    flexWrap: "wrap",
-    borderBottom: "1px solid rgba(104, 108, 122, 0.25)",
-    background:
-      "radial-gradient(circle, rgba(63,94,251,0.7) 0%, rgba(47,128,237,0.7) 48%) rgba(63,94,251,0.7) 100%",
-  },
-  assetInfoError: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flex: 1,
-    padding: "24px",
-    width: "100%",
-    flexWrap: "wrap",
-    borderBottom: "1px rgba(104, 108, 122, 0.25)",
-    background: "#dc3545",
-  },
-  infoField: {
-    flex: 1,
-  },
-  flexy: {
-    padding: "6px 0px",
-  },
-  overrideCell: {
-    padding: "0px",
-  },
-  hoverRow: {
-    cursor: "pointer",
-  },
-  statusLiquid: {
-    color: "#dc3545",
-  },
-  statusWarning: {
-    color: "#FF9029",
-  },
-  statusSafe: {
-    color: "green",
-  },
-  img1Logo: {
-    position: "absolute",
-    left: "0px",
-    top: "0px",
-    border: "3px solid rgb(25, 33, 56)",
-    borderRadius: "30px",
-    background: "rgb(25, 33, 56)",
-  },
-  img2Logo: {
-    position: "absolute",
-    left: "23px",
-    zIndex: "1",
-    top: "0px",
-    border: "3px solid rgb(25, 33, 56)",
-    borderRadius: "30px",
-    background: "rgb(25, 33, 56)",
-  },
-  overrideTableHead: {
-    borderBottom: "1px solid rgba(126,153,176,0.15) !important",
-    "@media (max-width: 1000px)": {
-      display: "none",
-    },
-  },
-  doubleImages: {
-    display: "flex",
-    position: "relative",
-    width: "70px",
-    height: "35px",
-  },
-  searchContainer: {
-    flex: 1,
-    display: "flex",
-    width: "100%",
-  },
-  buttonOverride: {
-    width: "100%",
-    color: "rgb(6, 211, 215)",
-    background: "#272826",
-    fontWeight: "700",
-    "&:hover": {
-      background: "rgb(19, 44, 60)",
-    },
-  },
-  toolbar: {
-    margin: "24px 0px",
-    padding: "0px",
-  },
-  tableContainer: {
-    border: "1px solid rgba(126,153,176,0.2)",
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-  },
-  filterButton: {
-    background: "#272826",
-    border: "1px solid rgba(126,153,176,0.3)",
-    color: "#06D3D7",
-    width: "100%",
-    height: "94.5%",
-    borderRadius: "10px",
-  },
-  actionButtonText: {
-    fontSize: "15px",
-    fontWeight: "700",
-  },
-  filterContainer: {
-    background: "#212b48",
-    minWidth: "300px",
-    marginTop: "15px",
-    borderRadius: "10px",
-    padding: "20px",
-    boxShadow: "0 10px 20px 0 rgba(0,0,0,0.2)",
-    border: "1px solid rgba(126,153,176,0.2)",
-  },
-  alignContentRight: {
-    textAlign: "right",
-  },
-  labelColumn: {
-    display: "flex",
-    alignItems: "center",
-  },
-  filterLabel: {
-    fontSize: "14px",
-  },
-  filterListTitle: {
-    marginBottom: "10px",
-    paddingBottom: "20px",
-    borderBottom: "1px solid rgba(126,153,176,0.2)",
-  },
-  infoIcon: {
-    color: "yellow",
-    fontSize: "16px",
-    marginLeft: "10px",
-  },
-  symbol: {
-    minWidth: "40px",
-  },
-  hiddenMobile: {
-    "@media (max-width: 1000px)": {
-      display: "none",
-    },
-  },
-  hiddenSmallMobile: {
-    "@media (max-width: 600px)": {
-      display: "none",
-    },
-  },
-  labelAdd: {
-    display: "none",
-    fontSize: "12px",
-    "@media (max-width: 1000px)": {
-      display: "block",
-    },
-  },
-}));
 
 const getLocalToggles = () => {
   let localToggles = {
@@ -403,7 +158,6 @@ interface PairsTableToolbarProps {
 }
 
 const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
-  const classes = useStyles();
   const router = useRouter();
 
   const localToggles = getLocalToggles();
@@ -475,7 +229,7 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
   const id = open ? "transitions-popper" : undefined;
 
   return (
-    <Toolbar className={classes.toolbar}>
+    <Toolbar className="my-6 mx-0 p-0">
       <Grid container spacing={2}>
         <Grid item lg={2} md={2} sm={12} xs={12}>
           <Button
@@ -483,17 +237,17 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
             color="secondary"
             startIcon={<AddCircleOutline />}
             size="large"
-            className={classes.buttonOverride}
+            className="w-full bg-[#272826] font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
             onClick={onCreate}
           >
-            <Typography className={classes.actionButtonText}>
+            <Typography className="text-base font-bold">
               Add Liquidity
             </Typography>
           </Button>
         </Grid>
         <Grid item lg={9} md={9} sm={10} xs={10}>
           <TextField
-            className={classes.searchContainer}
+            className="flex w-full flex-[1]"
             variant="outlined"
             fullWidth
             placeholder="CANTO, MIM, 0x..."
@@ -512,7 +266,7 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
           <Tooltip placement="top" title="Filter list">
             <IconButton
               onClick={handleClick}
-              className={classes.filterButton}
+              className="h-[94.5%] w-full rounded-lg border border-[rgba(126,153,176,0.3)] bg-[#272826] text-cantoGreen"
               aria-label="filter list"
             >
               <FilterList />
@@ -530,18 +284,21 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
-            <div className={classes.filterContainer}>
-              <Typography className={classes.filterListTitle} variant="h5">
+            <div className="mt-4 min-w-[300px] rounded-lg border border-[rgba(126,153,176,0.2)] bg-[#212b48] p-5 shadow-[0_10px_20px_0_rgba(0,0,0,0.2)]">
+              <Typography
+                className="mb-2 border-b border-b-[rgba(126,153,176,0.2)] pb-5"
+                variant="h5"
+              >
                 List Filters
               </Typography>
 
               <Grid container spacing={0}>
-                <Grid item lg={9} className={classes.labelColumn}>
-                  <Typography className={classes.filterLabel} variant="body1">
+                <Grid item lg={9} className="flex items-center">
+                  <Typography className="text-sm" variant="body1">
                     My Deposits
                   </Typography>
                 </Grid>
-                <Grid item lg={3} className={classes.alignContentRight}>
+                <Grid item lg={3} className="text-right">
                   <Switch
                     color="primary"
                     checked={toggleActive}
@@ -552,12 +309,12 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
               </Grid>
 
               <Grid container spacing={0}>
-                <Grid item lg={9} className={classes.labelColumn}>
-                  <Typography className={classes.filterLabel} variant="body1">
+                <Grid item lg={9} className="flex items-center">
+                  <Typography className="text-sm" variant="body1">
                     Show Active Gauges
                   </Typography>
                 </Grid>
-                <Grid item lg={3} className={classes.alignContentRight}>
+                <Grid item lg={3} className="text-right">
                   <Switch
                     color="primary"
                     checked={toggleActiveGauge}
@@ -568,12 +325,12 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
               </Grid>
 
               <Grid container spacing={0}>
-                <Grid item lg={9} className={classes.labelColumn}>
-                  <Typography className={classes.filterLabel} variant="body1">
+                <Grid item lg={9} className="flex items-center">
+                  <Typography className="text-sm" variant="body1">
                     Show Stable Pools
                   </Typography>
                 </Grid>
-                <Grid item lg={3} className={classes.alignContentRight}>
+                <Grid item lg={3} className="text-right">
                   <Switch
                     color="primary"
                     checked={toggleStable}
@@ -584,12 +341,12 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
               </Grid>
 
               <Grid container spacing={0}>
-                <Grid item lg={9} className={classes.labelColumn}>
-                  <Typography className={classes.filterLabel} variant="body1">
+                <Grid item lg={9} className="flex items-center">
+                  <Typography className="text-sm" variant="body1">
                     Show Volatile Pools
                   </Typography>
                 </Grid>
-                <Grid item lg={3} className={classes.alignContentRight}>
+                <Grid item lg={3} className="text-right">
                   <Switch
                     color="primary"
                     checked={toggleVariable}
@@ -607,7 +364,6 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
 };
 
 export default function EnhancedTable({ pairs }: PairsTableProps) {
-  const classes = useStyles();
   const router = useRouter();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -638,42 +394,42 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
 
   if (!pairs) {
     return (
-      <div className={classes.root}>
+      <div className="w-full">
         <Skeleton
           variant="rectangular"
           width={"100%"}
           height={40}
-          className={classes.skelly1}
+          className="mb-3 mt-6"
         />
         <Skeleton
           variant="rectangular"
           width={"100%"}
-          height={70}
-          className={classes.skelly}
+          height={40}
+          className="my-3"
         />
         <Skeleton
           variant="rectangular"
           width={"100%"}
-          height={70}
-          className={classes.skelly}
+          height={40}
+          className="my-3"
         />
         <Skeleton
           variant="rectangular"
           width={"100%"}
-          height={70}
-          className={classes.skelly}
+          height={40}
+          className="my-3"
         />
         <Skeleton
           variant="rectangular"
           width={"100%"}
-          height={70}
-          className={classes.skelly}
+          height={40}
+          className="my-3"
         />
         <Skeleton
           variant="rectangular"
           width={"100%"}
-          height={70}
-          className={classes.skelly}
+          height={40}
+          className="my-3"
         />
       </div>
     );
@@ -765,7 +521,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const emptyRows = 5 - Math.min(5, filteredPairs.length - page * 5);
 
   return (
-    <div className={classes.root}>
+    <div className="w-full">
       <EnhancedTableToolbar
         setSearch={setSearch}
         setToggleActive={setToggleActive}
@@ -773,7 +529,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
         setToggleStable={setToggleStable}
         setToggleVariable={setToggleVariable}
       />
-      <Paper elevation={0} className={classes.tableContainer}>
+      <Paper
+        elevation={0}
+        className="flex w-full flex-col items-end border border-[rgba(126,153,176,0.2)]"
+      >
         <TableContainer>
           <Table
             aria-labelledby="tableTitle"
@@ -781,7 +540,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
             aria-label="enhanced table"
           >
             <EnhancedTableHead
-              classes={classes}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
@@ -794,12 +552,15 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
-                  <TableRow key={labelId} className={classes.assetTableRow}>
-                    <TableCell className={classes.cell}>
-                      <div className={classes.inline}>
-                        <div className={classes.doubleImages}>
+                  <TableRow
+                    key={labelId}
+                    className="hover:bg-[rgba(104,108,122,0.05)]"
+                  >
+                    <TableCell>
+                      <div className="flex items-center">
+                        <div className="relative flex h-9 w-[70px]">
                           <img
-                            className={classes.img1Logo}
+                            className="absolute top-0 left-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                             src={
                               row && row.token0 && row.token0.logoURI
                                 ? row.token0.logoURI
@@ -815,7 +576,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                             }}
                           />
                           <img
-                            className={classes.img2Logo}
+                            className="absolute top-0 left-6 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                             src={
                               row && row.token1 && row.token1.logoURI
                                 ? row.token1.logoURI
@@ -834,14 +595,14 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         <div>
                           <Typography
                             variant="h2"
-                            className={classes.textSpaced}
+                            className="text-xs font-extralight"
                             noWrap
                           >
                             {row?.symbol}
                           </Typography>
                           <Typography
                             variant="h2"
-                            className={classes.textSpaced}
+                            className="text-xs font-extralight"
                             noWrap
                             color="textSecondary"
                           >
@@ -850,24 +611,21 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell
-                      className={(classes.cell, classes.hiddenMobile)}
-                      align="right"
-                    >
+                    <TableCell className="max-[1000px]:hidden" align="right">
                       {row &&
                         row.token0 &&
                         "balance" in row.token0 &&
                         row.token0.balance && (
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Typography
                               variant="h2"
-                              className={classes.textSpaced}
+                              className="text-xs font-extralight"
                             >
                               {formatCurrency(row.token0.balance)}
                             </Typography>
                             <Typography
                               variant="h5"
-                              className={`${classes.textSpaced} ${classes.symbol}`}
+                              className={`min-w-[40xp] text-xs font-extralight`}
                               color="textSecondary"
                             >
                               {row.token0.symbol}
@@ -880,7 +638,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         "balance" in row.token0 &&
                         row.token0.balance
                       ) && (
-                        <div className={classes.inlineEnd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -893,16 +651,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         row.token1 &&
                         "balance" in row.token1 &&
                         row.token1.balance && (
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Typography
                               variant="h2"
-                              className={classes.textSpaced}
+                              className="text-xs font-extralight"
                             >
                               {formatCurrency(row.token1.balance)}
                             </Typography>
                             <Typography
                               variant="h5"
-                              className={`${classes.textSpaced} ${classes.symbol}`}
+                              className={`min-w-[40xp] text-xs font-extralight`}
                               color="textSecondary"
                             >
                               {row.token1.symbol}
@@ -915,7 +673,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         "balance" in row.token1 &&
                         row.token1.balance
                       ) && (
-                        <div className={classes.inlineEnd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -925,16 +683,13 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell
-                      className={(classes.cell, classes.hiddenMobile)}
-                      align="right"
-                    >
+                    <TableCell className="max-[1000px]:hidden" align="right">
                       {row && row.balance && row.totalSupply && (
                         <>
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Typography
                               variant="h2"
-                              className={classes.textSpaced}
+                              className="text-xs font-extralight"
                             >
                               {formatCurrency(
                                 BigNumber(row.balance)
@@ -944,16 +699,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                             </Typography>
                             <Typography
                               variant="h5"
-                              className={`${classes.textSpaced} ${classes.symbol}`}
+                              className={`min-w-[40xp] text-xs font-extralight`}
                               color="textSecondary"
                             >
                               {row.token0.symbol}
                             </Typography>
                           </div>
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Typography
                               variant="h5"
-                              className={classes.textSpaced}
+                              className="text-xs font-extralight"
                             >
                               {formatCurrency(
                                 BigNumber(row.balance)
@@ -963,7 +718,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                             </Typography>
                             <Typography
                               variant="h5"
-                              className={`${classes.textSpaced} ${classes.symbol}`}
+                              className={`min-w-[40xp] text-xs font-extralight`}
                               color="textSecondary"
                             >
                               {row.token1.symbol}
@@ -972,7 +727,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </>
                       )}
                       {!(row && row.balance && row.totalSupply) && (
-                        <div className={classes.inlineEnd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -983,19 +738,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       )}
                     </TableCell>
                     {row && hasGauge(row) && (
-                      <TableCell
-                        className={(classes.cell, classes.hiddenMobile)}
-                        align="right"
-                      >
+                      <TableCell className="max-[1000px]:hidden" align="right">
                         {row.gauge.reserve0 &&
                           row.gauge.reserve1 &&
                           row.gauge.balance &&
                           row.gauge.totalSupply && (
                             <>
-                              <div className={classes.inlineEnd}>
+                              <div className="flex items-center justify-end max-[1000px]:block">
                                 <Typography
                                   variant="h2"
-                                  className={classes.textSpaced}
+                                  className="text-xs font-extralight"
                                 >
                                   {formatCurrency(
                                     BigNumber(row.gauge.balance)
@@ -1005,16 +757,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                                 </Typography>
                                 <Typography
                                   variant="h5"
-                                  className={`${classes.textSpaced} ${classes.symbol}`}
+                                  className={`min-w-[40xp] text-xs font-extralight`}
                                   color="textSecondary"
                                 >
                                   {row.token0.symbol}
                                 </Typography>
                               </div>
-                              <div className={classes.inlineEnd}>
+                              <div className="flex items-center justify-end max-[1000px]:block">
                                 <Typography
                                   variant="h5"
-                                  className={classes.textSpaced}
+                                  className="text-xs font-extralight"
                                 >
                                   {formatCurrency(
                                     BigNumber(row.gauge.balance)
@@ -1024,7 +776,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                                 </Typography>
                                 <Typography
                                   variant="h5"
-                                  className={`${classes.textSpaced} ${classes.symbol}`}
+                                  className={`min-w-[40xp] text-xs font-extralight`}
                                   color="textSecondary"
                                 >
                                   {row.token1.symbol}
@@ -1038,7 +790,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.balance &&
                           row.gauge.totalSupply
                         ) && (
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Skeleton
                               variant="rectangular"
                               width={120}
@@ -1053,33 +805,33 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     {!(row && row.gauge && row.gauge.address) && (
-                      <TableCell
-                        className={(classes.cell, classes.hiddenMobile)}
-                        align="right"
-                      >
-                        <Typography variant="h2" className={classes.textSpaced}>
+                      <TableCell className="max-[1000px]:hidden" align="right">
+                        <Typography
+                          variant="h2"
+                          className="text-xs font-extralight"
+                        >
                           Gauge not available
                         </Typography>
                       </TableCell>
                     )}
-                    <TableCell
-                      className={(classes.cell, classes.hiddenSmallMobile)}
-                      align="right"
-                    >
+                    <TableCell className="max-sm:hidden" align="right">
                       {row && row.reserve0 && row.token0 && (
-                        <div className={classes.inlineEnd}>
-                          <Typography variant="h2" className={classes.labelAdd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
+                          <Typography
+                            variant="h2"
+                            className="block text-xs min-[1000px]:hidden"
+                          >
                             Total Pool Amount:
                           </Typography>
                           <Typography
                             variant="h2"
-                            className={classes.textSpaced}
+                            className="text-xs font-extralight"
                           >
                             {formatCurrency(row.reserve0)}
                           </Typography>
                           <Typography
                             variant="h5"
-                            className={`${classes.textSpaced} ${classes.symbol}`}
+                            className={`min-w-[40xp] text-xs font-extralight`}
                             color="textSecondary"
                           >
                             {row.token0.symbol}
@@ -1087,7 +839,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                       {!(row && row.reserve0 && row.token0) && (
-                        <div className={classes.inlineEnd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -1097,16 +849,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                       {row && row.reserve1 && row.token1 && (
-                        <div className={classes.inlineEnd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
                           <Typography
                             variant="h2"
-                            className={classes.textSpaced}
+                            className="text-xs font-extralight"
                           >
                             {formatCurrency(row.reserve1)}
                           </Typography>
                           <Typography
                             variant="h5"
-                            className={`${classes.textSpaced} ${classes.symbol}`}
+                            className={`min-w-[40xp] text-xs font-extralight`}
                             color="textSecondary"
                           >
                             {row.token1.symbol}
@@ -1114,7 +866,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                       {!(row && row.reserve1 && row.token1) && (
-                        <div className={classes.inlineEnd}>
+                        <div className="flex items-center justify-end max-[1000px]:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -1125,24 +877,21 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       )}
                     </TableCell>
                     {row && row.gauge && row.gauge.address && (
-                      <TableCell
-                        className={(classes.cell, classes.hiddenMobile)}
-                        align="right"
-                      >
+                      <TableCell className="max-[1000px]:hidden" align="right">
                         {row &&
                           row.gauge &&
                           row.gauge.reserve0 &&
                           row.token0 && (
-                            <div className={classes.inlineEnd}>
+                            <div className="flex items-center justify-end max-[1000px]:block">
                               <Typography
                                 variant="h2"
-                                className={classes.textSpaced}
+                                className="text-xs font-extralight"
                               >
                                 {formatCurrency(row.gauge.reserve0)}
                               </Typography>
                               <Typography
                                 variant="h5"
-                                className={`${classes.textSpaced} ${classes.symbol}`}
+                                className={`min-w-[40xp] text-xs font-extralight`}
                                 color="textSecondary"
                               >
                                 {row.token0.symbol}
@@ -1155,7 +904,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.reserve0 &&
                           row.token0
                         ) && (
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Skeleton
                               variant="rectangular"
                               width={120}
@@ -1171,16 +920,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge &&
                           row.gauge.reserve1 &&
                           row.token1 && (
-                            <div className={classes.inlineEnd}>
+                            <div className="flex items-center justify-end max-[1000px]:block">
                               <Typography
                                 variant="h2"
-                                className={classes.textSpaced}
+                                className="text-xs font-extralight"
                               >
                                 {formatCurrency(row.gauge.reserve1)}
                               </Typography>
                               <Typography
                                 variant="h5"
-                                className={`${classes.textSpaced} ${classes.symbol}`}
+                                className={`min-w-[40xp] text-xs font-extralight`}
                                 color="textSecondary"
                               >
                                 {row.token1.symbol}
@@ -1193,7 +942,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.reserve1 &&
                           row.token1
                         ) && (
-                          <div className={classes.inlineEnd}>
+                          <div className="flex items-center justify-end max-[1000px]:block">
                             <Skeleton
                               variant="rectangular"
                               width={120}
@@ -1208,22 +957,22 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     {!(row && row.gauge && row.gauge.address) && (
-                      <TableCell
-                        className={(classes.cell, classes.hiddenMobile)}
-                        align="right"
-                      >
-                        <Typography variant="h2" className={classes.textSpaced}>
+                      <TableCell className="max-[1000px]:hidden" align="right">
+                        <Typography
+                          variant="h2"
+                          className="text-xs font-extralight"
+                        >
                           Gauge not available
                         </Typography>
                       </TableCell>
                     )}
                     {row && (row.apr !== undefined || row.apr !== null) && (
-                      <TableCell className={classes.cell} align="right">
+                      <TableCell align="right">
                         <Grid container spacing={0}>
                           <Grid item lg={10}>
                             <Typography
                               variant="h2"
-                              className={classes.textSpaced}
+                              className="text-xs font-extralight"
                             >
                               {row.apr.toFixed(2)}%
                             </Typography>
@@ -1231,7 +980,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           {row && row.isAliveGauge === false && (
                             <Grid item lg={2}>
                               <Tooltip title="Gauge has been killed">
-                                <WarningOutlined className={classes.infoIcon} />
+                                <WarningOutlined className="ml-2 text-base text-yellow-300" />
                               </Tooltip>
                             </Grid>
                           )}
@@ -1239,7 +988,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     {!(row && (row.apr !== undefined || row.apr !== null)) && (
-                      <div className={classes.inlineEnd}>
+                      <div className="flex items-center justify-end max-[1000px]:block">
                         <Skeleton
                           variant="rectangular"
                           width={120}
@@ -1251,7 +1000,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         />
                       </div>
                     )}
-                    <TableCell className={classes.cell} align="right">
+                    <TableCell align="right">
                       <Button
                         variant="outlined"
                         color="primary"

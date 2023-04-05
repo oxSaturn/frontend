@@ -1,22 +1,9 @@
 import { Alert } from "@mui/material";
-import { withStyles } from "@mui/styles";
-
-const styles = () => ({
-  alert: {
-    marginTop: "5px",
-  },
-  infoAlert: {
-    backgroundColor: "Orange",
-    color: "#000",
-  },
-});
 
 const SlippageInfo = ({
   slippagePcent,
-  classes,
 }: {
   slippagePcent: number | undefined;
-  classes: any;
 }) => {
   if (typeof slippagePcent === "undefined") return null;
 
@@ -34,8 +21,8 @@ const SlippageInfo = ({
       icon={false}
       color={isPlusPricing ? "success" : isHighNegPricing ? "error" : "info"}
       variant={isHighNegPricing ? "filled" : "standard"}
-      className={`${classes.alert} ${
-        !isPlusPricing && !isHighNegPricing ? classes.infoAlert : ""
+      className={`mt-1 ${
+        !isPlusPricing && !isHighNegPricing ? "bg-orange text-black" : ""
       }`}
     >
       {isPlusPricing && "Bonus"}
@@ -52,4 +39,4 @@ const SlippageInfo = ({
   );
 };
 
-export default withStyles(styles)(SlippageInfo);
+export default SlippageInfo;
