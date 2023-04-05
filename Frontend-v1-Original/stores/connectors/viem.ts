@@ -11,7 +11,8 @@ const client = createPublicClient({
   chain: canto,
   transport: fallback([dexvaults, plexnode, nodestake, slingshot, neobase], {
     rank: {
-      interval: 12_000,
+      interval: 30_000,
+      timeout: 2_000,
     },
   }),
 });
