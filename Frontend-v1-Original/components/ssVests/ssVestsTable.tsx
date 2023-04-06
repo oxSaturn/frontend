@@ -19,12 +19,12 @@ import {
 import { useRouter } from "next/router";
 import { EnhancedEncryptionOutlined, Check, Close } from "@mui/icons-material";
 import moment from "moment";
+import BigNumber from "bignumber.js";
 
 import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
-import BigNumber from "bignumber.js";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -302,7 +302,11 @@ export default function EnhancedTable({
                           variant="h2"
                           className="text-xs font-extralight"
                         >
-                          {!!row.voted ? <Check /> : <Close />}
+                          {!!row.voted ? (
+                            <Check className="fill-green-500" />
+                          ) : (
+                            <Close className="fill-red-500" />
+                          )}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
