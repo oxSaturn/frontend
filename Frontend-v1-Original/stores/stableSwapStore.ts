@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { Contract } from "web3-eth-contract";
 import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
-import Web3 from "web3";
+import type Web3 from "web3";
 import { TransactionReceipt } from "@ethersproject/providers";
 import viemClient from "./connectors/viem";
 import {
@@ -1461,23 +1461,25 @@ class Store {
               true
             );
 
-            const [reserves, balanceOf] = await viemClient.multicall({
-              allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-              contracts: [
-                { ...pairContract, functionName: "getReserves" },
-                {
-                  ...pairContract,
-                  functionName: "balanceOf",
-                  args: [account.address],
-                },
-              ],
-            });
+            const [totalSupply, reserves, balanceOf] =
+              await viemClient.multicall({
+                allowFailure: false,
+                multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+                contracts: [
+                  { ...pairContract, functionName: "totalSupply" },
+                  { ...pairContract, functionName: "getReserves" },
+                  {
+                    ...pairContract,
+                    functionName: "balanceOf",
+                    args: [account.address],
+                  },
+                ],
+              });
 
             pair.token0 = token0 != null ? token0 : pair.token0;
             pair.token1 = token1 != null ? token1 : pair.token1;
             pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
-            pair.totalSupply = pair.totalSupply.toString();
+            pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
             pair.reserve0 = formatUnits(reserves[0], pair.token0.decimals);
             pair.reserve1 = formatUnits(reserves[1], pair.token1.decimals);
 
@@ -1509,22 +1511,27 @@ class Store {
                 args: [pair.gauge.address],
               });
 
-              const [gaugeBalance, gaugeWeight] = await viemClient.multicall({
-                allowFailure: false,
-                multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-                contracts: [
-                  {
-                    ...gaugeContract,
-                    functionName: "balanceOf",
-                    args: [account.address],
-                  },
-                  {
-                    ...gaugesContract,
-                    functionName: "weights",
-                    args: [pair.address],
-                  },
-                ],
-              });
+              const [totalSupply, gaugeBalance, gaugeWeight] =
+                await viemClient.multicall({
+                  allowFailure: false,
+                  multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+                  contracts: [
+                    {
+                      ...gaugeContract,
+                      functionName: "totalSupply",
+                    },
+                    {
+                      ...gaugeContract,
+                      functionName: "balanceOf",
+                      args: [account.address],
+                    },
+                    {
+                      ...gaugesContract,
+                      functionName: "weights",
+                      args: [pair.address],
+                    },
+                  ],
+                });
 
               const bribes = pair.gauge.bribes.map((bribe) => {
                 bribe.rewardAmount = bribe.rewardAmmount;
@@ -1535,8 +1542,9 @@ class Store {
               });
 
               pair.gauge.balance = formatEther(gaugeBalance);
+              pair.gauge.totalSupply = formatEther(totalSupply);
+
               // in ps totalSupply for reassgined to string from number (api sends number)
-              pair.gauge.totalSupply = pair.gauge.total_supply.toString();
               pair.gauge.reserve0 =
                 parseFloat(pair.totalSupply as `${number}`) > 0
                   ? BigNumber(pair.reserve0)
@@ -5566,121 +5574,20 @@ class Store {
         throw new Error(
           "Error getting veToken and govToken in getRewardBalances"
         );
+      const vestNFTs = this.getStore("vestNFTs");
+      const response = await fetch(`/api/rewards`, {
+        method: "POST",
+        body: JSON.stringify({
+          pairs,
+          veToken,
+          govToken,
+          account,
+          vestNFTs,
+          tokenID,
+        }),
+      });
 
-      const filteredPairs = [...pairs.filter(hasGauge)];
-
-      const filteredPairs2 = [...pairs.filter(hasGauge)];
-
-      let veDistReward: VeDistReward[] = [];
-
-      let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
-
-      if (tokenID) {
-        const bribesEarned = await Promise.all(
-          filteredPairs.map(async (pair) => {
-            const bribesEarned = await Promise.all(
-              pair.gauge.bribes.map(async (bribe) => {
-                const earned = await viemClient.readContract({
-                  address: pair.gauge.wrapped_bribe_address,
-                  abi: CONTRACTS.BRIBE_ABI,
-                  functionName: "earned",
-                  args: [bribe.token.address, BigInt(tokenID)],
-                });
-
-                bribe.earned = formatUnits(earned, bribe.token.decimals);
-                return bribe;
-              })
-            );
-
-            pair.gauge.bribesEarned = bribesEarned;
-
-            return pair;
-          })
-        );
-
-        filteredBribes = bribesEarned
-          .filter((pair) => {
-            if (
-              pair.gauge &&
-              pair.gauge.bribesEarned &&
-              pair.gauge.bribesEarned.length > 0
-            ) {
-              let shouldReturn = false;
-
-              for (let i = 0; i < pair.gauge.bribesEarned.length; i++) {
-                if (
-                  pair.gauge.bribesEarned[i].earned &&
-                  BigNumber(pair.gauge.bribesEarned[i].earned!).gt(0)
-                ) {
-                  shouldReturn = true;
-                }
-              }
-
-              return shouldReturn;
-            }
-
-            return false;
-          })
-          .map((pair) => {
-            pair.rewardType = "Bribe";
-            return pair;
-          });
-
-        const veDistEarned = await viemClient.readContract({
-          address: CONTRACTS.VE_DIST_ADDRESS,
-          abi: CONTRACTS.VE_DIST_ABI,
-          functionName: "claimable",
-          args: [BigInt(tokenID)],
-        });
-
-        const vestNFTs = this.getStore("vestNFTs");
-        let theNFT = vestNFTs.filter((vestNFT) => {
-          return vestNFT.id == tokenID;
-        });
-
-        if (veDistEarned > 0) {
-          veDistReward.push({
-            token: theNFT[0],
-            lockToken: veToken,
-            rewardToken: govToken,
-            earned: formatUnits(veDistEarned, govToken.decimals),
-            rewardType: "Distribution",
-          });
-        }
-      }
-
-      const rewardsEarned = await Promise.all(
-        filteredPairs2.map(async (pair) => {
-          const earned = await viemClient.readContract({
-            address: pair.gauge.address,
-            abi: CONTRACTS.GAUGE_ABI,
-            functionName: "earned",
-            args: [CONTRACTS.GOV_TOKEN_ADDRESS, account.address],
-          });
-
-          pair.gauge.rewardsEarned = formatEther(earned);
-          return pair;
-        })
-      );
-
-      const filteredRewards: Pair[] = []; // Pair with rewardType set to "Reward"
-      for (let j = 0; j < rewardsEarned.length; j++) {
-        let pair = Object.assign({}, rewardsEarned[j]);
-        if (
-          pair.gauge &&
-          pair.gauge.rewardsEarned &&
-          BigNumber(pair.gauge.rewardsEarned).gt(0)
-        ) {
-          pair.rewardType = "Reward";
-          filteredRewards.push(pair);
-        }
-      }
-
-      const rewards = {
-        bribes: filteredBribes,
-        rewards: filteredRewards,
-        veDist: veDistReward,
-      };
+      const { rewards } = await response.json();
 
       this.setStore({
         rewards,
