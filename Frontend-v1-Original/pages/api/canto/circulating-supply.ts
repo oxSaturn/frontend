@@ -6,7 +6,6 @@ import Cors from "cors";
 
 const cors = Cors({
   methods: ["GET"],
-  origin: ["https://www.coingecko.com", /\.coingecko\.com$/],
 });
 
 const dexvaults = http("https://canto.dexvaults.com");
@@ -19,7 +18,7 @@ const publicClient = createPublicClient({
   chain: canto,
   transport: fallback([dexvaults, plexnode, nodestake, slingshot, neobase], {
     rank: {
-      interval: 900_000,
+      interval: 30_000,
     },
   }),
 });
@@ -363,6 +362,8 @@ export default async function handler(
       flowInTimelockerController,
     NATIVE_TOKEN.decimals
   );
+
+  res.setHeader("Cache-Control", "max-age=0, s-maxage=900");
 
   res.status(200).json(parseFloat(circulatingSupply));
 }
