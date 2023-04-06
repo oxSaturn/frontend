@@ -408,7 +408,7 @@ function VotesRow({
         </TableCell>
         <TableCell align="right">
           {row.gauge.bribes.map((bribe, idx) => {
-            return (
+            return bribe.rewardAmount !== undefined ? (
               <div
                 className="flex items-center justify-end"
                 key={bribe.token.symbol}
@@ -423,6 +423,16 @@ function VotesRow({
                 >
                   {bribe.token.symbol}
                 </Typography>
+              </div>
+            ) : (
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                  key={bribe.token.symbol}
+                />
               </div>
             );
           })}
