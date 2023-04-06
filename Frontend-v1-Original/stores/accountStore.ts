@@ -260,8 +260,7 @@ class Store {
     const multicall = new Multicall3({
       web3Instance: web3,
       tryAggregate,
-      multicallCustomContractAddress:
-        "0xcA11bde05977b3631167028862bE2a173976CA11",
+      multicallCustomContractAddress: CONTRACTS.MULTICALL_ADDRESS,
     });
     return multicall;
   };

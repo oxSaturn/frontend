@@ -396,7 +396,7 @@ class Store {
 
         const resultsFromMulticall = await viemClient.multicall({
           allowFailure: false,
-          multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: [
             {
               ...pc,
@@ -461,7 +461,7 @@ class Store {
         gaugeWeight,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...pairContract,
@@ -532,7 +532,7 @@ class Store {
         token1Balance,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...token0Contract,
@@ -611,7 +611,7 @@ class Store {
         const [totalSupply, gaugeBalance, bribeAddress] =
           await viemClient.multicall({
             allowFailure: false,
-            multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
             contracts: [
               {
                 ...gaugeContract,
@@ -729,7 +729,7 @@ class Store {
       const [totalSupply, reserve0, reserve1, balanceOf] =
         await viemClient.multicall({
           allowFailure: false,
-          multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: [
             {
               ...pc,
@@ -801,7 +801,7 @@ class Store {
         gaugeWeight,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...pairContract,
@@ -872,7 +872,7 @@ class Store {
         token1Balance,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...token0Contract,
@@ -951,7 +951,7 @@ class Store {
         const [totalSupply, gaugeBalance, bribeAddress] =
           await viemClient.multicall({
             allowFailure: false,
-            multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
             contracts: [
               {
                 ...gaugeContract,
@@ -1104,7 +1104,7 @@ class Store {
 
       const [symbol, decimals, name] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...baseAssetContract,
@@ -1356,7 +1356,7 @@ class Store {
           const [[lockedAmount, lockedEnd], lockValue] =
             await viemClient.multicall({
               allowFailure: false,
-              multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
               contracts: [
                 {
                   ...vestingContract,
@@ -1424,8 +1424,6 @@ class Store {
     overridePairs?: Pair[]
   ) => {
     try {
-      const multicall = await stores.accountStore.getMulticall();
-
       let pairs: Pair[] = [];
 
       if (overridePairs) {
@@ -1463,28 +1461,23 @@ class Store {
               true
             );
 
-            const [totalSupply, reserves, balanceOf] =
-              await viemClient.multicall({
-                allowFailure: false,
-                multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
-                contracts: [
-                  {
-                    ...pairContract,
-                    functionName: "totalSupply",
-                  },
-                  { ...pairContract, functionName: "getReserves" },
-                  {
-                    ...pairContract,
-                    functionName: "balanceOf",
-                    args: [account.address],
-                  },
-                ],
-              });
+            const [reserves, balanceOf] = await viemClient.multicall({
+              allowFailure: false,
+              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+              contracts: [
+                { ...pairContract, functionName: "getReserves" },
+                {
+                  ...pairContract,
+                  functionName: "balanceOf",
+                  args: [account.address],
+                },
+              ],
+            });
 
             pair.token0 = token0 != null ? token0 : pair.token0;
             pair.token1 = token1 != null ? token1 : pair.token1;
             pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
-            pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
+            pair.totalSupply = pair.totalSupply.toString();
             pair.reserve0 = formatUnits(reserves[0], pair.token0.decimals);
             pair.reserve1 = formatUnits(reserves[1], pair.token1.decimals);
 
@@ -1516,28 +1509,22 @@ class Store {
                 args: [pair.gauge.address],
               });
 
-              const [totalSupply, gaugeBalance, gaugeWeight] =
-                await viemClient.multicall({
-                  allowFailure: false,
-                  multicallAddress:
-                    "0xcA11bde05977b3631167028862bE2a173976CA11",
-                  contracts: [
-                    {
-                      ...gaugeContract,
-                      functionName: "totalSupply",
-                    },
-                    {
-                      ...gaugeContract,
-                      functionName: "balanceOf",
-                      args: [account.address],
-                    },
-                    {
-                      ...gaugesContract,
-                      functionName: "weights",
-                      args: [pair.address],
-                    },
-                  ],
-                });
+              const [gaugeBalance, gaugeWeight] = await viemClient.multicall({
+                allowFailure: false,
+                multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+                contracts: [
+                  {
+                    ...gaugeContract,
+                    functionName: "balanceOf",
+                    args: [account.address],
+                  },
+                  {
+                    ...gaugesContract,
+                    functionName: "weights",
+                    args: [pair.address],
+                  },
+                ],
+              });
 
               const bribes = pair.gauge.bribes.map((bribe) => {
                 bribe.rewardAmount = bribe.rewardAmmount;
@@ -1548,16 +1535,18 @@ class Store {
               });
 
               pair.gauge.balance = formatEther(gaugeBalance);
-              pair.gauge.totalSupply = formatEther(totalSupply);
+              // in ps totalSupply for reassgined to string from number (api sends number)
+              pair.gauge.totalSupply = pair.gauge.total_supply.toString();
               pair.gauge.reserve0 =
-                pair.totalSupply > 0
+                parseFloat(pair.totalSupply as `${number}`) > 0
                   ? BigNumber(pair.reserve0)
                       .times(pair.gauge.totalSupply)
                       .div(pair.totalSupply)
                       .toFixed(pair.token0.decimals)
                   : "0";
+              // in ps totalSupply for reassgined to string from number (api sends number)
               pair.gauge.reserve1 =
-                pair.totalSupply > 0
+                parseFloat(pair.totalSupply as `${number}`) > 0
                   ? BigNumber(pair.reserve1)
                       .times(pair.gauge.totalSupply)
                       .div(pair.totalSupply)
@@ -1622,7 +1611,7 @@ class Store {
 
             const [isWhitelisted, balanceOf] = await viemClient.multicall({
               allowFailure: false,
-              multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
               contracts: [
                 {
                   ...voterContract,
@@ -1696,7 +1685,7 @@ class Store {
 
       const [symbol, decimals, name] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...baseAssetContract,
@@ -3443,7 +3432,7 @@ class Store {
       const [token0Balance, token1Balance, poolBalance] =
         await viemClient.multicall({
           allowFailure: false,
-          multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: balanceCalls,
         });
 
@@ -4400,7 +4389,7 @@ class Store {
           const [[lockedAmount, lockedEnd], lockValue] =
             await viemClient.multicall({
               allowFailure: false,
-              multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
               contracts: [
                 {
                   ...vestingContract,
@@ -5334,7 +5323,7 @@ class Store {
 
       const voteCounts = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: calls,
       });
 
