@@ -154,19 +154,28 @@ export default async function handler(
       }
     }
 
-    const rewardsEarned = await Promise.all(
-      filteredPairs2.map(async (pair) => {
-        const earned = await publicClient.readContract({
-          address: pair.gauge.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "earned",
-          args: [CONTRACTS.GOV_TOKEN_ADDRESS, account.address],
-        });
+    const rewardsCalls = filteredPairs2.map((pair) => {
+      return {
+        address: pair.gauge.address,
+        abi: CONTRACTS.GAUGE_ABI,
+        functionName: "earned",
+        args: [CONTRACTS.GOV_TOKEN_ADDRESS, account.address],
+      } as const;
+    });
 
-        pair.gauge.rewardsEarned = formatEther(earned);
-        return pair;
-      })
-    );
+    const rewardsEarnedCallResult = await publicClient.multicall({
+      allowFailure: false,
+      multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+      contracts: rewardsCalls,
+    });
+
+    const rewardsEarned = [...filteredPairs2];
+
+    for (let i = 0; i < rewardsEarned.length; i++) {
+      rewardsEarned[i].gauge.rewardsEarned = formatEther(
+        rewardsEarnedCallResult[i]
+      );
+    }
 
     const filteredRewards: Pair[] = []; // Pair with rewardType set to "Reward"
     for (let j = 0; j < rewardsEarned.length; j++) {
