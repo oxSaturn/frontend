@@ -72,16 +72,27 @@ export default async function handler(
         filteredPairs.map(async (pair) => {
           let bribesEarned: Bribe[] = [];
 
-          for (const bribe of pair.gauge.bribes) {
-            const earned = await publicClient.readContract({
+          const calls = pair.gauge.bribes.map((bribe) => {
+            return {
               address: pair.gauge.wrapped_bribe_address,
               abi: CONTRACTS.BRIBE_ABI,
               functionName: "earned",
               args: [bribe.token.address, BigInt(tokenID)],
-            });
+            } as const;
+          });
 
-            bribe.earned = formatUnits(earned, bribe.token.decimals);
-            bribesEarned.push(bribe);
+          const earnedPairs = await publicClient.multicall({
+            allowFailure: false,
+            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+            contracts: calls,
+          });
+
+          for (let i = 0; i < pair.gauge.bribes.length; i++) {
+            pair.gauge.bribes[i].earned = formatUnits(
+              earnedPairs[i],
+              pair.gauge.bribes[i].token.decimals
+            );
+            bribesEarned.push(pair.gauge.bribes[i]);
           }
 
           pair.gauge.bribesEarned = bribesEarned;
