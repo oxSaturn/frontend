@@ -392,49 +392,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
     setOrderBy(property);
   };
 
-  if (!pairs) {
-    return (
-      <div className="w-full">
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="mb-3 mt-6"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-      </div>
-    );
-  }
-
   const onView = (pair: Pair) => {
     router.push(`/liquidity/${pair.address}`);
   };
@@ -519,6 +476,49 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   );
 
   const emptyRows = 5 - Math.min(5, filteredPairs.length - page * 5);
+
+  if (pairs.length === 0 || !pairs) {
+    return (
+      <div className="w-full">
+        <Skeleton
+          variant="rectangular"
+          width={"100%"}
+          height={40}
+          className="mb-3 mt-6"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={"100%"}
+          height={40}
+          className="my-3"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={"100%"}
+          height={40}
+          className="my-3"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={"100%"}
+          height={40}
+          className="my-3"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={"100%"}
+          height={40}
+          className="my-3"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={"100%"}
+          height={40}
+          className="my-3"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
