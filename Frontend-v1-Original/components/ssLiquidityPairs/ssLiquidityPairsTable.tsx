@@ -55,6 +55,12 @@ const headCells = [
     label: "My Staked Amount",
   },
   {
+    id: "tvl",
+    numeric: true,
+    disablePadding: false,
+    label: "TVL",
+  },
+  {
     id: "poolAmount",
     numeric: true,
     disablePadding: false,
@@ -98,7 +104,15 @@ function EnhancedTableHead(props: {
       <TableRow>
         {headCells.map((headCell) => (
           <TableCell
-            className="border-b border-b-[rgba(104,108,122,0.2)]"
+            className={`border-b border-b-[rgba(104,108,122,0.2)] ${
+              headCell.id === "poolAmount" ||
+              headCell.id === "stakedAmount" ||
+              headCell.id === "tvl" ||
+              headCell.id === "balance" ||
+              headCell.id === "poolBalance"
+                ? "max-[1000px]:hidden"
+                : ""
+            }`}
             key={headCell.id}
             align={headCell.numeric ? "right" : "left"}
             padding={"normal"}
@@ -738,7 +752,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       )}
                     </TableCell>
                     {row && hasGauge(row) && (
-                      <TableCell className="max-[1000px]:hidden" align="right">
+                      <TableCell align="right">
                         {row.gauge.reserve0 &&
                           row.gauge.reserve1 &&
                           row.gauge.balance &&
@@ -805,7 +819,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     {!(row && row.gauge && row.gauge.address) && (
-                      <TableCell className="max-[1000px]:hidden" align="right">
+                      <TableCell align="right">
                         <Typography
                           variant="h2"
                           className="text-xs font-extralight"
@@ -814,7 +828,15 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </Typography>
                       </TableCell>
                     )}
-                    <TableCell className="max-sm:hidden" align="right">
+                    <TableCell className="max-[1000px]:hidden" align="right">
+                      <Typography
+                        variant="h2"
+                        className="text-xs font-extralight"
+                      >
+                        ${formatCurrency(row.tvl)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell className="max-[1000px]:hidden" align="right">
                       {row && row.reserve0 && row.token0 && (
                         <div className="flex items-center justify-end max-[1000px]:block">
                           <Typography
@@ -1115,6 +1137,7 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       }
       return 0;
 
+    case "tvl":
     case "poolAmount":
       let reserveA = a.tvl;
       let reserveB = b.tvl;
