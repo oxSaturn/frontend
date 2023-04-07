@@ -326,6 +326,19 @@ export default function EnhancedTable({
                       </TableCell>
                       <TableCell align="right">
                         <div>
+                          {"gauge" in row && !row.gauge.balance && (
+                            <div className="flex items-center justify-end">
+                              <Skeleton
+                                variant="rectangular"
+                                width={120}
+                                height={16}
+                                style={{
+                                  marginTop: "1px",
+                                  marginBottom: "1px",
+                                }}
+                              />
+                            </div>
+                          )}
                           {row &&
                             row.rewardType === "Bribe" &&
                             row.gauge &&
