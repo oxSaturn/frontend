@@ -20,7 +20,7 @@ import classes from "./ssBribeCreate.module.css";
 
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
-import { BaseAsset, Pair } from "../../stores/types/types";
+import { BaseAsset, Pair, hasGauge } from "../../stores/types/types";
 import { SelectChangeEvent } from "@mui/material";
 
 export default function ssBribeCreate() {
@@ -41,17 +41,22 @@ export default function ssBribeCreate() {
     });
     const storePairs = stores.stableSwapStore.getStore("pairs");
     setAssetOptions(filteredStoreAssetOptions);
-    setGaugeOptions(storePairs);
+
+    const filteredPairs = storePairs.filter(
+      (pair) => pair.gauge && pair.isAliveGauge
+    );
+
+    setGaugeOptions(filteredPairs);
 
     if (filteredStoreAssetOptions.length > 0 && asset == null) {
       setAsset(filteredStoreAssetOptions[0]);
     }
 
-    if (storePairs.length > 0 && gauge == null) {
-      const noteFlowPair = storePairs.filter((pair) => {
-        return pair.symbol === "vAMM-FLOW/NOTE";
+    if (filteredPairs.length > 0 && gauge == null) {
+      const noteFlowPair = filteredPairs.filter((pair) => {
+        return pair.symbol === "vAMM-NOTE/FLOW";
       });
-      setGauge(noteFlowPair[0] ?? storePairs[0]);
+      setGauge(noteFlowPair[0] ?? filteredPairs[0]);
     }
   };
 
