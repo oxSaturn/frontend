@@ -22,7 +22,6 @@ import { ACTIONS } from "../../stores/constants/constants";
 import { ArrowBack } from "@mui/icons-material";
 import VestingInfo from "./vestingInfo";
 import { GovToken, VeToken } from "../../stores/types/types";
-import { lockOptions } from "./lockDuration";
 
 export default function ssLock({
   govToken,
@@ -38,7 +37,7 @@ export default function ssLock({
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
-  const [selectedValue, setSelectedValue] = useState<string | null>("8");
+  const [selectedValue, setSelectedValue] = useState<string | null>("week");
   const [selectedDate, setSelectedDate] = useState(
     moment().add(7, "days").format("YYYY-MM-DD")
   );
@@ -78,7 +77,22 @@ export default function ssLock({
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedValue(event.target.value);
 
-    let days = +event.target.value ?? 0;
+    let days = 0;
+    switch (event.target.value) {
+      case "week":
+        days = 7;
+        break;
+      case "month":
+        days = 30;
+        break;
+      case "year":
+        days = 365;
+        break;
+      case "years":
+        days = 1460;
+        break;
+      default:
+    }
     const newDate = moment().add(days, "days").format("YYYY-MM-DD");
 
     setSelectedDate(newDate);
@@ -318,22 +332,39 @@ export default function ssLock({
           <div className={classes.inline}>
             <Typography className={classes.expiresIn}>Expires: </Typography>
             <RadioGroup
-              className={`${classes.vestPeriodToggle} grid grid-cols-2`}
+              className={classes.vestPeriodToggle}
+              row
               onChange={handleChange}
               value={selectedValue}
             >
-              {Object.keys(lockOptions).map((key) => {
-                return (
-                  <FormControlLabel
-                    key={key}
-                    className={classes.vestPeriodLabel}
-                    value={lockOptions[key]}
-                    control={<Radio color="primary" />}
-                    label={key}
-                    labelPlacement="end"
-                  />
-                );
-              })}
+              <FormControlLabel
+                className={classes.vestPeriodLabel}
+                value="week"
+                control={<Radio color="primary" />}
+                label="1 week"
+                labelPlacement="start"
+              />
+              <FormControlLabel
+                className={classes.vestPeriodLabel}
+                value="month"
+                control={<Radio color="primary" />}
+                label="1 month"
+                labelPlacement="start"
+              />
+              <FormControlLabel
+                className={classes.vestPeriodLabel}
+                value="year"
+                control={<Radio color="primary" />}
+                label="1 year"
+                labelPlacement="start"
+              />
+              <FormControlLabel
+                className={classes.vestPeriodLabel}
+                value="years"
+                control={<Radio color="primary" />}
+                label="4 years"
+                labelPlacement="start"
+              />
             </RadioGroup>
           </div>
         </div>
