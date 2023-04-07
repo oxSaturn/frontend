@@ -342,28 +342,28 @@ export default function ssLock({
                 value="week"
                 control={<Radio color="primary" />}
                 label="1 week"
-                labelPlacement="start"
+                labelPlacement="end"
               />
               <FormControlLabel
                 className={classes.vestPeriodLabel}
                 value="month"
                 control={<Radio color="primary" />}
                 label="1 month"
-                labelPlacement="start"
+                labelPlacement="end"
               />
               <FormControlLabel
                 className={classes.vestPeriodLabel}
                 value="year"
                 control={<Radio color="primary" />}
                 label="1 year"
-                labelPlacement="start"
+                labelPlacement="end"
               />
               <FormControlLabel
                 className={classes.vestPeriodLabel}
                 value="years"
                 control={<Radio color="primary" />}
                 label="4 years"
-                labelPlacement="start"
+                labelPlacement="end"
               />
             </RadioGroup>
           </div>
