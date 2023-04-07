@@ -5,7 +5,7 @@ import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
 import type Web3 from "web3";
 import { TransactionReceipt } from "@ethersproject/providers";
-import viemClient from "./connectors/viem";
+import viemClient, { chunkArray, multicallChunks } from "./connectors/viem";
 import {
   getContract,
   formatUnits,
@@ -1176,7 +1176,7 @@ class Store {
       this.setStore({ govToken: this._getGovTokenBase() });
       this.setStore({ veToken: this._getVeTokenBase() });
       this.setStore({ baseAssets: await this._getBaseAssets() });
-      this.setStore({ routeAssets: await this._getRouteAssets() });
+      // this.setStore({ routeAssets: await this._getRouteAssets() }); // We dont need it because we use firebird router
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
       this.setStore({ updateDate: await stores.helper.getActivePeriod() });
@@ -5575,19 +5575,136 @@ class Store {
           "Error getting veToken and govToken in getRewardBalances"
         );
       const vestNFTs = this.getStore("vestNFTs");
-      const response = await fetch(`/api/rewards`, {
-        method: "POST",
-        body: JSON.stringify({
-          pairs,
-          veToken,
-          govToken,
-          account,
-          vestNFTs,
-          tokenID,
-        }),
+      const filteredPairs = [...pairs.filter(hasGauge)];
+
+      const filteredPairs2 = [...pairs.filter(hasGauge)];
+
+      let veDistReward: VeDistReward[] = [];
+
+      let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
+
+      if (tokenID && vestNFTs.length > 0) {
+        const calls = filteredPairs.flatMap((pair) =>
+          pair.gauge.bribes.map(
+            (bribe) =>
+              ({
+                address: pair.gauge.wrapped_bribe_address,
+                abi: CONTRACTS.BRIBE_ABI,
+                functionName: "earned",
+                args: [bribe.token.address, BigInt(tokenID)],
+              } as const)
+          )
+        );
+        const callsChunks = chunkArray(calls, 100);
+
+        const earnedPairs = await multicallChunks(callsChunks);
+
+        filteredPairs.forEach((pair, idx) => {
+          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe) => {
+            return {
+              ...bribe,
+              earned: formatUnits(
+                earnedPairs[idx],
+                bribe.token.decimals
+              ) as `${number}`,
+            };
+          });
+        });
+
+        filteredBribes = filteredPairs
+          .filter((pair) => {
+            if (
+              pair.gauge &&
+              pair.gauge.bribesEarned &&
+              pair.gauge.bribesEarned.length > 0
+            ) {
+              let shouldReturn = false;
+
+              for (let i = 0; i < pair.gauge.bribesEarned.length; i++) {
+                if (
+                  pair.gauge.bribesEarned[i].earned &&
+                  parseUnits(
+                    pair.gauge.bribesEarned[i].earned as `${number}`,
+                    pair.gauge.bribes[i].token.decimals
+                  ) > 0
+                ) {
+                  shouldReturn = true;
+                }
+              }
+
+              return shouldReturn;
+            }
+
+            return false;
+          })
+          .map((pair) => {
+            pair.rewardType = "Bribe";
+            return pair;
+          });
+
+        const veDistEarned = await viemClient.readContract({
+          address: CONTRACTS.VE_DIST_ADDRESS,
+          abi: CONTRACTS.VE_DIST_ABI,
+          functionName: "claimable",
+          args: [BigInt(tokenID)],
+        });
+
+        let theNFT = vestNFTs.filter((vestNFT) => {
+          return vestNFT.id == tokenID;
+        });
+
+        if (veDistEarned > 0) {
+          veDistReward.push({
+            token: theNFT[0],
+            lockToken: veToken,
+            rewardToken: govToken,
+            earned: formatUnits(veDistEarned, govToken.decimals),
+            rewardType: "Distribution",
+          });
+        }
+      }
+
+      const rewardsCalls = filteredPairs2.map((pair) => {
+        return {
+          address: pair.gauge.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "earned",
+          args: [CONTRACTS.GOV_TOKEN_ADDRESS, account.address],
+        } as const;
       });
 
-      const { rewards } = await response.json();
+      const rewardsEarnedCallResult = await viemClient.multicall({
+        allowFailure: false,
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+        contracts: rewardsCalls,
+      });
+
+      const rewardsEarned = [...filteredPairs2];
+
+      for (let i = 0; i < rewardsEarned.length; i++) {
+        rewardsEarned[i].gauge.rewardsEarned = formatEther(
+          rewardsEarnedCallResult[i]
+        );
+      }
+
+      const filteredRewards: Pair[] = []; // Pair with rewardType set to "Reward"
+      for (let j = 0; j < rewardsEarned.length; j++) {
+        let pair = Object.assign({}, rewardsEarned[j]);
+        if (
+          pair.gauge &&
+          pair.gauge.rewardsEarned &&
+          parseEther(pair.gauge.rewardsEarned as `${number}`) > 0
+        ) {
+          pair.rewardType = "Reward";
+          filteredRewards.push(pair);
+        }
+      }
+
+      const rewards = {
+        bribes: filteredBribes,
+        rewards: filteredRewards,
+        veDist: veDistReward,
+      };
 
       this.setStore({
         rewards,
