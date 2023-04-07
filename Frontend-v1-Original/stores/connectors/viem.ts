@@ -1,6 +1,7 @@
 import {
   createPublicClient,
   http,
+  webSocket,
   fallback,
   ContractFunctionConfig,
   MulticallParameters,
@@ -9,6 +10,7 @@ import { canto } from "viem/chains";
 import { CONTRACTS } from "../constants/constants";
 
 const dexvaults = http("https://canto.dexvaults.com");
+const dexvaultsWS = webSocket("wss://canto.dexvaults/ws");
 const plexnode = http("https://mainnode.plexnode.org:8545");
 const nodestake = http("https://jsonrpc.canto.nodestake.top");
 const slingshot = http("https://canto.slingshot.finance");
@@ -19,7 +21,7 @@ const chandrastation = http("https://canto.evm.chandrastation.com/");
 const client = createPublicClient({
   chain: canto,
   transport: fallback(
-    [dexvaults, plexnode, nodestake, slingshot, chandrastation],
+    [dexvaults, dexvaultsWS, plexnode, nodestake, slingshot, chandrastation],
     {
       rank: {
         interval: 30_000,
