@@ -38,7 +38,7 @@ export default function ssLock({
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
-  const [selectedValue, setSelectedValue] = useState<string | null>("week");
+  const [selectedValue, setSelectedValue] = useState<string | null>("8");
   const [selectedDate, setSelectedDate] = useState(
     moment().add(7, "days").format("YYYY-MM-DD")
   );
