@@ -16,6 +16,16 @@ import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { VestNFT } from "../../stores/types/types";
 
+export const lockOptions: {
+  [key: string]: number;
+} = {
+  "1 week": 8,
+  "1 month": 30,
+  "1 year": 365,
+  "2 years": 730,
+  "3 years": 1095,
+  "4 years": 1461,
+};
 export default function ffLockDuration({
   nft,
   updateLockDuration,
@@ -71,22 +81,7 @@ export default function ffLockDuration({
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedValue(event.target.value);
 
-    let days = 0;
-    switch (event.target.value) {
-      case "week":
-        days = 8;
-        break;
-      case "month":
-        days = 30;
-        break;
-      case "year":
-        days = 365;
-        break;
-      case "years":
-        days = 1461;
-        break;
-      default:
-    }
+    let days = +event.target.value ?? 0;
     const newDate = moment().add(days, "days").format("YYYY-MM-DD");
 
     setSelectedDate(newDate);
@@ -172,39 +167,22 @@ export default function ffLockDuration({
         <div className={classes.inline}>
           <Typography className={classes.expiresIn}>Expires: </Typography>
           <RadioGroup
-            className={classes.vestPeriodToggle}
-            row
+            className={`${classes.vestPeriodToggle} grid grid-cols-2`}
             onChange={handleChange}
             value={selectedValue}
           >
-            <FormControlLabel
-              className={classes.vestPeriodLabel}
-              value="week"
-              control={<Radio color="primary" />}
-              label="1 week"
-              labelPlacement="end"
-            />
-            <FormControlLabel
-              className={classes.vestPeriodLabel}
-              value="month"
-              control={<Radio color="primary" />}
-              label="1 month"
-              labelPlacement="end"
-            />
-            <FormControlLabel
-              className={classes.vestPeriodLabel}
-              value="year"
-              control={<Radio color="primary" />}
-              label="1 year"
-              labelPlacement="end"
-            />
-            <FormControlLabel
-              className={classes.vestPeriodLabel}
-              value="years"
-              control={<Radio color="primary" />}
-              label="4 years"
-              labelPlacement="end"
-            />
+            {Object.keys(lockOptions).map((key) => {
+              return (
+                <FormControlLabel
+                  key={key}
+                  className={classes.vestPeriodLabel}
+                  value={lockOptions[key]}
+                  control={<Radio color="primary" />}
+                  label={key}
+                  labelPlacement="end"
+                />
+              );
+            })}
           </RadioGroup>
         </div>
       </div>
