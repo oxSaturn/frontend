@@ -94,6 +94,7 @@
   justify-content: flex-end;
   position: absolute;
   top: 8px;
+  z-index: 100;
 }
 
 .inputTitle {
