@@ -1327,7 +1327,7 @@ export default function ssLiquidityManage() {
     <div className="relative">
       <Paper
         elevation={0}
-        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow shadow-white"
+        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow shadow-cantoGreen"
       >
         <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-cantoGreen">
           <Grid container spacing={0}>
