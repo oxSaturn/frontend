@@ -355,22 +355,44 @@ class Store {
         return null;
       }
 
-      const vestingContract = getContract({
+      const vestingContract = {
         abi: CONTRACTS.VE_TOKEN_ABI,
         address: CONTRACTS.VE_TOKEN_ADDRESS,
-        publicClient: viemClient,
+      } as const;
+
+      const tokenIndex = await viemClient.readContract({
+        ...vestingContract,
+        functionName: "tokenOfOwnerByIndex",
+        args: [account.address, BigInt(id)],
       });
 
-      const locked = await vestingContract.read.locked([BigInt(id)]);
-      const lockValue = await vestingContract.read.balanceOfNFT([BigInt(id)]);
+      const [[lockedAmount, lockedEnd], lockValue] = await viemClient.multicall(
+        {
+          allowFailure: false,
+          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+          contracts: [
+            {
+              ...vestingContract,
+              functionName: "locked",
+              args: [tokenIndex],
+            },
+            {
+              ...vestingContract,
+              functionName: "balanceOfNFT",
+              args: [tokenIndex],
+            },
+          ],
+        }
+      );
+
       const voted = await this._checkNFTVotedEpoch(id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
           return {
             id: id,
-            lockEnds: locked[1].toString(),
-            lockAmount: formatUnits(locked[0], govToken.decimals),
+            lockEnds: lockedEnd.toString(),
+            lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
             voted,
           };

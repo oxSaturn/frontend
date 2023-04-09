@@ -134,7 +134,7 @@ class Helper {
         flowInMsig -
         flowInRewardsDistributor -
         flowInTimelockerController,
-      NATIVE_TOKEN.decimals
+      CONTRACTS.GOV_TOKEN_DECIMALS
     );
 
     return parseFloat(circulatingSupply);
