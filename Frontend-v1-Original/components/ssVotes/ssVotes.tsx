@@ -110,7 +110,8 @@ export default function ssVotes() {
       if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
         setVotes(votesReturnedMapped);
 
-      const noKilledGauges = gauges.filter((gauge) => {
+      const pairs = stores.stableSwapStore.getStore("pairs");
+      const filteredPairs = pairs.filter(hasGauge).filter((gauge) => {
         let sliderValue =
           votesReturnedMapped.find((el) => el.address === gauge.address)
             ?.value ?? 0;
@@ -120,8 +121,8 @@ export default function ssVotes() {
         return true;
       });
 
-      if (JSON.stringify(noKilledGauges) !== JSON.stringify(gauges))
-        setGauges(noKilledGauges);
+      if (JSON.stringify(filteredPairs) !== JSON.stringify(gauges))
+        setGauges(filteredPairs);
 
       // forceUpdate();
     };
