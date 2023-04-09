@@ -110,6 +110,19 @@ export default function ssVotes() {
       if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
         setVotes(votesReturnedMapped);
 
+      const noKilledGauges = gauges.filter((gauge) => {
+        let sliderValue =
+          votesReturnedMapped.find((el) => el.address === gauge.address)
+            ?.value ?? 0;
+        if (gauge.isAliveGauge === false && sliderValue === 0) {
+          return false;
+        }
+        return true;
+      });
+
+      if (JSON.stringify(noKilledGauges) !== JSON.stringify(gauges))
+        setGauges(noKilledGauges);
+
       // forceUpdate();
     };
 
