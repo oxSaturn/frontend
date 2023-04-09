@@ -1,3 +1,5 @@
+import { ZERO_ADDRESS } from "../constants/constants";
+
 interface BaseAsset {
   address: `0x${string}`;
   symbol: string;
@@ -106,7 +108,7 @@ type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 type Gauge = WithRequired<Pair, "gauge">;
 const hasGauge = (pair: Pair): pair is Gauge =>
-  pair && pair.gauge !== undefined;
+  pair && pair.gauge !== undefined && pair.gauge.address !== ZERO_ADDRESS;
 const isGaugeReward = (reward: Gauge | VeDistReward): reward is Gauge =>
   reward && reward.rewardType !== "Distribution";
 const isBaseAsset = (

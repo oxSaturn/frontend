@@ -262,15 +262,16 @@ class Store {
         return null;
       }
 
-      const vestingContract = getContract({
+      const vestingContract = {
         abi: CONTRACTS.VE_TOKEN_ABI,
         address: CONTRACTS.VE_TOKEN_ADDRESS,
-        publicClient: viemClient,
-      });
+      } as const;
 
-      const nftsLength = await vestingContract.read.balanceOf([
-        account.address,
-      ]);
+      const nftsLength = await viemClient.readContract({
+        ...vestingContract,
+        functionName: "balanceOf",
+        args: [account.address],
+      });
       const arr = Array.from(
         { length: parseInt(nftsLength.toString()) },
         (v, i) => i
@@ -278,23 +279,35 @@ class Store {
 
       const nfts: VestNFT[] = await Promise.all(
         arr.map(async (idx) => {
-          const tokenIndex = await vestingContract.read.tokenOfOwnerByIndex([
-            account.address,
-            BigInt(idx),
-          ]);
-
-          const locked = await vestingContract.read.locked([tokenIndex]);
-
-          const lockValue = await vestingContract.read.balanceOfNFT([
-            tokenIndex,
-          ]);
+          const tokenIndex = await viemClient.readContract({
+            ...vestingContract,
+            functionName: "tokenOfOwnerByIndex",
+            args: [account.address, BigInt(idx)],
+          });
+          const [[lockedAmount, lockedEnd], lockValue] =
+            await viemClient.multicall({
+              allowFailure: false,
+              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+              contracts: [
+                {
+                  ...vestingContract,
+                  functionName: "locked",
+                  args: [tokenIndex],
+                },
+                {
+                  ...vestingContract,
+                  functionName: "balanceOfNFT",
+                  args: [tokenIndex],
+                },
+              ],
+            });
 
           const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
 
           return {
             id: tokenIndex.toString(),
-            lockEnds: locked[1].toString(),
-            lockAmount: formatUnits(locked[0], govToken.decimals),
+            lockEnds: lockedEnd.toString(),
+            lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
             voted,
           };
@@ -1443,13 +1456,37 @@ class Store {
 
       const totalWeight = await gaugesContractInstance.read.totalWeight();
 
+      const pairCalls = pairs.flatMap((pair) => {
+        return [
+          {
+            address: pair.address,
+            abi: CONTRACTS.PAIR_ABI,
+            functionName: "totalSupply",
+          },
+          {
+            address: pair.address,
+            abi: CONTRACTS.PAIR_ABI,
+            functionName: "reserve0",
+          },
+          {
+            address: pair.address,
+            abi: CONTRACTS.PAIR_ABI,
+            functionName: "reserve1",
+          },
+          {
+            address: pair.address,
+            abi: CONTRACTS.PAIR_ABI,
+            functionName: "balanceOf",
+            args: [account.address],
+          },
+        ] as const;
+      });
+      const pairCallsChunks = chunkArray(pairCalls, 100);
+      const pairsData = await multicallChunks(pairCallsChunks);
+
       const ps = await Promise.all(
-        pairs.map(async (pair) => {
+        pairs.map(async (pair, i) => {
           try {
-            const pairContract = {
-              abi: CONTRACTS.PAIR_ABI,
-              address: pair.address,
-            } as const;
             const token0 = await this.getBaseAsset(
               pair.token0.address,
               false,
@@ -1461,27 +1498,15 @@ class Store {
               true
             );
 
-            const [totalSupply, reserves, balanceOf] =
-              await viemClient.multicall({
-                allowFailure: false,
-                multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-                contracts: [
-                  { ...pairContract, functionName: "totalSupply" },
-                  { ...pairContract, functionName: "getReserves" },
-                  {
-                    ...pairContract,
-                    functionName: "balanceOf",
-                    args: [account.address],
-                  },
-                ],
-              });
+            const [totalSupply, reserve0, reserve1, balanceOf] =
+              pairsData.slice(i * 4, i * 4 + 4);
 
             pair.token0 = token0 != null ? token0 : pair.token0;
             pair.token1 = token1 != null ? token1 : pair.token1;
             pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
             pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
-            pair.reserve0 = formatUnits(reserves[0], pair.token0.decimals);
-            pair.reserve1 = formatUnits(reserves[1], pair.token1.decimals);
+            pair.reserve0 = formatUnits(reserve0, pair.token0.decimals);
+            pair.reserve1 = formatUnits(reserve1, pair.token1.decimals);
 
             return pair;
           } catch (ex) {
@@ -1496,88 +1521,99 @@ class Store {
       this.setStore({ pairs: ps });
       this.emitter.emit(ACTIONS.UPDATED);
 
-      const ps1 = await Promise.all(
-        ps.map(async (pair) => {
-          try {
-            if (pair.gauge && pair.gauge.address !== ZERO_ADDRESS) {
-              const gaugeContract = {
-                abi: CONTRACTS.GAUGE_ABI,
-                address: pair.gauge.address,
-              } as const;
+      const gauges = ps.filter(hasGauge);
 
-              const isAliveGauge = await viemClient.readContract({
-                ...gaugesContract,
-                functionName: "isAlive",
-                args: [pair.gauge.address],
-              });
+      const gaugesAliveCalls = gauges.map((pair) => {
+        return {
+          ...gaugesContract,
+          functionName: "isAlive",
+          args: [pair.gauge.address],
+        } as const;
+      });
+      const gaugesAliveCallsChunks = chunkArray(gaugesAliveCalls);
+      const gaugesAliveData = await multicallChunks(gaugesAliveCallsChunks);
 
-              const [totalSupply, gaugeBalance, gaugeWeight] =
-                await viemClient.multicall({
-                  allowFailure: false,
-                  multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-                  contracts: [
-                    {
-                      ...gaugeContract,
-                      functionName: "totalSupply",
-                    },
-                    {
-                      ...gaugeContract,
-                      functionName: "balanceOf",
-                      args: [account.address],
-                    },
-                    {
-                      ...gaugesContract,
-                      functionName: "weights",
-                      args: [pair.address],
-                    },
-                  ],
-                });
+      const gaugesCalls = gauges.flatMap((pair) => {
+        return [
+          {
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "totalSupply",
+          },
+          {
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "balanceOf",
+            args: [account.address],
+          },
+          {
+            ...gaugesContract,
+            functionName: "weights",
+            args: [pair.address],
+          },
+        ] as const;
+      });
+      const gaugesCallsChunks = chunkArray(gaugesCalls);
+      const gaugesData = await multicallChunks(gaugesCallsChunks);
 
-              const bribes = pair.gauge.bribes.map((bribe) => {
-                bribe.rewardAmount = bribe.rewardAmmount;
-                bribe.tokenPrice = this.getStore("tokenPrices").get(
-                  bribe.token.address.toLowerCase()
-                );
-                return bribe;
-              });
+      // this is to increment index only if pair hasGauge
+      let outerIndex = 0;
+      const ps1 = ps.map((pair) => {
+        try {
+          if (hasGauge(pair)) {
+            const isAliveGauge = gaugesAliveData[outerIndex];
 
-              pair.gauge.balance = formatEther(gaugeBalance);
-              pair.gauge.totalSupply = formatEther(totalSupply);
+            const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
+              outerIndex * 3,
+              outerIndex * 3 + 3
+            );
 
-              // in ps totalSupply for reassgined to string from number (api sends number)
-              pair.gauge.reserve0 =
-                parseFloat(pair.totalSupply as `${number}`) > 0
-                  ? BigNumber(pair.reserve0)
-                      .times(pair.gauge.totalSupply)
-                      .div(pair.totalSupply)
-                      .toFixed(pair.token0.decimals)
-                  : "0";
-              // in ps totalSupply for reassgined to string from number (api sends number)
-              pair.gauge.reserve1 =
-                parseFloat(pair.totalSupply as `${number}`) > 0
-                  ? BigNumber(pair.reserve1)
-                      .times(pair.gauge.totalSupply)
-                      .div(pair.totalSupply)
-                      .toFixed(pair.token1.decimals)
-                  : "0";
-              pair.gauge.weight = formatEther(gaugeWeight);
-              pair.gauge.weightPercent = parseFloat(
-                ((gaugeWeight * BigInt(100)) / totalWeight).toString()
-              ).toFixed(2);
-              pair.gaugebribes = bribes;
-              pair.isAliveGauge = isAliveGauge;
-              if (isAliveGauge === false) pair.apr = 0;
-            }
+            const bribes = pair.gauge.bribes.map((bribe) => {
+              bribe.rewardAmount = bribe.rewardAmmount;
+              bribe.tokenPrice = this.getStore("tokenPrices").get(
+                bribe.token.address.toLowerCase()
+              );
+              return bribe;
+            });
 
-            return pair;
-          } catch (ex) {
-            console.log("EXCEPTION 2");
-            console.log(pair);
-            console.log(ex);
-            return pair;
+            pair.gauge.balance = formatEther(gaugeBalance);
+            pair.gauge.totalSupply = formatEther(totalSupply);
+
+            // in ps totalSupply for reassgined to string from number (api sends number)
+            pair.gauge.reserve0 =
+              parseFloat(pair.totalSupply as `${number}`) > 0
+                ? BigNumber(pair.reserve0)
+                    .times(pair.gauge.totalSupply)
+                    .div(pair.totalSupply)
+                    .toFixed(pair.token0.decimals)
+                : "0";
+            // in ps totalSupply for reassgined to string from number (api sends number)
+            pair.gauge.reserve1 =
+              parseFloat(pair.totalSupply as `${number}`) > 0
+                ? BigNumber(pair.reserve1)
+                    .times(pair.gauge.totalSupply)
+                    .div(pair.totalSupply)
+                    .toFixed(pair.token1.decimals)
+                : "0";
+            pair.gauge.weight = formatEther(gaugeWeight);
+            pair.gauge.weightPercent = parseFloat(
+              ((gaugeWeight * BigInt(100)) / totalWeight).toString()
+            ).toFixed(2);
+            pair.gaugebribes = bribes;
+            pair.isAliveGauge = isAliveGauge;
+            if (isAliveGauge === false) pair.apr = 0;
+
+            outerIndex++;
           }
-        })
-      );
+
+          return pair;
+        } catch (ex) {
+          console.log("EXCEPTION 2");
+          console.log(pair);
+          console.log(ex);
+          return pair;
+        }
+      });
 
       this.setStore({ pairs: ps1 });
       this.emitter.emit(ACTIONS.UPDATED);
