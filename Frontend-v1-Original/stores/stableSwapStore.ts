@@ -471,12 +471,11 @@ class Store {
         abi: CONTRACTS.VOTER_ABI,
         address: CONTRACTS.VOTER_ADDRESS,
       } as const;
-      const gaugesContractInstance = getContract({
-        ...gaugesContract,
-        publicClient: viemClient,
-      });
 
-      const totalWeight = await gaugesContractInstance.read.totalWeight();
+      const totalWeight = await viemClient.readContract({
+        ...gaugesContract,
+        functionName: "totalWeight",
+      });
 
       const [
         token0,
@@ -811,12 +810,11 @@ class Store {
         abi: CONTRACTS.VOTER_ABI,
         address: CONTRACTS.VOTER_ADDRESS,
       } as const;
-      const gaugesContractInstance = getContract({
-        ...gaugesContract,
-        publicClient: viemClient,
-      });
 
-      const totalWeight = await gaugesContractInstance.read.totalWeight();
+      const totalWeight = await viemClient.readContract({
+        ...gaugesContract,
+        functionName: "totalWeight",
+      });
 
       const [
         token0,
@@ -1467,12 +1465,11 @@ class Store {
         abi: CONTRACTS.VOTER_ABI,
         address: CONTRACTS.VOTER_ADDRESS,
       } as const;
-      const gaugesContractInstance = getContract({
-        ...gaugesContract,
-        publicClient: viemClient,
-      });
 
-      const totalWeight = await gaugesContractInstance.read.totalWeight();
+      const totalWeight = await viemClient.readContract({
+        ...gaugesContract,
+        functionName: "totalWeight",
+      });
 
       const pairCalls = pairs.flatMap((pair) => {
         return [
