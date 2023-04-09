@@ -457,6 +457,18 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
     () =>
       pairs
         .filter((pair) => {
+          if (
+            pair.isAliveGauge === false &&
+            pair.balance &&
+            parseFloat(pair.balance) === 0 &&
+            pair.gauge?.balance &&
+            parseFloat(pair.gauge?.balance) === 0
+          ) {
+            return false;
+          }
+          return true;
+        })
+        .filter((pair) => {
           if (!search || search === "") {
             return true;
           }

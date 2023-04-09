@@ -60,7 +60,14 @@ export default function ssVotes() {
     setVeToken(stores.stableSwapStore.getStore("veToken"));
     const as = stores.stableSwapStore.getStore("pairs");
 
-    const filteredAssets = as.filter(hasGauge);
+    const filteredAssets = as.filter(hasGauge).filter((gauge) => {
+      let sliderValue =
+        votes.find((el) => el.address === gauge.address)?.value ?? 0;
+      if (gauge.isAliveGauge === false && sliderValue === 0) {
+        return false;
+      }
+      return true;
+    });
     if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
       setGauges(filteredAssets);
 
@@ -102,6 +109,20 @@ export default function ssVotes() {
       });
       if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
         setVotes(votesReturnedMapped);
+
+      const pairs = stores.stableSwapStore.getStore("pairs");
+      const filteredPairs = pairs.filter(hasGauge).filter((gauge) => {
+        let sliderValue =
+          votesReturnedMapped.find((el) => el.address === gauge.address)
+            ?.value ?? 0;
+        if (gauge.isAliveGauge === false && sliderValue === 0) {
+          return false;
+        }
+        return true;
+      });
+
+      if (JSON.stringify(filteredPairs) !== JSON.stringify(gauges))
+        setGauges(filteredPairs);
 
       // forceUpdate();
     };
