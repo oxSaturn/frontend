@@ -460,7 +460,9 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           if (
             pair.isAliveGauge === false &&
             pair.balance &&
-            parseFloat(pair.balance) === 0
+            parseFloat(pair.balance) === 0 &&
+            pair.gauge?.balance &&
+            parseFloat(pair.gauge?.balance) === 0
           ) {
             return false;
           }
