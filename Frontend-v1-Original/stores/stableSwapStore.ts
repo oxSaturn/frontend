@@ -429,34 +429,30 @@ class Store {
           address: pairAddress,
         } as const;
 
-        const resultsFromMulticall = await viemClient.multicall({
-          allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-          contracts: [
-            {
-              ...pc,
-              functionName: "totalSupply",
-            },
-            {
-              ...pc,
-              functionName: "reserve0",
-            },
-            {
-              ...pc,
-              functionName: "reserve1",
-            },
-            {
-              ...pc,
-              functionName: "balanceOf",
-              args: [account.address],
-            },
-          ],
-        });
-
-        const totalSupply = resultsFromMulticall[0];
-        const reserve0 = resultsFromMulticall[1];
-        const reserve1 = resultsFromMulticall[2];
-        const balanceOf = resultsFromMulticall[3];
+        const [totalSupply, reserve0, reserve1, balanceOf] =
+          await viemClient.multicall({
+            allowFailure: false,
+            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+            contracts: [
+              {
+                ...pc,
+                functionName: "totalSupply",
+              },
+              {
+                ...pc,
+                functionName: "reserve0",
+              },
+              {
+                ...pc,
+                functionName: "reserve1",
+              },
+              {
+                ...pc,
+                functionName: "balanceOf",
+                args: [account.address],
+              },
+            ],
+          });
 
         const returnPair = thePair[0];
         returnPair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
