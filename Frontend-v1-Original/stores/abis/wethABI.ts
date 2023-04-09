@@ -173,4 +173,4 @@ export const wethABI = [
     inputs: [{ type: "uint256", name: "wamount", internalType: "uint256" }],
   },
   { type: "receive", stateMutability: "payable" },
-];
+] as const;

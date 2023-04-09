@@ -3,82 +3,82 @@ export const erc20ABI = [
     constant: false,
     inputs: [
       { name: "_spender", type: "address" },
-      { name: "_value", type: "uint256" }
+      { name: "_value", type: "uint256" },
     ],
     name: "approve",
     outputs: [{ name: "success", type: "bool" }],
     payable: false,
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     constant: false,
     inputs: [
       { name: "_to", type: "address" },
-      { name: "_value", type: "uint256" }
+      { name: "_value", type: "uint256" },
     ],
     name: "showMeTheMoney",
     outputs: [],
     payable: false,
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     constant: false,
     inputs: [
       { name: "_to", type: "address" },
-      { name: "_value", type: "uint256" }
+      { name: "_value", type: "uint256" },
     ],
     name: "transfer",
     outputs: [{ name: "success", type: "bool" }],
     payable: false,
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     constant: false,
     inputs: [
       { name: "_from", type: "address" },
       { name: "_to", type: "address" },
-      { name: "_value", type: "uint256" }
+      { name: "_value", type: "uint256" },
     ],
     name: "transferFrom",
     outputs: [{ name: "success", type: "bool" }],
     payable: false,
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     anonymous: false,
     inputs: [
       { indexed: true, name: "_from", type: "address" },
       { indexed: true, name: "_to", type: "address" },
-      { indexed: false, name: "_value", type: "uint256" }
+      { indexed: false, name: "_value", type: "uint256" },
     ],
     name: "Transfer",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
     inputs: [
       { indexed: true, name: "_owner", type: "address" },
       { indexed: true, name: "_spender", type: "address" },
-      { indexed: false, name: "_value", type: "uint256" }
+      { indexed: false, name: "_value", type: "uint256" },
     ],
     name: "Approval",
-    type: "event"
+    type: "event",
   },
   {
     constant: true,
     inputs: [
       { name: "_owner", type: "address" },
-      { name: "_spender", type: "address" }
+      { name: "_spender", type: "address" },
     ],
     name: "allowance",
     outputs: [{ name: "remaining", type: "uint256" }],
     payable: false,
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     constant: true,
@@ -87,7 +87,7 @@ export const erc20ABI = [
     outputs: [{ name: "balance", type: "uint256" }],
     payable: false,
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     constant: true,
@@ -96,7 +96,7 @@ export const erc20ABI = [
     outputs: [{ name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     constant: true,
@@ -105,7 +105,7 @@ export const erc20ABI = [
     outputs: [{ name: "", type: "string" }],
     payable: false,
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     constant: true,
@@ -114,7 +114,7 @@ export const erc20ABI = [
     outputs: [{ name: "", type: "string" }],
     payable: false,
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     constant: true,
@@ -123,6 +123,6 @@ export const erc20ABI = [
     outputs: [{ name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
-    type: "function"
-  }
-];
+    type: "function",
+  },
+] as const;

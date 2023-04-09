@@ -1142,4 +1142,4 @@ export const voterABI = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;

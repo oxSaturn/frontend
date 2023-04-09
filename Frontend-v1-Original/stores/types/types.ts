@@ -1,5 +1,7 @@
+import { ZERO_ADDRESS } from "../constants/constants";
+
 interface BaseAsset {
-  address: string;
+  address: `0x${string}`;
   symbol: string;
   name: string;
   decimals: number;
@@ -14,7 +16,7 @@ interface RouteAsset {
   price: number;
   nativeChainAddress: string; // if no,  set to :""
   nativeChainId: number;
-  address: string;
+  address: `0x${string}`;
   name: string;
   symbol: string;
   decimals: number;
@@ -54,15 +56,15 @@ type BribeEarned = { earned: string };
 interface Pair {
   tvl: number;
   apr: number;
-  address: string;
+  address: `0x${string}`;
   symbol: string;
   decimals: number;
   stable: boolean;
   total_supply: number;
   reserve0: number | string; // gets reassigned to string in frontend store
   reserve1: number | string; // gets reassigned to string in frontend store
-  token0_address: string;
-  token1_address: string;
+  token0_address: `0x${string}`;
+  token1_address: `0x${string}`;
   gauge_address: string; // if no,  set to :""
   isStable: boolean;
   totalSupply: number | string; // gets reassigned to string in frontend store
@@ -79,14 +81,14 @@ interface Pair {
     tbv: number;
     votes: number;
     apr: number;
-    address: string;
+    address: `0x${string}`;
     total_supply: number;
-    bribe_address: string;
-    fees_address: string;
-    wrapped_bribe_address: string;
+    bribe_address: `0x${string}`;
+    fees_address: `0x${string}`;
+    wrapped_bribe_address: `0x${string}`;
     reward: number;
-    bribeAddress: string;
-    feesAddress: string;
+    bribeAddress: `0x${string}`;
+    feesAddress: `0x${string}`;
     totalSupply: number | string; //gets reassigned to string in frontend store
     bribes: Bribe[];
     // following gets assigned in frontend store
@@ -106,7 +108,7 @@ type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 type Gauge = WithRequired<Pair, "gauge">;
 const hasGauge = (pair: Pair): pair is Gauge =>
-  pair && pair.gauge !== undefined;
+  pair && pair.gauge !== undefined && pair.gauge.address !== ZERO_ADDRESS;
 const isGaugeReward = (reward: Gauge | VeDistReward): reward is Gauge =>
   reward && reward.rewardType !== "Distribution";
 const isBaseAsset = (
@@ -123,83 +125,8 @@ interface VeDistReward {
   rewardType: "Distribution";
 }
 
-interface GeneralContracts {
-  GOV_TOKEN_ADDRESS: string;
-  GOV_TOKEN_NAME: string;
-  GOV_TOKEN_SYMBOL: string;
-  GOV_TOKEN_DECIMALS: number;
-  GOV_TOKEN_LOGO: string;
-  GOV_TOKEN_ABI: any[];
-  VE_TOKEN_ADDRESS: string;
-  VE_TOKEN_NAME: string;
-  VE_TOKEN_SYMBOL: string;
-  VE_TOKEN_DECIMALS: number;
-  VE_TOKEN_LOGO: string;
-  VE_TOKEN_ABI: any[];
-  FACTORY_ADDRESS: string;
-  FACTORY_ABI: any[];
-  ROUTER_ADDRESS: string;
-  ROUTER_ABI: any[];
-  VE_DIST_ADDRESS: string;
-  VE_DIST_ABI: any[];
-  VOTER_ADDRESS: string;
-  VOTER_ABI: any[];
-  MINTER_ADDRESS: string;
-  MINTER_ABI: any[];
-  ERC20_ABI: any[];
-  PAIR_ABI: any[];
-  GAUGE_ABI: any[];
-  BRIBE_ABI: any[];
-  TOKEN_ABI: any[];
-  MULTICALL_ADDRESS: string;
-  STABLE_TOKEN_ADDRESS: string;
-  MSIG_ADDRESS: string;
-}
-
-interface TestnetContracts extends GeneralContracts {
-  WETH_ADDRESS: string;
-  WETH_NAME: string;
-  WETH_SYMBOL: string;
-  WETH_DECIMALS: number;
-  WETH_ABI: any[];
-  ETH_ADDRESS: string;
-  ETH_NAME: string;
-  ETH_SYMBOL: string;
-  ETH_DECIMALS: number;
-  ETH_LOGO: string;
-}
-interface CantoContracts extends GeneralContracts {
-  FLOW_V1_ADDRESS: string;
-  FLOW_CONVERTOR_ADDRESS: string;
-  FLOW_CONVERTOR_ABI: any[];
-  WCANTO_ADDRESS: string;
-  WCANTO_NAME: string;
-  WCANTO_SYMBOL: string;
-  WCANTO_DECIMALS: number;
-  WCANTO_ABI: any[];
-  CANTO_ADDRESS: string;
-  CANTO_NAME: string;
-  CANTO_SYMBOL: string;
-  CANTO_DECIMALS: number;
-  CANTO_LOGO: string;
-}
-interface ArbitrumContracts extends GeneralContracts {
-  WETH_ADDRESS: string;
-  WETH_NAME: string;
-  WETH_SYMBOL: string;
-  WETH_DECIMALS: number;
-  WETH_ABI: any[];
-  ETH_ADDRESS: string;
-  ETH_NAME: string;
-  ETH_SYMBOL: string;
-  ETH_DECIMALS: number;
-  ETH_LOGO: string;
-}
-
-type Contracts = TestnetContracts | CantoContracts | ArbitrumContracts;
-
 type Vote = {
-  address: string;
+  address: `0x${string}`;
   votePercent: string;
 };
 
@@ -209,9 +136,9 @@ interface DexScrennerPair {
   chainId: string;
   dexId: string;
   url: string;
-  pairAddress: string;
+  pairAddress: `0x${string}`;
   baseToken: {
-    address: string;
+    address: `0x${string}`;
     name: string;
     symbol: string;
   };
@@ -308,17 +235,17 @@ interface QuoteSwapPayload {
       slippage: string;
     };
   };
-  address: string;
+  address: `0x${string}`;
 }
 
 interface QuoteSwapResponse {
   encodedData: {
-    router: string;
+    router: `0x${string}`;
     data: string;
   };
   maxReturn: {
-    from: string;
-    to: string;
+    from: `0x${string}`;
+    to: `0x${string}`;
     totalFrom: string;
     totalTo: number;
     totalGas: number;
@@ -336,21 +263,21 @@ interface Path {
 }
 
 interface Swap {
-  from: string;
-  to: string;
+  from: `0x${string}`;
+  to: `0x${string}`;
   amountFrom: string;
   amountTo: string;
   pool: string;
   swapFee: number;
   dex: string;
   meta?: {
-    vaultAddress: string;
+    vaultAddress: `0x${string}`;
   };
 }
 
 interface FireBirdTokens {
-  [address: string]: {
-    address: string;
+  [address: `0x${string}`]: {
+    address: `0x${string}`;
     decimals: number;
     name: string;
     symbol: string;
@@ -366,10 +293,6 @@ export type {
   Bribe,
   RouteAsset,
   TokenForPrice,
-  Contracts,
-  TestnetContracts,
-  CantoContracts,
-  ArbitrumContracts,
   VeToken,
   GovToken,
   Vote,

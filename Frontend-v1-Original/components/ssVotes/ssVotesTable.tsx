@@ -167,6 +167,7 @@ export default function EnhancedTable({
     } else if (disabledSort) {
       setDisabledSort(false);
     }
+
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -372,16 +373,29 @@ function VotesRow({
           </div>
         </TableCell>
         <TableCell align="right">
-          <Typography variant="h2" className="text-xs font-extralight">
-            {formatCurrency(row.gauge.weight)}
-          </Typography>
-          <Typography
-            variant="h5"
-            className="text-xs font-extralight"
-            color="textSecondary"
-          >
-            {formatCurrency(row.gauge.weightPercent)} %
-          </Typography>
+          {!!row.gauge.weight && !!row.gauge.weightPercent ? (
+            <>
+              <Typography variant="h2" className="text-xs font-extralight">
+                {formatCurrency(row.gauge.weight)}
+              </Typography>
+              <Typography
+                variant="h5"
+                className="text-xs font-extralight"
+                color="textSecondary"
+              >
+                {formatCurrency(row.gauge.weightPercent)} %
+              </Typography>
+            </>
+          ) : (
+            <div className="flex items-center justify-end max-[1000px]:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
@@ -395,7 +409,7 @@ function VotesRow({
         </TableCell>
         <TableCell align="right">
           {row.gauge.bribes.map((bribe, idx) => {
-            return (
+            return bribe.rewardAmount !== undefined ? (
               <div
                 className="flex items-center justify-end"
                 key={bribe.token.symbol}
@@ -410,6 +424,16 @@ function VotesRow({
                 >
                   {bribe.token.symbol}
                 </Typography>
+              </div>
+            ) : (
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                  key={bribe.token.symbol}
+                />
               </div>
             );
           })}
@@ -585,10 +609,18 @@ function descendingComparator(
       const sliderValue2 = defaultVotes?.find(
         (el) => el.address === b?.address
       )?.value;
-      if (sliderValue1 && sliderValue2 && sliderValue2 < sliderValue1) {
+      if (
+        sliderValue1 !== undefined &&
+        sliderValue2 !== undefined &&
+        sliderValue2 < sliderValue1
+      ) {
         return -1;
       }
-      if (sliderValue1 && sliderValue2 && sliderValue2 > sliderValue1) {
+      if (
+        sliderValue1 !== undefined &&
+        sliderValue2 !== undefined &&
+        sliderValue2 > sliderValue1
+      ) {
         return 1;
       }
       return 0;

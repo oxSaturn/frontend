@@ -1554,4 +1554,4 @@ export const veTokenABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
-];
+] as const;

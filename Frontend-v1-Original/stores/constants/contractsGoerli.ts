@@ -43,7 +43,7 @@ export const VE_DIST_ABI = abis.veDistABI;
 export const VOTER_ADDRESS = "0x854086d39955d28317aE3856399312b8Edb1B473";
 export const VOTER_ABI = abis.voterABI;
 
-export const MINTER_ADDRESS = "";
+export const MINTER_ADDRESS = "0x41dc163DA8E280743585fde657cFC8937b0c7F9B";
 export const MINTER_ABI = abis.minterABI;
 
 export const ERC20_ABI = abis.erc20ABI;
@@ -54,6 +54,7 @@ export const TOKEN_ABI = abis.tokenABI;
 
 export const MULTICALL_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
-export const STABLE_TOKEN_ADDRESS = ""; // need this
+export const STABLE_TOKEN_ADDRESS =
+  "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd"; // need this
 
-export const MSIG_ADDRESS = "";
+export const MSIG_ADDRESS = "0x13eeB8EdfF60BbCcB24Ec7Dd5668aa246525Dc51";

@@ -1,19 +1,9 @@
-export const minterABI = [
+export const veDistABI = [
   {
     inputs: [
       {
         internalType: "address",
-        name: "__voter",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "__ve",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "__rewards_distributor",
+        name: "_voting_escrow",
         type: "address",
       },
       {
@@ -29,233 +19,62 @@ export const minterABI = [
     anonymous: false,
     inputs: [
       {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
         indexed: false,
         internalType: "uint256",
-        name: "weekly",
+        name: "time",
         type: "uint256",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "circulating_supply",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "circulating_emission",
+        name: "tokens",
         type: "uint256",
       },
     ],
-    name: "Mint",
+    name: "CheckpointToken",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "claim_epoch",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "max_epoch",
+        type: "uint256",
+      },
+    ],
+    name: "Claimed",
     type: "event",
   },
   {
     inputs: [],
-    name: "MAX_TEAM_RATE",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "_flow",
-    outputs: [
-      {
-        internalType: "contract IFlow",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "_rewards_distributor",
-    outputs: [
-      {
-        internalType: "contract IRewardsDistributor",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "_ve",
-    outputs: [
-      {
-        internalType: "contract IVotingEscrow",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "_voter",
-    outputs: [
-      {
-        internalType: "contract IVoter",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "acceptTeam",
+    name: "checkpoint_token",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [],
-    name: "active_period",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "calculate_emission",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_minted",
-        type: "uint256",
-      },
-    ],
-    name: "calculate_growth",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "circulating_emission",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "circulating_supply",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "claimant",
-            type: "address",
-          },
-          {
-            internalType: "uint256",
-            name: "amount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "lockTime",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct Minter.Claim[]",
-        name: "claims",
-        type: "tuple[]",
-      },
-      {
-        internalType: "uint256",
-        name: "max",
-        type: "uint256",
-      },
-    ],
-    name: "initialMintAndLock",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "pendingTeam",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_team",
-        type: "address",
-      },
-    ],
-    name: "setTeam",
+    name: "checkpoint_total_supply",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -264,25 +83,62 @@ export const minterABI = [
     inputs: [
       {
         internalType: "uint256",
-        name: "_teamRate",
+        name: "_tokenId",
         type: "uint256",
       },
     ],
-    name: "setTeamRate",
-    outputs: [],
+    name: "claim",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [],
-    name: "startActivePeriod",
-    outputs: [],
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "_tokenIds",
+        type: "uint256[]",
+      },
+    ],
+    name: "claim_many",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "claimable",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
-    name: "team",
+    name: "depositor",
     outputs: [
       {
         internalType: "address",
@@ -295,7 +151,123 @@ export const minterABI = [
   },
   {
     inputs: [],
-    name: "teamRate",
+    name: "last_token_time",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_depositor",
+        type: "address",
+      },
+    ],
+    name: "setDepositor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "start_time",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "time_cursor",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "time_cursor_of",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "timestamp",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "token",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "token_last_balance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "tokens_per_week",
     outputs: [
       {
         internalType: "uint256",
@@ -320,8 +292,14 @@ export const minterABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "update_period",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "user_epoch_of",
     outputs: [
       {
         internalType: "uint256",
@@ -329,12 +307,42 @@ export const minterABI = [
         type: "uint256",
       },
     ],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
-    name: "weekly",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_timestamp",
+        type: "uint256",
+      },
+    ],
+    name: "ve_for_at",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "ve_supply",
     outputs: [
       {
         internalType: "uint256",
@@ -347,15 +355,15 @@ export const minterABI = [
   },
   {
     inputs: [],
-    name: "weekly_emission",
+    name: "voting_escrow",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "address",
         name: "",
-        type: "uint256",
+        type: "address",
       },
     ],
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
