@@ -167,6 +167,7 @@ export default function EnhancedTable({
     } else if (disabledSort) {
       setDisabledSort(false);
     }
+
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -585,10 +586,18 @@ function descendingComparator(
       const sliderValue2 = defaultVotes?.find(
         (el) => el.address === b?.address
       )?.value;
-      if (sliderValue1 && sliderValue2 && sliderValue2 < sliderValue1) {
+      if (
+        sliderValue1 !== undefined &&
+        sliderValue2 !== undefined &&
+        sliderValue2 < sliderValue1
+      ) {
         return -1;
       }
-      if (sliderValue1 && sliderValue2 && sliderValue2 > sliderValue1) {
+      if (
+        sliderValue1 !== undefined &&
+        sliderValue2 !== undefined &&
+        sliderValue2 > sliderValue1
+      ) {
         return 1;
       }
       return 0;
