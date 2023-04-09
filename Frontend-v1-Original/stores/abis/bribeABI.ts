@@ -1,144 +1,52 @@
-export const gaugeABI = [
+export const bribeABI = [
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_stake",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_external_bribe",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "__ve",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_voter",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "_forPair",
-        type: "bool",
-      },
-      {
-        internalType: "address[]",
-        name: "_allowedRewardTokens",
-        type: "address[]",
-      },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     stateMutability: "nonpayable",
     type: "constructor",
   },
   {
-    anonymous: false,
+    inputs: [],
+    name: "DURATION",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "PRECISION",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "reward",
-        type: "address",
-      },
-      {
-        indexed: false,
         internalType: "uint256",
         name: "amount",
         type: "uint256",
       },
-    ],
-    name: "ClaimRewards",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
       {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: false,
         internalType: "uint256",
         name: "tokenId",
         type: "uint256",
       },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
     ],
-    name: "Deposit",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "reward",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "NotifyReward",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "Withdraw",
-    type: "event",
+    name: "_deposit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
@@ -156,9 +64,27 @@ export const gaugeABI = [
   {
     inputs: [
       {
-        internalType: "address",
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "_withdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
     name: "balanceOf",
@@ -175,45 +101,9 @@ export const gaugeABI = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
         internalType: "uint256",
-        name: "maxRuns",
-        type: "uint256",
-      },
-    ],
-    name: "batchRewardPerToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "maxRuns",
-        type: "uint256",
-      },
-    ],
-    name: "batchUpdateRewardPerToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
         name: "",
-        type: "address",
+        type: "uint256",
       },
       {
         internalType: "uint256",
@@ -240,96 +130,14 @@ export const gaugeABI = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "deposit",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "depositAll",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "derivedBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "derivedBalances",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "derivedSupply",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "token",
         type: "address",
       },
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
       },
     ],
     name: "earned",
@@ -345,38 +153,12 @@ export const gaugeABI = [
   },
   {
     inputs: [],
-    name: "external_bribe",
+    name: "factory",
     outputs: [
       {
         internalType: "address",
         name: "",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "fees0",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "fees1",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -385,9 +167,9 @@ export const gaugeABI = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
       },
       {
         internalType: "uint256",
@@ -457,9 +239,9 @@ export const gaugeABI = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "account",
-        type: "address",
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
       },
       {
         internalType: "address[]",
@@ -473,16 +255,21 @@ export const gaugeABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "isForPair",
-    outputs: [
+    inputs: [
       {
-        internalType: "bool",
-        name: "",
-        type: "bool",
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "address[]",
+        name: "tokens",
+        type: "address[]",
       },
     ],
-    stateMutability: "view",
+    name: "getRewardForOwner",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -512,9 +299,9 @@ export const gaugeABI = [
         type: "address",
       },
       {
-        internalType: "address",
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
     name: "lastEarn",
@@ -573,25 +360,6 @@ export const gaugeABI = [
         name: "token",
         type: "address",
       },
-    ],
-    name: "left",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
       {
         internalType: "uint256",
         name: "amount",
@@ -606,9 +374,9 @@ export const gaugeABI = [
   {
     inputs: [
       {
-        internalType: "address",
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
     name: "numCheckpoints",
@@ -779,19 +547,6 @@ export const gaugeABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "stake",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "uint256",
@@ -829,48 +584,6 @@ export const gaugeABI = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "i",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "oldToken",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "newToken",
-        type: "address",
-      },
-    ],
-    name: "swapOutRewardToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "tokenIds",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "totalSupply",
     outputs: [
@@ -884,19 +597,6 @@ export const gaugeABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -904,9 +604,9 @@ export const gaugeABI = [
         type: "address",
       },
       {
-        internalType: "address",
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
     name: "userRewardPerTokenStored",
@@ -920,55 +620,4 @@ export const gaugeABI = [
     stateMutability: "view",
     type: "function",
   },
-  {
-    inputs: [],
-    name: "voter",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "withdraw",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "withdrawAll",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "withdrawToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+] as const;

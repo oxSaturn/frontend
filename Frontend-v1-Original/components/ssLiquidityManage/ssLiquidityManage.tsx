@@ -32,6 +32,7 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
+import { isAddress } from "viem";
 
 export default function ssLiquidityManage() {
   const router = useRouter();
@@ -101,7 +102,8 @@ export default function ssLiquidityManage() {
     if (
       router.query.address &&
       router.query.address !== "create" &&
-      !Array.isArray(router.query.address)
+      !Array.isArray(router.query.address) &&
+      isAddress(router.query.address)
     ) {
       setPairReadOnly(true);
 
@@ -293,11 +295,14 @@ export default function ssLiquidityManage() {
 
     let addy0 = assetA.address;
     let addy1 = assetB.address;
-
+    // @ts-expect-error workaround for CANTO
     if (assetA.address === "CANTO") {
+      // @ts-expect-error workaround for CANTO
       addy0 = W_NATIVE_ADDRESS;
     }
+    // @ts-expect-error workaround for CANTO
     if (assetB.address === "CANTO") {
+      // @ts-expect-error workaround for CANTO
       addy1 = W_NATIVE_ADDRESS;
     }
 
@@ -1913,7 +1918,12 @@ function AssetSelect({
       setFilteredAssetOptions(ao);
 
       //no options in our default list and its an address we search for the address
-      if (ao.length === 0 && search && search.length === 42) {
+      if (
+        ao.length === 0 &&
+        search &&
+        search.length === 42 &&
+        isAddress(search)
+      ) {
         const baseAsset = await stores.stableSwapStore.getBaseAsset(
           search,
           true,

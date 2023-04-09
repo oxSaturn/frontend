@@ -1093,4 +1093,4 @@ export const pairABI = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
