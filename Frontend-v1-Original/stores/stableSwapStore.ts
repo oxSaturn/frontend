@@ -5625,7 +5625,7 @@ class Store {
         throw new Error(
           "Error getting veToken and govToken in getRewardBalances"
         );
-      const vestNFTs = this.getStore("vestNFTs");
+
       const filteredPairs = [...pairs.filter(hasGauge)];
 
       const filteredPairs2 = [...pairs.filter(hasGauge)];
@@ -5634,35 +5634,40 @@ class Store {
 
       let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
 
-      if (tokenID && vestNFTs.length > 0) {
-        const calls = filteredPairs.flatMap((pair) =>
-          pair.gauge.bribes.map(
-            (bribe) =>
-              ({
+      if (tokenID) {
+        const bribesEarned = await Promise.all(
+          filteredPairs.map(async (pair) => {
+            let bribesEarned: Bribe[] = [];
+
+            const calls = pair.gauge.bribes.map((bribe) => {
+              return {
                 address: pair.gauge.wrapped_bribe_address,
                 abi: CONTRACTS.BRIBE_ABI,
                 functionName: "earned",
                 args: [bribe.token.address, BigInt(tokenID)],
-              } as const)
-          )
+              } as const;
+            });
+
+            const earnedPairs = await viemClient.multicall({
+              allowFailure: false,
+              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+              contracts: calls,
+            });
+
+            for (let i = 0; i < pair.gauge.bribes.length; i++) {
+              pair.gauge.bribes[i].earned = formatUnits(
+                earnedPairs[i],
+                pair.gauge.bribes[i].token.decimals
+              );
+              bribesEarned.push(pair.gauge.bribes[i]);
+            }
+
+            pair.gauge.bribesEarned = bribesEarned;
+            return pair;
+          })
         );
-        const callsChunks = chunkArray(calls, 100);
 
-        const earnedPairs = await multicallChunks(callsChunks);
-
-        filteredPairs.forEach((pair, idx) => {
-          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe) => {
-            return {
-              ...bribe,
-              earned: formatUnits(
-                earnedPairs[idx],
-                bribe.token.decimals
-              ) as `${number}`,
-            };
-          });
-        });
-
-        filteredBribes = filteredPairs
+        filteredBribes = bribesEarned
           .filter((pair) => {
             if (
               pair.gauge &&
@@ -5700,8 +5705,9 @@ class Store {
           args: [BigInt(tokenID)],
         });
 
+        const vestNFTs = this.getStore("vestNFTs");
         let theNFT = vestNFTs.filter((vestNFT) => {
-          return vestNFT.id == tokenID;
+          return vestNFT.id === tokenID;
         });
 
         if (veDistEarned > 0) {
