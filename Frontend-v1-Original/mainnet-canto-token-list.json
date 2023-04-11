@@ -228,7 +228,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
-    "name": "Quicksilver STARS",
+    "name": "Quicksilver Staked STARS",
     "symbol": "qSTARS"
   },
   {
@@ -236,7 +236,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
-    "name": "Quicksilver ATOM",
+    "name": "Quicksilver Staked ATOM",
     "symbol": "qATOM"
   },
   {
@@ -244,7 +244,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
-    "name": "Quicksilver REGEN",
+    "name": "Quicksilver Staked REGEN",
     "symbol": "qREGEN"
   },
   {
@@ -308,7 +308,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/28289/small/B5712581-7546-47FA-8ECA-B256CD8F8F34.png?1669213326",
-    "name": "pSTAKE ATOM",
+    "name": "Persistence Staked ATOM",
     "symbol": "stkATOM"
   },
   {
@@ -340,7 +340,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
-    "name": "Wrapped stETH",
+    "name": "Lido Staked ETH",
     "symbol": "WSTETH"
   },
   {
