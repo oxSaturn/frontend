@@ -5625,7 +5625,6 @@ class Store {
         throw new Error(
           "Error getting veToken and govToken in getRewardBalances"
         );
-      const vestNFTs = this.getStore("vestNFTs");
       const filteredPairs = [...pairs.filter(hasGauge)];
 
       const filteredPairs2 = [...pairs.filter(hasGauge)];
@@ -5634,7 +5633,7 @@ class Store {
 
       let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
 
-      if (tokenID && vestNFTs.length > 0) {
+      if (tokenID) {
         const calls = filteredPairs.flatMap((pair) =>
           pair.gauge.bribes.map(
             (bribe) =>
@@ -5704,6 +5703,7 @@ class Store {
           args: [BigInt(tokenID)],
         });
 
+        const vestNFTs = this.getStore("vestNFTs");
         let theNFT = vestNFTs.filter((vestNFT) => {
           return vestNFT.id == tokenID;
         });
