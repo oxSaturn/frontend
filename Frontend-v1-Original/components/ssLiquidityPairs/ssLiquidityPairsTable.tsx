@@ -55,12 +55,6 @@ const headCells = [
     label: "My Staked Amount",
   },
   {
-    id: "tvl",
-    numeric: true,
-    disablePadding: false,
-    label: "TVL",
-  },
-  {
     id: "poolAmount",
     numeric: true,
     disablePadding: false,
@@ -71,6 +65,12 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Total Pool Staked",
+  },
+  {
+    id: "tvl",
+    numeric: true,
+    disablePadding: false,
+    label: "TVL",
   },
   {
     id: "apr",
@@ -105,11 +105,12 @@ function EnhancedTableHead(props: {
         {headCells.map((headCell) => (
           <TableCell
             className={`border-b border-b-[rgba(104,108,122,0.2)] ${
-              headCell.id === "poolAmount" ||
-              headCell.id === "stakedAmount" ||
-              headCell.id === "tvl" ||
-              headCell.id === "balance" ||
-              headCell.id === "poolBalance"
+              headCell.id === "tvl"
+                ? "max-xl:hidden"
+                : headCell.id === "poolAmount" ||
+                  headCell.id === "stakedAmount" ||
+                  headCell.id === "balance" ||
+                  headCell.id === "poolBalance"
                 ? "max-[1000px]:hidden"
                 : ""
             }`}
@@ -829,14 +830,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     <TableCell className="max-[1000px]:hidden" align="right">
-                      <Typography
-                        variant="h2"
-                        className="text-xs font-extralight"
-                      >
-                        ${formatCurrency(row.tvl)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell className="max-[1000px]:hidden" align="right">
                       {row && row.reserve0 && row.token0 && (
                         <div className="flex items-center justify-end max-[1000px]:block">
                           <Typography
@@ -988,6 +981,14 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </Typography>
                       </TableCell>
                     )}
+                    <TableCell className="max-xl:hidden" align="right">
+                      <Typography
+                        variant="h2"
+                        className="text-xs font-extralight"
+                      >
+                        ${formatTVL(row.tvl)}
+                      </Typography>
+                    </TableCell>
                     {row && (row.apr !== undefined || row.apr !== null) && (
                       <TableCell align="right">
                         <Grid container spacing={0}>
@@ -1200,4 +1201,17 @@ function stableSort(array: Pair[], comparator: (a: Pair, b: Pair) => number) {
     return a[1] - b[1];
   });
   return stabilizedThis.map((el) => el[0]);
+}
+
+function formatTVL(dataNumber: number) {
+  if (dataNumber < 1_000_000) {
+    return dataNumber.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  } else if (dataNumber < 1_000_000_000) {
+    return (dataNumber / 1_000_000).toFixed(2) + "m";
+  } else {
+    return (dataNumber / 1_000_000_000).toFixed(2) + "b";
+  }
 }
