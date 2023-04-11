@@ -111,7 +111,7 @@ function EnhancedTableHead(props: {
                   headCell.id === "stakedAmount" ||
                   headCell.id === "balance" ||
                   headCell.id === "poolBalance"
-                ? "max-[1000px]:hidden"
+                ? "max-md:hidden"
                 : ""
             }`}
             key={headCell.id}
@@ -626,12 +626,12 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="max-[1000px]:hidden" align="right">
+                    <TableCell className="max-md:hidden" align="right">
                       {row &&
                         row.token0 &&
                         "balance" in row.token0 &&
                         row.token0.balance && (
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Typography
                               variant="h2"
                               className="text-xs font-extralight"
@@ -653,7 +653,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         "balance" in row.token0 &&
                         row.token0.balance
                       ) && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
+                        <div className="flex items-center justify-end max-md:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -666,7 +666,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         row.token1 &&
                         "balance" in row.token1 &&
                         row.token1.balance && (
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Typography
                               variant="h2"
                               className="text-xs font-extralight"
@@ -688,7 +688,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         "balance" in row.token1 &&
                         row.token1.balance
                       ) && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
+                        <div className="flex items-center justify-end max-md:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -698,10 +698,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="max-[1000px]:hidden" align="right">
+                    <TableCell className="max-md:hidden" align="right">
                       {row && row.balance && row.totalSupply && (
                         <>
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Typography
                               variant="h2"
                               className="text-xs font-extralight"
@@ -720,7 +720,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                               {row.token0.symbol}
                             </Typography>
                           </div>
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Typography
                               variant="h5"
                               className="text-xs font-extralight"
@@ -742,7 +742,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </>
                       )}
                       {!(row && row.balance && row.totalSupply) && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
+                        <div className="flex items-center justify-end max-md:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -759,7 +759,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.balance &&
                           row.gauge.totalSupply && (
                             <>
-                              <div className="flex items-center justify-end max-[1000px]:block">
+                              <div className="flex items-center justify-end max-md:block">
                                 <Typography
                                   variant="h2"
                                   className="text-xs font-extralight"
@@ -778,7 +778,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                                   {row.token0.symbol}
                                 </Typography>
                               </div>
-                              <div className="flex items-center justify-end max-[1000px]:block">
+                              <div className="flex items-center justify-end max-md:block">
                                 <Typography
                                   variant="h5"
                                   className="text-xs font-extralight"
@@ -805,7 +805,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.balance &&
                           row.gauge.totalSupply
                         ) && (
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Skeleton
                               variant="rectangular"
                               width={120}
@@ -829,15 +829,9 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </Typography>
                       </TableCell>
                     )}
-                    <TableCell className="max-[1000px]:hidden" align="right">
+                    <TableCell className="max-md:hidden" align="right">
                       {row && row.reserve0 && row.token0 && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
-                          <Typography
-                            variant="h2"
-                            className="block text-xs min-[1000px]:hidden"
-                          >
-                            Total Pool Amount:
-                          </Typography>
+                        <div className="flex items-center justify-end max-md:block">
                           <Typography
                             variant="h2"
                             className="text-xs font-extralight"
@@ -854,7 +848,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                       {!(row && row.reserve0 && row.token0) && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
+                        <div className="flex items-center justify-end max-md:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -864,7 +858,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                       {row && row.reserve1 && row.token1 && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
+                        <div className="flex items-center justify-end max-md:block">
                           <Typography
                             variant="h2"
                             className="text-xs font-extralight"
@@ -881,7 +875,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </div>
                       )}
                       {!(row && row.reserve1 && row.token1) && (
-                        <div className="flex items-center justify-end max-[1000px]:block">
+                        <div className="flex items-center justify-end max-md:block">
                           <Skeleton
                             variant="rectangular"
                             width={120}
@@ -892,12 +886,12 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       )}
                     </TableCell>
                     {row && row.gauge && row.gauge.address && (
-                      <TableCell className="max-[1000px]:hidden" align="right">
+                      <TableCell className="max-md:hidden" align="right">
                         {row &&
                           row.gauge &&
                           row.gauge.reserve0 &&
                           row.token0 && (
-                            <div className="flex items-center justify-end max-[1000px]:block">
+                            <div className="flex items-center justify-end max-md:block">
                               <Typography
                                 variant="h2"
                                 className="text-xs font-extralight"
@@ -919,7 +913,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.reserve0 &&
                           row.token0
                         ) && (
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Skeleton
                               variant="rectangular"
                               width={120}
@@ -935,7 +929,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge &&
                           row.gauge.reserve1 &&
                           row.token1 && (
-                            <div className="flex items-center justify-end max-[1000px]:block">
+                            <div className="flex items-center justify-end max-md:block">
                               <Typography
                                 variant="h2"
                                 className="text-xs font-extralight"
@@ -957,7 +951,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                           row.gauge.reserve1 &&
                           row.token1
                         ) && (
-                          <div className="flex items-center justify-end max-[1000px]:block">
+                          <div className="flex items-center justify-end max-md:block">
                             <Skeleton
                               variant="rectangular"
                               width={120}
@@ -972,7 +966,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     {!(row && row.gauge && row.gauge.address) && (
-                      <TableCell className="max-[1000px]:hidden" align="right">
+                      <TableCell className="max-md:hidden" align="right">
                         <Typography
                           variant="h2"
                           className="text-xs font-extralight"
@@ -1011,7 +1005,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                       </TableCell>
                     )}
                     {!(row && (row.apr !== undefined || row.apr !== null)) && (
-                      <div className="flex items-center justify-end max-[1000px]:block">
+                      <div className="flex items-center justify-end max-md:block">
                         <Skeleton
                           variant="rectangular"
                           width={120}
