@@ -5648,14 +5648,18 @@ class Store {
         );
         const callsChunks = chunkArray(calls, 100);
 
-        const earnedPairs = await multicallChunks(callsChunks);
+        const earnedBribesAllPairs = await multicallChunks(callsChunks);
 
-        filteredPairs.forEach((pair, idx) => {
-          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe) => {
+        filteredPairs.forEach((pair) => {
+          const earnedBribesPair = earnedBribesAllPairs.splice(
+            0,
+            pair.gauge.bribes.length
+          );
+          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe, i) => {
             return {
               ...bribe,
               earned: formatUnits(
-                earnedPairs[idx],
+                earnedBribesPair[i],
                 bribe.token.decimals
               ) as `${number}`,
             };
