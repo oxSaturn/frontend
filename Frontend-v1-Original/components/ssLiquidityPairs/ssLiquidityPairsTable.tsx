@@ -106,7 +106,7 @@ function EnhancedTableHead(props: {
           <TableCell
             className={`border-b border-b-[rgba(104,108,122,0.2)] ${
               headCell.id === "tvl"
-                ? "max-xl:hidden"
+                ? "max-2xl:hidden"
                 : headCell.id === "poolAmount" ||
                   headCell.id === "stakedAmount" ||
                   headCell.id === "balance" ||
@@ -975,7 +975,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         </Typography>
                       </TableCell>
                     )}
-                    <TableCell className="max-xl:hidden" align="right">
+                    <TableCell className="max-2xl:hidden" align="right">
                       <Typography
                         variant="h2"
                         className="text-xs font-extralight"
