@@ -5635,39 +5635,38 @@ class Store {
       let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
 
       if (tokenID) {
-        const bribesEarned = await Promise.all(
-          filteredPairs.map(async (pair) => {
-            let bribesEarned: Bribe[] = [];
-
-            const calls = pair.gauge.bribes.map((bribe) => {
-              return {
+        const calls = filteredPairs.flatMap((pair) =>
+          pair.gauge.bribes.map(
+            (bribe) =>
+              ({
                 address: pair.gauge.wrapped_bribe_address,
                 abi: CONTRACTS.BRIBE_ABI,
                 functionName: "earned",
                 args: [bribe.token.address, BigInt(tokenID)],
-              } as const;
-            });
-
-            const earnedPairs = await viemClient.multicall({
-              allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-              contracts: calls,
-            });
-
-            for (let i = 0; i < pair.gauge.bribes.length; i++) {
-              pair.gauge.bribes[i].earned = formatUnits(
-                earnedPairs[i],
-                pair.gauge.bribes[i].token.decimals
-              );
-              bribesEarned.push(pair.gauge.bribes[i]);
-            }
-
-            pair.gauge.bribesEarned = bribesEarned;
-            return pair;
-          })
+              } as const)
+          )
         );
+        const callsChunks = chunkArray(calls, 100);
 
-        filteredBribes = bribesEarned
+        const earnedBribesAllPairs = await multicallChunks(callsChunks);
+
+        filteredPairs.forEach((pair) => {
+          const earnedBribesPair = earnedBribesAllPairs.splice(
+            0,
+            pair.gauge.bribes.length
+          );
+          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe, i) => {
+            return {
+              ...bribe,
+              earned: formatUnits(
+                earnedBribesPair[i],
+                bribe.token.decimals
+              ) as `${number}`,
+            };
+          });
+        });
+
+        filteredBribes = filteredPairs
           .filter((pair) => {
             if (
               pair.gauge &&
