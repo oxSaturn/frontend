@@ -36,7 +36,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
-    "name": "Flow",
+    "name": "Velocimeter",
     "symbol": "FLOW"
   },
   {
@@ -44,7 +44,7 @@
     "chainId": 7700,
     "decimals": 6,
     "logoURI": "https://assets.slingshot.finance/icons/canto_0xeceeefcee421d8062ef8d6b4d814efe4dc898265",
-    "name": "Cosmos",
+    "name": "Cosmos Hub",
     "symbol": "ATOM"
   },
   {
@@ -60,7 +60,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://app.cantohm.money/static/media/cantologo.194a85b9.png",
-    "name": "scOHM",
+    "name": "Staked CantOHM",
     "symbol": "scOHM"
   },
   {
@@ -204,7 +204,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
-    "name": "BNB",
+    "name": "Binance Coin",
     "symbol": "BNB"
   },
   {
@@ -228,7 +228,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
-    "name": "qSTARS",
+    "name": "Quicksilver STARS",
     "symbol": "qSTARS"
   },
   {
@@ -236,7 +236,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
-    "name": "qATOM",
+    "name": "Quicksilver ATOM",
     "symbol": "qATOM"
   },
   {
@@ -244,7 +244,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/nft_contracts/images/1612/small/the-merge-regenesis.png?1663741627",
-    "name": "qREGEN",
+    "name": "Quicksilver REGEN",
     "symbol": "qREGEN"
   },
   {
@@ -260,7 +260,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/markets/images/887/small/evmoswap.png?1654269660s",
-    "name": "stEVMOS",
+    "name": "Stride Staked EVMOS",
     "symbol": "stEVMOS"
   },
   {
@@ -268,7 +268,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/26316/small/stATOM.png?1663309183",
-    "name": "stATOM",
+    "name": "Stride Staked ATOM",
     "symbol": "stATOM"
   },
   {
@@ -276,7 +276,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/28700/small/stJUNO_800.png?1673414957",
-    "name": "stJUNO",
+    "name": "Stride Staked JUNO",
     "symbol": "stJUNO"
   },
   {
@@ -284,7 +284,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/28698/small/stOSMO_800.png?1673414720",
-    "name": "stOSMO",
+    "name": "Stride Staked OSMO",
     "symbol": "stOSMO"
   },
   {
@@ -292,7 +292,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/22363/small/stars.png?1645256657",
-    "name": "stSTARS",
+    "name": "Stride Staked STARS",
     "symbol": "stSTARS"
   },
   {
@@ -308,7 +308,7 @@
     "chainId": 7700,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/28289/small/B5712581-7546-47FA-8ECA-B256CD8F8F34.png?1669213326",
-    "name": "stkATOM",
+    "name": "pSTAKE ATOM",
     "symbol": "stkATOM"
   },
   {
