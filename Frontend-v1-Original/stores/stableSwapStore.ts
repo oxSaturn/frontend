@@ -5625,6 +5625,7 @@ class Store {
         throw new Error(
           "Error getting veToken and govToken in getRewardBalances"
         );
+
       const filteredPairs = [...pairs.filter(hasGauge)];
 
       const filteredPairs2 = [...pairs.filter(hasGauge)];
@@ -5705,7 +5706,7 @@ class Store {
 
         const vestNFTs = this.getStore("vestNFTs");
         let theNFT = vestNFTs.filter((vestNFT) => {
-          return vestNFT.id == tokenID;
+          return vestNFT.id === tokenID;
         });
 
         if (veDistEarned > 0) {
