@@ -986,7 +986,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
                         variant="h2"
                         className="text-xs font-extralight"
                       >
-                        ${formatTVL(row.tvl)}
+                        {formatTVL(row.tvl)}
                       </Typography>
                     </TableCell>
                     {row && (row.apr !== undefined || row.apr !== null) && (
@@ -1204,14 +1204,13 @@ function stableSort(array: Pair[], comparator: (a: Pair, b: Pair) => number) {
 }
 
 function formatTVL(dataNumber: number) {
-  if (dataNumber < 1_000_000) {
-    return dataNumber.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
+  if (dataNumber < 1_000) {
+    return "< $1k";
+  } else if (dataNumber < 1_000_000) {
+    return "$" + (dataNumber / 1_000).toFixed(2) + "k";
   } else if (dataNumber < 1_000_000_000) {
-    return (dataNumber / 1_000_000).toFixed(2) + "m";
+    return "$" + (dataNumber / 1_000_000).toFixed(2) + "m";
   } else {
-    return (dataNumber / 1_000_000_000).toFixed(2) + "b";
+    return "$" + (dataNumber / 1_000_000_000).toFixed(2) + "b";
   }
 }
