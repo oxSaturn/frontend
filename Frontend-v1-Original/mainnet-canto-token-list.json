@@ -358,5 +358,13 @@
     "logoURI": "https://raw.githubusercontent.com/openXswap/openXswap-misc/master/img/opxveFLOW.png",
     "name": "Perpetually Bonded Flow",
     "symbol": "opxveFLOW"
+  },
+  {
+    "address": "0x53a5dD07127739e5038cE81eff24ec503A6CC479",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "",
+    "name": "ACryptoS Liquid Wrapped veFLOW",
+    "symbol": "acsFLOW"
   }
 ]
