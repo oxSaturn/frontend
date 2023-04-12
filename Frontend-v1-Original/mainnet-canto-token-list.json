@@ -338,7 +338,7 @@
   {
     "address": "0xc71aAf8e486e3F33841BB56Ca3FD2aC3fa8D29a8",
     "chainId": 7700,
-    "decimals": 6,
+    "decimals": 18,
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
     "name": "Lido Staked ETH",
     "symbol": "WSTETH"
