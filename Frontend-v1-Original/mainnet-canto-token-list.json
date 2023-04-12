@@ -258,7 +258,7 @@
   {
     "address": "0x205CF44075E77A3543abC690437F3b2819bc450a",
     "chainId": 7700,
-    "decimals": 6,
+    "decimals": 18,
     "logoURI": "https://assets.coingecko.com/markets/images/887/small/evmoswap.png?1654269660s",
     "name": "Stride Staked EVMOS",
     "symbol": "stEVMOS"
@@ -330,7 +330,7 @@
   {
     "address": "0xF5b24c0093b65408ACE53df7ce86a02448d53b25",
     "chainId": 7700,
-    "decimals": 6,
+    "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/24023/small/evmos.png?1653958927",
     "name": "Evmos",
     "symbol": "EVMOS"
