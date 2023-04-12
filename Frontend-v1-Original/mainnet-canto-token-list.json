@@ -306,7 +306,7 @@
   {
     "address": "0x50dE24B3f0B3136C50FA8A3B8ebc8BD80a269ce5",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://assets.coingecko.com/coins/images/28289/small/B5712581-7546-47FA-8ECA-B256CD8F8F34.png?1669213326",
     "name": "Persistence Staked ATOM",
     "symbol": "stkATOM"
