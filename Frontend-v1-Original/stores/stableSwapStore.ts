@@ -5265,12 +5265,18 @@ class Store {
       const { tokenID, votes } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let bribesTXID = this.getTXUUID();
       let voteTXID = this.getTXUUID();
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Cast vote using token #${tokenID}`,
         verb: "Votes Cast",
         transactions: [
+          {
+            uuid: bribesTXID,
+            description: `Check unclaimed bribes`,
+            status: "WAITING",
+          },
           {
             uuid: voteTXID,
             description: `Cast votes`,
@@ -5281,6 +5287,59 @@ class Store {
 
       const pairs = this.getStore("pairs");
       let deadGauges: string[] = [];
+
+      // CHECK unclaimed bribes
+      await this.getRewardBalances({ type: "internal", content: { tokenID } });
+      const rewards = this.getStore("rewards");
+
+      if (rewards.bribes.length > 0) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: bribesTXID,
+          description: `Unclaimed bribes found, claiming`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: bribesTXID,
+          description: `No unclaimed bribes found`,
+          status: "DONE",
+        });
+      }
+
+      if (rewards.bribes.length > 0) {
+        const sendGauges = rewards.bribes.map((pair) => {
+          return pair.gauge?.wrapped_bribe_address;
+        });
+        const sendTokens = rewards.bribes.map((pair) => {
+          return pair.gauge?.bribesEarned?.map((bribe) => {
+            return (bribe as Bribe).token.address;
+          });
+        });
+
+        const voterContract = new web3.eth.Contract(
+          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
+          CONTRACTS.VOTER_ADDRESS
+        );
+
+        const claimPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            voterContract,
+            "claimBribes",
+            [sendGauges, sendTokens, tokenID],
+            account,
+            bribesTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await claimPromise;
+      }
 
       // SUBMIT INCREASE TRANSACTION
       const gaugesContract = new web3.eth.Contract(
@@ -5625,7 +5684,7 @@ class Store {
         throw new Error(
           "Error getting veToken and govToken in getRewardBalances"
         );
-      const vestNFTs = this.getStore("vestNFTs");
+
       const filteredPairs = [...pairs.filter(hasGauge)];
 
       const filteredPairs2 = [...pairs.filter(hasGauge)];
@@ -5634,7 +5693,7 @@ class Store {
 
       let filteredBribes: Pair[] = []; // Pair with rewardType set to "Bribe"
 
-      if (tokenID && vestNFTs.length > 0) {
+      if (tokenID) {
         const calls = filteredPairs.flatMap((pair) =>
           pair.gauge.bribes.map(
             (bribe) =>
@@ -5648,14 +5707,18 @@ class Store {
         );
         const callsChunks = chunkArray(calls, 100);
 
-        const earnedPairs = await multicallChunks(callsChunks);
+        const earnedBribesAllPairs = await multicallChunks(callsChunks);
 
-        filteredPairs.forEach((pair, idx) => {
-          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe) => {
+        filteredPairs.forEach((pair) => {
+          const earnedBribesPair = earnedBribesAllPairs.splice(
+            0,
+            pair.gauge.bribes.length
+          );
+          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe, i) => {
             return {
               ...bribe,
               earned: formatUnits(
-                earnedPairs[idx],
+                earnedBribesPair[i],
                 bribe.token.decimals
               ) as `${number}`,
             };
@@ -5700,8 +5763,9 @@ class Store {
           args: [BigInt(tokenID)],
         });
 
+        const vestNFTs = this.getStore("vestNFTs");
         let theNFT = vestNFTs.filter((vestNFT) => {
-          return vestNFT.id == tokenID;
+          return vestNFT.id === tokenID;
         });
 
         if (veDistEarned > 0) {
