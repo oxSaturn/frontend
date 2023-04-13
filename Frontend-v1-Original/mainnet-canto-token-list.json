@@ -83,7 +83,7 @@
     "address": "0x1D54EcB8583Ca25895c512A8308389fFD581F9c9",
     "chainId": 7700,
     "decimals": 18,
-    "logoURI": "https://github.com/cosmos/chain-registry/blob/master/injective/images/inj.svg",
+    "logoURI": "https://raw.githubusercontent.com/cosmos/chain-registry/master/injective/images/inj.svg",
     "name": "Injective",
     "symbol": "INJ"
   },
