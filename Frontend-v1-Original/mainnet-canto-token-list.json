@@ -366,5 +366,13 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/04/IMG_20230411_173159_601.png",
     "name": "ACryptoS Liquid Wrapped veFLOW",
     "symbol": "acsFLOW"
+  },
+  {
+    "address": "0x0A1D89e13ED7cadBEcF3CF569Fd1E86f4AC2bb52",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/cryptoffchillen/images-repo/main/CVC%20LOGO.png",
+    "name": "CantoVerse Coin",
+    "symbol": "CVC"
   }
 ]
