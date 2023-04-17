@@ -179,7 +179,7 @@
     "address": "0x2bf9b864cdc97b08b6d79ad4663e71b8ab65c45c",
     "chainId": 7700,
     "decimals": 18,
-    "logoURI": "https://assets.coingecko.com/coins/images/17881/small/tarot-200px.png",
+    "logoURI": "https://assets.coingecko.com/coins/images/17881/large/tarot-200px.png",
     "name": "Tarot",
     "symbol": "TAROT"
   },
@@ -374,5 +374,13 @@
     "logoURI": "https://raw.githubusercontent.com/cryptoffchillen/images-repo/main/CVC%20LOGO.png",
     "name": "CantoVerse Coin",
     "symbol": "CVC"
+  },
+  {
+    "address": "0x8901cB2e82CC95c01e42206F8d1F417FE53e7Af0",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/23896.png",
+    "name": "YieldFarming Index",
+    "symbol": "YFX"
   }
 ]
