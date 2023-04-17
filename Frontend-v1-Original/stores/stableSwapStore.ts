@@ -1037,8 +1037,9 @@ class Store {
           })
         );
 
-        const weightPercent = parseFloat(
-          ((gaugeWeight * BigInt(100)) / totalWeight).toString()
+        const weightPercent = (
+          (Number(gaugeWeight) * 100) /
+          Number(totalWeight)
         ).toFixed(2);
 
         thePair.gauge = {
@@ -1615,8 +1616,9 @@ class Store {
                     .toFixed(pair.token1.decimals)
                 : "0";
             pair.gauge.weight = formatEther(gaugeWeight);
-            pair.gauge.weightPercent = parseFloat(
-              ((gaugeWeight * BigInt(100)) / totalWeight).toString()
+            pair.gauge.weightPercent = (
+              (Number(gaugeWeight) * 100) /
+              Number(totalWeight)
             ).toFixed(2);
             pair.gaugebribes = bribes;
             pair.isAliveGauge = isAliveGauge;
