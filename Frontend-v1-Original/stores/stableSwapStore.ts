@@ -72,6 +72,7 @@ class Store {
     updateDate: number;
     tokenPrices: Map<string, number>;
     tvl: number;
+    tbv: number;
     circulatingSupply: number;
     marketCap: number;
     u_domain: string | undefined;
@@ -97,6 +98,7 @@ class Store {
       updateDate: 0,
       tokenPrices: new Map(),
       tvl: 0,
+      tbv: 0,
       circulatingSupply: 0,
       marketCap: 0,
       u_domain: undefined,
@@ -695,8 +697,9 @@ class Store {
           })
         );
 
-        const weightPercent = parseFloat(
-          ((gaugeWeight * BigInt(100)) / totalWeight).toString()
+        const weightPercent = (
+          (Number(gaugeWeight) * 100) /
+          Number(totalWeight)
         ).toFixed(2);
 
         thePair.gauge = {
@@ -1277,6 +1280,7 @@ class Store {
 
       this.setStore({ tokenPrices: new Map(pairsCall.prices) });
       this.setStore({ tvl: pairsCall.tvl });
+      this.setStore({ tbv: pairsCall.tbv });
 
       return pairsCall.data;
     } catch (ex) {
