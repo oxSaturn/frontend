@@ -12,7 +12,7 @@ const partners: PartnerCardProps[] = [
     title: "Alto.build",
     description:
       "To buy or sell a veFLOW positions, visit Alto.build. The premier NFT market place on Canto.",
-    link: "https://alto.build/",
+    link: "https://alto.build/collections/flow",
     logo: "https://alto.build/_next/image?url=%2Falto-logo-v2.png&w=48&q=75",
   },
   {
