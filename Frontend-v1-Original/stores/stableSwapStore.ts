@@ -4454,7 +4454,7 @@ class Store {
             args: [account.address, BigInt(idx)],
           });
 
-          const [[lockedAmount, lockedEnd], lockValue] =
+          const [[lockedAmount, lockedEnd], lockValue, attached] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -4469,6 +4469,11 @@ class Store {
                   functionName: "balanceOfNFT",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "voted",
+                  args: [tokenIndex]
+                }
               ],
             });
 
@@ -4481,6 +4486,7 @@ class Store {
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
             voted,
+            attached: attached,
           };
         })
       );

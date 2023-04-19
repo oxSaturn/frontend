@@ -242,7 +242,8 @@ export default function EnhancedTable({
         className="flex w-full flex-col items-end border border-[rgba(104,108,122,0.25)]"
       >
         <Alert severity="warning" className="w-full">
-          NFTs voted cannot be Reset or Merge in current epoch. You can do it in the next epoch.
+          NFTs voted cannot be Reset or Merge in current epoch. You can do it in
+          the next epoch.
         </Alert>
         <TableContainer>
           <Table
@@ -367,7 +368,8 @@ export default function EnhancedTable({
                           <Tooltip
                             title={
                               <div>
-                                Reset when you want to transfer or sell NFT.
+                                Reset to transfer or sell{" "}
+                                {row.attached ? "or merge " : ""}NFT.
                                 <br />
                                 Reset disables voting until next epoch.
                               </div>
@@ -396,11 +398,23 @@ export default function EnhancedTable({
                           Manage
                         </Button>
                         {!row.voted ? (
-                          <Link href={`/vest/${row.id}/merge`}>
-                            <Button variant="outlined" color="primary">
-                              Merge
-                            </Button>
-                          </Link>
+                          row.attached ? (
+                            <Tooltip
+                              title={`Please Reset NFT before merging as it's attached.`}
+                              placement="right"
+                              enterTouchDelay={500}
+                            >
+                              <Button variant="outlined" color="primary">
+                                Merge
+                              </Button>
+                            </Tooltip>
+                          ) : (
+                            <Link href={`/vest/${row.id}/merge`}>
+                              <Button variant="outlined" color="primary">
+                                Merge
+                              </Button>
+                            </Link>
+                          )
                         ) : null}
                       </TableCell>
                     </TableRow>
