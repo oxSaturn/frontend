@@ -42,15 +42,13 @@ export function MergeNFT() {
   useEffect(() => {
     // wait for veToken
     if (veToken) {
-      // user might refresh the page
-      // so we need to get the nfts ourselves
-      // FIXME show loading
-      // FIXME what if user access /vest/[id]/merge from /vest, i.e., nfts are already available
-      // can't we just reuse them?
-      stores.dispatcher.dispatch({
-        type: ACTIONS.GET_VEST_NFTS,
-        content: {},
-      });
+      if (nfts.length === 0) {
+        // only refetch when nfts is empty, i.e., when users refresh the page
+        stores.dispatcher.dispatch({
+          type: ACTIONS.GET_VEST_NFTS,
+          content: {},
+        });
+      }
     }
   }, [veToken]);
 
