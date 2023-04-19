@@ -369,7 +369,7 @@ export default function EnhancedTable({
                             title={
                               <div>
                                 Reset to transfer or sell{" "}
-                                {row.attached ? "or merge " : ""}NFT.
+                                {row.votedInPastEpoch ? "or merge " : ""}NFT.
                                 <br />
                                 Reset disables voting until next epoch.
                               </div>
@@ -398,7 +398,7 @@ export default function EnhancedTable({
                           Manage
                         </Button>
                         {!row.votedInCurrentEpoch ? (
-                          row.attached ? (
+                          row.votedInPastEpoch ? (
                             <Tooltip
                               title={`Please Reset NFT before merging as it's attached.`}
                               placement="right"
