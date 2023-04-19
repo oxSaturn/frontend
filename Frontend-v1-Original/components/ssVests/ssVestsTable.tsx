@@ -15,6 +15,7 @@ import {
   Toolbar,
   Grid,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { EnhancedEncryptionOutlined, Check, Close } from "@mui/icons-material";
@@ -240,6 +241,9 @@ export default function EnhancedTable({
         elevation={0}
         className="flex w-full flex-col items-end border border-[rgba(104,108,122,0.25)]"
       >
+        <Alert severity="warning" className="w-full">
+          NFTs voted cannot be Reset or Merge in current epoch. You can do it in the next epoch.
+        </Alert>
         <TableContainer>
           <Table
             aria-labelledby="tableTitle"
@@ -359,11 +363,11 @@ export default function EnhancedTable({
                         align="right"
                         className="flex flex-col space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2"
                       >
-                        {row.voted ? (
+                        {!row.voted ? (
                           <Tooltip
                             title={
                               <div>
-                                Only reset it if you want to do NFT merge.
+                                Reset when you want to transfer or sell NFT.
                                 <br />
                                 Reset disables voting until next epoch.
                               </div>
@@ -391,25 +395,13 @@ export default function EnhancedTable({
                         >
                           Manage
                         </Button>
-                        {row.voted ? (
-                          <Tooltip
-                            title={
-                              <div>Please Reset before merging.</div>
-                            }
-                            placement="right"
-                            enterTouchDelay={500}
-                          >
-                            <Button variant="outlined" color="primary">
-                              Merge
-                            </Button>
-                          </Tooltip>
-                        ) : (
+                        {!row.voted ? (
                           <Link href={`/vest/${row.id}/merge`}>
                             <Button variant="outlined" color="primary">
                               Merge
                             </Button>
                           </Link>
-                        )}
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   );
