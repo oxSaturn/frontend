@@ -4454,7 +4454,7 @@ class Store {
             args: [account.address, BigInt(idx)] as const,
           });
 
-          const [[lockedAmount, lockedEnd], lockValue, attached] =
+          const [[lockedAmount, lockedEnd], lockValue, votedInPastEpoch] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -4486,7 +4486,7 @@ class Store {
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
             votedInCurrentEpoch,
-            attached: attached,
+            votedInPastEpoch,
           };
         })
       );
