@@ -368,8 +368,7 @@ export default function EnhancedTable({
                           <Tooltip
                             title={
                               <div>
-                                Reset to transfer or sell{" "}
-                                {row.votedInPastEpoch ? "or merge " : ""}NFT.
+                                Reset to transfer or sell NFT.
                                 <br />
                                 Reset disables voting until next epoch.
                               </div>
@@ -387,7 +386,11 @@ export default function EnhancedTable({
                               Reset
                             </Button>
                           </Tooltip>
-                        ) : null}
+                        ) : (
+                          <Button variant="outlined" color="primary" disabled>
+                            Reset
+                          </Button>
+                        )}
                         <Button
                           variant="outlined"
                           color="primary"
@@ -398,24 +401,16 @@ export default function EnhancedTable({
                           Manage
                         </Button>
                         {!row.votedInCurrentEpoch ? (
-                          row.votedInPastEpoch ? (
-                            <Tooltip
-                              title={`Please Reset NFT before merging as it's attached.`}
-                              placement="right"
-                              enterTouchDelay={500}
-                            >
-                              <Button variant="outlined" color="primary">
-                                Merge
-                              </Button>
-                            </Tooltip>
-                          ) : (
-                            <Link href={`/vest/${row.id}/merge`}>
-                              <Button variant="outlined" color="primary">
-                                Merge
-                              </Button>
-                            </Link>
-                          )
-                        ) : null}
+                          <Link href={`/vest/${row.id}/merge`}>
+                            <Button variant="outlined" color="primary">
+                              Merge
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button variant="outlined" color="primary" disabled>
+                            Merge
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
