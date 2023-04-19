@@ -6421,7 +6421,7 @@ class Store {
       ],
       [
         "attached",
-        "You have already voted with this token or your nft is attached",
+        "You have already voted with this token or your nft is attached, try to reset first",
       ],
       ["TOKEN ALREADY VOTED", "You have already voted with this token"],
       [
