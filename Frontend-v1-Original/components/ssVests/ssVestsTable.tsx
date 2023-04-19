@@ -21,12 +21,12 @@ import { useRouter } from "next/router";
 import { EnhancedEncryptionOutlined, Check, Close } from "@mui/icons-material";
 import moment from "moment";
 import BigNumber from "bignumber.js";
+import Link from "next/link";
 
 import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
-import Link from "next/link";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },

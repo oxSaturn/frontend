@@ -10,13 +10,15 @@ import {
   Typography,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
-import classes from "./ssVest.module.css";
 import Link from "next/link";
-import stores from "../../stores";
 import { useEffect, useState } from "react";
+
+import stores from "../../stores";
 import { VeToken, VestNFT } from "../../stores/types/types";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
+
+import classes from "./ssVest.module.css";
 
 export function MergeNFT() {
   const router = useRouter();
