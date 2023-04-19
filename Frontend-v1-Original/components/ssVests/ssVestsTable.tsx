@@ -308,7 +308,7 @@ export default function EnhancedTable({
                           variant="h2"
                           className="text-xs font-extralight"
                         >
-                          {!!row.voted ? (
+                          {!!row.votedInCurrentEpoch ? (
                             <Check className="fill-green-500" />
                           ) : (
                             <Close className="fill-red-500" />
@@ -364,7 +364,7 @@ export default function EnhancedTable({
                         align="right"
                         className="flex flex-col space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2"
                       >
-                        {!row.voted ? (
+                        {!row.votedInCurrentEpoch ? (
                           <Tooltip
                             title={
                               <div>
@@ -397,7 +397,7 @@ export default function EnhancedTable({
                         >
                           Manage
                         </Button>
-                        {!row.voted ? (
+                        {!row.votedInCurrentEpoch ? (
                           row.attached ? (
                             <Tooltip
                               title={`Please Reset NFT before merging as it's attached.`}
@@ -446,10 +446,10 @@ function descendingComparator(a: VestNFT, b: VestNFT, orderBy: OrderBy) {
     case "NFT":
       return 0;
     case "Voted":
-      if (b.voted && !a.voted) {
+      if (b.votedInCurrentEpoch && !a.votedInCurrentEpoch) {
         return -1;
       }
-      if (!b.voted && a.voted) {
+      if (!b.votedInCurrentEpoch && a.votedInCurrentEpoch) {
         return 1;
       }
       return 0;

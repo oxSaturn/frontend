@@ -39,7 +39,7 @@ interface VestNFT {
   lockAmount: string;
   lockEnds: string;
   lockValue: string;
-  voted: boolean;
+  votedInCurrentEpoch: boolean;
   attached: boolean;
 }
 

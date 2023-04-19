@@ -4416,12 +4416,12 @@ class Store {
   //   }
   // };
 
-  getVestNFTs = async () => {
+  getVestNFTs = async (): Promise<VestNFT[]> => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
-        return null;
+        return [];
       }
 
       const veToken = this.getStore("veToken");
@@ -4477,7 +4477,7 @@ class Store {
               ],
             });
 
-          const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const votedInCurrentEpoch = await this._checkNFTVotedEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -4485,7 +4485,7 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            votedInCurrentEpoch,
             attached: attached,
           };
         })
