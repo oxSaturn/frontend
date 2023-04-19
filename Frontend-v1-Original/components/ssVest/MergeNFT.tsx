@@ -31,7 +31,8 @@ export function MergeNFT() {
   );
   const [selectedNFTId, setSelectedNFTId] = useState<string | null>(null);
 
-  const onMergeNFT = (from: string, to: string) => {
+  const onMergeNFT = (from: string, to: string | null) => {
+    if (to === null) return;
     stores.dispatcher.dispatch({
       type: ACTIONS.MERGE_NFT,
       content: {
@@ -52,7 +53,7 @@ export function MergeNFT() {
         });
       }
     }
-  }, [veToken]);
+  }, [veToken, nfts]);
 
   useEffect(() => {
     const ssConfigureCalled = () => {
@@ -75,7 +76,7 @@ export function MergeNFT() {
       stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, nftsReturned);
       stores.emitter.removeListener(ACTIONS.MERGE_NFT_RETURNED, nftMerged);
     };
-  }, []);
+  }, [router]);
 
   return (
     <div className={classes.vestContainer}>
@@ -129,7 +130,7 @@ export function MergeNFT() {
             fullWidth
             size="large"
             className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
-            onClick={() => onMergeNFT(id as string, selectedNFTId as string)}
+            onClick={() => onMergeNFT(id as string, selectedNFTId)}
           >
             Merge
           </Button>
