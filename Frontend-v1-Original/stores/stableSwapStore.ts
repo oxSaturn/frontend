@@ -4416,12 +4416,12 @@ class Store {
   //   }
   // };
 
-  getVestNFTs = async (): Promise<VestNFT[]> => {
+  getVestNFTs = async () => {
     try {
       const account = stores.accountStore.getStore("account");
       if (!account) {
         console.warn("account not found");
-        return [];
+        return null;
       }
 
       const veToken = this.getStore("veToken");
