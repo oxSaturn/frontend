@@ -4451,7 +4451,7 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address, BigInt(idx)],
+            args: [account.address, BigInt(idx)] as const,
           });
 
           const [[lockedAmount, lockedEnd], lockValue, attached] =
@@ -5216,7 +5216,7 @@ class Store {
       this._callContractWait(
         votingEscrowContract,
         "merge",
-        [BigInt(from), BigInt(to)],
+        [from, to],
         account,
         mergeTXID,
         (err) => {
@@ -6427,7 +6427,7 @@ class Store {
       ],
       [
         "attached",
-        "You have already voted with this token or your nft is attached, try to reset first",
+        "You have already voted with this token or your nft is attached",
       ],
       ["TOKEN ALREADY VOTED", "You have already voted with this token"],
       [
