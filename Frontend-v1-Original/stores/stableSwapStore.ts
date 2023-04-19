@@ -191,6 +191,9 @@ class Store {
           case ACTIONS.WITHDRAW_VEST:
             this.withdrawVest(payload);
             break;
+          case ACTIONS.MERGE_NFT:
+            this.mergeNft(payload);
+            break;
 
           //VOTE
           case ACTIONS.VOTE:
@@ -5167,6 +5170,64 @@ class Store {
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  mergeNft = async (payload: {
+    type: string;
+    content: { from: string; to: string };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+      const { from, to } = payload.content;
+
+      let mergeTXID = this.getTXUUID();
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Merge NFT #${from} into #${to}`,
+        verb: "NFT Merged",
+        transactions: [
+          {
+            uuid: mergeTXID,
+            description: `Merging NFT #${from} into #${to}`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const votingEscrowContract = new web3.eth.Contract(
+        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
+        CONTRACTS.VE_TOKEN_ADDRESS
+      );
+      this._callContractWait(
+        votingEscrowContract,
+        "merge",
+        [BigInt(from), BigInt(to)],
+        account,
+        mergeTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+          this.emitter.emit(ACTIONS.TX_STATUS, {
+            uuid: mergeTXID,
+            description: `NFT #${from} merged into #${to}`,
+            status: "DONE",
+          });
+          this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
+        }
+      );
+    } catch (e) {
+      console.log(e);
+      this.emitter.emit(ACTIONS.ERROR, e);
     }
   };
 

@@ -25,6 +25,7 @@ import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+import Link from "next/link";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -354,29 +355,33 @@ export default function EnhancedTable({
                           Expires {moment.unix(+row.lockEnds).fromNow()}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">
-                        <Tooltip
-                          title={
-                            <div>
-                              Only reset it if you want to do NFT merge.
-                              <br />
-                              Reset disables voting until next epoch.
-                            </div>
-                          }
-                          placement="right"
-                          enterTouchDelay={500}
-                        >
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => {
-                              onReset(row);
-                            }}
-                            className="mr-2"
+                      <TableCell
+                        align="right"
+                        className="flex flex-col space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2"
+                      >
+                        {row.voted ? (
+                          <Tooltip
+                            title={
+                              <div>
+                                Only reset it if you want to do NFT merge.
+                                <br />
+                                Reset disables voting until next epoch.
+                              </div>
+                            }
+                            placement="right"
+                            enterTouchDelay={500}
                           >
-                            Reset
-                          </Button>
-                        </Tooltip>
+                            <Button
+                              variant="outlined"
+                              color="primary"
+                              onClick={() => {
+                                onReset(row);
+                              }}
+                            >
+                              Reset
+                            </Button>
+                          </Tooltip>
+                        ) : null}
                         <Button
                           variant="outlined"
                           color="primary"
@@ -386,6 +391,25 @@ export default function EnhancedTable({
                         >
                           Manage
                         </Button>
+                        {row.voted ? (
+                          <Tooltip
+                            title={
+                              <div>Please Reset before merging.</div>
+                            }
+                            placement="right"
+                            enterTouchDelay={500}
+                          >
+                            <Button variant="outlined" color="primary">
+                              Merge
+                            </Button>
+                          </Tooltip>
+                        ) : (
+                          <Link href={`/vest/${row.id}/merge`}>
+                            <Button variant="outlined" color="primary">
+                              Merge
+                            </Button>
+                          </Link>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
