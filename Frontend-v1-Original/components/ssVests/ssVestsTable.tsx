@@ -30,7 +30,18 @@ import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
-  { id: "Voted", numeric: false, disablePadding: false, label: "Voted" },
+  {
+    id: "Voted",
+    numeric: false,
+    disablePadding: false,
+    label: "Voted This Epoch",
+  },
+  {
+    id: "Reset",
+    numeric: false,
+    disablePadding: false,
+    label: "Reset",
+  },
   {
     id: "Locked Amount",
     numeric: true,
@@ -241,9 +252,9 @@ export default function EnhancedTable({
         elevation={0}
         className="flex w-full flex-col items-end border border-[rgba(104,108,122,0.25)]"
       >
-        <Alert severity="warning" className="w-full">
-          NFTs voted cannot be Reset or Merge in current epoch. You can do it in
-          the next epoch.
+        <Alert severity="info" className="w-full">
+          You can either vote or reset in the same epoch, but not both. NFTs
+          voted in the past will have to be reset first to merge.
         </Alert>
         <TableContainer>
           <Table
@@ -308,7 +319,33 @@ export default function EnhancedTable({
                           variant="h2"
                           className="text-xs font-extralight"
                         >
-                          {!!row.votedInCurrentEpoch ? (
+                          {row.actionedInCurrentEpoch && !row.reset ? (
+                            <Check className="fill-green-500" />
+                          ) : (
+                            <Close className="fill-red-500" />
+                          )}
+                        </Typography>
+                        {(!row.actionedInCurrentEpoch &&
+                          Number(row?.lastVoted) !== 0) ||
+                        (row.actionedInCurrentEpoch && !row.reset) ? (
+                          <Typography
+                            variant="h5"
+                            className="text-xs font-extralight"
+                            color="textSecondary"
+                          >
+                            Last voted:{" "}
+                            {new Date(
+                              Number(row?.lastVoted) * 1000
+                            ).toLocaleString()}
+                          </Typography>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="h2"
+                          className="text-xs font-extralight"
+                        >
+                          {row.reset ? (
                             <Check className="fill-green-500" />
                           ) : (
                             <Close className="fill-red-500" />
@@ -364,11 +401,11 @@ export default function EnhancedTable({
                         align="right"
                         className="flex flex-col space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2"
                       >
-                        {!row.votedInCurrentEpoch ? (
+                        {!row.actionedInCurrentEpoch ? (
                           <Tooltip
                             title={
                               <div>
-                                Reset to transfer or sell NFT.
+                                Reset to transfer, sell or merge NFT.
                                 <br />
                                 Reset disables voting until next epoch.
                               </div>
@@ -400,16 +437,19 @@ export default function EnhancedTable({
                         >
                           Manage
                         </Button>
-                        {!row.votedInCurrentEpoch ? (
+                        {!row.actionedInCurrentEpoch &&
+                        Number(row?.lastVoted) === 0 ? (
                           <Link href={`/vest/${row.id}/merge`}>
                             <Button variant="outlined" color="primary">
                               Merge
                             </Button>
                           </Link>
                         ) : (
-                          <Button variant="outlined" color="primary" disabled>
-                            Merge
-                          </Button>
+                          <Tooltip title="">
+                            <Button variant="outlined" color="primary" disabled>
+                              Merge
+                            </Button>
+                          </Tooltip>
                         )}
                       </TableCell>
                     </TableRow>
@@ -441,10 +481,10 @@ function descendingComparator(a: VestNFT, b: VestNFT, orderBy: OrderBy) {
     case "NFT":
       return 0;
     case "Voted":
-      if (b.votedInCurrentEpoch && !a.votedInCurrentEpoch) {
+      if (b.actionedInCurrentEpoch && !a.actionedInCurrentEpoch) {
         return -1;
       }
-      if (!b.votedInCurrentEpoch && a.votedInCurrentEpoch) {
+      if (!b.actionedInCurrentEpoch && a.actionedInCurrentEpoch) {
         return 1;
       }
       return 0;
