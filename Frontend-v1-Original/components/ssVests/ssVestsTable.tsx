@@ -414,7 +414,7 @@ function descendingComparator(a: VestNFT, b: VestNFT, orderBy: OrderBy) {
 
   switch (orderBy) {
     case "NFT":
-      return 0;
+      return BigNumber(b.id).minus(a.id).toNumber();
     case "Voted":
       if (b.voted && !a.voted) {
         return -1;
