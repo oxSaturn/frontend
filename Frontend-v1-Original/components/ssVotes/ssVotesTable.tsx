@@ -503,6 +503,17 @@ function descendingComparator(
   }
 
   switch (orderBy) {
+    case "asset":
+      let caseA = a.symbol.toLowerCase();
+      let caseB = b.symbol.toLowerCase();
+      if (caseB < caseA) {
+        return -1;
+      }
+      if (caseB > caseA) {
+        return 1;
+      }
+      return 0;
+
     case "votingAPR":
       if (BigNumber(b.gauge.apr).lt(a.gauge.apr)) {
         return -1;
@@ -580,13 +591,13 @@ function descendingComparator(
       return 0;
 
     case "totalVotes":
-      if (!a.gauge.weightPercent || !b.gauge.weightPercent) {
+      if (!a.gauge.weight || !b.gauge.weight) {
         return 0;
       }
-      if (BigNumber(b.gauge.weightPercent).lt(a.gauge.weightPercent)) {
+      if (BigNumber(b.gauge.weight).lt(a.gauge.weight)) {
         return -1;
       }
-      if (BigNumber(b.gauge.weightPercent).gt(a.gauge.weightPercent)) {
+      if (BigNumber(b.gauge.weight).gt(a.gauge.weight)) {
         return 1;
       }
       return 0;

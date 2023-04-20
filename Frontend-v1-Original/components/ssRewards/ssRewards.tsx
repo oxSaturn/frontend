@@ -216,6 +216,7 @@ export default function ssRewards() {
                                 {formatCurrency(option.lockValue)}
                               </Typography>
                               <Typography
+                                align="right"
                                 color="textSecondary"
                                 className={classes.smallerText}
                               >
