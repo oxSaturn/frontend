@@ -307,14 +307,16 @@ class Store {
               ],
             });
 
-          const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const votedInCurrentEpoch = await this._checkNFTVotedEpoch(
+            tokenIndex.toString()
+          );
 
           return {
             id: tokenIndex.toString(),
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            votedInCurrentEpoch,
           };
         })
       );
@@ -390,7 +392,7 @@ class Store {
         }
       );
 
-      const voted = await this._checkNFTVotedEpoch(id);
+      const votedInCurrentEpoch = await this._checkNFTVotedEpoch(id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -399,7 +401,7 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            votedInCurrentEpoch,
           };
         }
 
@@ -1408,7 +1410,9 @@ class Store {
               ],
             });
 
-          const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const votedInCurrentEpoch = await this._checkNFTVotedEpoch(
+            tokenIndex.toString()
+          );
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -1416,7 +1420,7 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            votedInCurrentEpoch,
           };
         })
       );
@@ -4454,7 +4458,7 @@ class Store {
             args: [account.address, BigInt(idx)] as const,
           });
 
-          const [[lockedAmount, lockedEnd], lockValue, votedInPastEpoch] =
+          const [[lockedAmount, lockedEnd], lockValue] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -4469,15 +4473,12 @@ class Store {
                   functionName: "balanceOfNFT",
                   args: [tokenIndex],
                 },
-                {
-                  ...vestingContract,
-                  functionName: "voted",
-                  args: [tokenIndex]
-                }
               ],
             });
 
-          const votedInCurrentEpoch = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const votedInCurrentEpoch = await this._checkNFTVotedEpoch(
+            tokenIndex.toString()
+          );
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -4486,7 +4487,6 @@ class Store {
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
             votedInCurrentEpoch,
-            votedInPastEpoch,
           };
         })
       );
