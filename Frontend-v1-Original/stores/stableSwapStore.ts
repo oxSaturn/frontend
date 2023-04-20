@@ -1656,65 +1656,145 @@ class Store {
         address: CONTRACTS.VOTER_ADDRESS,
       } as const;
 
-      const baseAssetsBalances = await Promise.all(
-        baseAssets.map(async (asset) => {
-          try {
-            if (asset.address === NATIVE_TOKEN.symbol) {
-              let bal = await viemClient.getBalance({
-                address: account.address,
-              });
-              return {
-                balanceOf: bal.toString(),
-                isWhitelisted: true,
-              };
-            }
+      let baseAssetsWithBalances: BaseAsset[] = [];
 
-            const assetContract = {
-              abi: CONTRACTS.ERC20_ABI,
-              address: asset.address,
-            } as const;
-
-            const [isWhitelisted, balanceOf] = await viemClient.multicall({
-              allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-              contracts: [
-                {
-                  ...voterContract,
-                  functionName: "isWhitelisted",
-                  args: [asset.address],
-                },
-                {
-                  ...assetContract,
-                  functionName: "balanceOf",
-                  args: [account.address],
-                },
-              ],
-            });
-
-            return {
-              balanceOf: balanceOf.toString(),
-              isWhitelisted,
-            };
-          } catch (ex) {
-            console.log("EXCEPTION 3");
-            console.log(asset);
-            console.log(ex);
-            return {
-              balanceOf: "0",
-              isWhitelisted: false,
-            };
-          }
-        })
+      const nativeToken = baseAssets.find(
+        (asset) => asset.address === NATIVE_TOKEN.symbol
       );
-
-      for (let i = 0; i < baseAssets.length; i++) {
-        baseAssets[i].balance = BigNumber(baseAssetsBalances[i].balanceOf)
-          .div(10 ** baseAssets[i].decimals)
-          .toFixed(baseAssets[i].decimals);
-        baseAssets[i].isWhitelisted = baseAssetsBalances[i].isWhitelisted;
+      if (nativeToken) {
+        const balance = await viemClient.getBalance({
+          address: account.address,
+        });
+        baseAssetsWithBalances.push({
+          ...nativeToken,
+          balance: formatUnits(balance, nativeToken.decimals),
+          isWhitelisted: true,
+        } as const);
       }
 
-      this.setStore({ baseAssets });
+      const baseAssetsWithoutNativeToken = baseAssets
+        .map((asset) => {
+          if (asset.address !== NATIVE_TOKEN.symbol) {
+            return asset;
+          }
+        })
+        .filter((asset): asset is BaseAsset => asset !== undefined);
+      if (baseAssetsWithoutNativeToken.length === 0) {
+        console.warn("error in base assets logic");
+        return null;
+      }
+
+      const baseAssetsWhitelistedCalls = baseAssetsWithoutNativeToken.map(
+        (asset) => {
+          return {
+            ...voterContract,
+            functionName: "isWhitelisted",
+            args: [asset.address],
+          } as const;
+        }
+      );
+
+      const baseAssetsBalancesCalls = baseAssetsWithoutNativeToken.map(
+        (asset) => {
+          return {
+            abi: CONTRACTS.ERC20_ABI,
+            address: asset.address,
+            functionName: "balanceOf",
+            args: [account.address],
+          } as const;
+        }
+      );
+
+      const whitelistedCallsChunks = chunkArray(baseAssetsWhitelistedCalls);
+      const baseAssetsWhitelistedResults = await multicallChunks(
+        whitelistedCallsChunks
+      );
+
+      const balancesCallsChunks = chunkArray(baseAssetsBalancesCalls);
+      const baseAssetsBalancesResults = await multicallChunks(
+        balancesCallsChunks
+      );
+
+      // const baseAssetsBalances = await Promise.all(
+      //   baseAssets.map(async (asset) => {
+      //     try {
+      //       if (asset.address === NATIVE_TOKEN.symbol) {
+      //         let bal = await viemClient.getBalance({
+      //           address: account.address,
+      //         });
+      //         return {
+      //           balanceOf: bal.toString(),
+      //           isWhitelisted: true,
+      //         };
+      //       }
+
+      //       const assetContract = {
+      //         abi: CONTRACTS.ERC20_ABI,
+      //         address: asset.address,
+      //       } as const;
+
+      //       const [isWhitelisted, balanceOf] = await viemClient.multicall({
+      //         allowFailure: false,
+      //         multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+      //         contracts: [
+      //           {
+      //             ...voterContract,
+      //             functionName: "isWhitelisted",
+      //             args: [asset.address],
+      //           },
+      //           {
+      //             ...assetContract,
+      //             functionName: "balanceOf",
+      //             args: [account.address],
+      //           },
+      //         ],
+      //       });
+
+      //       return {
+      //         balanceOf: balanceOf.toString(),
+      //         isWhitelisted,
+      //       };
+      //     } catch (ex) {
+      //       console.log("EXCEPTION 3");
+      //       console.log(asset);
+      //       console.log(ex);
+      //       return {
+      //         balanceOf: "0",
+      //         isWhitelisted: false,
+      //       };
+      //     }
+      //   })
+      // );
+
+      for (let i = 0; i < baseAssetsWithoutNativeToken.length; i++) {
+        baseAssetsWithBalances.push({
+          ...baseAssetsWithoutNativeToken[i],
+          balance: formatUnits(
+            baseAssetsBalancesResults[i],
+            baseAssetsWithoutNativeToken[i].decimals
+          ),
+          isWhitelisted: baseAssetsWhitelistedResults[i],
+        });
+      }
+      baseAssets.forEach((baseAsset) => {
+        const baseAssetWithBalance = baseAssetsWithBalances.find(
+          (baseAssetWithBalance) =>
+            baseAssetWithBalance.address === baseAsset.address
+        );
+        if (baseAssetWithBalance) {
+          baseAsset.balance = baseAssetWithBalance.balance;
+          baseAsset.isWhitelisted = baseAssetWithBalance.isWhitelisted;
+        }
+      });
+      // for (let i = 0; i < baseAssets.length; i++) {
+      //   baseAssets[i].balance = BigNumber(baseAssetsBalances[i].balanceOf)
+      //     .div(10 ** baseAssets[i].decimals)
+      //     .toFixed(baseAssets[i].decimals);
+      //   baseAssets[i].isWhitelisted = baseAssetsBalances[i].isWhitelisted;
+      // }
+      console.log(baseAssetsWithBalances);
+      // this.setStore({ baseAssets });
+      this.setStore({ baseAssets: baseAssetsWithBalances });
       this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.log(ex);
