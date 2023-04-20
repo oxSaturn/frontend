@@ -60,6 +60,13 @@ export default function ssBribes() {
         size="large"
         className={classes.buttonOverride}
         onClick={onCreate}
+        disabled={true}
+        sx={{
+          "&.MuiButton-root.Mui-disabled": {
+            color: "gray",
+            borderColor: "gray",
+          },
+        }}
       >
         <Typography className={classes.actionButtonText}>
           Create bribe
