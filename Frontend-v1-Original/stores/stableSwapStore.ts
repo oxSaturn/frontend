@@ -5269,12 +5269,7 @@ class Store {
   // either vote or reset, not both
   // reset would update lastVoted value as well
   _checkNFTActionEpoch = async (tokenID: string) => {
-    const _lastVoted = await viemClient.readContract({
-      address: CONTRACTS.VOTER_ADDRESS,
-      abi: CONTRACTS.VOTER_ABI,
-      functionName: "lastVoted",
-      args: [BigInt(tokenID)],
-    });
+    const _lastVoted = await this._checkNFTLastVoted(tokenID);
 
     // if last voted eq 0, means never voted
     if (_lastVoted === BigInt("0")) return false;
