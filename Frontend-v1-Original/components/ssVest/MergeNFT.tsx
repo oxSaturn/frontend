@@ -3,7 +3,6 @@ import {
   Button,
   FormControl,
   IconButton,
-  InputLabel,
   MenuItem,
   Paper,
   Select,
@@ -81,13 +80,9 @@ export function MergeNFT() {
   return (
     <div className={classes.vestContainer}>
       <Paper elevation={0} className={classes.container2}>
-        <div
-          className={
-            "relative flex flex-row items-center justify-center rounded-lg border border-[#212B48] py-5"
-          }
-        >
+        <div className="relative flex flex-row items-center justify-center rounded-lg border border-[#212B48] py-5">
           <Link href={`/vest`} title="back to vest">
-            <IconButton className={"absolute left-[5px]"}>
+            <IconButton className="absolute left-[5px]">
               <ArrowBack className={classes.backIcon} />
             </IconButton>
           </Link>
@@ -113,7 +108,7 @@ export function MergeNFT() {
                           <Typography>
                             {formatCurrency(nft.lockValue)}
                           </Typography>
-                          <Typography color={"textSecondary"}>
+                          <Typography color="textSecondary">
                             {veToken?.symbol}
                           </Typography>
                         </div>
