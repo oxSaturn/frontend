@@ -594,10 +594,12 @@ function descendingComparator(
         }
       }
       if (isGaugeReward(a) && isGaugeReward(b)) {
-        if (b.symbol < a.symbol) {
+        let caseA = a.symbol.toLowerCase();
+        let caseB = b.symbol.toLowerCase();
+        if (caseB < caseA) {
           return -1;
         }
-        if (b.symbol > a.symbol) {
+        if (caseB > caseA) {
           return 1;
         }
       }
