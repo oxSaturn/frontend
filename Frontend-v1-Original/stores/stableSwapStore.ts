@@ -5248,11 +5248,6 @@ class Store {
           if (err) {
             return this.emitter.emit(ACTIONS.ERROR, err);
           }
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: mergeTXID,
-            description: `NFT #${from} merged into #${to}`,
-            status: "DONE",
-          });
           this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
         }
       );
