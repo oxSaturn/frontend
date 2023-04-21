@@ -12,16 +12,16 @@ import {
   MenuItem,
   IconButton,
   Select,
-} from "@mui/material";
+ SelectChangeEvent } from "@mui/material";
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
-import { formatCurrency } from "../../utils/utils";
-import classes from "./ssBribeCreate.module.css";
 
+import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import { BaseAsset, Pair, hasGauge } from "../../stores/types/types";
-import { SelectChangeEvent } from "@mui/material";
+
+import classes from "./ssBribeCreate.module.css";
 
 export default function ssBribeCreate() {
   const router = useRouter();

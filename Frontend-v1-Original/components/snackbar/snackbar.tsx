@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 
 import { colors } from "../../theme/coreTheme";
-
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
 
 const iconStyle = {

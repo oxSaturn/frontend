@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { Typography } from "@mui/material";
 
-import VestsTable from "./ssVestsTable";
-import PartnersVests from "./partnersVests";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+
+import PartnersVests from "./partnersVests";
+import VestsTable from "./ssVestsTable";
 
 export default function ssVests() {
   const [, updateState] = useState<{}>();

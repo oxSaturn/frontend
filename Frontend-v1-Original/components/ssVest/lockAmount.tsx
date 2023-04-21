@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Typography, Button, TextField, CircularProgress } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
+
 import { formatCurrency } from "../../utils/utils";
-import classes from "./ssVest.module.css";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT } from "../../stores/types/types";
+
+import classes from "./ssVest.module.css";
 
 export default function ffLockAmount({
   nft,

@@ -7,8 +7,10 @@ import Document, {
   DocumentContext,
 } from "next/document";
 import createEmotionServer from "@emotion/server/create-instance";
-import createEmotionCache from "../utils/createEmotionCache";
 import { AppProps } from "next/app";
+
+import createEmotionCache from "../utils/createEmotionCache";
+
 import { MyAppProps } from "./_app";
 
 type ComponentProps = AppProps & MyAppProps;

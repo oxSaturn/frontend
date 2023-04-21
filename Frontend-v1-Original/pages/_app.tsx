@@ -7,14 +7,12 @@ import { ThemeProvider } from "@mui/material/styles";
 
 import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
-
-import Configure from "./configure";
 import Layout from "../components/layout/layout";
-
 import stores from "../stores/index";
-
 import { ACTIONS } from "../stores/constants/constants";
 import createEmotionCache from "../utils/createEmotionCache";
+
+import Configure from "./configure";
 
 import "../styles/global.css";
 

@@ -23,6 +23,7 @@ import {
   DeleteOutline,
 } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
+import { isAddress } from "viem";
 
 import stores from "../../stores";
 import {
@@ -32,7 +33,6 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
-import { isAddress } from "viem";
 
 export default function ssLiquidityManage() {
   const router = useRouter();

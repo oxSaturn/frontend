@@ -1,8 +1,10 @@
 import { Typography } from "@mui/material";
-import classes from "./ssVest.module.css";
 import moment from "moment";
+
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+
+import classes from "./ssVest.module.css";
 
 interface VestingInfoProps {
   veToken: VeToken | null;

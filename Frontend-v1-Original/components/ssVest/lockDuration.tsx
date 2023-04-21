@@ -11,10 +11,12 @@ import {
 import { useRouter } from "next/router";
 import moment from "moment";
 import BigNumber from "bignumber.js";
-import classes from "./ssVest.module.css";
+
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { VestNFT } from "../../stores/types/types";
+
+import classes from "./ssVest.module.css";
 
 export const lockOptions: {
   [key: string]: number;

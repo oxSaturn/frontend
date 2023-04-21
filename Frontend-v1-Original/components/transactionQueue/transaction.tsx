@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Typography, Button, Tooltip } from "@mui/material";
-import classes from "./transactionQueue.module.css";
-
 import {
   HourglassEmpty,
   HourglassFull,
@@ -13,6 +11,8 @@ import {
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { formatAddress } from "../../utils/utils";
 import { TransactionStatus, ITransaction } from "../../stores/types/types";
+
+import classes from "./transactionQueue.module.css";
 
 export default function Transaction({
   transaction,

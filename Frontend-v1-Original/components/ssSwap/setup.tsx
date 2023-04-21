@@ -18,9 +18,9 @@ import {
   CloseOutlined,
 } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
+import { isAddress } from "viem";
 
 import { formatCurrency } from "../../utils/utils";
-
 import stores from "../../stores";
 import {
   ACTIONS,
@@ -34,7 +34,6 @@ import type {
   QuoteSwapResponse,
   FireBirdTokens,
 } from "../../stores/types/types";
-import { isAddress } from "viem";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();

@@ -1,12 +1,12 @@
 import React from "react";
 import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
-
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
 import { AbstractConnector } from "@web3-react/abstract-connector";
 
 import { ACTIONS } from "../../stores/constants/constants";
+
 const { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE_SS } =
   ACTIONS;
 

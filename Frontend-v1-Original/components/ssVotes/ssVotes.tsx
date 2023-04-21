@@ -9,17 +9,13 @@ import {
   MenuItem,
   Select,
   Grid,
-} from "@mui/material";
+ SelectChangeEvent } from "@mui/material";
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
 import { useRouter } from "next/router";
 
-import classes from "./ssVotes.module.css";
 import { formatCurrency } from "../../utils/utils";
-
-import GaugesTable from "./ssVotesTable";
 import WarningModal from "../warning/warning";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import {
@@ -30,7 +26,9 @@ import {
   Vote,
   Votes,
 } from "../../stores/types/types";
-import { SelectChangeEvent } from "@mui/material";
+
+import GaugesTable from "./ssVotesTable";
+import classes from "./ssVotes.module.css";
 
 const initialEmptyToken = {
   id: "0",

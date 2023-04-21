@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 import { Typography, Button, Grid } from "@mui/material";
-
 import { useScrollTo } from "react-use-window-scroll";
 
 function Home() {

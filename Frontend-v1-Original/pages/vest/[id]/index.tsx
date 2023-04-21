@@ -3,7 +3,6 @@ import { Typography, Button, Paper, SvgIcon } from "@mui/material";
 
 import Vesting from "../../../components/ssVest/ssVest";
 import Unlock from "../../../components/unlock/unlockModal";
-
 import stores from "../../../stores";
 import { ACTIONS } from "../../../stores/constants/constants";
 

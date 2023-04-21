@@ -3,11 +3,12 @@ import { useRouter } from "next/router";
 import { Button, Typography } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
-import classes from "./ssBribes.module.css";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { Pair } from "../../stores/types/types";
+
+import classes from "./ssBribes.module.css";
 
 export default function ssBribes() {
   const [, updateState] = useState<undefined | {}>();

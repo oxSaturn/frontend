@@ -4,7 +4,6 @@ import { Typography, Button, Paper } from "@mui/material";
 
 import VestsNFTs from "../../components/ssVests/ssVests";
 import Unlock from "../../components/unlock/unlockModal";
-
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 

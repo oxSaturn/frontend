@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-
 import {
   Typography,
   Button,
@@ -23,12 +22,12 @@ import {
 import Navigation from "../navigation/navigation";
 import Unlock from "../unlock/unlockModal";
 import TransactionQueue from "../transactionQueue/transactionQueue";
-import Info from "./info";
-
 import useOnClickOutside from "../../hooks/useOnClickOutside";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 import { formatAddress } from "../../utils/utils";
+
+import Info from "./info";
 
 type EthWindow = Window &
   typeof globalThis & {

@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { Paper, Typography, IconButton } from "@mui/material";
-import classes from "./ssVest.module.css";
 import moment from "moment";
 import BigNumber from "bignumber.js";
-
 import { ArrowBack } from "@mui/icons-material";
 
+import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+
+import classes from "./ssVest.module.css";
 import LockAmount from "./lockAmount";
 import LockDuration from "./lockDuration";
 import VestingInfo from "./vestingInfo";
-import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 export default function existingLock({
   nft,

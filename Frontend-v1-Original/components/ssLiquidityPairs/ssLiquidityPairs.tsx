@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { Typography } from "@mui/material";
+
 import type { Pair } from "../../stores/types/types";
-
-import classes from "./ssLiquidityPairs.module.css";
-
-import PairsTable from "./ssLiquidityPairsTable";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
+
+import classes from "./ssLiquidityPairs.module.css";
+import PairsTable from "./ssLiquidityPairsTable";
+
 
 export default function ssLiquidityPairs() {
   const [, updateState] = useState<{}>();

@@ -8,14 +8,13 @@ import {
 } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
 import { OpenInNew, Close } from "@mui/icons-material";
-
 import Lottie from "lottie-react";
+
 import successAnim from "../../public/lottiefiles/successAnim.json";
 import swapSuccessAnim from "../../public/lottiefiles/swapSuccess.json";
 import lockSuccessAnim from "../../public/lottiefiles/lockSuccess.json";
 import pairSuccessAnim from "../../public/lottiefiles/pairSuccess.json";
 
-import Transaction from "./transaction";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -26,10 +25,12 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-import classes from "./transactionQueue.module.css";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import { ITransaction, TransactionStatus } from "../../stores/types/types";
+
+import classes from "./transactionQueue.module.css";
+import Transaction from "./transaction";
 
 export default function TransactionQueue({
   setQueueLength,

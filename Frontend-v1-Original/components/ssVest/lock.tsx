@@ -14,14 +14,15 @@ import {
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 import moment from "moment";
+import { ArrowBack } from "@mui/icons-material";
+
 import { formatCurrency } from "../../utils/utils";
-import classes from "./ssVest.module.css";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-
-import { ArrowBack } from "@mui/icons-material";
-import VestingInfo from "./vestingInfo";
 import { GovToken, VeToken } from "../../stores/types/types";
+
+import VestingInfo from "./vestingInfo";
+import classes from "./ssVest.module.css";
 import { lockOptions } from "./lockDuration";
 
 export default function ssLock({
