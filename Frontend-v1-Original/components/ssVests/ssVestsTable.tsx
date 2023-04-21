@@ -428,15 +428,6 @@ export default function EnhancedTable({
                             Reset
                           </Button>
                         )}
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          onClick={() => {
-                            onView(row);
-                          }}
-                        >
-                          Manage
-                        </Button>
                         {!row.actionedInCurrentEpoch &&
                         Number(row?.lastVoted) === 0 ? (
                           <Link href={`/vest/${row.id}/merge`}>
@@ -451,6 +442,15 @@ export default function EnhancedTable({
                             </Button>
                           </Tooltip>
                         )}
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={() => {
+                            onView(row);
+                          }}
+                        >
+                          Manage
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
