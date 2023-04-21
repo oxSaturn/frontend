@@ -41,7 +41,7 @@ interface VestNFT {
   lockValue: string;
   actionedInCurrentEpoch: boolean;
   reset: boolean;
-  lastVoted?: bigint;
+  lastVoted: bigint;
 }
 
 interface Bribe {

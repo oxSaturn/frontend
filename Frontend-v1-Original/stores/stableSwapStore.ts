@@ -312,9 +312,8 @@ class Store {
               ],
             });
 
-          const actionedInCurrentEpoch = await this._checkNFTActionEpoch(
-            tokenIndex.toString()
-          );
+          const [actionedInCurrentEpoch, lastVoted] =
+            await this._checkNFTActionEpoch(tokenIndex.toString());
 
           return {
             id: tokenIndex.toString(),
@@ -323,6 +322,7 @@ class Store {
             lockValue: formatUnits(lockValue, veToken.decimals),
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         })
       );
@@ -402,7 +402,8 @@ class Store {
           ],
         });
 
-      const actionedInCurrentEpoch = await this._checkNFTActionEpoch(id);
+      const [actionedInCurrentEpoch, lastVoted] =
+        await this._checkNFTActionEpoch(id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -413,6 +414,7 @@ class Store {
             lockValue: formatUnits(lockValue, veToken.decimals),
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         }
 
@@ -1426,9 +1428,8 @@ class Store {
               ],
             });
 
-          const actionedInCurrentEpoch = await this._checkNFTActionEpoch(
-            tokenIndex.toString()
-          );
+          const [actionedInCurrentEpoch, lastVoted] =
+            await this._checkNFTActionEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -1438,6 +1439,7 @@ class Store {
             lockValue: formatUnits(lockValue, veToken.decimals),
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         })
       );
@@ -4498,13 +4500,8 @@ class Store {
               ],
             });
 
-          const actionedInCurrentEpoch = await this._checkNFTActionEpoch(
-            tokenIndex.toString()
-          );
-
-          const lastVoted = await this._checkNFTLastVoted(
-            tokenIndex.toString()
-          );
+          const [actionedInCurrentEpoch, lastVoted] =
+            await this._checkNFTActionEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -5268,11 +5265,13 @@ class Store {
   // actioned in current epoch
   // either vote or reset, not both
   // reset would update lastVoted value as well
-  _checkNFTActionEpoch = async (tokenID: string) => {
+  _checkNFTActionEpoch = async (
+    tokenID: string
+  ): Promise<[boolean, bigint]> => {
     const _lastVoted = await this._checkNFTLastVoted(tokenID);
 
     // if last voted eq 0, means never voted
-    if (_lastVoted === BigInt("0")) return false;
+    if (_lastVoted === BigInt("0")) return [false, _lastVoted];
     const lastVoted = parseInt(_lastVoted.toString());
 
     let nextEpochTimestamp = this.getStore("updateDate");
@@ -5284,7 +5283,7 @@ class Store {
     // 7 days epoch length
     const actionedInCurrentEpoch =
       lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
-    return actionedInCurrentEpoch;
+    return [actionedInCurrentEpoch, _lastVoted];
   };
 
   _checkNFTLastVoted = async (tokenID: string) => {
