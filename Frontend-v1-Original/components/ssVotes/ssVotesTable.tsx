@@ -408,7 +408,66 @@ function VotesRow({
           </Typography>
         </TableCell>
         <TableCell align="right">
-          {row.gauge.bribes.map((bribe, idx) => {
+          {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
+          {row.gaugebribes ? (
+            row.gaugebribes.map((bribe, idx) => {
+              return bribe.rewardAmount !== undefined ? (
+                <div
+                  className="flex items-center justify-end"
+                  key={bribe.token.symbol}
+                >
+                  <Typography variant="h2" className="text-xs font-extralight">
+                    {formatCurrency(bribe.rewardAmount)}
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    className="text-xs font-extralight"
+                    color="textSecondary"
+                  >
+                    {bribe.token.symbol}
+                  </Typography>
+                </div>
+              ) : (
+                <div className="flex items-center justify-end max-[1000px]:block">
+                  <Skeleton
+                    variant="rectangular"
+                    width={120}
+                    height={16}
+                    style={{ marginTop: "1px", marginBottom: "1px" }}
+                    key={bribe.token.symbol}
+                  />
+                </div>
+              );
+            })
+          ) : (
+            <>
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                />
+              </div>
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                />
+              </div>
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                />
+              </div>
+            </>
+          )}
+          {/* {row.gauge.bribes.map((bribe, idx) => {
             return bribe.rewardAmount !== undefined ? (
               <div
                 className="flex items-center justify-end"
@@ -436,7 +495,7 @@ function VotesRow({
                 />
               </div>
             );
-          })}
+          })} */}
         </TableCell>
         <TableCell align="right">
           {!rewardEstimate ? (
@@ -503,6 +562,17 @@ function descendingComparator(
   }
 
   switch (orderBy) {
+    case "asset":
+      let caseA = a.symbol.toLowerCase();
+      let caseB = b.symbol.toLowerCase();
+      if (caseB < caseA) {
+        return -1;
+      }
+      if (caseB > caseA) {
+        return 1;
+      }
+      return 0;
+
     case "votingAPR":
       if (BigNumber(b.gauge.apr).lt(a.gauge.apr)) {
         return -1;
@@ -580,13 +650,13 @@ function descendingComparator(
       return 0;
 
     case "totalVotes":
-      if (!a.gauge.weightPercent || !b.gauge.weightPercent) {
+      if (!a.gauge.weight || !b.gauge.weight) {
         return 0;
       }
-      if (BigNumber(b.gauge.weightPercent).lt(a.gauge.weightPercent)) {
+      if (BigNumber(b.gauge.weight).lt(a.gauge.weight)) {
         return -1;
       }
-      if (BigNumber(b.gauge.weightPercent).gt(a.gauge.weightPercent)) {
+      if (BigNumber(b.gauge.weight).gt(a.gauge.weight)) {
         return 1;
       }
       return 0;
