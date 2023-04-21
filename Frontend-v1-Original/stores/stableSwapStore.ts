@@ -1715,57 +1715,6 @@ class Store {
         balancesCallsChunks
       );
 
-      // const baseAssetsBalances = await Promise.all(
-      //   baseAssets.map(async (asset) => {
-      //     try {
-      //       if (asset.address === NATIVE_TOKEN.symbol) {
-      //         let bal = await viemClient.getBalance({
-      //           address: account.address,
-      //         });
-      //         return {
-      //           balanceOf: bal.toString(),
-      //           isWhitelisted: true,
-      //         };
-      //       }
-
-      //       const assetContract = {
-      //         abi: CONTRACTS.ERC20_ABI,
-      //         address: asset.address,
-      //       } as const;
-
-      //       const [isWhitelisted, balanceOf] = await viemClient.multicall({
-      //         allowFailure: false,
-      //         multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-      //         contracts: [
-      //           {
-      //             ...voterContract,
-      //             functionName: "isWhitelisted",
-      //             args: [asset.address],
-      //           },
-      //           {
-      //             ...assetContract,
-      //             functionName: "balanceOf",
-      //             args: [account.address],
-      //           },
-      //         ],
-      //       });
-
-      //       return {
-      //         balanceOf: balanceOf.toString(),
-      //         isWhitelisted,
-      //       };
-      //     } catch (ex) {
-      //       console.log("EXCEPTION 3");
-      //       console.log(asset);
-      //       console.log(ex);
-      //       return {
-      //         balanceOf: "0",
-      //         isWhitelisted: false,
-      //       };
-      //     }
-      //   })
-      // );
-
       for (let i = 0; i < baseAssetsWithoutNativeToken.length; i++) {
         baseAssetsWithBalances.push({
           ...baseAssetsWithoutNativeToken[i],
@@ -1786,14 +1735,7 @@ class Store {
           baseAsset.isWhitelisted = baseAssetWithBalance.isWhitelisted;
         }
       });
-      // for (let i = 0; i < baseAssets.length; i++) {
-      //   baseAssets[i].balance = BigNumber(baseAssetsBalances[i].balanceOf)
-      //     .div(10 ** baseAssets[i].decimals)
-      //     .toFixed(baseAssets[i].decimals);
-      //   baseAssets[i].isWhitelisted = baseAssetsBalances[i].isWhitelisted;
-      // }
-      console.log(baseAssetsWithBalances);
-      // this.setStore({ baseAssets });
+
       this.setStore({ baseAssets: baseAssetsWithBalances });
       this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
