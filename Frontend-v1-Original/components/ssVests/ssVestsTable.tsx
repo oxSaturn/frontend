@@ -326,7 +326,7 @@ export default function EnhancedTable({
                           )}
                         </Typography>
                         {(!row.actionedInCurrentEpoch &&
-                          Number(row?.lastVoted) !== 0) ||
+                          Number(row.lastVoted) !== 0) ||
                         (row.actionedInCurrentEpoch && !row.reset) ? (
                           <Typography
                             variant="h5"
@@ -335,7 +335,7 @@ export default function EnhancedTable({
                           >
                             Last voted:{" "}
                             {new Date(
-                              Number(row?.lastVoted) * 1000
+                              Number(row.lastVoted) * 1000
                             ).toLocaleString()}
                           </Typography>
                         ) : null}
@@ -429,7 +429,7 @@ export default function EnhancedTable({
                           </Button>
                         )}
                         {!row.actionedInCurrentEpoch &&
-                        Number(row?.lastVoted) === 0 ? (
+                        Number(row.lastVoted) === 0 ? (
                           <Link href={`/vest/${row.id}/merge`}>
                             <Button variant="outlined" color="primary">
                               Merge
