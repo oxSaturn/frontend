@@ -5431,13 +5431,11 @@ class Store {
   // actioned in current epoch
   // either vote or reset, not both
   // reset would update lastVoted value as well
-  _checkNFTActionEpoch = async (
-    tokenID: string
-  ): Promise<[boolean, bigint]> => {
+  _checkNFTActionEpoch = async (tokenID: string) => {
     const _lastVoted = await this._checkNFTLastVoted(tokenID);
 
     // if last voted eq 0, means never voted
-    if (_lastVoted === BigInt("0")) return [false, _lastVoted];
+    if (_lastVoted === BigInt("0")) return [false, _lastVoted] as const;
     const lastVoted = parseInt(_lastVoted.toString());
 
     let nextEpochTimestamp = this.getStore("updateDate");
@@ -5449,7 +5447,7 @@ class Store {
     // 7 days epoch length
     const actionedInCurrentEpoch =
       lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
-    return [actionedInCurrentEpoch, _lastVoted];
+    return [actionedInCurrentEpoch, _lastVoted] as const;
   };
 
   _checkNFTLastVoted = async (tokenID: string) => {
