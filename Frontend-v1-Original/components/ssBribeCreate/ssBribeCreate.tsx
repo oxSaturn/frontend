@@ -336,10 +336,8 @@ function GaugeSelect({
   const filteredGaugeOptions = useMemo(() => {
     const go = gaugeOptions.filter((gauge) => {
       if (search && search !== "") {
-        return (
-          gauge.address.toLowerCase().includes(search.toLowerCase()) ||
-          gauge.token0.symbol.toLowerCase().includes(search.toLowerCase()) ||
-          gauge.token1.symbol.toLowerCase().includes(search.toLowerCase())
+        return [gauge.address, gauge.token0.symbol, gauge.token1.symbol].some(
+          (s) => s.toLowerCase().includes(search.trim())
         );
       } else {
         return true;
@@ -412,65 +410,64 @@ function GaugeSelect({
             }}
           />
           <div className="mt-3 flex w-full min-w-[512px] flex-col">
-            {filteredGaugeOptions &&
-              filteredGaugeOptions.map((option) => {
-                return (
-                  <MenuItem
-                    key={option.address}
-                    // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
-                    value={option as any}
-                    onClick={() => {
-                      onLocalSelect(option);
-                    }}
-                  >
-                    <div className="flex w-[calc(100%-24px)] items-center py-2 px-3">
-                      <div className="relative box-content flex h-20 w-36 p-3">
-                        <img
-                          className="absolute left-0 top-3 h-16 rounded-full border-4 border-[#212b48]"
-                          alt=""
-                          src={
-                            option && option.token0
-                              ? `${option.token0.logoURI}`
-                              : ""
-                          }
-                          height="70px"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).onerror = null;
-                            (e.target as HTMLImageElement).src =
-                              "/tokens/unknown-logo.png";
-                          }}
-                        />
-                        <img
-                          className="absolute left-14 top-3 z-10 h-16 rounded-full border-4 border-[#212b48]"
-                          alt=""
-                          src={
-                            option && option.token1
-                              ? `${option.token1.logoURI}`
-                              : ""
-                          }
-                          height="70px"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).onerror = null;
-                            (e.target as HTMLImageElement).src =
-                              "/tokens/unknown-logo.png";
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Typography className="flex-[1] text-3xl">
-                          {option.token0.symbol}/{option.token1.symbol}
-                        </Typography>
-                        <Typography
-                          color="textSecondary"
-                          className="mt-1 text-xs"
-                        >
-                          {option?.isStable ? "Stable Pool" : "Volatile Pool"}
-                        </Typography>
-                      </div>
+            {filteredGaugeOptions.map((option) => {
+              return (
+                <MenuItem
+                  key={option.address}
+                  // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
+                  value={option as any}
+                  onClick={() => {
+                    onLocalSelect(option);
+                  }}
+                >
+                  <div className="flex w-[calc(100%-24px)] items-center py-2 px-3">
+                    <div className="relative flex h-20 w-36 p-3">
+                      <img
+                        className="absolute left-0 top-3 h-16 rounded-full border-4 border-[#212b48]"
+                        alt=""
+                        src={
+                          option && option.token0
+                            ? `${option.token0.logoURI}`
+                            : ""
+                        }
+                        height="70px"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).onerror = null;
+                          (e.target as HTMLImageElement).src =
+                            "/tokens/unknown-logo.png";
+                        }}
+                      />
+                      <img
+                        className="absolute left-14 top-3 z-10 h-16 rounded-full border-4 border-[#212b48]"
+                        alt=""
+                        src={
+                          option && option.token1
+                            ? `${option.token1.logoURI}`
+                            : ""
+                        }
+                        height="70px"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).onerror = null;
+                          (e.target as HTMLImageElement).src =
+                            "/tokens/unknown-logo.png";
+                        }}
+                      />
                     </div>
-                  </MenuItem>
-                );
-              })}
+                    <div>
+                      <Typography className="flex-[1] text-3xl">
+                        {option.token0.symbol}/{option.token1.symbol}
+                      </Typography>
+                      <Typography
+                        color="textSecondary"
+                        className="mt-1 text-xs"
+                      >
+                        {option?.isStable ? "Stable Pool" : "Volatile Pool"}
+                      </Typography>
+                    </div>
+                  </div>
+                </MenuItem>
+              );
+            })}
           </div>
         </div>
       </Dialog>
