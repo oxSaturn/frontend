@@ -20,10 +20,11 @@ import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
+import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
+
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
-import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 import { lockOptions } from "./lockDuration";
 
 export default function ssLock({
