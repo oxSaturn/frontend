@@ -358,20 +358,18 @@ function GaugeSelect({
         <div className="flex w-[calc(100%-24px)] items-center py-2 px-3">
           <div className="relative box-content flex h-20 w-36 p-3">
             <img
-              className="absolute left-0 top-3 h-16 rounded-full border-4 border-[#212b48]"
+              className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-[#212b48] md:top-3 md:h-16"
               alt=""
               src={value && value.token0 ? `${value.token0.logoURI}` : ""}
-              height="70px"
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
               }}
             />
             <img
-              className="absolute left-14 top-3 z-10 h-16 rounded-full border-4 border-[#212b48]"
+              className="absolute left-8 top-[calc(50%-1.25rem)] z-10 h-10 rounded-full border-4 border-[#212b48] md:top-3 md:left-14 md:h-16"
               alt=""
               src={value && value.token1 ? `${value.token1.logoURI}` : ""}
-              height="70px"
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
                 (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -379,7 +377,7 @@ function GaugeSelect({
             />
           </div>
           <div>
-            <Typography className="flex-[1] text-3xl">
+            <Typography className="flex-[1] text-xl md:text-3xl">
               {value ? `${value.token0.symbol}/${value.token1.symbol}` : ""}
             </Typography>
             <Typography color="textSecondary" className="mt-1 text-xs">
@@ -423,14 +421,13 @@ function GaugeSelect({
                   <div className="flex w-[calc(100%-24px)] items-center py-2 px-3">
                     <div className="relative flex h-20 w-36 p-3">
                       <img
-                        className="absolute left-0 top-3 h-16 rounded-full border-4 border-[#212b48]"
+                        className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-[#212b48] md:top-3 md:h-16"
                         alt=""
                         src={
                           option && option.token0
                             ? `${option.token0.logoURI}`
                             : ""
                         }
-                        height="70px"
                         onError={(e) => {
                           (e.target as HTMLImageElement).onerror = null;
                           (e.target as HTMLImageElement).src =
@@ -438,14 +435,13 @@ function GaugeSelect({
                         }}
                       />
                       <img
-                        className="absolute left-14 top-3 z-10 h-16 rounded-full border-4 border-[#212b48]"
+                        className="absolute left-8 top-[calc(50%-1.25rem)] z-10 h-10 rounded-full border-4 border-[#212b48] md:top-3 md:left-14 md:h-16"
                         alt=""
                         src={
                           option && option.token1
                             ? `${option.token1.logoURI}`
                             : ""
                         }
-                        height="70px"
                         onError={(e) => {
                           (e.target as HTMLImageElement).onerror = null;
                           (e.target as HTMLImageElement).src =
@@ -454,7 +450,7 @@ function GaugeSelect({
                       />
                     </div>
                     <div>
-                      <Typography className="flex-[1] text-3xl">
+                      <Typography className="flex-[1] text-xl md:text-3xl">
                         {option.token0.symbol}/{option.token1.symbol}
                       </Typography>
                       <Typography
