@@ -512,7 +512,10 @@ export default function EnhancedTable({
                             row.gauge.bribesEarned &&
                             row.gauge.bribesEarned.map((bribe) => {
                               return (
-                                <div className="flex items-center justify-end">
+                                <div
+                                  className="flex items-center justify-end"
+                                  key={bribe.token.address}
+                                >
                                   <img
                                     className="rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                                     src={
@@ -554,7 +557,10 @@ export default function EnhancedTable({
                             row.gauge.x_bribesEarned &&
                             row.gauge.x_bribesEarned.map((bribe) => {
                               return (
-                                <div className="flex items-center justify-end">
+                                <div
+                                  className="flex items-center justify-end"
+                                  key={bribe.token.address}
+                                >
                                   <img
                                     className="rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                                     src={

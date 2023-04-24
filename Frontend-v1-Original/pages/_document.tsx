@@ -22,13 +22,7 @@ interface MyDocumentProps extends DocumentProps {
 export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
   return (
     <Html lang="en">
-      <Head>
-        <link rel="stylesheet" href="/fonts/Inter/Inter.css" />
-        <link rel="stylesheet" href="/fonts/Sono/Sono.css" />
-        <link rel="stylesheet" href="/fonts/MonumentExt/Monument.css" />
-        <link rel="stylesheet" href="/fonts/Druk/Druk.css" />
-        {emotionStyleTags}
-      </Head>
+      <Head>{emotionStyleTags}</Head>
       <body>
         <Main />
         <NextScript />

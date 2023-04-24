@@ -32,7 +32,7 @@ const initialEmptyToken: VestNFT = {
   lastVoted: BigInt(0),
 };
 
-export default function ssRewards() {
+export default function Rewards() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
@@ -254,8 +254,8 @@ export default function ssRewards() {
           <Grid item lg={true} md={true} sm={false} xs={false}>
             <div className={classes.disclaimerContainer}>
               <Typography className={classes.disclaimer}>
-                Rewards are an estimation that aren't exact till the supply -
-                {">"} rewardPerToken calculations have run
+                Rewards are an estimation that aren&apos;t exact till the supply
+                -{">"} rewardPerToken calculations have run
               </Typography>
             </div>
           </Grid>

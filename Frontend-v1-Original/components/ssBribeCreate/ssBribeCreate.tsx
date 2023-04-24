@@ -12,7 +12,8 @@ import {
   MenuItem,
   IconButton,
   Select,
- SelectChangeEvent } from "@mui/material";
+  SelectChangeEvent,
+} from "@mui/material";
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
@@ -23,7 +24,7 @@ import { BaseAsset, Pair, hasGauge } from "../../stores/types/types";
 
 import classes from "./ssBribeCreate.module.css";
 
-export default function ssBribeCreate() {
+export default function BribeCreate() {
   const router = useRouter();
   const [createLoading, setCreateLoading] = useState(false);
 

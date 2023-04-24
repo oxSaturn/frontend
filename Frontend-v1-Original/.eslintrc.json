@@ -11,6 +11,7 @@
         "groups": ["builtin", "external", "parent", "sibling", "index"],
         "newlines-between": "always-and-inside-groups"
       }
-    ]
+    ],
+    "@next/next/no-img-element": "off"
   }
 }

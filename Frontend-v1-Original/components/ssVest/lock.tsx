@@ -27,7 +27,7 @@ import classes from "./ssVest.module.css";
 
 import { lockOptions } from "./lockDuration";
 
-export default function ssLock({
+export default function Lock({
   govToken,
   veToken,
 }: {

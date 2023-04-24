@@ -10,7 +10,7 @@ import { GovToken, VestNFT } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 
-export default function ffLockAmount({
+export default function LockAmount({
   nft,
   govToken,
   updateLockAmount,

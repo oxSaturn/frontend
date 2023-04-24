@@ -12,7 +12,7 @@ import Unlock from "./unlock";
 import Lock from "./lock";
 import classes from "./ssVest.module.css";
 
-export default function ssVest() {
+export default function Vest() {
   const router = useRouter();
 
   const [, updateState] = useState<{}>();

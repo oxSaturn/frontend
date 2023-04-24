@@ -859,7 +859,11 @@ function Setup() {
             rel="noreferrer noopener"
             className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
           >
-            <img src="/images/logo-firebird.svg" className="inline" />{" "}
+            <img
+              src="/images/logo-firebird.svg"
+              className="inline"
+              alt="firebird protocol logo"
+            />{" "}
             <span className="align-middle">Firebird</span>
           </a>
         </div>

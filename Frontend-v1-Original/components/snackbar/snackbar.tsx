@@ -135,6 +135,7 @@ function MySnackbar(props: {
           variant="text"
           size="small"
           onClick={() => window.open(snackbarMessage, "_blank")}
+          key={snackbarMessage}
         >
           View
         </Button>,

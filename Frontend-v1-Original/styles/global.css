@@ -1,3 +1,7 @@
+@import url("fonts/Inter/Inter.css");
+@import url("fonts/Sono/Sono.css");
+@import url("fonts/MonumentExt/Monument.css");
+@import url("fonts/Druk/Druk.css");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -28,7 +28,7 @@ export const lockOptions: {
   "3 years": 1095,
   "4 years": 1461,
 };
-export default function ffLockDuration({
+export default function LockDuration({
   nft,
   updateLockDuration,
 }: {

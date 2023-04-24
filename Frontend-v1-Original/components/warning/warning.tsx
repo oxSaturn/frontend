@@ -19,7 +19,11 @@ export default function WarningModal({
   return (
     <Dialog open={true} onClose={onClose} className="fixed z-[10030]">
       <div className="flex max-w-lg flex-col items-center justify-center rounded-[10px] border border-cantoGreen p-10">
-        <img src="/images/icon-warning.svg" className="mb-4 h-10" />
+        <img
+          src="/images/icon-warning.svg"
+          className="mb-4 h-10"
+          alt="triangle warning icon"
+        />
         <div className="mb-4 text-xl font-extrabold leading-none tracking-tight text-white md:text-2xl lg:text-4xl">
           Voting Information
         </div>
@@ -28,7 +32,7 @@ export default function WarningModal({
           <br />
           However, voting weights do carry over to the next epoch and direct
           FLOW emissions. If you don&apos;t want to change your votes, just
-          press 'Cast&nbsp;Votes' button.
+          press &apos;Cast&nbsp;Votes&apos; button.
         </div>
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-1">

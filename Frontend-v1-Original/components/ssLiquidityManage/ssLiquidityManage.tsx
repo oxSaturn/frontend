@@ -34,7 +34,7 @@ import {
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
 
-export default function ssLiquidityManage() {
+export default function LiquidityManage() {
   const router = useRouter();
   const amount0Ref = useRef<HTMLInputElement>(null);
   const amount1Ref = useRef<HTMLInputElement>(null);
@@ -1247,7 +1247,7 @@ export default function ssLiquidityManage() {
         </div>
         <div className="flex min-h-[100px] items-center justify-center">
           <Typography className="border border-cantoGreen bg-[#0e110c] p-6 text-sm font-extralight">
-            "We are very sad to see you are no longer going with the FLOW"
+            We are very sad to see you are no longer going with the FLOW
           </Typography>
         </div>
       </div>

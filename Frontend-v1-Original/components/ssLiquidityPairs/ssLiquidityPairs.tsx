@@ -8,8 +8,7 @@ import { ACTIONS } from "../../stores/constants/constants";
 import classes from "./ssLiquidityPairs.module.css";
 import PairsTable from "./ssLiquidityPairsTable";
 
-
-export default function ssLiquidityPairs() {
+export default function LiquidityPairs() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
@@ -27,7 +26,7 @@ export default function ssLiquidityPairs() {
     return () => {
       stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
     };
-  }, []);
+  }, [forceUpdate]);
 
   return (
     <div className={classes.container}>

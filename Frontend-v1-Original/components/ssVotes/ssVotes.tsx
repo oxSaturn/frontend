@@ -9,7 +9,8 @@ import {
   MenuItem,
   Select,
   Grid,
- SelectChangeEvent } from "@mui/material";
+  SelectChangeEvent,
+} from "@mui/material";
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
 import { useRouter } from "next/router";
@@ -40,7 +41,7 @@ const initialEmptyToken: VestNFT = {
   lastVoted: BigInt(0),
 };
 
-export default function ssVotes() {
+export default function Votes() {
   const router = useRouter();
 
   const [showWarning, setShowWarning] = useState(false);

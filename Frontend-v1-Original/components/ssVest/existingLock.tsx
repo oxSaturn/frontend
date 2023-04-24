@@ -12,7 +12,7 @@ import LockAmount from "./lockAmount";
 import LockDuration from "./lockDuration";
 import VestingInfo from "./vestingInfo";
 
-export default function existingLock({
+export default function ExistingLock({
   nft,
   govToken,
   veToken,

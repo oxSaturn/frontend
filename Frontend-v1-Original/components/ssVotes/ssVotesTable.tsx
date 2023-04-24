@@ -292,10 +292,6 @@ function VotesRow({
   defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
   onSliderChange: (event: Event, value: number | number[], row: Gauge) => void;
 }) {
-  if (!row) {
-    return null;
-  }
-
   let sliderValue = defaultVotes.find(
     (el) => el.address === row?.address
   )?.value;
@@ -319,6 +315,7 @@ function VotesRow({
     row.gauge.weight && parseFloat(row.gauge.weight) > 0
       ? (row.gauge.tbv / parseFloat(row.gauge.weight)) * 1000
       : 0;
+
   return useMemo(() => {
     return (
       <TableRow key={row.gauge.address}>
