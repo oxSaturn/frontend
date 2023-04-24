@@ -193,6 +193,9 @@ class Store {
           case ACTIONS.WITHDRAW_VEST:
             this.withdrawVest(payload);
             break;
+          case ACTIONS.MERGE_NFT:
+            this.mergeNft(payload);
+            break;
 
           //VOTE
           case ACTIONS.VOTE:
@@ -291,7 +294,7 @@ class Store {
             functionName: "tokenOfOwnerByIndex",
             args: [account.address, BigInt(idx)],
           });
-          const [[lockedAmount, lockedEnd], lockValue] =
+          const [[lockedAmount, lockedEnd], lockValue, voted] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -306,17 +309,25 @@ class Store {
                   functionName: "balanceOfNFT",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "voted",
+                  args: [tokenIndex],
+                },
               ],
             });
 
-          const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const [actionedInCurrentEpoch, lastVoted] =
+            await this._checkNFTActionEpoch(tokenIndex.toString());
 
           return {
             id: tokenIndex.toString(),
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            actionedInCurrentEpoch,
+            reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         })
       );
@@ -373,8 +384,8 @@ class Store {
         args: [account.address, BigInt(id)],
       });
 
-      const [[lockedAmount, lockedEnd], lockValue] = await viemClient.multicall(
-        {
+      const [[lockedAmount, lockedEnd], lockValue, voted] =
+        await viemClient.multicall({
           allowFailure: false,
           multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: [
@@ -388,11 +399,16 @@ class Store {
               functionName: "balanceOfNFT",
               args: [tokenIndex],
             },
+            {
+              ...vestingContract,
+              functionName: "voted",
+              args: [tokenIndex],
+            },
           ],
-        }
-      );
+        });
 
-      const voted = await this._checkNFTVotedEpoch(id);
+      const [actionedInCurrentEpoch, lastVoted] =
+        await this._checkNFTActionEpoch(id);
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -401,7 +417,9 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            actionedInCurrentEpoch,
+            reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         }
 
@@ -1474,7 +1492,7 @@ class Store {
             functionName: "tokenOfOwnerByIndex",
             args: [account.address, BigInt(idx)],
           });
-          const [[lockedAmount, lockedEnd], lockValue] =
+          const [[lockedAmount, lockedEnd], lockValue, voted] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -1489,10 +1507,16 @@ class Store {
                   functionName: "balanceOfNFT",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "voted",
+                  args: [tokenIndex],
+                },
               ],
             });
 
-          const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const [actionedInCurrentEpoch, lastVoted] =
+            await this._checkNFTActionEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -1500,7 +1524,9 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            actionedInCurrentEpoch,
+            reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         })
       );
@@ -4571,10 +4597,10 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address, BigInt(idx)],
+            args: [account.address, BigInt(idx)] as const,
           });
 
-          const [[lockedAmount, lockedEnd], lockValue] =
+          const [[lockedAmount, lockedEnd], lockValue, voted] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -4589,10 +4615,16 @@ class Store {
                   functionName: "balanceOfNFT",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "voted",
+                  args: [tokenIndex],
+                },
               ],
             });
 
-          const voted = await this._checkNFTVotedEpoch(tokenIndex.toString());
+          const [actionedInCurrentEpoch, lastVoted] =
+            await this._checkNFTActionEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
           return {
@@ -4600,7 +4632,9 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            voted,
+            actionedInCurrentEpoch,
+            reset: actionedInCurrentEpoch && !voted,
+            lastVoted,
           };
         })
       );
@@ -5341,16 +5375,67 @@ class Store {
     }
   };
 
-  _checkNFTVotedEpoch = async (tokenID: string) => {
-    const _lastVoted = await viemClient.readContract({
-      address: CONTRACTS.VOTER_ADDRESS,
-      abi: CONTRACTS.VOTER_ABI,
-      functionName: "lastVoted",
-      args: [BigInt(tokenID)],
-    });
+  mergeNft = async (payload: {
+    type: string;
+    content: { from: string; to: string };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+      const { from, to } = payload.content;
+
+      let mergeTXID = this.getTXUUID();
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Merge NFT #${from} into #${to}`,
+        verb: "NFT Merged",
+        transactions: [
+          {
+            uuid: mergeTXID,
+            description: `Merging NFT #${from} into #${to}`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const votingEscrowContract = new web3.eth.Contract(
+        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
+        CONTRACTS.VE_TOKEN_ADDRESS
+      );
+      this._callContractWait(
+        votingEscrowContract,
+        "merge",
+        [from, to],
+        account,
+        mergeTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+          this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
+        }
+      );
+    } catch (e) {
+      console.log(e);
+      this.emitter.emit(ACTIONS.ERROR, e);
+    }
+  };
+
+  // actioned in current epoch
+  // either vote or reset, not both
+  // reset would update lastVoted value as well
+  _checkNFTActionEpoch = async (tokenID: string) => {
+    const _lastVoted = await this._checkNFTLastVoted(tokenID);
 
     // if last voted eq 0, means never voted
-    if (_lastVoted === BigInt("0")) return false;
+    if (_lastVoted === BigInt("0")) return [false, _lastVoted] as const;
     const lastVoted = parseInt(_lastVoted.toString());
 
     let nextEpochTimestamp = this.getStore("updateDate");
@@ -5360,8 +5445,19 @@ class Store {
     }
 
     // 7 days epoch length
-    const votedThisEpoch = lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
-    return votedThisEpoch;
+    const actionedInCurrentEpoch =
+      lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
+    return [actionedInCurrentEpoch, _lastVoted] as const;
+  };
+
+  _checkNFTLastVoted = async (tokenID: string) => {
+    const _lastVoted = await viemClient.readContract({
+      address: CONTRACTS.VOTER_ADDRESS,
+      abi: CONTRACTS.VOTER_ABI,
+      functionName: "lastVoted",
+      args: [BigInt(tokenID)],
+    });
+    return _lastVoted;
   };
 
   _checkNFTVoted = async (tokenID: string) => {

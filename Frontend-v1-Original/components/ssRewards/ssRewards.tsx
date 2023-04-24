@@ -23,12 +23,14 @@ import {
   Gauge,
 } from "../../stores/types/types";
 
-const initialEmptyToken = {
+const initialEmptyToken: VestNFT = {
   id: "0",
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
-  voted: false,
+  actionedInCurrentEpoch: false,
+  reset: false,
+  lastVoted: BigInt(0),
 };
 
 export default function ssRewards() {
