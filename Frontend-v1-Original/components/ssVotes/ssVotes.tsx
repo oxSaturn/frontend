@@ -25,7 +25,7 @@ import {
   VestNFT,
   VeToken,
   Vote,
-  Votes,
+  Votes as VotesType,
 } from "../../stores/types/types";
 
 import GaugesTable from "./ssVotesTable";
@@ -51,7 +51,7 @@ export default function Votes() {
 
   const [gauges, setGauges] = useState<Gauge[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState<Votes>([]);
+  const [votes, setVotes] = useState<VotesType>([]);
   const [veToken, setVeToken] = useState<VeToken | null>(null);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
