@@ -30,12 +30,14 @@ import {
 import GaugesTable from "./ssVotesTable";
 import classes from "./ssVotes.module.css";
 
-const initialEmptyToken = {
+const initialEmptyToken: VestNFT = {
   id: "0",
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
-  voted: false,
+  actionedInCurrentEpoch: false,
+  reset: false,
+  lastVoted: BigInt(0),
 };
 
 export default function ssVotes() {
