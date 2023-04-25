@@ -337,7 +337,7 @@ function GaugeSelect({
     const go = gaugeOptions.filter((gauge) => {
       if (search && search !== "") {
         return [gauge.address, gauge.token0.symbol, gauge.token1.symbol].some(
-          (s) => s.toLowerCase().includes(search.trim())
+          (s) => s.toLowerCase().includes(search.trim().toLowerCase())
         );
       } else {
         return true;
@@ -355,7 +355,7 @@ function GaugeSelect({
           openSearch();
         }}
       >
-        <div className="flex w-[calc(100%-24px)] items-center py-2 px-3">
+        <div className="flex w-[calc(100%-24px)] flex-col items-start py-2 px-3 md:flex-row md:items-center">
           <div className="relative box-content flex h-20 w-36 p-3">
             <img
               className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-[#212b48] md:top-3 md:h-16"
@@ -492,10 +492,8 @@ function AssetSelect({
   const filteredAssetOptions = useMemo(() => {
     const ao = assetOptions.filter((asset) => {
       if (search && search !== "") {
-        return (
-          asset.address.toLowerCase().includes(search.toLowerCase()) ||
-          asset.symbol.toLowerCase().includes(search.toLowerCase()) ||
-          asset.name.toLowerCase().includes(search.toLowerCase())
+        return [asset.address, asset.symbol, asset.name].some((s) =>
+          s.toLowerCase().includes(search.trim().toLowerCase())
         );
       } else {
         return true;
