@@ -18,7 +18,7 @@ import BigNumber from "bignumber.js";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
-import { BaseAsset, Gauge, hasGauge } from "../../stores/types/types";
+import { BaseAsset, Gauge, Pair, hasGauge } from "../../stores/types/types";
 
 import classes from "./ssBribeCreate.module.css";
 
