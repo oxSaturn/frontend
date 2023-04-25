@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -83,7 +83,7 @@ export default function LiquidityManage() {
   const [advanced, setAdvanced] = useState(true);
 
   const [slippage, setSlippage] = useState("2");
-  const [slippageError, setSlippageError] = useState(false); //TODO setSlippageError if any?
+  const [slippageError] = useState(false); //TODO setSlippageError if any?
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
@@ -885,12 +885,12 @@ export default function LiquidityManage() {
     );
   };
 
-  const amount0Focused = (event: React.FocusEvent<HTMLInputElement>) => {
+  const amount0Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
     setPriorityAsset(0);
     callQuoteAddLiquidity(amount0, amount1, 0, stable, pair, asset0, asset1);
   };
 
-  const amount1Focused = (event: React.FocusEvent<HTMLInputElement>) => {
+  const amount1Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
     setPriorityAsset(1);
     callQuoteAddLiquidity(amount0, amount1, 1, stable, pair, asset0, asset1);
   };
@@ -1048,10 +1048,10 @@ export default function LiquidityManage() {
     type: string,
     amountValue: string,
     amountError: string | false,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | Pair | null,
     assetOptions: BaseAsset[] | Pair[],
-    onAssetSelect: (type: string, asset: BaseAsset) => void,
+    onAssetSelect: (_type: string, _asset: BaseAsset) => void,
     onFocus: React.FocusEventHandler<
       HTMLTextAreaElement | HTMLInputElement
     > | null,
@@ -1257,7 +1257,7 @@ export default function LiquidityManage() {
   const renderSmallInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className="relative mb-1">
@@ -1871,7 +1871,7 @@ function AssetSelect({
   type: string;
   value: BaseAsset | Pair | null;
   assetOptions: BaseAsset[] | Pair[];
-  onSelect: (type: string, asset: BaseAsset) => void;
+  onSelect: (_type: string, _asset: BaseAsset) => void;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -1924,11 +1924,7 @@ function AssetSelect({
         search.length === 42 &&
         isAddress(search)
       ) {
-        const baseAsset = await stores.stableSwapStore.getBaseAsset(
-          search,
-          true,
-          true
-        );
+        await stores.stableSwapStore.getBaseAsset(search, true, true);
       }
     };
     filter();

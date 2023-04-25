@@ -13,7 +13,7 @@ const { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE_SS } =
 import stores from "../../stores";
 
 const Unlock = ({ closeModal }: { closeModal: () => void }) => {
-  const [state, setState] = React.useState<{
+  const [, setState] = React.useState<{
     loading: boolean;
     error: Error | null;
   }>({
@@ -86,11 +86,11 @@ function getLibrary(provider: ExternalProvider) {
 function onConnectionClicked(
   currentConnector: (typeof stores.accountStore.store)["connectorsByName"][keyof (typeof stores.accountStore.store)["connectorsByName"]],
   name: keyof (typeof stores.accountStore.store)["connectorsByName"],
-  setActivatingConnector: (connect: AbstractConnector) => void,
+  setActivatingConnector: (_connect: AbstractConnector) => void,
   activate: (
-    connector: AbstractConnector,
-    onError?: ((error: Error) => void) | undefined,
-    throwErrors?: boolean | undefined
+    _connector: AbstractConnector,
+    _onError?: ((_error: Error) => void) | undefined,
+    _throwErrors?: boolean | undefined
   ) => Promise<void>
 ) {
   const connectorsByName = stores.accountStore.getStore("connectorsByName");

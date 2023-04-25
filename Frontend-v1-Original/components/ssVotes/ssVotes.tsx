@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
@@ -42,7 +42,7 @@ const initialEmptyToken: VestNFT = {
 };
 
 export default function Votes() {
-  const router = useRouter();
+  // const router = useRouter();
 
   const [showWarning, setShowWarning] = useState(false);
 
@@ -207,9 +207,9 @@ export default function Votes() {
     setSearch(event.target.value);
   };
 
-  const onBribe = () => {
-    router.push("/bribe/create");
-  };
+  // const onBribe = () => {
+  //   router.push("/bribe/create");
+  // };
 
   const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     return (

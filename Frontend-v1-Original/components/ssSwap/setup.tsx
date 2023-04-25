@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   TextField,
   Typography,
@@ -44,7 +44,7 @@ function Setup() {
 
   const [loading, setLoading] = useState(false);
   const [quoteLoading, setQuoteLoading] = useState(false);
-  const [approvalLoading, setApprovalLoading] = useState(false);
+  const [, setApprovalLoading] = useState(false);
 
   const [fromAmountValue, setFromAmountValue] = useState("");
   const [fromAmountValueUsd, setFromAmountValueUsd] = useState("");
@@ -55,13 +55,13 @@ function Setup() {
 
   const [toAmountValue, setToAmountValue] = useState("");
   const [toAmountValueUsd, setToAmountValueUsd] = useState("");
-  const [toAmountError, setToAmountError] = useState<string | false>(false);
+  const [toAmountError] = useState<string | false>(false);
   const [toAssetValue, setToAssetValue] = useState<BaseAsset | null>(null);
   const [toAssetError, setToAssetError] = useState<string | false>(false);
   const [toAssetOptions, setToAssetOptions] = useState<BaseAsset[]>([]);
 
   const [slippage, setSlippage] = useState("2");
-  const [slippageError, setSlippageError] = useState(false);
+  const [slippageError] = useState(false);
 
   const [quoteError, setQuoteError] = useState<string | null | false>(null);
   const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
@@ -662,7 +662,7 @@ function Setup() {
     type: string,
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className="mb-1">
@@ -693,11 +693,11 @@ function Setup() {
     amountValueUsd: string,
     diffUsd: string | undefined,
     amountError: string | false,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | null,
     assetError: string | false,
     assetOptions: BaseAsset[],
-    onAssetSelect: (type: string, value: BaseAsset) => void
+    onAssetSelect: (_type: string, _value: BaseAsset) => void
   ) => {
     return (
       <div className="relative mb-1">
@@ -891,7 +891,7 @@ function AssetSelect({
   type: string;
   value: BaseAsset | null;
   assetOptions: BaseAsset[];
-  onSelect: (type: string, asset: BaseAsset) => void;
+  onSelect: (_type: string, _asset: BaseAsset) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
