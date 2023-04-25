@@ -79,9 +79,9 @@ function MySnackbar(props: {
   const { open: initialOpen, type, message } = props;
   const [open, setOpen] = useState(initialOpen);
 
-  const handleClick = () => {
-    setOpen(true);
-  };
+  // const handleClick = () => {
+  //   setOpen(true);
+  // };
 
   const handleClose = (
     event: Event | React.SyntheticEvent<any, Event>,

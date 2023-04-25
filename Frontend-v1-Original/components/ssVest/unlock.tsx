@@ -47,7 +47,7 @@ export default function Unlock({
         lockReturned
       );
     };
-  }, []);
+  }, [router]);
 
   const onWithdraw = () => {
     setLockLoading(true);

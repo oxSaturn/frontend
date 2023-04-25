@@ -51,7 +51,10 @@ function EnhancedTableHead({
 }: {
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: OrderBy) => void;
+  onRequestSort: (
+    _event: React.MouseEvent<unknown>,
+    _property: OrderBy
+  ) => void;
 }) {
   const createSortHandler =
     (property: OrderBy) => (event: React.MouseEvent<unknown>) => {
@@ -192,8 +195,8 @@ export default function EnhancedTable({
     }
   };
 
-  const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rewards.length - page * rowsPerPage);
+  // const emptyRows =
+  //   rowsPerPage - Math.min(rowsPerPage, rewards.length - page * rowsPerPage);
 
   return (
     <div className="w-full">
@@ -760,7 +763,7 @@ function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
 
 function stableSort(
   array: (Gauge | VeDistReward)[],
-  comparator: (a: Gauge | VeDistReward, b: Gauge | VeDistReward) => number
+  comparator: (_a: Gauge | VeDistReward, _b: Gauge | VeDistReward) => number
 ) {
   const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {

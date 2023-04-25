@@ -17,13 +17,13 @@ export default function LockAmount({
 }: {
   nft: VestNFT;
   govToken: GovToken | null;
-  updateLockAmount: (arg: string) => void;
+  updateLockAmount: (_arg: string) => void;
 }) {
-  const [approvalLoading, setApprovalLoading] = useState(false);
+  const [, setApprovalLoading] = useState(false);
   const [lockLoading, setLockLoading] = useState(false);
 
   const [amount, setAmount] = useState("");
-  const [amountError, setAmountError] = useState(false);
+  const [amountError] = useState(false);
 
   const router = useRouter();
 
@@ -47,7 +47,7 @@ export default function LockAmount({
         lockReturned
       );
     };
-  }, []);
+  }, [router]);
 
   const setAmountPercent = (percent: number) => {
     const val = BigNumber(govToken?.balance || "0")
@@ -74,7 +74,7 @@ export default function LockAmount({
   const renderMassiveInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     balance: string | null,
     logo: string | null
   ) => {

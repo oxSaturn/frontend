@@ -33,7 +33,7 @@ export default function LockDuration({
   updateLockDuration,
 }: {
   nft: VestNFT;
-  updateLockDuration: (arg: string) => void;
+  updateLockDuration: (_arg: string) => void;
 }) {
   const inputEl = useRef<HTMLInputElement | null>(null);
   const [lockLoading, setLockLoading] = useState(false);
@@ -41,7 +41,7 @@ export default function LockDuration({
   const [selectedDate, setSelectedDate] = useState(
     moment().add(8, "days").format("YYYY-MM-DD")
   );
-  const [selectedDateError, setSelectedDateError] = useState(false);
+  const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function LockDuration({
         lockReturned
       );
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (nft && nft.lockEnds) {
@@ -115,7 +115,7 @@ export default function LockDuration({
   const renderMassiveInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className={classes.textField}>

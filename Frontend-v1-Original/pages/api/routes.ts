@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { Pair, RouteAsset } from "../../stores/types/types";
+import { RouteAsset } from "../../stores/types/types";
 
 export default async function handler(
   req: NextApiRequest,

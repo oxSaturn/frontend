@@ -9,7 +9,8 @@
     "build2": "next build && next export",
     "start": "next start",
     "lint": "next lint",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "prepare": "cd .. && husky install Frontend-v1-Original/.husky"
   },
   "dependencies": {
     "@babel/core": "^7.0.0",
@@ -52,6 +53,8 @@
     "autoprefixer": "^10.4.13",
     "eslint": "8.38.0",
     "eslint-config-next": "13.3.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.1",
     "postcss": "^8.4.21",
     "prettier": "^2.8.4",
     "prettier-plugin-tailwindcss": "^0.2.4",

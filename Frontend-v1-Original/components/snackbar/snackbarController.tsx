@@ -1,10 +1,10 @@
 import React from "react";
 
-
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 
 import Snackbar from "./snackbar";
+
 const emitter = stores.emitter;
 
 const SnackbarController = () => {

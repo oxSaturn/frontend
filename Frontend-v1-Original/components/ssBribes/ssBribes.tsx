@@ -13,7 +13,7 @@ export default function Bribes() {
   const [, updateState] = useState<undefined | {}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [pairs, setPairs] = useState<Pair[]>([]);
+  const [, setPairs] = useState<Pair[]>([]);
 
   useEffect(() => {
     const stableSwapUpdated = () => {

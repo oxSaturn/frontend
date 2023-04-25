@@ -21,7 +21,7 @@ import {
 
 import Navigation from "../navigation/navigation";
 import Unlock from "../unlock/unlockModal";
-import TransactionQueue from "../transactionQueue/transactionQueue";
+// import TransactionQueue from "../transactionQueue/transactionQueue";
 import useOnClickOutside from "../../hooks/useOnClickOutside";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
@@ -151,7 +151,7 @@ function Header() {
   const [account, setAccount] = useState(accountStore);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [chainInvalid, setChainInvalid] = useState(false);
-  const [transactionQueueLength, setTransactionQueueLength] = useState(0);
+  const [transactionQueueLength] = useState(0);
   const [domain, setDomain] = useState<string>();
 
   const [open, setOpen] = useState(false);
@@ -205,9 +205,9 @@ function Header() {
     setUnlockOpen(false);
   };
 
-  const setQueueLength = (length: number) => {
-    setTransactionQueueLength(length);
-  };
+  // const setQueueLength = (length: number) => {
+  //   setTransactionQueueLength(length);
+  // };
 
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
@@ -243,7 +243,7 @@ function Header() {
                 onClick={handleClick}
               >
                 <Typography className="text-sm font-bold">
-                  {formatAddress(account.address)}
+                  {domain ?? formatAddress(account.address)}
                 </Typography>
                 <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-[#7e99b0]" />
               </Button>

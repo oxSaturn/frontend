@@ -12,6 +12,7 @@
         "newlines-between": "always-and-inside-groups"
       }
     ],
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "@next/next/no-img-element": "off"
   }
 }

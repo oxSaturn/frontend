@@ -15,7 +15,6 @@ import swapSuccessAnim from "../../public/lottiefiles/swapSuccess.json";
 import lockSuccessAnim from "../../public/lottiefiles/lockSuccess.json";
 import pairSuccessAnim from "../../public/lottiefiles/pairSuccess.json";
 
-
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -35,7 +34,7 @@ import Transaction from "./transaction";
 export default function TransactionQueue({
   setQueueLength,
 }: {
-  setQueueLength: (length: number) => void;
+  setQueueLength: (_length: number) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [transactions, setTransactions] = useState<
@@ -60,87 +59,86 @@ export default function TransactionQueue({
     setOpen(true);
   };
 
-  const transactionAdded = (params: ITransaction) => {
-    setPurpose(params.title);
-    setType(params.type);
-    setAction(params.verb);
-    setOpen(true);
-    const txs = [...params.transactions];
-    setTransactions(txs);
-
-    setQueueLength(params.transactions.length);
-  };
-
-  const transactionPending = (
-    params: Pick<ITransaction["transactions"][number], "uuid">
-  ) => {
-    let txs = transactions.map((tx) => {
-      if (tx.uuid === params.uuid) {
-        tx.status = TransactionStatus.PENDING;
-      }
-      return tx;
-    });
-    setTransactions(txs);
-  };
-
-  const transactionSubmitted = (
-    params: Pick<ITransaction["transactions"][number], "uuid" | "txHash">
-  ) => {
-    let txs = transactions.map((tx) => {
-      if (tx.uuid === params.uuid) {
-        tx.status = TransactionStatus.SUBMITTED;
-        tx.txHash = params.txHash;
-      }
-      return tx;
-    });
-    setTransactions(txs);
-  };
-
-  const transactionConfirmed = (
-    params: Pick<ITransaction["transactions"][number], "uuid" | "txHash">
-  ) => {
-    let txs = transactions.map((tx) => {
-      if (tx.uuid === params.uuid) {
-        tx.status = TransactionStatus.CONFIRMED;
-        tx.txHash = params.txHash;
-        tx.description = tx.description;
-      }
-      return tx;
-    });
-    setTransactions(txs);
-  };
-
-  const transactionRejected = (
-    params: Pick<ITransaction["transactions"][number], "uuid" | "error">
-  ) => {
-    let txs = transactions.map((tx) => {
-      if (tx.uuid === params.uuid) {
-        tx.status = TransactionStatus.REJECTED;
-        tx.error = params.error;
-      }
-      return tx;
-    });
-    setTransactions(txs);
-  };
-
-  const transactionStatus = (
-    params: Omit<ITransaction["transactions"][number], "error" | "txHash"> & {
-      status?: string;
-    }
-  ) => {
-    let txs = transactions.map((tx) => {
-      if (tx.uuid === params.uuid) {
-        tx.status = params.status ? params.status : tx.status;
-        tx.description = params.description
-          ? params.description
-          : tx.description;
-      }
-      return tx;
-    });
-    setTransactions(txs);
-  };
-
   useEffect(() => {
+    const transactionAdded = (params: ITransaction) => {
+      setPurpose(params.title);
+      setType(params.type);
+      setAction(params.verb);
+      setOpen(true);
+      const txs = [...params.transactions];
+      setTransactions(txs);
+
+      setQueueLength(params.transactions.length);
+    };
+
+    const transactionPending = (
+      params: Pick<ITransaction["transactions"][number], "uuid">
+    ) => {
+      let txs = transactions.map((tx) => {
+        if (tx.uuid === params.uuid) {
+          tx.status = TransactionStatus.PENDING;
+        }
+        return tx;
+      });
+      setTransactions(txs);
+    };
+
+    const transactionSubmitted = (
+      params: Pick<ITransaction["transactions"][number], "uuid" | "txHash">
+    ) => {
+      let txs = transactions.map((tx) => {
+        if (tx.uuid === params.uuid) {
+          tx.status = TransactionStatus.SUBMITTED;
+          tx.txHash = params.txHash;
+        }
+        return tx;
+      });
+      setTransactions(txs);
+    };
+
+    const transactionConfirmed = (
+      params: Pick<ITransaction["transactions"][number], "uuid" | "txHash">
+    ) => {
+      let txs = transactions.map((tx) => {
+        if (tx.uuid === params.uuid) {
+          tx.status = TransactionStatus.CONFIRMED;
+          tx.txHash = params.txHash;
+          tx.description = tx.description;
+        }
+        return tx;
+      });
+      setTransactions(txs);
+    };
+
+    const transactionRejected = (
+      params: Pick<ITransaction["transactions"][number], "uuid" | "error">
+    ) => {
+      let txs = transactions.map((tx) => {
+        if (tx.uuid === params.uuid) {
+          tx.status = TransactionStatus.REJECTED;
+          tx.error = params.error;
+        }
+        return tx;
+      });
+      setTransactions(txs);
+    };
+
+    const transactionStatus = (
+      params: Omit<ITransaction["transactions"][number], "error" | "txHash"> & {
+        status?: string;
+      }
+    ) => {
+      let txs = transactions.map((tx) => {
+        if (tx.uuid === params.uuid) {
+          tx.status = params.status ? params.status : tx.status;
+          tx.description = params.description
+            ? params.description
+            : tx.description;
+        }
+        return tx;
+      });
+      setTransactions(txs);
+    };
     // stores.emitter.on(ACTIONS.CLEAR_TRANSACTION_QUEUE, clearTransactions); TODO: we don't have impl for this one
     stores.emitter.on(ACTIONS.TX_ADDED, transactionAdded);
     stores.emitter.on(ACTIONS.TX_PENDING, transactionPending);
@@ -163,7 +161,7 @@ export default function TransactionQueue({
       stores.emitter.removeListener(ACTIONS.TX_STATUS, transactionStatus);
       stores.emitter.removeListener(ACTIONS.TX_OPEN, openQueue);
     };
-  }, [transactions]);
+  }, [transactions, setQueueLength]);
 
   const renderDone = (txs: ITransaction["transactions"]) => {
     if (

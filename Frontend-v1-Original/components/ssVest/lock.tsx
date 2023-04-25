@@ -45,7 +45,7 @@ export default function Lock({
   const [selectedDate, setSelectedDate] = useState(
     moment().add(7, "days").format("YYYY-MM-DD")
   );
-  const [selectedDateError, setSelectedDateError] = useState(false);
+  const [selectedDateError] = useState(false);
 
   useEffect(() => {
     const lockReturned = () => {
@@ -62,7 +62,7 @@ export default function Lock({
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
       stores.emitter.removeListener(ACTIONS.CREATE_VEST_RETURNED, lockReturned);
     };
-  }, []);
+  }, [router]);
 
   const setAmountPercent = (percent: number) => {
     setAmount(
@@ -138,7 +138,7 @@ export default function Lock({
   const renderMassiveDateInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className={classes.textField}>
@@ -188,7 +188,7 @@ export default function Lock({
   const renderMassiveInput = (
     amountValue: string,
     amountError: string | false,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     token: GovToken | null
   ) => {
     return (

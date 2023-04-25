@@ -77,7 +77,10 @@ function EnhancedTableHead({
 }: {
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: OrderBy) => void;
+  onRequestSort: (
+    _event: React.MouseEvent<unknown>,
+    _property: OrderBy
+  ) => void;
 }) {
   const createSortHandler =
     (property: OrderBy) => (event: React.MouseEvent<unknown>) => {
@@ -242,8 +245,8 @@ export default function EnhancedTable({
     });
   };
 
-  const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
+  // const emptyRows =
+  //   rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
 
   return (
     <div className="w-full">
@@ -507,7 +510,7 @@ function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
 
 function stableSort(
   array: VestNFT[],
-  comparator: (a: VestNFT, b: VestNFT) => number
+  comparator: (_a: VestNFT, _b: VestNFT) => number
 ) {
   const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {

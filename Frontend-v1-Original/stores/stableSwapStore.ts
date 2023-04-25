@@ -1,3 +1,5 @@
+import EventEmitter from "events";
+
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import type { Contract } from "web3-eth-contract";
@@ -5,7 +7,7 @@ import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
 import type Web3 from "web3";
 import { TransactionReceipt } from "@ethersproject/providers";
-import viemClient, { chunkArray, multicallChunks } from "./connectors/viem";
+
 import {
   getContract,
   formatUnits,
@@ -15,10 +17,12 @@ import {
 } from "viem";
 
 import { Dispatcher } from "flux";
-import EventEmitter from "events";
 
-import stores from ".";
 import { formatCurrency } from "../utils/utils";
+
+import tokenlistArb from "../mainnet-arb-token-list.json";
+import tokenlistCan from "../mainnet-canto-token-list.json";
+
 import {
   ACTIONS,
   CONTRACTS,
@@ -29,9 +33,8 @@ import {
   W_NATIVE_ABI,
   PAIR_DECIMALS,
 } from "./constants/constants";
+import viemClient, { chunkArray, multicallChunks } from "./connectors/viem";
 
-import tokenlistArb from "../mainnet-arb-token-list.json";
-import tokenlistCan from "../mainnet-canto-token-list.json";
 import {
   BaseAsset,
   Pair,
@@ -49,6 +52,8 @@ import {
   hasGauge,
   TransactionStatus,
 } from "./types/types";
+
+import stores from ".";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
@@ -1864,6 +1869,7 @@ class Store {
       });
 
       this.setStore({ baseAssets: baseAssetsWithBalances });
+      this.updateSwapAssets(baseAssetsWithBalances);
       this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.log(ex);
