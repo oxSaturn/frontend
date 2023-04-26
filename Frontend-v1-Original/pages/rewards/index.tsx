@@ -3,7 +3,6 @@ import { Typography, Button, Paper } from "@mui/material";
 
 import SSRewards from "../../components/ssRewards/ssRewards";
 import Unlock from "../../components/unlock/unlockModal";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 

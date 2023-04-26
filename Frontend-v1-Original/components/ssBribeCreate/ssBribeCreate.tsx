@@ -11,19 +11,18 @@ import {
   Dialog,
   MenuItem,
   IconButton,
-  Select,
 } from "@mui/material";
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
-import { formatCurrency } from "../../utils/utils";
-import classes from "./ssBribeCreate.module.css";
 
+import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
-import { BaseAsset, Gauge, Pair, hasGauge } from "../../stores/types/types";
-import { SelectChangeEvent } from "@mui/material";
+import { BaseAsset, Gauge, hasGauge } from "../../stores/types/types";
 
-export default function ssBribeCreate() {
+import classes from "./ssBribeCreate.module.css";
+
+export default function BribeCreate() {
   const router = useRouter();
   const [createLoading, setCreateLoading] = useState(false);
 
@@ -168,10 +167,10 @@ export default function ssBribeCreate() {
   const renderMassiveInput = (
     type: string,
     amountError: string | false,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | null,
     assetOptions: BaseAsset[],
-    onAssetSelect: (value: BaseAsset) => void
+    onAssetSelect: (_value: BaseAsset) => void
   ) => {
     return (
       <div className={classes.textField}>
@@ -308,7 +307,7 @@ function GaugeSelect({
 }: {
   value: Gauge | null;
   gaugeOptions: Gauge[];
-  onSelect: (value: Gauge) => void;
+  onSelect: (_value: Gauge) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -478,7 +477,7 @@ function AssetSelect({
 }: {
   value: BaseAsset | null;
   assetOptions: BaseAsset[];
-  onSelect: (value: BaseAsset) => void;
+  onSelect: (_value: BaseAsset) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");

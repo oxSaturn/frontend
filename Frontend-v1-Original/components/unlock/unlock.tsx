@@ -1,19 +1,19 @@
 import React from "react";
 import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
-
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
 import { AbstractConnector } from "@web3-react/abstract-connector";
 
 import { ACTIONS } from "../../stores/constants/constants";
+
 const { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE_SS } =
   ACTIONS;
 
 import stores from "../../stores";
 
 const Unlock = ({ closeModal }: { closeModal: () => void }) => {
-  const [state, setState] = React.useState<{
+  const [, setState] = React.useState<{
     loading: boolean;
     error: Error | null;
   }>({
@@ -86,11 +86,11 @@ function getLibrary(provider: ExternalProvider) {
 function onConnectionClicked(
   currentConnector: (typeof stores.accountStore.store)["connectorsByName"][keyof (typeof stores.accountStore.store)["connectorsByName"]],
   name: keyof (typeof stores.accountStore.store)["connectorsByName"],
-  setActivatingConnector: (connect: AbstractConnector) => void,
+  setActivatingConnector: (_connect: AbstractConnector) => void,
   activate: (
-    connector: AbstractConnector,
-    onError?: ((error: Error) => void) | undefined,
-    throwErrors?: boolean | undefined
+    _connector: AbstractConnector,
+    _onError?: ((_error: Error) => void) | undefined,
+    _throwErrors?: boolean | undefined
   ) => Promise<void>
 ) {
   const connectorsByName = stores.accountStore.getStore("connectorsByName");

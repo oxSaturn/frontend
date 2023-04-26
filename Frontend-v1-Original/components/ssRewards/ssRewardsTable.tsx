@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import {
   Paper,
   Button,
@@ -52,7 +51,10 @@ function EnhancedTableHead({
 }: {
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: OrderBy) => void;
+  onRequestSort: (
+    _event: React.MouseEvent<unknown>,
+    _property: OrderBy
+  ) => void;
 }) {
   const createSortHandler =
     (property: OrderBy) => (event: React.MouseEvent<unknown>) => {
@@ -193,8 +195,8 @@ export default function EnhancedTable({
     }
   };
 
-  const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rewards.length - page * rowsPerPage);
+  // const emptyRows =
+  //   rowsPerPage - Math.min(rowsPerPage, rewards.length - page * rowsPerPage);
 
   return (
     <div className="w-full">
@@ -513,7 +515,10 @@ export default function EnhancedTable({
                             row.gauge.bribesEarned &&
                             row.gauge.bribesEarned.map((bribe) => {
                               return (
-                                <div className="flex items-center justify-end">
+                                <div
+                                  className="flex items-center justify-end"
+                                  key={bribe.token.address}
+                                >
                                   <img
                                     className="rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                                     src={
@@ -555,7 +560,10 @@ export default function EnhancedTable({
                             row.gauge.x_bribesEarned &&
                             row.gauge.x_bribesEarned.map((bribe) => {
                               return (
-                                <div className="flex items-center justify-end">
+                                <div
+                                  className="flex items-center justify-end"
+                                  key={bribe.token.address}
+                                >
                                   <img
                                     className="rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                                     src={
@@ -755,7 +763,7 @@ function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
 
 function stableSort(
   array: (Gauge | VeDistReward)[],
-  comparator: (a: Gauge | VeDistReward, b: Gauge | VeDistReward) => number
+  comparator: (_a: Gauge | VeDistReward, _b: Gauge | VeDistReward) => number
 ) {
   const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {

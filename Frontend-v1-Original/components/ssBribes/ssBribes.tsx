@@ -3,17 +3,17 @@ import { useRouter } from "next/router";
 import { Button, Typography } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
-import classes from "./ssBribes.module.css";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { Pair } from "../../stores/types/types";
 
-export default function ssBribes() {
+import classes from "./ssBribes.module.css";
+
+export default function Bribes() {
   const [, updateState] = useState<undefined | {}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [pairs, setPairs] = useState<Pair[]>([]);
+  const [, setPairs] = useState<Pair[]>([]);
 
   useEffect(() => {
     const stableSwapUpdated = () => {
@@ -37,7 +37,7 @@ export default function ssBribes() {
     return () => {
       stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
     };
-  }, []);
+  }, [forceUpdate]);
 
   const router = useRouter();
   const onCreate = () => {

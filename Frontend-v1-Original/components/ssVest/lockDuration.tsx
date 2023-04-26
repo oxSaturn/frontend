@@ -11,10 +11,12 @@ import {
 import { useRouter } from "next/router";
 import moment from "moment";
 import BigNumber from "bignumber.js";
-import classes from "./ssVest.module.css";
+
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { VestNFT } from "../../stores/types/types";
+
+import classes from "./ssVest.module.css";
 
 export const lockOptions: {
   [key: string]: number;
@@ -26,12 +28,12 @@ export const lockOptions: {
   "3 years": 1095,
   "4 years": 1461,
 };
-export default function ffLockDuration({
+export default function LockDuration({
   nft,
   updateLockDuration,
 }: {
   nft: VestNFT;
-  updateLockDuration: (arg: string) => void;
+  updateLockDuration: (_arg: string) => void;
 }) {
   const inputEl = useRef<HTMLInputElement | null>(null);
   const [lockLoading, setLockLoading] = useState(false);
@@ -39,7 +41,7 @@ export default function ffLockDuration({
   const [selectedDate, setSelectedDate] = useState(
     moment().add(8, "days").format("YYYY-MM-DD")
   );
-  const [selectedDateError, setSelectedDateError] = useState(false);
+  const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
   const router = useRouter();
@@ -62,7 +64,7 @@ export default function ffLockDuration({
         lockReturned
       );
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (nft && nft.lockEnds) {
@@ -113,7 +115,7 @@ export default function ffLockDuration({
   const renderMassiveInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className={classes.textField}>

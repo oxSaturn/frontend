@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -23,6 +23,7 @@ import {
   DeleteOutline,
 } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
+import { isAddress } from "viem";
 
 import stores from "../../stores";
 import {
@@ -32,9 +33,8 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
-import { isAddress } from "viem";
 
-export default function ssLiquidityManage() {
+export default function LiquidityManage() {
   const router = useRouter();
   const amount0Ref = useRef<HTMLInputElement>(null);
   const amount1Ref = useRef<HTMLInputElement>(null);
@@ -83,7 +83,7 @@ export default function ssLiquidityManage() {
   const [advanced, setAdvanced] = useState(true);
 
   const [slippage, setSlippage] = useState("2");
-  const [slippageError, setSlippageError] = useState(false); //TODO setSlippageError if any?
+  const [slippageError] = useState(false); //TODO setSlippageError if any?
 
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
@@ -885,12 +885,12 @@ export default function ssLiquidityManage() {
     );
   };
 
-  const amount0Focused = (event: React.FocusEvent<HTMLInputElement>) => {
+  const amount0Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
     setPriorityAsset(0);
     callQuoteAddLiquidity(amount0, amount1, 0, stable, pair, asset0, asset1);
   };
 
-  const amount1Focused = (event: React.FocusEvent<HTMLInputElement>) => {
+  const amount1Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
     setPriorityAsset(1);
     callQuoteAddLiquidity(amount0, amount1, 1, stable, pair, asset0, asset1);
   };
@@ -1048,10 +1048,10 @@ export default function ssLiquidityManage() {
     type: string,
     amountValue: string,
     amountError: string | false,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | Pair | null,
     assetOptions: BaseAsset[] | Pair[],
-    onAssetSelect: (type: string, asset: BaseAsset) => void,
+    onAssetSelect: (_type: string, _asset: BaseAsset) => void,
     onFocus: React.FocusEventHandler<
       HTMLTextAreaElement | HTMLInputElement
     > | null,
@@ -1247,7 +1247,7 @@ export default function ssLiquidityManage() {
         </div>
         <div className="flex min-h-[100px] items-center justify-center">
           <Typography className="border border-cantoGreen bg-[#0e110c] p-6 text-sm font-extralight">
-            "We are very sad to see you are no longer going with the FLOW"
+            We are very sad to see you are no longer going with the FLOW
           </Typography>
         </div>
       </div>
@@ -1257,7 +1257,7 @@ export default function ssLiquidityManage() {
   const renderSmallInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className="relative mb-1">
@@ -1871,7 +1871,7 @@ function AssetSelect({
   type: string;
   value: BaseAsset | Pair | null;
   assetOptions: BaseAsset[] | Pair[];
-  onSelect: (type: string, asset: BaseAsset) => void;
+  onSelect: (_type: string, _asset: BaseAsset) => void;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -1924,11 +1924,7 @@ function AssetSelect({
         search.length === 42 &&
         isAddress(search)
       ) {
-        const baseAsset = await stores.stableSwapStore.getBaseAsset(
-          search,
-          true,
-          true
-        );
+        await stores.stableSwapStore.getBaseAsset(search, true, true);
       }
     };
     filter();

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-
 import {
   Typography,
   Button,
@@ -22,13 +21,13 @@ import {
 
 import Navigation from "../navigation/navigation";
 import Unlock from "../unlock/unlockModal";
-import TransactionQueue from "../transactionQueue/transactionQueue";
-import Info from "./info";
-
+// import TransactionQueue from "../transactionQueue/transactionQueue";
 import useOnClickOutside from "../../hooks/useOnClickOutside";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 import { formatAddress } from "../../utils/utils";
+
+import Info from "./info";
 
 type EthWindow = Window &
   typeof globalThis & {
@@ -152,7 +151,7 @@ function Header() {
   const [account, setAccount] = useState(accountStore);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [chainInvalid, setChainInvalid] = useState(false);
-  const [transactionQueueLength, setTransactionQueueLength] = useState(0);
+  const [transactionQueueLength] = useState(0);
   const [domain, setDomain] = useState<string>();
 
   const [open, setOpen] = useState(false);
@@ -206,9 +205,9 @@ function Header() {
     setUnlockOpen(false);
   };
 
-  const setQueueLength = (length: number) => {
-    setTransactionQueueLength(length);
-  };
+  // const setQueueLength = (length: number) => {
+  //   setTransactionQueueLength(length);
+  // };
 
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
@@ -244,7 +243,7 @@ function Header() {
                 onClick={handleClick}
               >
                 <Typography className="text-sm font-bold">
-                  {formatAddress(account.address)}
+                  {domain ?? formatAddress(account.address)}
                 </Typography>
                 <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-[#7e99b0]" />
               </Button>
@@ -343,8 +342,8 @@ function Header() {
           <div>
             <WrongNetworkIcon className="mb-5 text-8xl" />
             <Typography className="max-w-md text-2xl text-white">
-              The chain you're connected to isn't supported. Please check that
-              your wallet is connected to Canto Mainnet.
+              The chain you&apos;re connected to isn&apos;t supported. Please
+              check that your wallet is connected to Canto Mainnet.
             </Typography>
             <Button
               className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"

@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { Typography, Button, Paper } from "@mui/material";
 
 import VestsNFTs from "../../components/ssVests/ssVests";
 import Unlock from "../../components/unlock/unlockModal";
-
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 
 function Vesting() {
   const accountStore = stores.accountStore.getStore("account");
-  const router = useRouter();
   const [account, setAccount] = useState(accountStore);
   const [unlockOpen, setUnlockOpen] = useState(false);
 

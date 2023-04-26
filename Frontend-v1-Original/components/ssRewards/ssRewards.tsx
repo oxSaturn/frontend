@@ -9,19 +9,18 @@ import {
 } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
-import RewardsTable from "./ssRewardsTable";
 import { formatCurrency } from "../../utils/utils";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-
-import classes from "./ssRewards.module.css";
 import {
   VeDistReward,
   VestNFT,
   VeToken,
   Gauge,
 } from "../../stores/types/types";
+
+import classes from "./ssRewards.module.css";
+import RewardsTable from "./ssRewardsTable";
 
 const initialEmptyToken: VestNFT = {
   id: "0",
@@ -33,7 +32,7 @@ const initialEmptyToken: VestNFT = {
   lastVoted: BigInt(0),
 };
 
-export default function ssRewards() {
+export default function Rewards() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
@@ -255,8 +254,8 @@ export default function ssRewards() {
           <Grid item lg={true} md={true} sm={false} xs={false}>
             <div className={classes.disclaimerContainer}>
               <Typography className={classes.disclaimer}>
-                Rewards are an estimation that aren't exact till the supply -
-                {">"} rewardPerToken calculations have run
+                Rewards are an estimation that aren&apos;t exact till the supply
+                -{">"} rewardPerToken calculations have run
               </Typography>
             </div>
           </Grid>

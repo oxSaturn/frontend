@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 
 import { colors } from "../../theme/coreTheme";
-
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
 
 const iconStyle = {
@@ -80,9 +79,9 @@ function MySnackbar(props: {
   const { open: initialOpen, type, message } = props;
   const [open, setOpen] = useState(initialOpen);
 
-  const handleClick = () => {
-    setOpen(true);
-  };
+  // const handleClick = () => {
+  //   setOpen(true);
+  // };
 
   const handleClose = (
     event: Event | React.SyntheticEvent<any, Event>,
@@ -136,6 +135,7 @@ function MySnackbar(props: {
           variant="text"
           size="small"
           onClick={() => window.open(snackbarMessage, "_blank")}
+          key={snackbarMessage}
         >
           View
         </Button>,

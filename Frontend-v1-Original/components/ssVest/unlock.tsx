@@ -9,11 +9,11 @@ import {
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 
-import VestingInfo from "./vestingInfo";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
+import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
 export default function Unlock({
@@ -47,7 +47,7 @@ export default function Unlock({
         lockReturned
       );
     };
-  }, []);
+  }, [router]);
 
   const onWithdraw = () => {
     setLockLoading(true);

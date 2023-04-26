@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Typography } from "@mui/material";
 
-import VestsTable from "./ssVestsTable";
-import PartnersVests from "./partnersVests";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
-export default function ssVests() {
+import PartnersVests from "./partnersVests";
+import VestsTable from "./ssVestsTable";
+
+export default function Vests() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
@@ -56,7 +56,7 @@ export default function ssVests() {
         resetVestReturned
       );
     };
-  }, []);
+  }, [forceUpdate]);
 
   return (
     <div className="m-auto mb-5 flex w-[calc(100%-40px)] max-w-[1400px] flex-col items-end p-0 pt-20 pb-2 xl:mb-14 xl:w-[calc(100%-180px)] xl:pt-0">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-
 import {
   Typography,
   Button,
@@ -22,12 +21,12 @@ import {
 import Navigation from "../navigation/navigation";
 import Unlock from "../unlock/unlockModal";
 import TransactionQueue from "../transactionQueue/transactionQueue";
-import Info from "./info";
-
 import useScrollPosition from "../../hooks/useScrollPosition";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 import { formatAddress } from "../../utils/utils";
+
+import Info from "./info";
 
 type EthWindow = Window &
   typeof globalThis & {
@@ -343,8 +342,8 @@ function Header() {
           <div>
             <WrongNetworkIcon className="mb-5 text-8xl" />
             <Typography className="max-w-md text-2xl text-white">
-              The chain you're connected to isn't supported. Please check that
-              your wallet is connected to Canto Mainnet.
+              The chain you&apos;re connected to isn&apos;t supported. Please
+              check that your wallet is connected to Canto Mainnet.
             </Typography>
             <Button
               className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"

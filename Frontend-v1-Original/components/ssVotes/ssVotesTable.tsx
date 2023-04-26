@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, memo } from "react";
 import {
   Skeleton,
   Table,
@@ -68,7 +68,7 @@ type OrderBy = (typeof headCells)[number]["id"];
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (event: undefined, property: OrderBy) => void;
+  onRequestSort: (_event: undefined, _property: OrderBy) => void;
 }) {
   const { order, orderBy, onRequestSort } = props;
 
@@ -199,7 +199,16 @@ export default function EnhancedTable({
       getComparator(order, orderBy, defaultVotes, token)
     ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     return votesRef.current;
-  }, [gauges, order, orderBy, page, rowsPerPage, defaultVotes, disabledSort]);
+  }, [
+    gauges,
+    order,
+    orderBy,
+    page,
+    rowsPerPage,
+    defaultVotes,
+    disabledSort,
+    token,
+  ]);
 
   if (!gauges || gauges.length === 0) {
     return (
@@ -281,7 +290,7 @@ export default function EnhancedTable({
   );
 }
 
-function VotesRow({
+const VotesRow = memo(function VotesRow({
   row,
   token,
   defaultVotes,
@@ -290,12 +299,12 @@ function VotesRow({
   row: Gauge;
   token: VestNFT;
   defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
-  onSliderChange: (event: Event, value: number | number[], row: Gauge) => void;
+  onSliderChange: (
+    _event: Event,
+    _value: number | number[],
+    _row: Gauge
+  ) => void;
 }) {
-  if (!row) {
-    return null;
-  }
-
   let sliderValue = defaultVotes.find(
     (el) => el.address === row?.address
   )?.value;
@@ -303,7 +312,7 @@ function VotesRow({
     sliderValue = 0;
   }
 
-  let rewardEstimate: number;
+  let rewardEstimate: number | undefined;
   const votesCasting = (sliderValue / 100) * parseFloat(token?.lockValue);
   if (votesCasting > 0 && row.gauge.weight) {
     const divideBy = token?.actionedInCurrentEpoch
@@ -319,74 +328,126 @@ function VotesRow({
     row.gauge.weight && parseFloat(row.gauge.weight) > 0
       ? (row.gauge.tbv / parseFloat(row.gauge.weight)) * 1000
       : 0;
-  return useMemo(() => {
-    return (
-      <TableRow key={row.gauge.address}>
-        <TableCell>
-          <div className="flex items-center">
-            <div className="relative flex h-[35px] w-[70px]">
-              <img
-                className="absolute left-0 top-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-                src={
-                  row && row.token0 && row.token0.logoURI
-                    ? row.token0.logoURI
-                    : ``
-                }
-                width="37"
-                height="37"
-                alt=""
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-              <img
-                className="absolute left-6 top-0 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-                src={
-                  row && row.token1 && row.token1.logoURI
-                    ? row.token1.logoURI
-                    : ``
-                }
-                width="37"
-                height="37"
-                alt=""
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-            </div>
-            <div>
-              <Typography variant="h2" className="text-xs font-extralight">
-                {row.symbol}
-              </Typography>
-              <Typography
-                variant="h5"
-                className="text-xs font-extralight"
-                color="textSecondary"
-              >
-                {row.isStable ? "Stable Pool" : "Volatile Pool"}
-              </Typography>
-            </div>
+
+  return (
+    <TableRow key={row.gauge.address}>
+      <TableCell>
+        <div className="flex items-center">
+          <div className="relative flex h-[35px] w-[70px]">
+            <img
+              className="absolute left-0 top-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+              src={
+                row && row.token0 && row.token0.logoURI
+                  ? row.token0.logoURI
+                  : ``
+              }
+              width="37"
+              height="37"
+              alt=""
+              onError={(e) => {
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+              }}
+            />
+            <img
+              className="absolute left-6 top-0 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+              src={
+                row && row.token1 && row.token1.logoURI
+                  ? row.token1.logoURI
+                  : ``
+              }
+              width="37"
+              height="37"
+              alt=""
+              onError={(e) => {
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+              }}
+            />
           </div>
-        </TableCell>
-        <TableCell align="right">
-          {!!row.gauge.weight && !!row.gauge.weightPercent ? (
-            <>
-              <Typography variant="h2" className="text-xs font-extralight">
-                {formatCurrency(row.gauge.weight)}
-              </Typography>
-              <Typography
-                variant="h5"
-                className="text-xs font-extralight"
-                color="textSecondary"
+          <div>
+            <Typography variant="h2" className="text-xs font-extralight">
+              {row.symbol}
+            </Typography>
+            <Typography
+              variant="h5"
+              className="text-xs font-extralight"
+              color="textSecondary"
+            >
+              {row.isStable ? "Stable Pool" : "Volatile Pool"}
+            </Typography>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell align="right">
+        {!!row.gauge.weight && !!row.gauge.weightPercent ? (
+          <>
+            <Typography variant="h2" className="text-xs font-extralight">
+              {formatCurrency(row.gauge.weight)}
+            </Typography>
+            <Typography
+              variant="h5"
+              className="text-xs font-extralight"
+              color="textSecondary"
+            >
+              {formatCurrency(row.gauge.weightPercent)} %
+            </Typography>
+          </>
+        ) : (
+          <div className="flex items-center justify-end max-[1000px]:block">
+            <Skeleton
+              variant="rectangular"
+              width={120}
+              height={16}
+              style={{ marginTop: "1px", marginBottom: "1px" }}
+            />
+          </div>
+        )}
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h2" className="text-xs font-extralight">
+          {formatCurrency(row.gauge.apr)} %
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h2" className="text-xs font-extralight">
+          ${formatCurrency(row.gauge.tbv)}
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
+        {row.gaugebribes ? (
+          row.gaugebribes.map((bribe) => {
+            return bribe.rewardAmount !== undefined ? (
+              <div
+                className="flex items-center justify-end"
+                key={bribe.token.symbol}
               >
-                {formatCurrency(row.gauge.weightPercent)} %
-              </Typography>
-            </>
-          ) : (
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(bribe.rewardAmount)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className="text-xs font-extralight"
+                  color="textSecondary"
+                >
+                  {bribe.token.symbol}
+                </Typography>
+              </div>
+            ) : (
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                  key={bribe.token.symbol}
+                />
+              </div>
+            );
+          })
+        ) : (
+          <>
             <div className="flex items-center justify-end max-[1000px]:block">
               <Skeleton
                 variant="rectangular"
@@ -395,79 +456,25 @@ function VotesRow({
                 style={{ marginTop: "1px", marginBottom: "1px" }}
               />
             </div>
-          )}
-        </TableCell>
-        <TableCell align="right">
-          <Typography variant="h2" className="text-xs font-extralight">
-            {formatCurrency(row.gauge.apr)} %
-          </Typography>
-        </TableCell>
-        <TableCell align="right">
-          <Typography variant="h2" className="text-xs font-extralight">
-            ${formatCurrency(row.gauge.tbv)}
-          </Typography>
-        </TableCell>
-        <TableCell align="right">
-          {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
-          {row.gaugebribes ? (
-            row.gaugebribes.map((bribe, idx) => {
-              return bribe.rewardAmount !== undefined ? (
-                <div
-                  className="flex items-center justify-end"
-                  key={bribe.token.symbol}
-                >
-                  <Typography variant="h2" className="text-xs font-extralight">
-                    {formatCurrency(bribe.rewardAmount)}
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    className="text-xs font-extralight"
-                    color="textSecondary"
-                  >
-                    {bribe.token.symbol}
-                  </Typography>
-                </div>
-              ) : (
-                <div className="flex items-center justify-end max-[1000px]:block">
-                  <Skeleton
-                    variant="rectangular"
-                    width={120}
-                    height={16}
-                    style={{ marginTop: "1px", marginBottom: "1px" }}
-                    key={bribe.token.symbol}
-                  />
-                </div>
-              );
-            })
-          ) : (
-            <>
-              <div className="flex items-center justify-end max-[1000px]:block">
-                <Skeleton
-                  variant="rectangular"
-                  width={120}
-                  height={16}
-                  style={{ marginTop: "1px", marginBottom: "1px" }}
-                />
-              </div>
-              <div className="flex items-center justify-end max-[1000px]:block">
-                <Skeleton
-                  variant="rectangular"
-                  width={120}
-                  height={16}
-                  style={{ marginTop: "1px", marginBottom: "1px" }}
-                />
-              </div>
-              <div className="flex items-center justify-end max-[1000px]:block">
-                <Skeleton
-                  variant="rectangular"
-                  width={120}
-                  height={16}
-                  style={{ marginTop: "1px", marginBottom: "1px" }}
-                />
-              </div>
-            </>
-          )}
-          {/* {row.gauge.bribes.map((bribe, idx) => {
+            <div className="flex items-center justify-end max-[1000px]:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+            <div className="flex items-center justify-end max-[1000px]:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          </>
+        )}
+        {/* {row.gauge.bribes.map((bribe, idx) => {
             return bribe.rewardAmount !== undefined ? (
               <div
                 className="flex items-center justify-end"
@@ -496,59 +503,58 @@ function VotesRow({
               </div>
             );
           })} */}
-        </TableCell>
-        <TableCell align="right">
-          {!rewardEstimate ? (
-            <>
-              <Typography variant="h2" className="text-xs font-extralight">
-                $
-                {formatCurrency(
-                  rewardPerThousand > row.gauge.tbv
-                    ? row.gauge.tbv
-                    : rewardPerThousand
-                )}
-              </Typography>
-              <Typography
-                variant="h5"
-                className="text-xs font-extralight"
-                color="textSecondary"
-              >
-                per 1000 votes
-              </Typography>
-            </>
-          ) : (
+      </TableCell>
+      <TableCell align="right">
+        {!rewardEstimate ? (
+          <>
             <Typography variant="h2" className="text-xs font-extralight">
-              ${formatCurrency(rewardEstimate)}
+              $
+              {formatCurrency(
+                rewardPerThousand > row.gauge.tbv
+                  ? row.gauge.tbv
+                  : rewardPerThousand
+              )}
             </Typography>
-          )}
-        </TableCell>
-        <TableCell align="right">
+            <Typography
+              variant="h5"
+              className="text-xs font-extralight"
+              color="textSecondary"
+            >
+              per 1000 votes
+            </Typography>
+          </>
+        ) : (
           <Typography variant="h2" className="text-xs font-extralight">
-            {formatCurrency(votesCasting)}
+            ${formatCurrency(rewardEstimate)}
           </Typography>
-          <Typography
-            variant="h5"
-            className="text-xs font-extralight"
-            color="textSecondary"
-          >
-            {formatCurrency(sliderValue)} %
-          </Typography>
-        </TableCell>
-        <TableCell align="right">
-          <Slider
-            valueLabelDisplay="auto"
-            value={sliderValue}
-            onChange={(event, value) => {
-              onSliderChange(event, value, row);
-            }}
-            min={0}
-            max={100}
-          />
-        </TableCell>
-      </TableRow>
-    );
-  }, [token, defaultVotes, row]);
-}
+        )}
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h2" className="text-xs font-extralight">
+          {formatCurrency(votesCasting)}
+        </Typography>
+        <Typography
+          variant="h5"
+          className="text-xs font-extralight"
+          color="textSecondary"
+        >
+          {formatCurrency(sliderValue)} %
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Slider
+          valueLabelDisplay="auto"
+          value={sliderValue}
+          onChange={(event, value) => {
+            onSliderChange(event, value, row);
+          }}
+          min={0}
+          max={100}
+        />
+      </TableCell>
+    </TableRow>
+  );
+});
 
 function descendingComparator(
   a: Gauge,
@@ -715,7 +721,7 @@ function getComparator(
 
 function stableSort(
   array: Gauge[],
-  comparator: (a: Gauge, b: Gauge) => number
+  comparator: (_a: Gauge, _b: Gauge) => number
 ) {
   const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {

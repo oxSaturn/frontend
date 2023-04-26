@@ -2,26 +2,28 @@ import { useState, useEffect } from "react";
 import { Typography, Button, TextField, CircularProgress } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
+
 import { formatCurrency } from "../../utils/utils";
-import classes from "./ssVest.module.css";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT } from "../../stores/types/types";
 
-export default function ffLockAmount({
+import classes from "./ssVest.module.css";
+
+export default function LockAmount({
   nft,
   govToken,
   updateLockAmount,
 }: {
   nft: VestNFT;
   govToken: GovToken | null;
-  updateLockAmount: (arg: string) => void;
+  updateLockAmount: (_arg: string) => void;
 }) {
-  const [approvalLoading, setApprovalLoading] = useState(false);
+  const [, setApprovalLoading] = useState(false);
   const [lockLoading, setLockLoading] = useState(false);
 
   const [amount, setAmount] = useState("");
-  const [amountError, setAmountError] = useState(false);
+  const [amountError] = useState(false);
 
   const router = useRouter();
 
@@ -45,7 +47,7 @@ export default function ffLockAmount({
         lockReturned
       );
     };
-  }, []);
+  }, [router]);
 
   const setAmountPercent = (percent: number) => {
     const val = BigNumber(govToken?.balance || "0")
@@ -72,7 +74,7 @@ export default function ffLockAmount({
   const renderMassiveInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     balance: string | null,
     logo: string | null
   ) => {

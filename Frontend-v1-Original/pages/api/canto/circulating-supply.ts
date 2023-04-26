@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, http, fallback, formatUnits } from "viem";
 import { canto } from "viem/chains";
-import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
 import Cors from "cors";
+
+import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
 
 const cors = Cors({
   methods: ["GET"],

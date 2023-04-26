@@ -1,20 +1,17 @@
 import { useState, useEffect } from "react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
 
-import lightTheme from "../theme/light";
+// import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
-
-import Configure from "./configure";
 import Layout from "../components/layout/layout";
-
 import stores from "../stores/index";
-
 import { ACTIONS } from "../stores/constants/constants";
 import createEmotionCache from "../utils/createEmotionCache";
+
+import Configure from "./configure";
 
 import "../styles/global.css";
 
@@ -32,10 +29,8 @@ export default function MyApp({
   emotionCache = clientSideEmotionCache,
   pageProps,
 }: MyAppProps) {
-  const router = useRouter();
-
-  const [themeConfig, setThemeConfig] = useState(darkTheme);
-  const [stalbeSwapConfigured, setStableSwapConfigured] = useState(false);
+  const [themeConfig] = useState(darkTheme);
+  const [, setStableSwapConfigured] = useState(false);
   const [accountConfigured, setAccountConfigured] = useState(false);
 
   const accountConfigureReturned = () => {

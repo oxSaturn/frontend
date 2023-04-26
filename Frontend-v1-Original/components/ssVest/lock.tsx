@@ -14,17 +14,20 @@ import {
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 import moment from "moment";
+import { ArrowBack } from "@mui/icons-material";
+
 import { formatCurrency } from "../../utils/utils";
-import classes from "./ssVest.module.css";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
-import { ArrowBack } from "@mui/icons-material";
-import VestingInfo from "./vestingInfo";
 import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
+
+import VestingInfo from "./vestingInfo";
+import classes from "./ssVest.module.css";
+
 import { lockOptions } from "./lockDuration";
 
-export default function ssLock({
+export default function Lock({
   govToken,
   veToken,
 }: {
@@ -42,7 +45,7 @@ export default function ssLock({
   const [selectedDate, setSelectedDate] = useState(
     moment().add(7, "days").format("YYYY-MM-DD")
   );
-  const [selectedDateError, setSelectedDateError] = useState(false);
+  const [selectedDateError] = useState(false);
 
   useEffect(() => {
     const lockReturned = () => {
@@ -59,7 +62,7 @@ export default function ssLock({
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
       stores.emitter.removeListener(ACTIONS.CREATE_VEST_RETURNED, lockReturned);
     };
-  }, []);
+  }, [router]);
 
   const setAmountPercent = (percent: number) => {
     setAmount(
@@ -135,7 +138,7 @@ export default function ssLock({
   const renderMassiveDateInput = (
     amountValue: string,
     amountError: boolean,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
   ) => {
     return (
       <div className={classes.textField}>
@@ -185,7 +188,7 @@ export default function ssLock({
   const renderMassiveInput = (
     amountValue: string,
     amountError: string | false,
-    amountChanged: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     token: GovToken | null
   ) => {
     return (

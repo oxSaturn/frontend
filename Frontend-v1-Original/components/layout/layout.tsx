@@ -1,8 +1,10 @@
 import Head from "next/head";
-import classes from "./layout.module.css";
+
 import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
+
+import classes from "./layout.module.css";
 
 export default function Layout({
   children,

@@ -8,7 +8,9 @@
     "export": "next export",
     "build2": "next build && next export",
     "start": "next start",
-    "tsc": "tsc --noEmit"
+    "lint": "next lint",
+    "tsc": "tsc --noEmit",
+    "prepare": "cd .. && husky install Frontend-v1-Original/.husky"
   },
   "dependencies": {
     "@babel/core": "^7.0.0",
@@ -28,6 +30,7 @@
     "async": "^3.2.1",
     "bignumber.js": "^9.0.1",
     "cors": "^2.8.5",
+    "eslint-plugin-import": "^2.27.5",
     "ethereum-multicall": "^2.15.0",
     "flux": "^4.0.3",
     "lottie-react": "^2.2.1",
@@ -48,6 +51,10 @@
     "@types/flux": "^3.1.11",
     "@types/uuid": "^9.0.0",
     "autoprefixer": "^10.4.13",
+    "eslint": "8.38.0",
+    "eslint-config-next": "13.3.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.1",
     "postcss": "^8.4.21",
     "prettier": "^2.8.4",
     "prettier-plugin-tailwindcss": "^0.2.4",

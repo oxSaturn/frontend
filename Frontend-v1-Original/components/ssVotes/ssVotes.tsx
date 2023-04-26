@@ -9,17 +9,14 @@ import {
   MenuItem,
   Select,
   Grid,
+  SelectChangeEvent,
 } from "@mui/material";
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 
-import classes from "./ssVotes.module.css";
 import { formatCurrency } from "../../utils/utils";
-
-import GaugesTable from "./ssVotesTable";
 import WarningModal from "../warning/warning";
-
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import {
@@ -28,9 +25,11 @@ import {
   VestNFT,
   VeToken,
   Vote,
-  Votes,
+  Votes as VotesType,
 } from "../../stores/types/types";
-import { SelectChangeEvent } from "@mui/material";
+
+import GaugesTable from "./ssVotesTable";
+import classes from "./ssVotes.module.css";
 
 const initialEmptyToken: VestNFT = {
   id: "0",
@@ -42,8 +41,8 @@ const initialEmptyToken: VestNFT = {
   lastVoted: BigInt(0),
 };
 
-export default function ssVotes() {
-  const router = useRouter();
+export default function Votes() {
+  // const router = useRouter();
 
   const [showWarning, setShowWarning] = useState(false);
 
@@ -52,7 +51,7 @@ export default function ssVotes() {
 
   const [gauges, setGauges] = useState<Gauge[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState<Votes>([]);
+  const [votes, setVotes] = useState<VotesType>([]);
   const [veToken, setVeToken] = useState<VeToken | null>(null);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
@@ -208,9 +207,9 @@ export default function ssVotes() {
     setSearch(event.target.value);
   };
 
-  const onBribe = () => {
-    router.push("/bribe/create");
-  };
+  // const onBribe = () => {
+  //   router.push("/bribe/create");
+  // };
 
   const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     return (

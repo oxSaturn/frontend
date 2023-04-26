@@ -1,3 +1,8 @@
+@import "Inter.css";
+@import "Sono.css";
+@import "Monument.css";
+@import "Druk.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

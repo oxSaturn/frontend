@@ -7,8 +7,10 @@ import Document, {
   DocumentContext,
 } from "next/document";
 import createEmotionServer from "@emotion/server/create-instance";
-import createEmotionCache from "../utils/createEmotionCache";
 import { AppProps } from "next/app";
+
+import createEmotionCache from "../utils/createEmotionCache";
+
 import { MyAppProps } from "./_app";
 
 type ComponentProps = AppProps & MyAppProps;
@@ -20,13 +22,7 @@ interface MyDocumentProps extends DocumentProps {
 export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
   return (
     <Html lang="en">
-      <Head>
-        <link rel="stylesheet" href="/fonts/Inter/Inter.css" />
-        <link rel="stylesheet" href="/fonts/Sono/Sono.css" />
-        <link rel="stylesheet" href="/fonts/MonumentExt/Monument.css" />
-        <link rel="stylesheet" href="/fonts/Druk/Druk.css" />
-        {emotionStyleTags}
-      </Head>
+      <Head>{emotionStyleTags}</Head>
       <body>
         <Main />
         <NextScript />

@@ -3,17 +3,16 @@ import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 import moment from "moment";
 
+import stores from "../../stores";
+import { ACTIONS } from "../../stores/constants/constants";
+import { VeToken, GovToken, VestNFT } from "../../stores/types/types";
+
 import ExistingLock from "./existingLock";
 import Unlock from "./unlock";
 import Lock from "./lock";
-
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
-
 import classes from "./ssVest.module.css";
-import { VeToken, GovToken, VestNFT } from "../../stores/types/types";
 
-export default function ssVest() {
+export default function Vest() {
   const router = useRouter();
 
   const [, updateState] = useState<{}>();

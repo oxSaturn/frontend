@@ -91,7 +91,7 @@ type OrderBy = (typeof headCells)[number]["id"];
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
-  onRequestSort: (_e: React.MouseEvent<unknown>, property: OrderBy) => void;
+  onRequestSort: (_e: React.MouseEvent<unknown>, _property: OrderBy) => void;
 }) {
   const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
@@ -165,11 +165,11 @@ interface PairsTableProps {
 }
 
 interface PairsTableToolbarProps {
-  setSearch: (search: string) => void;
-  setToggleActive: (toggleActive: boolean) => void;
-  setToggleActiveGauge: (toggleActiveGauge: boolean) => void;
-  setToggleStable: (toggleStable: boolean) => void;
-  setToggleVariable: (toggleVariable: boolean) => void;
+  setSearch: (_search: string) => void;
+  setToggleActive: (_toggleActive: boolean) => void;
+  setToggleActiveGauge: (_toggleActiveGauge: boolean) => void;
+  setToggleStable: (_toggleStable: boolean) => void;
+  setToggleVariable: (_toggleVariable: boolean) => void;
 }
 
 const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
@@ -1210,7 +1210,7 @@ function getComparator(order: "asc" | "desc", orderBy: OrderBy) {
     : (a: Pair, b: Pair) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort(array: Pair[], comparator: (a: Pair, b: Pair) => number) {
+function stableSort(array: Pair[], comparator: (_a: Pair, _b: Pair) => number) {
   const stabilizedThis = array.map((el, index) => [el, index] as const);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
