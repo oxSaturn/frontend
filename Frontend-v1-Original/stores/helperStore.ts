@@ -1,7 +1,7 @@
-import viemClient from "./connectors/viem";
 import { getContract, formatUnits, parseUnits } from "viem";
 
-import stores from ".";
+import viemClient from "./connectors/viem";
+
 import { CONTRACTS, NATIVE_TOKEN } from "./constants/constants";
 
 import {
@@ -9,6 +9,8 @@ import {
   DexScrennerPair,
   TokenForPrice,
 } from "./types/types";
+
+import stores from ".";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;

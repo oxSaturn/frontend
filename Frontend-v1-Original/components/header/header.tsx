@@ -26,6 +26,8 @@ import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 import { formatAddress } from "../../utils/utils";
 
+import { useUnstoppableDomain } from "../../lib/global/queries";
+
 import Info from "./info";
 
 type EthWindow = Window &
@@ -46,8 +48,7 @@ function SiteLogo(props: { className?: string }) {
   );
 }
 
-const { CONNECT_WALLET, ACCOUNT_CONFIGURED, ACCOUNT_CHANGED, UPDATED } =
-  ACTIONS;
+const { CONNECT_WALLET, ACCOUNT_CONFIGURED, ACCOUNT_CHANGED } = ACTIONS;
 
 function WrongNetworkIcon(props: { className: string }) {
   const { className } = props;
@@ -152,7 +153,7 @@ function Header() {
   const [chainInvalid, setChainInvalid] = useState(false);
   const [transactionQueueLength, setTransactionQueueLength] = useState(0);
 
-  const [domain, setDomain] = useState<string>();
+  const { data: domain } = useUnstoppableDomain(account?.address);
 
   const scrollPosition = useScrollPosition();
 
@@ -169,25 +170,17 @@ function Header() {
       const invalid = stores.accountStore.getStore("chainInvalid");
       setChainInvalid(invalid);
     };
-    const ssUpdated = () => {
-      const domain = stores.stableSwapStore.getStore("u_domain");
-      setDomain(domain);
-    };
 
     const invalid = stores.accountStore.getStore("chainInvalid");
     setChainInvalid(invalid);
 
-    ssUpdated();
-
     stores.emitter.on(ACCOUNT_CONFIGURED, accountConfigure);
     stores.emitter.on(CONNECT_WALLET, connectWallet);
     stores.emitter.on(ACCOUNT_CHANGED, accountChanged);
-    stores.emitter.on(UPDATED, ssUpdated);
     return () => {
       stores.emitter.removeListener(ACCOUNT_CONFIGURED, accountConfigure);
       stores.emitter.removeListener(CONNECT_WALLET, connectWallet);
       stores.emitter.removeListener(ACCOUNT_CHANGED, accountChanged);
-      stores.emitter.removeListener(UPDATED, ssUpdated);
     };
   }, []);
 

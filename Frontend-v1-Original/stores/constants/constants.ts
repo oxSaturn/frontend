@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js";
+
 import * as contractsTestnet from "./contractsGoerli";
 import * as contractsCanto from "./contractsCanto";
 import * as contracts from "./contracts";
@@ -23,6 +24,8 @@ const config = {
       name: contractsCanto.CANTO_NAME,
       symbol: contractsCanto.CANTO_SYMBOL,
       chainId: 7700,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contractsCanto.WCANTO_ADDRESS,
     wNativeABI: contractsCanto.WCANTO_ABI,
@@ -37,6 +40,8 @@ const config = {
       name: contractsTestnet.ETH_NAME,
       symbol: contractsTestnet.ETH_SYMBOL,
       chainId: 421613,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contractsTestnet.WETH_ADDRESS,
     wNativeABI: contractsTestnet.WETH_ABI,
@@ -51,6 +56,8 @@ const config = {
       name: contracts.ETH_NAME,
       symbol: contracts.ETH_SYMBOL,
       chainId: 42161,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contractsTestnet.WETH_ADDRESS,
     wNativeABI: contractsTestnet.WETH_ABI,

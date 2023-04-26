@@ -259,6 +259,13 @@ interface QuoteSwapResponse {
   };
 }
 
+interface PairsCallResponse {
+  data: Pair[];
+  prices: [string, number][];
+  tvl: number;
+  tbv: number;
+}
+
 interface Path {
   amountFrom: string;
   amountTo: string;
@@ -311,6 +318,7 @@ export type {
   Path,
   Swap,
   FireBirdTokens,
+  PairsCallResponse,
 };
 
 export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };

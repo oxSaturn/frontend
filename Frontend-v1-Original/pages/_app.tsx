@@ -3,6 +3,8 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
@@ -17,6 +19,7 @@ import "../styles/global.css";
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
+const queryClient = new QueryClient();
 
 export interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache;
@@ -69,13 +72,16 @@ export default function MyApp({
         />
       </Head>
       <ThemeProvider theme={themeConfig}>
-        {accountConfigured ? (
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        ) : (
-          <Configure {...pageProps} />
-        )}
+        <QueryClientProvider client={queryClient}>
+          {accountConfigured ? (
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          ) : (
+            <Configure {...pageProps} />
+          )}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
       </ThemeProvider>
     </CacheProvider>
   );

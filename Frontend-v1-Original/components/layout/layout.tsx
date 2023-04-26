@@ -4,6 +4,17 @@ import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
 
+import {
+  useActivePeriod,
+  useInitBaseAssets,
+  useCirculatingSupply,
+  useGovTokenBase,
+  useMarketCap,
+  usePairs,
+  useSwapAssets,
+  useVeToken,
+} from "../../lib/global/queries";
+
 import classes from "./layout.module.css";
 
 export default function Layout({
@@ -13,6 +24,14 @@ export default function Layout({
   children: React.ReactNode;
   configure?: boolean;
 }) {
+  useGovTokenBase();
+  useVeToken();
+  useInitBaseAssets();
+  usePairs();
+  useSwapAssets();
+  useActivePeriod();
+  useCirculatingSupply();
+  useMarketCap();
   return (
     <div className={classes.container}>
       <Head>
