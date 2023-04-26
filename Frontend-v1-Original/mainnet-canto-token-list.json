@@ -382,5 +382,13 @@
     "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/23896.png",
     "name": "YieldFarming Index",
     "symbol": "YFX"
+  },
+  {
+    "address": "0x70419d44214294eaF9e76b16d577D9e946cFE35e",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cdn.discordapp.com/attachments/1099657337981128704/1100026154649403504/ICON_FINAL.png",
+    "name": "WelcomeToColin",
+    "symbol": "COLIN"
   }
 ]
