@@ -427,11 +427,10 @@ export default function EnhancedTable({
                           </Button>
                         )}
                         {/*
-                        1. not actioned in current epoch, last voted is 0, i.e., totally new nft
+                        1. last voted is 0, i.e., totally new nft
                         2. actioned in current epoch, and that action is reset
                          */}
-                        {(!row.actionedInCurrentEpoch &&
-                          Number(row.lastVoted) === 0) ||
+                        {Number(row.lastVoted) === 0 ||
                         (row.actionedInCurrentEpoch && row.reset) ? (
                           <Link href={`/vest/${row.id}/merge`}>
                             <Button variant="outlined" color="primary">
