@@ -328,9 +328,7 @@ export default function EnhancedTable({
                             <Close className="fill-red-500" />
                           )}
                         </Typography>
-                        {(!row.actionedInCurrentEpoch &&
-                          Number(row.lastVoted) !== 0) ||
-                        (row.actionedInCurrentEpoch && !row.reset) ? (
+                        {Number(row.lastVoted) !== 0 ? (
                           <Typography
                             variant="h5"
                             className="text-xs font-extralight"
@@ -431,8 +429,12 @@ export default function EnhancedTable({
                             Reset
                           </Button>
                         )}
-                        {!row.actionedInCurrentEpoch &&
-                        Number(row.lastVoted) === 0 ? (
+                        {/*
+                        1. last voted is 0, i.e., totally new nft
+                        2. actioned in current epoch, and that action is reset
+                         */}
+                        {Number(row.lastVoted) === 0 ||
+                        (row.actionedInCurrentEpoch && row.reset) ? (
                           <Link href={`/vest/${row.id}/merge`}>
                             <Button variant="outlined" color="primary">
                               Merge
