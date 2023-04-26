@@ -15,7 +15,14 @@ export default async function handler(
     let tvl = 0;
     let tbv = 0;
 
-    for (const pair of resJson.data) {
+    const noScamPairs = resJson.data.filter((pair) => {
+      return !knownScamPairs.some(
+        (scamPairAddress) =>
+          scamPairAddress.toLowerCase() === pair.address.toLowerCase()
+      );
+    });
+
+    for (const pair of noScamPairs) {
       if (!tokenPricesMap.has(pair.token0.address.toLowerCase())) {
         tokenPricesMap.set(
           pair.token0.address.toLowerCase(),
@@ -32,10 +39,15 @@ export default async function handler(
       tbv += pair.gauge?.tbv ?? 0;
     }
 
-    res
-      .status(200)
-      .json({ ...resJson, prices: [...tokenPricesMap.entries()], tvl, tbv });
+    res.status(200).json({
+      data: noScamPairs,
+      prices: [...tokenPricesMap.entries()],
+      tvl,
+      tbv,
+    });
   } catch (e) {
     res.status(200).json({ data: [] });
   }
 }
+
+const knownScamPairs = ["0x2b774c36f9657148138fdfd63fb28c314746e002"] as const;
