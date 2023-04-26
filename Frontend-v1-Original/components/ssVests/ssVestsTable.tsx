@@ -428,8 +428,10 @@ export default function EnhancedTable({
                             Reset
                           </Button>
                         )}
-                        {!row.actionedInCurrentEpoch &&
-                        Number(row.lastVoted) === 0 ? (
+                        {(!row.actionedInCurrentEpoch &&
+                          Number(row.lastVoted) === 0) ||
+                        (row.actionedInCurrentEpoch &&
+                          Number(row.lastVoted) !== 0) ? (
                           <Link href={`/vest/${row.id}/merge`}>
                             <Button variant="outlined" color="primary">
                               Merge
