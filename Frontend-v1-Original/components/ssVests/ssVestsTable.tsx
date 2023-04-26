@@ -325,9 +325,7 @@ export default function EnhancedTable({
                             <Close className="fill-red-500" />
                           )}
                         </Typography>
-                        {(!row.actionedInCurrentEpoch &&
-                          Number(row.lastVoted) !== 0) ||
-                        (row.actionedInCurrentEpoch && !row.reset) ? (
+                        {Number(row.lastVoted) !== 0 ? (
                           <Typography
                             variant="h5"
                             className="text-xs font-extralight"
