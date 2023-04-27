@@ -90,7 +90,12 @@ export default function Rewards() {
         rew.xBribes.length >= 0 &&
         rew.rewards.length >= 0
       ) {
-        setRewards([...rew.bribes, ...rew.rewards, ...rew.veDist]);
+        setRewards([
+          ...rew.xBribes,
+          ...rew.bribes,
+          ...rew.rewards,
+          ...rew.veDist,
+        ]);
       }
     } else {
       let re = stores.stableSwapStore.getStore("rewards");
@@ -105,7 +110,7 @@ export default function Rewards() {
         re.xBribes.length >= 0 &&
         re.rewards.length >= 0
       ) {
-        setRewards([...re.bribes, ...re.rewards, ...re.veDist]);
+        setRewards([...re.xBribes, ...re.bribes, ...re.rewards, ...re.veDist]);
       }
     }
   };
