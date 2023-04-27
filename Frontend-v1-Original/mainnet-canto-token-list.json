@@ -390,5 +390,13 @@
     "logoURI": "https://cdn.discordapp.com/attachments/1099657337981128704/1100026154649403504/ICON_FINAL.png",
     "name": "WelcomeToColin",
     "symbol": "COLIN"
+  },
+  {
+    "address": "0x42F4a26B58bC1f4Fa9652D208a0223947AB742c7",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cdn.discordapp.com/attachments/1094489825404526592/1100874841034338424/underFLOW.png",
+    "name": "Flow Undertow",
+    "symbol": "underFLOW"
   }
 ]
