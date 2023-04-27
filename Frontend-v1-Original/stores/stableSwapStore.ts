@@ -5924,7 +5924,7 @@ class Store {
 
       const gauges = pairs.filter(hasGauge);
 
-      if (!("structuredCline" in window)) {
+      if (typeof window.structuredClone === "undefined") {
         throw new Error(
           "Your browser does not support structuredClone. Please use a different browser."
         );
