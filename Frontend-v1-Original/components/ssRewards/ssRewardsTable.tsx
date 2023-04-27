@@ -283,7 +283,9 @@ export default function EnhancedTable({
                                   className="text-xs font-extralight"
                                   color="textSecondary"
                                 >
-                                  {row?.rewardType}
+                                  {row?.rewardType !== "XBribe"
+                                    ? row?.rewardType
+                                    : "Bribe"}
                                 </Typography>
                               </div>
                             </div>
