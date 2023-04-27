@@ -5922,14 +5922,19 @@ class Store {
           "Error getting veToken and govToken in getRewardBalances"
         );
 
-      const filteredPairs = [...pairs.filter(hasGauge)];
+      const gauges = pairs.filter(hasGauge);
 
-      const filteredPairs2 = [...pairs.filter(hasGauge)];
+      if (typeof window.structuredClone === "undefined") {
+        throw new Error(
+          "Your browser does not support structuredClone. Please use a different browser."
+        );
+      }
 
-      const x_filteredPairs = [...pairs.filter(hasGauge)];
+      const filteredPairs = structuredClone(gauges);
+      const x_filteredPairs = structuredClone(gauges);
+      const filteredPairs2 = structuredClone(gauges);
 
       let veDistReward: VeDistReward[] = [];
-
       let filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "Bribe"
       let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
 
@@ -5998,11 +6003,7 @@ class Store {
 
         filteredBribes = filteredPairs
           .filter((pair) => {
-            if (
-              pair.gauge &&
-              pair.gauge.bribesEarned &&
-              pair.gauge.bribesEarned.length > 0
-            ) {
+            if (pair.gauge.bribesEarned && pair.gauge.bribesEarned.length > 0) {
               let shouldReturn = false;
 
               for (let i = 0; i < pair.gauge.bribesEarned.length; i++) {
@@ -6030,7 +6031,6 @@ class Store {
         x_filteredBribes = x_filteredPairs
           .filter((pair) => {
             if (
-              pair.gauge &&
               pair.gauge.x_bribesEarned &&
               pair.gauge.x_bribesEarned.length > 0
             ) {
