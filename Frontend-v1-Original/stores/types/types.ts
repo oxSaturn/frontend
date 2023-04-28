@@ -271,7 +271,7 @@ interface Swap {
   to: `0x${string}`;
   amountFrom: string;
   amountTo: string;
-  pool: string;
+  pool: `0x${string}`;
   swapFee: number;
   dex: string;
   meta?: {
