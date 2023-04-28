@@ -7,6 +7,8 @@ import {
   MulticallParameters,
 } from "viem";
 import { canto } from "viem/chains";
+import { createClient } from "wagmi";
+
 import { CONTRACTS } from "../constants/constants";
 
 const dexvaults = http("https://canto.dexvaults.com");
@@ -28,6 +30,11 @@ const client = createPublicClient({
       },
     }
   ),
+});
+
+export const wagmiClient = createClient({
+  autoConnect: true,
+  publicClient: client,
 });
 
 /**

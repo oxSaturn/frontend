@@ -1,48 +1,14 @@
-import { useState, useEffect } from "react";
-import { Typography, Button, Paper } from "@mui/material";
+import { Typography, Paper } from "@mui/material";
+import { useAccount } from "wagmi";
 
 import VestsNFTs from "../../components/ssVests/ssVests";
-import Unlock from "../../components/unlock/unlockModal";
-import { ACTIONS } from "../../stores/constants/constants";
-import stores from "../../stores";
 
 function Vesting() {
-  const accountStore = stores.accountStore.getStore("account");
-  const [account, setAccount] = useState(accountStore);
-  const [unlockOpen, setUnlockOpen] = useState(false);
-
-  useEffect(() => {
-    const accountConfigure = () => {
-      const accountStore = stores.accountStore.getStore("account");
-      setAccount(accountStore);
-      closeUnlock();
-    };
-    const connectWallet = () => {
-      onAddressClicked();
-    };
-
-    stores.emitter.on(ACTIONS.ACCOUNT_CONFIGURED, accountConfigure);
-    stores.emitter.on(ACTIONS.CONNECT_WALLET, connectWallet);
-    return () => {
-      stores.emitter.removeListener(
-        ACTIONS.ACCOUNT_CONFIGURED,
-        accountConfigure
-      );
-      stores.emitter.removeListener(ACTIONS.CONNECT_WALLET, connectWallet);
-    };
-  }, []);
-
-  const onAddressClicked = () => {
-    setUnlockOpen(true);
-  };
-
-  const closeUnlock = () => {
-    setUnlockOpen(false);
-  };
+  const { address } = useAccount();
 
   return (
     <div className="relative mt-0 flex h-full w-full flex-col pt-8">
-      {account && account.address ? (
+      {address ? (
         <div>
           <VestsNFTs />
         </div>
@@ -63,18 +29,9 @@ function Vesting() {
               position is created and represented as an NFT, meaning you can
               hold multiple locked positions.
             </Typography>
-            <Button
-              disableElevation
-              className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
-              variant="contained"
-              onClick={onAddressClicked}
-            >
-              <Typography>Connect Wallet to Continue</Typography>
-            </Button>
           </div>
         </Paper>
       )}
-      {unlockOpen && <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />}
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import { Dispatcher } from "flux";
 import { EventEmitter } from "events";
+
+import { Dispatcher } from "flux";
 
 import AccountStore from "./accountStore";
 import StableSwapStore from "./stableSwapStore";

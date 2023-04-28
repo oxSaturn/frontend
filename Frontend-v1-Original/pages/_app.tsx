@@ -3,11 +3,13 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
+import { WagmiConfig } from "wagmi";
 
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
 import Layout from "../components/layout/layout";
 import stores from "../stores/index";
+import { wagmiClient } from "../stores/connectors/viem";
 import { ACTIONS } from "../stores/constants/constants";
 import createEmotionCache from "../utils/createEmotionCache";
 
@@ -30,28 +32,18 @@ export default function MyApp({
   pageProps,
 }: MyAppProps) {
   const [themeConfig] = useState(darkTheme);
-  const [, setStableSwapConfigured] = useState(false);
   const [accountConfigured, setAccountConfigured] = useState(false);
 
   const accountConfigureReturned = () => {
     setAccountConfigured(true);
   };
 
-  const stableSwapConfigureReturned = () => {
-    setStableSwapConfigured(true);
-  };
-
   useEffect(function () {
-    stores.emitter.on(ACTIONS.CONFIGURED_SS, stableSwapConfigureReturned);
     stores.emitter.on(ACTIONS.ACCOUNT_CONFIGURED, accountConfigureReturned);
 
     stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE });
 
     return () => {
-      stores.emitter.removeListener(
-        ACTIONS.CONFIGURED_SS,
-        stableSwapConfigureReturned
-      );
       stores.emitter.removeListener(
         ACTIONS.ACCOUNT_CONFIGURED,
         accountConfigureReturned
@@ -69,13 +61,15 @@ export default function MyApp({
         />
       </Head>
       <ThemeProvider theme={themeConfig}>
-        {accountConfigured ? (
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        ) : (
-          <Configure {...pageProps} />
-        )}
+        <WagmiConfig client={wagmiClient}>
+          {accountConfigured ? (
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          ) : (
+            <Configure {...pageProps} />
+          )}
+        </WagmiConfig>
       </ThemeProvider>
     </CacheProvider>
   );

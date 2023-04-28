@@ -2,11 +2,7 @@ import EventEmitter from "events";
 
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
-import type { Contract } from "web3-eth-contract";
-import type { AbiItem } from "web3-utils";
 import BigNumber from "bignumber.js";
-import type Web3 from "web3";
-import { TransactionReceipt } from "@ethersproject/providers";
 
 import {
   getContract,
@@ -14,6 +10,7 @@ import {
   parseUnits,
   formatEther,
   parseEther,
+  type WalletClient,
 } from "viem";
 
 import { Dispatcher } from "flux";
@@ -264,9 +261,9 @@ class Store {
         return theNFT[0];
       }
 
-      const account = stores.accountStore.getStore("account");
-      if (!account) {
-        console.warn("account not found");
+      const address = stores.accountStore.getStore("address");
+      if (!address) {
+        console.warn("address not found");
         return null;
       }
 
@@ -285,7 +282,7 @@ class Store {
       const nftsLength = await viemClient.readContract({
         ...vestingContract,
         functionName: "balanceOf",
-        args: [account.address],
+        args: [address],
       });
       const arr = Array.from(
         { length: parseInt(nftsLength.toString()) },
@@ -297,7 +294,7 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address, BigInt(idx)],
+            args: [address, BigInt(idx)],
           });
           const [[lockedAmount, lockedEnd], lockValue, voted] =
             await viemClient.multicall({
@@ -365,7 +362,7 @@ class Store {
         return null;
       }
 
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -386,7 +383,7 @@ class Store {
       const tokenIndex = await viemClient.readContract({
         ...vestingContract,
         functionName: "tokenOfOwnerByIndex",
-        args: [account.address, BigInt(id)],
+        args: [account, BigInt(id)],
       });
 
       const [[lockedAmount, lockedEnd], lockValue, voted] =
@@ -442,7 +439,7 @@ class Store {
 
   getPairByAddress = async (pairAddress: `0x${string}`) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -479,7 +476,7 @@ class Store {
               {
                 ...pc,
                 functionName: "balanceOf",
-                args: [account.address],
+                args: [account],
               },
             ],
           });
@@ -554,7 +551,7 @@ class Store {
           {
             ...pairContract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           },
           {
             ...pairContract,
@@ -605,7 +602,7 @@ class Store {
           {
             ...token0Contract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           },
           {
             ...token1Contract,
@@ -618,7 +615,7 @@ class Store {
           {
             ...token1Contract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           },
         ],
       });
@@ -688,7 +685,7 @@ class Store {
               {
                 ...gaugeContract,
                 functionName: "balanceOf",
-                args: [account.address],
+                args: [account],
               },
               {
                 ...gaugesContract,
@@ -805,7 +802,7 @@ class Store {
       addressB = W_NATIVE_ADDRESS as `0x${string}`;
     }
 
-    const account = stores.accountStore.getStore("account");
+    const account = stores.accountStore.getStore("address");
     if (!account) {
       console.warn("account not found");
       return null;
@@ -848,7 +845,7 @@ class Store {
             {
               ...pc,
               functionName: "balanceOf",
-              args: [account.address],
+              args: [account],
             },
           ],
         });
@@ -935,7 +932,7 @@ class Store {
           {
             ...pairContract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           },
           {
             ...pairContract,
@@ -986,7 +983,7 @@ class Store {
           {
             ...token0Contract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           },
           {
             ...token1Contract,
@@ -999,7 +996,7 @@ class Store {
           {
             ...token1Contract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           },
         ],
       });
@@ -1069,7 +1066,7 @@ class Store {
               {
                 ...gaugeContract,
                 functionName: "balanceOf",
-                args: [account.address],
+                args: [account],
               },
               {
                 ...gaugesContract,
@@ -1277,12 +1274,12 @@ class Store {
       };
 
       if (getBalance) {
-        const account = stores.accountStore.getStore("account");
+        const account = stores.accountStore.getStore("address");
         if (account) {
           const balanceOf = await viemClient.readContract({
             ...baseAssetContract,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [account],
           });
           newBaseAsset.balance = formatUnits(balanceOf, newBaseAsset.decimals);
         }
@@ -1451,7 +1448,7 @@ class Store {
 
   getBalances = async () => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -1466,7 +1463,7 @@ class Store {
     }
   };
 
-  _getVestNFTs = async (account: { address: `0x${string}` }) => {
+  _getVestNFTs = async (address: `0x${string}`) => {
     try {
       const veToken = this.getStore("veToken");
       const govToken = this.getStore("govToken");
@@ -1482,7 +1479,7 @@ class Store {
       const nftsLength = await viemClient.readContract({
         ...vestingContract,
         functionName: "balanceOf",
-        args: [account.address],
+        args: [address],
       });
 
       const arr = Array.from(
@@ -1495,7 +1492,7 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address, BigInt(idx)],
+            args: [address, BigInt(idx)],
           });
           const [[lockedAmount, lockedEnd], lockValue, voted] =
             await viemClient.multicall({
@@ -1544,7 +1541,7 @@ class Store {
     }
   };
 
-  _getGovTokenInfo = async (account: { address: `0x${string}` }) => {
+  _getGovTokenInfo = async (address: `0x${string}`) => {
     try {
       const govToken = this.getStore("govToken");
       if (!govToken) {
@@ -1556,7 +1553,7 @@ class Store {
         abi: CONTRACTS.GOV_TOKEN_ABI,
         address: CONTRACTS.GOV_TOKEN_ADDRESS,
         functionName: "balanceOf",
-        args: [account.address],
+        args: [address],
       });
 
       govToken.balanceOf = balanceOf.toString();
@@ -1565,16 +1562,13 @@ class Store {
       this.setStore({ govToken });
       this.emitter.emit(ACTIONS.UPDATED);
 
-      this._getVestNFTs(account);
+      this._getVestNFTs(address);
     } catch (ex) {
       console.log(ex);
     }
   };
 
-  _getPairInfo = async (
-    account: { address: `0x${string}` },
-    overridePairs?: Pair[]
-  ) => {
+  _getPairInfo = async (address: `0x${string}`, overridePairs?: Pair[]) => {
     try {
       let pairs: Pair[] = [];
 
@@ -1615,7 +1609,7 @@ class Store {
             address: pair.address,
             abi: CONTRACTS.PAIR_ABI,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [address],
           },
         ] as const;
       });
@@ -1682,7 +1676,7 @@ class Store {
             address: pair.gauge.address,
             abi: CONTRACTS.GAUGE_ABI,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [address],
           },
           {
             ...gaugesContract,
@@ -1775,7 +1769,7 @@ class Store {
     }
   };
 
-  _getBaseAssetInfo = async (account: { address: `0x${string}` }) => {
+  _getBaseAssetInfo = async (address: `0x${string}`) => {
     try {
       const baseAssets = this.getStore("baseAssets");
       if (!baseAssets) {
@@ -1795,7 +1789,7 @@ class Store {
       );
       if (nativeToken) {
         const balance = await viemClient.getBalance({
-          address: account.address,
+          address,
         });
         baseAssetsWithBalances.push({
           ...nativeToken,
@@ -1832,7 +1826,7 @@ class Store {
             abi: CONTRACTS.ERC20_ABI,
             address: asset.address,
             functionName: "balanceOf",
-            args: [account.address],
+            args: [address],
           } as const;
         }
       );
@@ -1965,15 +1959,15 @@ class Store {
     try {
       const context = this;
 
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = await stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -1996,15 +1990,14 @@ class Store {
         toki1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
-      const factoryContract = new web3.eth.Contract(
-        CONTRACTS.FACTORY_ABI as unknown as AbiItem[],
-        CONTRACTS.FACTORY_ADDRESS
-      );
-      const pairFor = await factoryContract.methods
-        .getPair(toki0, toki1, stable)
-        .call();
+      const pairFor = await viemClient.readContract({
+        abi: CONTRACTS.FACTORY_ABI,
+        address: CONTRACTS.FACTORY_ADDRESS,
+        functionName: "getPair",
+        args: [toki0, toki1, stable],
+      });
 
-      if (pairFor && pairFor != ZERO_ADDRESS) {
+      if (pairFor && pairFor !== ZERO_ADDRESS) {
         await context.updatePairsCall(account);
         this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
         return null;
@@ -2110,66 +2103,24 @@ class Store {
         });
       }
 
-      const gasPrice = await stores.accountStore.getGasPrice();
-
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance0).lt(amount0)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token0.address
+        await this.writeApprove(
+          walletClient,
+          allowance0TXID,
+          token0.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance0TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
 
       if (BigNumber(allowance1).lt(amount1)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token1.address
+        await this.writeApprove(
+          walletClient,
+          allowance1TXID,
+          token1.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance1TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT DEPOSIT TRANSACTION
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
@@ -2189,192 +2140,279 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      let func = "addLiquidity";
-      let params = [
-        token0.address,
-        token1.address,
-        stable,
-        sendAmount0,
-        sendAmount1,
-        sendAmount0Min,
-        sendAmount1Min,
-        account.address,
-        deadline,
-      ];
-      let sendValue = null;
+      if (
+        token0.address !== NATIVE_TOKEN.symbol &&
+        token1.address !== NATIVE_TOKEN.symbol
+      ) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidity",
+            args: [
+              token0.address,
+              token1.address,
+              stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount1),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: context._mapError((error as Error).message),
+              });
+            }
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else if (token0.address === NATIVE_TOKEN.symbol) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token1.address,
+              stable,
+              BigInt(sendAmount1),
+              BigInt(sendAmount1Min),
+              BigInt(sendAmount0Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount0),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: context._mapError((error as Error).message),
+              });
+            }
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token0.address,
+              stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount1),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: context._mapError((error as Error).message),
+              });
+            }
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      }
+
+      let tok0 = token0.address;
+      let tok1 = token1.address;
       if (token0.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token1.address,
-          stable,
-          sendAmount1,
-          sendAmount1Min,
-          sendAmount0Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount0;
+        tok0 = W_NATIVE_ADDRESS as `0x${string}`;
       }
       if (token1.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token0.address,
-          stable,
-          sendAmount0,
-          sendAmount0Min,
-          sendAmount1Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount1;
+        tok1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as unknown as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-      this._callContractWait(
-        routerContract,
-        func,
-        params,
+      const _pairFor = await viemClient.readContract({
+        abi: CONTRACTS.FACTORY_ABI,
+        address: CONTRACTS.FACTORY_ADDRESS,
+        functionName: "getPair",
+        args: [tok0, tok1, stable],
+      });
+
+      // SUBMIT CREATE GAUGE TRANSACTION
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.VOTER_ABI,
+          address: CONTRACTS.VOTER_ADDRESS,
+          functionName: "createGauge",
+          args: [_pairFor],
+        });
+        const txHash = await walletClient.sendTransaction(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: createGaugeTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: createGaugeTXID,
+              error: context._mapError((error as Error).message),
+            });
+          }
+          context.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: createGaugeTXID,
+            error: error,
+          });
+        }
+      }
+
+      const gaugeAddress = await viemClient.readContract({
+        abi: CONTRACTS.VOTER_ABI,
+        address: CONTRACTS.VOTER_ADDRESS,
+        functionName: "gauges",
+        args: [_pairFor],
+      });
+
+      const balanceOf = await viemClient.readContract({
+        abi: CONTRACTS.PAIR_ABI,
+        address: _pairFor,
+        functionName: "balanceOf",
+        args: [account],
+      });
+      // FIXME possible place for error
+      const pair = await this.getPairByAddress(_pairFor);
+
+      const stakeAllowance = await this._getStakeAllowance(
+        pair,
         account,
-        depositTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          // GET PAIR FOR NEWLY CREATED LIQUIDITY POOL
-          let tok0 = token0.address;
-          let tok1 = token1.address;
-          if (token0.address === NATIVE_TOKEN.symbol) {
-            tok0 = W_NATIVE_ADDRESS as `0x${string}`;
-          }
-          if (token1.address === NATIVE_TOKEN.symbol) {
-            tok1 = W_NATIVE_ADDRESS as `0x${string}`;
-          }
-          const pairFor = await factoryContract.methods
-            .getPair(tok0, tok1, stable)
-            .call();
-
-          // SUBMIT CREATE GAUGE TRANSACTION
-          const gaugesContract = new web3.eth.Contract(
-            CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-            CONTRACTS.VOTER_ADDRESS
-          );
-          this._callContractWait(
-            gaugesContract,
-            "createGauge",
-            [pairFor],
-            account,
-            createGaugeTXID,
-            async (err) => {
-              if (err) {
-                return this.emitter.emit(ACTIONS.ERROR, err);
-              }
-
-              const gaugeAddress = await gaugesContract.methods
-                .gauges(pairFor)
-                .call();
-
-              const pairContract = new web3.eth.Contract(
-                CONTRACTS.PAIR_ABI as unknown as AbiItem[],
-                pairFor
-              );
-              const gaugeContract = new web3.eth.Contract(
-                CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-                gaugeAddress
-              );
-
-              const balanceOf = await pairContract.methods
-                .balanceOf(account.address)
-                .call();
-              // FIXME this throws and pair is null for some reason (fork issue? fe issue?)
-              const pair = await this.getPairByAddress(pairFor);
-              const stakeAllowance = await this._getStakeAllowance(
-                pair,
-                account,
-                pairFor
-              );
-              if (!stakeAllowance) throw new Error("stakeAllowance is null");
-              if (
-                BigNumber(stakeAllowance).lt(
-                  BigNumber(balanceOf)
-                    .div(10 ** PAIR_DECIMALS)
-                    .toFixed(PAIR_DECIMALS)
-                )
-              ) {
-                this.emitter.emit(ACTIONS.TX_STATUS, {
-                  uuid: stakeAllowanceTXID,
-                  description: `Allow the router to spend your ${pair.symbol}`,
-                });
-              } else {
-                this.emitter.emit(ACTIONS.TX_STATUS, {
-                  uuid: stakeAllowanceTXID,
-                  description: `Allowance on ${pair.symbol} sufficient`,
-                  status: "DONE",
-                });
-              }
-
-              const allowanceCallsPromise = [];
-
-              if (
-                BigNumber(stakeAllowance).lt(
-                  BigNumber(balanceOf)
-                    .div(10 ** PAIR_DECIMALS)
-                    .toFixed(PAIR_DECIMALS)
-                )
-              ) {
-                const stakePromise = new Promise<void>((resolve, reject) => {
-                  context._callContractWait(
-                    pairContract,
-                    "approve",
-                    [pair.gauge.address, MAX_UINT256],
-                    account,
-                    stakeAllowanceTXID,
-                    (err) => {
-                      if (err) {
-                        reject(err);
-                        return;
-                      }
-
-                      resolve();
-                    }
-                  );
-                });
-
-                allowanceCallsPromise.push(stakePromise);
-              }
-
-              const done = await Promise.all(allowanceCallsPromise);
-
-              let sendTok = "0";
-              // if (token && token.id) {
-              //   sendTok = token.id;
-              // }
-
-              this._callContractWait(
-                gaugeContract,
-                "deposit",
-                [balanceOf, sendTok],
-                account,
-                stakeTXID,
-                async (err) => {
-                  if (err) {
-                    return this.emitter.emit(ACTIONS.ERROR, err);
-                  }
-
-                  await context.updatePairsCall(account);
-
-                  this.emitter.emit(ACTIONS.PAIR_CREATED, pairFor);
-                }
-              );
-            }
-          );
-        },
-        sendValue
+        _pairFor
       );
+      if (!stakeAllowance) throw new Error("stakeAllowance is null");
+
+      if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: stakeAllowanceTXID,
+          description: `Allow the router to spend your ${pair.symbol}`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: stakeAllowanceTXID,
+          description: `Allowance on ${pair.symbol} sufficient`,
+          status: "DONE",
+        });
+      }
+
+      if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+        await this.writeApprove(
+          walletClient,
+          stakeAllowanceTXID,
+          _pairFor,
+          gaugeAddress
+        );
+      }
+
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.GAUGE_ABI,
+          address: gaugeAddress,
+          functionName: "deposit",
+          args: [balanceOf, BigInt(0)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: stakeTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: stakeTXID,
+              error: context._mapError((error as Error).message),
+            });
+          }
+          context.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: stakeTXID,
+            error: error,
+          });
+        }
+      }
+
+      await context.updatePairsCall(account);
+
+      this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -2396,15 +2434,15 @@ class Store {
     try {
       const context = this;
 
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -2426,15 +2464,14 @@ class Store {
         toki1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
-      const factoryContract = new web3.eth.Contract(
-        CONTRACTS.FACTORY_ABI as unknown as AbiItem[],
-        CONTRACTS.FACTORY_ADDRESS
-      );
-      const pairFor = await factoryContract.methods
-        .getPair(toki0, toki1, stable)
-        .call();
+      const pairFor = await viemClient.readContract({
+        abi: CONTRACTS.FACTORY_ABI,
+        address: CONTRACTS.FACTORY_ADDRESS,
+        functionName: "getPair",
+        args: [toki0, toki1, stable],
+      });
 
-      if (pairFor && pairFor != ZERO_ADDRESS) {
+      if (pairFor && pairFor !== ZERO_ADDRESS) {
         await context.updatePairsCall(account);
         this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
         return null;
@@ -2528,64 +2565,24 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance0).lt(amount0)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token0.address
+        await this.writeApprove(
+          walletClient,
+          allowance0TXID,
+          token0.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-        console.log(CONTRACTS.ROUTER_ADDRESS);
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance0TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
 
       if (BigNumber(allowance1).lt(amount1)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token1.address
+        await this.writeApprove(
+          walletClient,
+          allowance1TXID,
+          token1.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance1TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT DEPOSIT TRANSACTION
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
@@ -2605,113 +2602,213 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      let func = "addLiquidity";
-      let params = [
-        token0.address,
-        token1.address,
-        stable,
-        sendAmount0,
-        sendAmount1,
-        sendAmount0Min,
-        sendAmount1Min,
-        account.address,
-        deadline,
-      ];
-      let sendValue = null;
+      if (
+        token0.address !== NATIVE_TOKEN.symbol &&
+        token1.address !== NATIVE_TOKEN.symbol
+      ) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidity",
+            args: [
+              token0.address,
+              token1.address,
+              stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount1),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: context._mapError((error as Error).message),
+              });
+            }
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else if (token0.address === NATIVE_TOKEN.symbol) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token1.address,
+              stable,
+              BigInt(sendAmount1),
+              BigInt(sendAmount1Min),
+              BigInt(sendAmount0Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount0),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: context._mapError((error as Error).message),
+              });
+            }
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token0.address,
+              stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount1),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              context.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: context._mapError((error as Error).message),
+              });
+            }
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      }
+
+      let tok0 = token0.address;
+      let tok1 = token1.address;
       if (token0.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token1.address,
-          stable,
-          sendAmount1,
-          sendAmount1Min,
-          sendAmount0Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount0;
+        tok0 = W_NATIVE_ADDRESS as `0x${string}`;
       }
       if (token1.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token0.address,
-          stable,
-          sendAmount0,
-          sendAmount0Min,
-          sendAmount1Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount1;
+        tok1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as unknown as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-      this._callContractWait(
-        routerContract,
-        func,
-        params,
-        account,
-        depositTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
+      const _pairFor = await viemClient.readContract({
+        abi: CONTRACTS.FACTORY_ABI,
+        address: CONTRACTS.FACTORY_ADDRESS,
+        functionName: "getPair",
+        args: [tok0, tok1, stable],
+      });
+
+      // SUBMIT CREATE GAUGE TRANSACTION
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.VOTER_ABI,
+          address: CONTRACTS.VOTER_ADDRESS,
+          functionName: "createGauge",
+          args: [_pairFor],
+        });
+        const txHash = await walletClient.sendTransaction(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: createGaugeTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            context.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: createGaugeTXID,
+              error: context._mapError((error as Error).message),
+            });
           }
+          context.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: createGaugeTXID,
+            error: error,
+          });
+        }
+      }
 
-          // GET PAIR FOR NEWLY CREATED LIQUIDITY POOL
-          let tok0 = token0.address;
-          let tok1 = token1.address;
-          if (token0.address === NATIVE_TOKEN.symbol) {
-            tok0 = W_NATIVE_ADDRESS as `0x${string}`;
-          }
-          if (token1.address === NATIVE_TOKEN.symbol) {
-            tok1 = W_NATIVE_ADDRESS as `0x${string}`;
-          }
-          const pairFor = await factoryContract.methods
-            .getPair(tok0, tok1, stable)
-            .call();
+      await context.updatePairsCall(account);
 
-          // SUBMIT CREATE GAUGE TRANSACTION
-          const gaugesContract = new web3.eth.Contract(
-            CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-            CONTRACTS.VOTER_ADDRESS
-          );
-          this._callContractWait(
-            gaugesContract,
-            "createGauge",
-            [pairFor],
-            account,
-            createGaugeTXID,
-            async (err) => {
-              if (err) {
-                return this.emitter.emit(ACTIONS.ERROR, err);
-              }
-
-              await context.updatePairsCall(account);
-
-              this.emitter.emit(ACTIONS.PAIR_CREATED, pairFor);
-            }
-          );
-        },
-        sendValue
-      );
+      this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
   };
 
-  updatePairsCall = async (account: { address: `0x${string}` }) => {
+  updatePairsCall = async (address: `0x${string}`) => {
     try {
       // update pairs is same endpoint in API. Pairs are updated in sync on backend
       const response = await fetch(`/api/pairs`);
       const pairsCall = await response.json();
       this.setStore({ pairs: pairsCall.data });
 
-      await this._getPairInfo(account, pairsCall.data);
+      await this._getPairInfo(address, pairsCall.data);
     } catch (ex) {
       console.log(ex);
     }
@@ -2738,17 +2835,15 @@ class Store {
     };
   }) => {
     try {
-      const context = this;
-
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("walletClient not found");
         return null;
       }
 
@@ -2835,66 +2930,24 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance0).lt(amount0)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token0.address
+        await this.writeApprove(
+          walletClient,
+          allowance0TXID,
+          token0.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance0TXID,
-            (err) => {
-              if (err) {
-                console.log(err);
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
 
       if (BigNumber(allowance1).lt(amount1)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token1.address
+        await this.writeApprove(
+          walletClient,
+          allowance1TXID,
+          token1.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance1TXID,
-            (err) => {
-              if (err) {
-                console.log(err);
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT DEPOSIT TRANSACTION
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
@@ -2914,69 +2967,146 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as unknown as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
+      if (
+        token0.address !== NATIVE_TOKEN.symbol &&
+        token1.address !== NATIVE_TOKEN.symbol
+      ) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidity",
+            args: [
+              token0.address,
+              token1.address,
+              pair.stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount1),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-      let func = "addLiquidity";
-      let params = [
-        token0.address,
-        token1.address,
-        pair.stable,
-        sendAmount0,
-        sendAmount1,
-        sendAmount0Min,
-        sendAmount1Min,
-        account.address,
-        deadline,
-      ];
-      let sendValue = null;
-
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token1.address,
-          pair.stable,
-          sendAmount1,
-          sendAmount1Min,
-          sendAmount0Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount0;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token0.address,
-          pair.stable,
-          sendAmount0,
-          sendAmount0Min,
-          sendAmount1Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount1;
-      }
-
-      this._callContractWait(
-        routerContract,
-        func,
-        params,
-        account,
-        depositTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
           }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else if (token0.address === NATIVE_TOKEN.symbol) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token1.address,
+              pair.stable,
+              BigInt(sendAmount1),
+              BigInt(sendAmount1Min),
+              BigInt(sendAmount0Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount0),
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-          this._getPairInfo(account);
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token0.address,
+              pair.stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount1),
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-          this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
-        },
-        sendValue
-      );
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      }
+
+      this._getPairInfo(account);
+      this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -2988,17 +3118,15 @@ class Store {
     content: { pair: Gauge; token: any };
   }) => {
     try {
-      const context = this;
-
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -3028,21 +3156,14 @@ class Store {
       const stakeAllowance = await this._getStakeAllowance(pair, account);
       if (!stakeAllowance) throw new Error("Error getting stake allowance");
 
-      const pairContract = new web3.eth.Contract(
-        CONTRACTS.PAIR_ABI as unknown as AbiItem[],
-        pair.address
-      );
-      const balanceOf = await pairContract.methods
-        .balanceOf(account.address)
-        .call();
+      const balanceOf = await viemClient.readContract({
+        abi: CONTRACTS.PAIR_ABI,
+        address: pair.address,
+        functionName: "balanceOf",
+        args: [account],
+      });
 
-      if (
-        BigNumber(stakeAllowance).lt(
-          BigNumber(balanceOf)
-            .div(10 ** PAIR_DECIMALS)
-            .toFixed(PAIR_DECIMALS)
-        )
-      ) {
+      if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: stakeAllowanceTXID,
           description: `Allow the router to spend your ${pair.symbol}`,
@@ -3055,66 +3176,54 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
 
-      if (
-        BigNumber(stakeAllowance).lt(
-          BigNumber(balanceOf)
-            .div(10 ** PAIR_DECIMALS)
-            .toFixed(PAIR_DECIMALS)
-        )
-      ) {
-        const stakePromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            pairContract,
-            "approve",
-            [pair.gauge?.address, MAX_UINT256],
-            account,
-            stakeAllowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(stakePromise);
+      if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+        await this.writeApprove(
+          walletClient,
+          stakeAllowanceTXID,
+          pair.address,
+          pair.gauge.address
+        );
       }
 
-      const done = await Promise.all(allowanceCallsPromises);
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.GAUGE_ABI,
+          address: pair.gauge.address,
+          functionName: "deposit",
+          args: [balanceOf, BigInt(0)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      const gaugeContract = new web3.eth.Contract(
-        CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-        pair.gauge.address
-      );
-
-      let sendTok = "0";
-      // if (token && token.id) {
-      //   sendTok = token.id;
-      // }
-
-      this._callContractWait(
-        gaugeContract,
-        "deposit",
-        [balanceOf, sendTok],
-        account,
-        stakeTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._getPairInfo(account);
-
-          this.emitter.emit(ACTIONS.LIQUIDITY_STAKED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: stakeTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: stakeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: stakeTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getPairInfo(account);
+      this.emitter.emit(ACTIONS.LIQUIDITY_STAKED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -3135,17 +3244,15 @@ class Store {
     };
   }) => {
     try {
-      const context = this;
-
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -3268,93 +3375,35 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance0).lt(amount0)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token0.address
+        await this.writeApprove(
+          walletClient,
+          allowance0TXID,
+          token0.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance0TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
 
       if (BigNumber(allowance1).lt(amount1)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          token1.address
+        await this.writeApprove(
+          walletClient,
+          allowance1TXID,
+          token1.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowance1TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
 
       if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
 
       if (BigNumber(stakeAllowance).lt(minLiquidity)) {
-        const pairContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          pair.address
+        await this.writeApprove(
+          walletClient,
+          stakeAllowanceTXID,
+          pair.address,
+          pair.gauge.address
         );
-
-        const stakePromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            pairContract,
-            "approve",
-            [pair.gauge?.address, MAX_UINT256],
-            account,
-            stakeAllowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(stakePromise);
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT DEPOSIT TRANSACTION
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
@@ -3374,115 +3423,201 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as unknown as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-      const gaugeContract = new web3.eth.Contract(
-        CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-        pair.gauge.address
-      );
-      const pairContract = new web3.eth.Contract(
-        CONTRACTS.PAIR_ABI as unknown as AbiItem[],
-        pair.address
-      );
+      const balanceOf = await viemClient.readContract({
+        abi: CONTRACTS.PAIR_ABI,
+        address: pair.address,
+        functionName: "balanceOf",
+        args: [account],
+      });
 
-      let func = "addLiquidity";
-      let params = [
-        token0.address,
-        token1.address,
-        pair.stable,
-        sendAmount0,
-        sendAmount1,
-        sendAmount0Min,
-        sendAmount1Min,
-        account.address,
-        deadline,
-      ];
-      let sendValue = null;
-
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token1.address,
-          pair.stable,
-          sendAmount1,
-          sendAmount1Min,
-          sendAmount0Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount0;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        func = "addLiquidityETH";
-        params = [
-          token0.address,
-          pair.stable,
-          sendAmount0,
-          sendAmount0Min,
-          sendAmount1Min,
-          account.address,
-          deadline,
-        ];
-        sendValue = sendAmount1;
-      }
-
-      this._callContractWait(
-        routerContract,
-        func,
-        params,
-        account,
-        depositTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          const balanceOf = await pairContract.methods
-            .balanceOf(account.address)
-            .call();
-
-          let sendTok = "0";
-          // if (token && token.id) {
-          //   sendTok = token.id;
-          // }
-
-          this._callContractWait(
-            gaugeContract,
-            "deposit",
-            [balanceOf, sendTok],
+      if (
+        token0.address !== NATIVE_TOKEN.symbol &&
+        token1.address !== NATIVE_TOKEN.symbol
+      ) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
             account,
-            stakeTXID,
-            (err) => {
-              if (err) {
-                return this.emitter.emit(ACTIONS.ERROR, err);
-              }
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidity",
+            args: [
+              token0.address,
+              token1.address,
+              pair.stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount1),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-              this._getPairInfo(account);
-
-              this.emitter.emit(ACTIONS.ADD_LIQUIDITY_AND_STAKED);
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        },
-        sendValue
-      );
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else if (token0.address === NATIVE_TOKEN.symbol) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token1.address,
+              pair.stable,
+              BigInt(sendAmount1),
+              BigInt(sendAmount1Min),
+              BigInt(sendAmount0Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount0),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      } else {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
+          const { request } = await viemClient.simulateContract({
+            account,
+            abi: CONTRACTS.ROUTER_ABI,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            functionName: "addLiquidityETH",
+            args: [
+              token0.address,
+              pair.stable,
+              BigInt(sendAmount0),
+              BigInt(sendAmount0Min),
+              BigInt(sendAmount1Min),
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendAmount1),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: depositTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: depositTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: depositTXID,
+              error: error,
+            });
+          }
+        }
+      }
+
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.GAUGE_ABI,
+          address: pair.gauge.address,
+          functionName: "deposit",
+          args: [balanceOf, BigInt(0)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: stakeTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: stakeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: stakeTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getPairInfo(account);
+      this.emitter.emit(ACTIONS.ADD_LIQUIDITY_AND_STAKED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
   };
 
-  _getDepositAllowance = async (
-    token: BaseAsset,
-    account: { address: `0x${string}` }
-  ) => {
+  _getDepositAllowance = async (token: BaseAsset, address: `0x${string}`) => {
     try {
       const allowance = await viemClient.readContract({
         address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address, CONTRACTS.ROUTER_ADDRESS],
+        args: [address, CONTRACTS.ROUTER_ADDRESS],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -3494,7 +3629,7 @@ class Store {
 
   _getStakeAllowance = async (
     pair: Gauge,
-    account: { address: `0x${string}` },
+    address: `0x${string}`,
     pairAddress?: `0x${string}`
   ) => {
     try {
@@ -3513,7 +3648,7 @@ class Store {
       const allowance = await viemClient.readContract({
         ...tokenContract,
         functionName: "allowance",
-        args: [account.address, pair.gauge.address],
+        args: [address, pair.gauge.address],
       });
 
       return formatUnits(allowance, PAIR_DECIMALS);
@@ -3523,16 +3658,13 @@ class Store {
     }
   };
 
-  _getWithdrawAllowance = async (
-    pair: Pair,
-    account: { address: `0x${string}` }
-  ) => {
+  _getWithdrawAllowance = async (pair: Pair, address: `0x${string}`) => {
     try {
       const allowance = await viemClient.readContract({
         address: pair.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address, CONTRACTS.ROUTER_ADDRESS],
+        args: [address, CONTRACTS.ROUTER_ADDRESS],
       });
 
       return formatUnits(allowance, PAIR_DECIMALS);
@@ -3553,7 +3685,7 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -3606,7 +3738,7 @@ class Store {
     content: { pair: Pair };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -3635,17 +3767,17 @@ class Store {
         {
           ...token0Contract,
           functionName: "balanceOf",
-          args: [account.address],
+          args: [account],
         },
         {
           ...token1Contract,
           functionName: "balanceOf",
-          args: [account.address],
+          args: [account],
         },
         {
           ...pairContract,
           functionName: "balanceOf",
-          args: [account.address],
+          args: [account],
         },
       ] as const;
 
@@ -3674,7 +3806,7 @@ class Store {
           address: pair.gauge.address,
           abi: CONTRACTS.ERC20_ABI,
           functionName: "balanceOf",
-          args: [account.address],
+          args: [account],
         });
       }
 
@@ -3699,17 +3831,15 @@ class Store {
     };
   }) => {
     try {
-      const context = this;
-
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -3754,92 +3884,83 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(pair.balance)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          pair.address
+        await this.writeApprove(
+          walletClient,
+          allowanceTXID,
+          pair.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowanceTXID,
-            (err) => {
-              if (err) {
-                console.log(err);
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT WITHDRAW TRANSACTION
       const sendAmount = BigNumber(pair.balance)
         .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as unknown as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-
-      const quoteRemove = await routerContract.methods
-        .quoteRemoveLiquidity(
-          token0.address,
-          token1.address,
-          pair.stable,
-          sendAmount
-        )
-        .call();
+      const [amountA, amountB] = await viemClient.readContract({
+        address: CONTRACTS.ROUTER_ADDRESS,
+        abi: CONTRACTS.ROUTER_ABI,
+        functionName: "quoteRemoveLiquidity",
+        args: [token0.address, token1.address, pair.stable, BigInt(sendAmount)],
+      });
 
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
       const deadline = "" + moment().add(600, "seconds").unix();
-      const sendAmount0Min = BigNumber(quoteRemove.amountA)
+      const sendAmount0Min = BigNumber(amountA.toString())
         .times(sendSlippage)
         .toFixed(0);
-      const sendAmount1Min = BigNumber(quoteRemove.amountB)
+      const sendAmount1Min = BigNumber(amountB.toString())
         .times(sendSlippage)
         .toFixed(0);
 
-      this._callContractWait(
-        routerContract,
-        "removeLiquidity",
-        [
-          token0.address,
-          token1.address,
-          pair.stable,
-          sendAmount,
-          sendAmount0Min,
-          sendAmount1Min,
-          account.address,
-          deadline,
-        ],
-        account,
-        withdrawTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: withdrawTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.ROUTER_ABI,
+          address: CONTRACTS.ROUTER_ADDRESS,
+          functionName: "removeLiquidity",
+          args: [
+            token0.address,
+            token1.address,
+            pair.stable,
+            BigInt(sendAmount),
+            BigInt(sendAmount0Min),
+            BigInt(sendAmount1Min),
+            account,
+            BigInt(deadline),
+          ],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          this._getPairInfo(account);
-
-          this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: withdrawTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: withdrawTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: withdrawTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getPairInfo(account);
+      this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -3854,22 +3975,20 @@ class Store {
       amount: string;
       amount0: string;
       amount1: string;
-      pair: Pair;
+      pair: Gauge;
       slippage: string;
     };
   }) => {
     try {
-      const context = this;
-
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -3921,37 +4040,15 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(amount)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          pair.address
+        await this.writeApprove(
+          walletClient,
+          allowanceTXID,
+          pair.address,
+          CONTRACTS.ROUTER_ADDRESS
         );
-
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.ROUTER_ADDRESS, MAX_UINT256],
-            account,
-            allowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT DEPOSIT TRANSACTION
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
@@ -3968,61 +4065,93 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      const routerContract = new web3.eth.Contract(
-        CONTRACTS.ROUTER_ABI as unknown as AbiItem[],
-        CONTRACTS.ROUTER_ADDRESS
-      );
-      const gaugeContract = new web3.eth.Contract(
-        CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-        pair.gauge?.address
-      );
-      const pairContract = new web3.eth.Contract(
-        CONTRACTS.PAIR_ABI as unknown as AbiItem[],
-        pair.address
-      );
+      const balanceOf = await viemClient.readContract({
+        abi: CONTRACTS.PAIR_ABI,
+        address: pair.address,
+        functionName: "balanceOf",
+        args: [account],
+      });
 
-      this._callContractWait(
-        gaugeContract,
-        "withdraw",
-        [sendAmount],
-        account,
-        unstakeTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: unstakeTXID });
+        const { request } = await viemClient.simulateContract({
+          address: pair.gauge?.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "withdraw",
+          args: [BigInt(sendAmount)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          const balanceOf = await pairContract.methods
-            .balanceOf(account.address)
-            .call();
-
-          this._callContractWait(
-            routerContract,
-            "removeLiquidity",
-            [
-              token0.address,
-              token1.address,
-              pair.stable,
-              balanceOf,
-              sendAmount0Min,
-              sendAmount1Min,
-              account.address,
-              deadline,
-            ],
-            account,
-            withdrawTXID,
-            (err) => {
-              if (err) {
-                return this.emitter.emit(ACTIONS.ERROR, err);
-              }
-
-              this._getPairInfo(account);
-
-              this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
-            }
-          );
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: unstakeTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: unstakeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: unstakeTXID,
+            error: error,
+          });
+        }
+      }
+
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: withdrawTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          abi: CONTRACTS.ROUTER_ABI,
+          address: CONTRACTS.ROUTER_ADDRESS,
+          functionName: "removeLiquidity",
+          args: [
+            token0.address,
+            token1.address,
+            pair.stable,
+            balanceOf,
+            BigInt(sendAmount0Min),
+            BigInt(sendAmount1Min),
+            account,
+            BigInt(deadline),
+          ],
+        });
+        const txHash = await walletClient.sendTransaction(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: withdrawTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: withdrawTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: withdrawTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getPairInfo(account);
+      this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4031,18 +4160,18 @@ class Store {
 
   unstakeLiquidity = async (payload: {
     type: string;
-    content: { amount: string; pair: Pair };
+    content: { amount: string; pair: Gauge };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4069,27 +4198,42 @@ class Store {
         .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
 
-      const gaugeContract = new web3.eth.Contract(
-        CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-        pair.gauge?.address
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: unstakeTXID });
+        const { request } = await viemClient.simulateContract({
+          address: pair.gauge?.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "withdraw",
+          args: [BigInt(sendAmount)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        gaugeContract,
-        "withdraw",
-        [sendAmount],
-        account,
-        unstakeTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._getPairInfo(account);
-
-          this.emitter.emit(ACTIONS.LIQUIDITY_UNSTAKED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: unstakeTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: unstakeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: unstakeTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getPairInfo(account);
+      this.emitter.emit(ACTIONS.LIQUIDITY_UNSTAKED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4106,7 +4250,7 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -4151,15 +4295,15 @@ class Store {
 
   createGauge = async (payload: { type: string; content: { pair: Pair } }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4181,26 +4325,43 @@ class Store {
         ],
       });
 
-      const gaugesContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
-      this._callContractWait(
-        gaugesContract,
-        "createGauge",
-        [pair.address],
-        account,
-        createGaugeTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VOTER_ADDRESS,
+          abi: CONTRACTS.VOTER_ABI,
+          functionName: "createGauge",
+          args: [pair.address],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          await this.updatePairsCall(account);
-
-          this.emitter.emit(ACTIONS.CREATE_GAUGE_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: createGaugeTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: createGaugeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: createGaugeTXID,
+            error: error,
+          });
+        }
+      }
+
+      await this.updatePairsCall(account);
+
+      this.emitter.emit(ACTIONS.CREATE_GAUGE_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4216,7 +4377,7 @@ class Store {
       slippage: number;
     };
   }) => {
-    const address = stores.accountStore.getStore("account")?.address;
+    const address = stores.accountStore.getStore("address");
     if (!address) throw new Error("no address");
     try {
       const res = await fetch("/api/firebird-router", {
@@ -4247,15 +4408,15 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4320,61 +4481,120 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
       if (!allowance) throw new Error("Couldn't fetch allowance");
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(fromAmount)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          fromAsset.address
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: allowanceTXID });
+          const { request } = await viemClient.simulateContract({
+            address: fromAsset.address,
+            abi: CONTRACTS.ERC20_ABI,
+            functionName: "approve",
+            args: [quote.encodedData.router, BigInt(MAX_UINT256)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            tokenContract,
-            "approve",
-            [quote.encodedData.router, MAX_UINT256],
-            account,
-            allowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: allowanceTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: allowanceTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: allowanceTXID,
+              error: error,
+            });
+          }
+        }
       }
 
-      const done = await Promise.all(allowanceCallsPromises);
-
       // SUBMIT SWAP TRANSACTION
-      const tx = {
-        from: account.address, // signer address
-        to: quote.encodedData.router, // router address
-        gasPrice: quote.maxReturn.gasPrice,
-        data: quote.encodedData.data, // encoded contract data
-        value:
-          quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-            ? quote.maxReturn.totalFrom
-            : undefined,
-      };
-
-      this._sendTransactionWait(web3, tx, swapTXID, (err) => {
-        if (err) {
-          return this.emitter.emit(ACTIONS.ERROR, err);
+      if (
+        quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      ) {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+          const txHash = await walletClient.sendTransaction({
+            account,
+            to: quote.encodedData.router,
+            value: BigInt(quote.maxReturn.totalFrom),
+            data: quote.encodedData.data,
+            gasPrice: BigInt(quote.maxReturn.gasPrice),
+          });
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: swapTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: swapTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: swapTXID,
+              error: error,
+            });
+          }
         }
+      } else {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+          const txHash = await walletClient.sendTransaction({
+            account,
+            to: quote.encodedData.router,
+            value: undefined,
+            data: quote.encodedData.data,
+            gasPrice: BigInt(quote.maxReturn.gasPrice),
+          });
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: swapTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: swapTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: swapTXID,
+              error: error,
+            });
+          }
+        }
+      }
 
-        this._getSpecificAssetInfo(account, fromAsset.address);
-        this._getSpecificAssetInfo(account, toAsset.address); // TODO use this instead of get balances dispatch?
-        this._getPairInfo(account);
+      this._getSpecificAssetInfo(account, fromAsset.address);
+      this._getSpecificAssetInfo(account, toAsset.address); // TODO use this instead of get balances dispatch?
+      this._getPairInfo(account);
 
-        this.emitter.emit(ACTIONS.SWAP_RETURNED);
-      });
+      this.emitter.emit(ACTIONS.SWAP_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4386,15 +4606,15 @@ class Store {
     content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4447,39 +4667,81 @@ class Store {
         .times(10 ** 18)
         .toFixed(0);
 
-      const wethContract = new web3.eth.Contract(
-        W_NATIVE_ABI as unknown as AbiItem[],
-        W_NATIVE_ADDRESS
-      );
-
-      let func = "withdraw";
-      let params = [sendFromAmount];
-      let sendValue = null;
-
       if (isWrap) {
-        func = "deposit";
-        params = [];
-        sendValue = sendFromAmount;
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+          const { request } = await viemClient.simulateContract({
+            address: W_NATIVE_ADDRESS as `0x${string}`,
+            abi: W_NATIVE_ABI,
+            functionName: "deposit",
+            args: undefined,
+            value: BigInt(sendFromAmount),
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: wrapUnwrapTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: wrapUnwrapTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: wrapUnwrapTXID,
+              error: error,
+            });
+          }
+        }
+      } else {
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+          const { request } = await viemClient.simulateContract({
+            address: W_NATIVE_ADDRESS as `0x${string}`,
+            abi: W_NATIVE_ABI,
+            functionName: "withdraw",
+            args: [BigInt(sendFromAmount)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
+
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: wrapUnwrapTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: wrapUnwrapTXID,
+                error: this._mapError((error as Error).message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: wrapUnwrapTXID,
+              error: error,
+            });
+          }
+        }
       }
 
-      this._callContractWait(
-        wethContract,
-        func,
-        params,
-        account,
-        wrapUnwrapTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      this._getSpecificAssetInfo(account, fromAsset.address);
+      this._getSpecificAssetInfo(account, toAsset.address);
 
-          this._getSpecificAssetInfo(account, fromAsset.address);
-          this._getSpecificAssetInfo(account, toAsset.address);
-
-          this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
-        },
-        sendValue
-      );
+      this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4487,7 +4749,7 @@ class Store {
   };
 
   _getSpecificAssetInfo = async (
-    account: { address: `0x${string}` },
+    address: `0x${string}`,
     assetAddress: `0x${string}`
   ) => {
     try {
@@ -4502,7 +4764,7 @@ class Store {
           if (asset.address.toLowerCase() === assetAddress.toLowerCase()) {
             if (asset.address === NATIVE_TOKEN.symbol) {
               let bal = await viemClient.getBalance({
-                address: account.address,
+                address,
               });
               asset.balance = formatUnits(bal, asset.decimals);
             } else {
@@ -4510,7 +4772,7 @@ class Store {
                 address: asset.address,
                 abi: CONTRACTS.ERC20_ABI,
                 functionName: "balanceOf",
-                args: [account.address],
+                args: [address],
               });
 
               asset.balance = formatUnits(balanceOf, asset.decimals);
@@ -4531,7 +4793,7 @@ class Store {
 
   _getFirebirdSwapAllowance = async (
     token: BaseAsset,
-    account: { address: `0x${string}` },
+    address: `0x${string}`,
     quote: QuoteSwapResponse
   ) => {
     try {
@@ -4539,7 +4801,7 @@ class Store {
         address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address, quote.encodedData.router],
+        args: [address, quote.encodedData.router],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -4558,7 +4820,7 @@ class Store {
   //       address: token.address ,
   //       abi: CONTRACTS.ERC20_ABI,
   //       functionName: "allowance",
-  //       args: [account.address , CONTRACTS.ROUTER_ADDRESS],
+  //       args: [account , CONTRACTS.ROUTER_ADDRESS],
   //     });
 
   //     return formatUnits(allowance, token.decimals);
@@ -4570,7 +4832,7 @@ class Store {
 
   getVestNFTs = async () => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -4590,7 +4852,7 @@ class Store {
       const nftsLength = await viemClient.readContract({
         ...vestingContract,
         functionName: "balanceOf",
-        args: [account.address],
+        args: [account],
       });
 
       const arr = Array.from(
@@ -4603,7 +4865,7 @@ class Store {
           const tokenIndex = await viemClient.readContract({
             ...vestingContract,
             functionName: "tokenOfOwnerByIndex",
-            args: [account.address, BigInt(idx)] as const,
+            args: [account, BigInt(idx)] as const,
           });
 
           const [[lockedAmount, lockedEnd], lockValue, voted] =
@@ -4658,15 +4920,15 @@ class Store {
     content: { amount: string; unlockTime: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4716,81 +4978,99 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(amount)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          govToken.address
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: allowanceTXID });
+          const { request } = await viemClient.simulateContract({
+            address: govToken.address,
+            abi: CONTRACTS.ERC20_ABI,
+            functionName: "approve",
+            args: [CONTRACTS.VE_TOKEN_ADDRESS, BigInt(MAX_UINT256)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.VE_TOKEN_ADDRESS, MAX_UINT256],
-            account,
-            allowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: allowanceTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: allowanceTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: allowanceTXID,
+              error: error,
+            });
+          }
+        }
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT VEST TRANSACTION
       const sendAmount = BigNumber(amount)
         .times(10 ** govToken.decimals)
         .toFixed(0);
 
-      const veTokenContract = new web3.eth.Contract(
-        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
-        CONTRACTS.VE_TOKEN_ADDRESS
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VE_TOKEN_ADDRESS,
+          abi: CONTRACTS.VE_TOKEN_ABI,
+          functionName: "create_lock",
+          args: [BigInt(sendAmount), BigInt(unlockTime)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        veTokenContract,
-        "create_lock",
-        [sendAmount, unlockTime + ""],
-        account,
-        vestTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._getGovTokenInfo(account);
-          this.getNFTByID("fetchAll");
-
-          this.emitter.emit(ACTIONS.CREATE_VEST_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: vestTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: vestTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: vestTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getGovTokenInfo(account);
+      this.getNFTByID("fetchAll");
+
+      this.emitter.emit(ACTIONS.CREATE_VEST_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
   };
 
-  _getVestAllowance = async (
-    token: GovToken,
-    account: { address: `0x${string}` }
-  ) => {
+  _getVestAllowance = async (token: GovToken, address: `0x${string}`) => {
     try {
       const allowance = await viemClient.readContract({
         address: token.address,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
-        args: [account.address, CONTRACTS.VE_TOKEN_ADDRESS],
+        args: [address, CONTRACTS.VE_TOKEN_ADDRESS],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -4805,15 +5085,15 @@ class Store {
     content: { amount: string; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4861,65 +5141,86 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(amount)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          govToken.address
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: allowanceTXID });
+          const { request } = await viemClient.simulateContract({
+            address: govToken.address,
+            abi: CONTRACTS.ERC20_ABI,
+            functionName: "approve",
+            args: [CONTRACTS.VE_TOKEN_ADDRESS, BigInt(MAX_UINT256)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            tokenContract,
-            "approve",
-            [CONTRACTS.VE_TOKEN_ADDRESS, MAX_UINT256],
-            account,
-            allowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: allowanceTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: allowanceTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: allowanceTXID,
+              error: error,
+            });
+          }
+        }
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
 
       // SUBMIT INCREASE TRANSACTION
       const sendAmount = BigNumber(amount)
         .times(10 ** govToken.decimals)
         .toFixed(0);
 
-      const veTokenContract = new web3.eth.Contract(
-        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
-        CONTRACTS.VE_TOKEN_ADDRESS
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VE_TOKEN_ADDRESS,
+          abi: CONTRACTS.VE_TOKEN_ABI,
+          functionName: "increase_amount",
+          args: [BigInt(tokenID), BigInt(sendAmount)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        veTokenContract,
-        "increase_amount",
-        [tokenID, sendAmount],
-        account,
-        vestTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._getGovTokenInfo(account);
-          this._updateVestNFTByID(tokenID);
-
-          this.emitter.emit(ACTIONS.INCREASE_VEST_AMOUNT_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: vestTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: vestTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: vestTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._getGovTokenInfo(account);
+      this._updateVestNFTByID(tokenID);
+
+      this.emitter.emit(ACTIONS.INCREASE_VEST_AMOUNT_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4931,15 +5232,15 @@ class Store {
     content: { unlockTime: string; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -4962,27 +5263,43 @@ class Store {
       });
 
       // SUBMIT INCREASE TRANSACTION
-      const veTokenContract = new web3.eth.Contract(
-        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
-        CONTRACTS.VE_TOKEN_ADDRESS
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VE_TOKEN_ADDRESS,
+          abi: CONTRACTS.VE_TOKEN_ABI,
+          functionName: "increase_unlock_time",
+          args: [BigInt(tokenID), BigInt(unlockTime)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        veTokenContract,
-        "increase_unlock_time",
-        [tokenID, unlockTime + ""],
-        account,
-        vestTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._updateVestNFTByID(tokenID);
-
-          this.emitter.emit(ACTIONS.INCREASE_VEST_DURATION_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: vestTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: vestTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: vestTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._updateVestNFTByID(tokenID);
+
+      this.emitter.emit(ACTIONS.INCREASE_VEST_DURATION_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -4994,14 +5311,14 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -5054,38 +5371,47 @@ class Store {
 
       if (rewards.bribes.length > 0) {
         const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge?.wrapped_bribe_address;
+          return pair.gauge.wrapped_bribe_address;
         });
         const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge?.bribesEarned?.map((bribe) => {
+          return pair.gauge.bribesEarned!.map((bribe) => {
             return (bribe as Bribe).token.address;
           });
         });
 
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewardsTXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "claimBribes",
+            args: [sendGauges, sendTokens, BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            rewardsTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: rewardsTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: rewardsTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: rewardsTXID,
+              error: error,
+            });
+          }
+        }
       }
 
       if (rewards.veDist.length > 0) {
@@ -5103,54 +5429,83 @@ class Store {
 
       if (rewards.veDist.length > 0) {
         // SUBMIT CLAIM TRANSACTION
-        const veDistContract = new web3.eth.Contract(
-          CONTRACTS.VE_DIST_ABI as unknown as AbiItem[],
-          CONTRACTS.VE_DIST_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, {
+            uuid: rebaseTXID,
+          });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VE_DIST_ADDRESS,
+            abi: CONTRACTS.VE_DIST_ABI,
+            functionName: "claim",
+            args: [BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimVeDistPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            veDistContract,
-            "claim",
-            [tokenID],
-            account,
-            rebaseTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: rebaseTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: rebaseTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimVeDistPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: rebaseTXID,
+              error: error,
+            });
+          }
+        }
       }
 
       // SUBMIT RESET TRANSACTION
-      const voterContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, {
+          uuid: resetTXID,
+        });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VOTER_ADDRESS,
+          abi: CONTRACTS.VOTER_ABI,
+          functionName: "reset",
+          args: [BigInt(tokenID)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        voterContract,
-        "reset",
-        [tokenID],
-        account,
-        resetTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._updateVestNFTByID(tokenID);
-
-          this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: resetTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: resetTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: resetTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._updateVestNFTByID(tokenID);
+
+      this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
     } catch (e) {
       console.log(e);
       console.log("RESET VEST ERROR");
@@ -5162,15 +5517,15 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -5236,74 +5591,92 @@ class Store {
 
       if (rewards.xBribes.length > 0) {
         const sendGauges = rewards.xBribes.map((pair) => {
-          return pair.gauge?.x_wrapped_bribe_address;
+          return pair.gauge.x_wrapped_bribe_address;
         });
         const sendTokens = rewards.xBribes.map((pair) => {
-          return pair.gauge?.x_bribesEarned?.map((bribe) => {
+          return pair.gauge.x_bribesEarned!.map((bribe) => {
             return (bribe as Bribe).token.address;
           });
         });
 
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewards0TXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "claimBribes",
+            args: [sendGauges, sendTokens, BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            rewards0TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: rewards0TXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: rewards0TXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: rewards0TXID,
+              error: error,
+            });
+          }
+        }
       }
 
       if (rewards.bribes.length > 0) {
         const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge?.wrapped_bribe_address;
+          return pair.gauge.wrapped_bribe_address;
         });
         const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge?.bribesEarned?.map((bribe) => {
+          return pair.gauge.bribesEarned!.map((bribe) => {
             return (bribe as Bribe).token.address;
           });
         });
 
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewardsTXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "claimBribes",
+            args: [sendGauges, sendTokens, BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            rewardsTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: rewardsTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: rewardsTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: rewardsTXID,
+              error: error,
+            });
+          }
+        }
       }
 
       // CHECK if veNFT has votes
@@ -5322,59 +5695,80 @@ class Store {
         });
       }
 
-      const resetCallsPromise = [];
-
       if (!!voted) {
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: resetTXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "reset",
+            args: [BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const resetPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "reset",
-            [tokenID],
-            account,
-            resetTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: resetTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: resetTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        resetCallsPromise.push(resetPromise);
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: resetTXID,
+              error: error,
+            });
+          }
+        }
       }
 
-      const done = await Promise.all(resetCallsPromise);
-
       // SUBMIT withdraw TRANSACTION
-      const veTokenContract = new web3.eth.Contract(
-        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
-        CONTRACTS.VE_TOKEN_ADDRESS
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VE_TOKEN_ADDRESS,
+          abi: CONTRACTS.VE_TOKEN_ABI,
+          functionName: "withdraw",
+          args: [BigInt(tokenID)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        veTokenContract,
-        "withdraw",
-        [tokenID],
-        account,
-        vestTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this._updateVestNFTByID(tokenID);
-
-          this.emitter.emit(ACTIONS.WITHDRAW_VEST_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: vestTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: vestTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: vestTXID,
+            error: error,
+          });
+        }
+      }
+
+      this._updateVestNFTByID(tokenID);
+
+      this.emitter.emit(ACTIONS.WITHDRAW_VEST_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5386,14 +5780,14 @@ class Store {
     content: { from: string; to: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
       const { from, to } = payload.content;
@@ -5411,23 +5805,41 @@ class Store {
         ],
       });
 
-      const votingEscrowContract = new web3.eth.Contract(
-        CONTRACTS.VE_TOKEN_ABI as unknown as AbiItem[],
-        CONTRACTS.VE_TOKEN_ADDRESS
-      );
-      this._callContractWait(
-        votingEscrowContract,
-        "merge",
-        [from, to],
-        account,
-        mergeTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-          this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: mergeTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VE_TOKEN_ADDRESS,
+          abi: CONTRACTS.VE_TOKEN_ABI,
+          functionName: "merge",
+          args: [BigInt(from), BigInt(to)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: mergeTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: mergeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: mergeTXID,
+            error: error,
+          });
+        }
+      }
+
+      this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
     } catch (e) {
       console.log(e);
       this.emitter.emit(ACTIONS.ERROR, e);
@@ -5482,15 +5894,15 @@ class Store {
     content: { votes: Votes; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -5540,46 +5952,50 @@ class Store {
 
       if (rewards.bribes.length > 0) {
         const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge?.wrapped_bribe_address;
+          return pair.gauge.wrapped_bribe_address;
         });
         const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge?.bribesEarned?.map((bribe) => {
+          return pair.gauge.bribesEarned!.map((bribe) => {
             return (bribe as Bribe).token.address;
           });
         });
 
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: bribesTXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "claimBribes",
+            args: [sendGauges, sendTokens, BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            bribesTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: bribesTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: bribesTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: bribesTXID,
+              error: error,
+            });
+          }
+        }
       }
 
-      // SUBMIT INCREASE TRANSACTION
-      const gaugesContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
-
+      // SUBMIT VOTE TRANSACTION
       let onlyVotes = votes.filter((vote) => {
         return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
       });
@@ -5610,23 +6026,44 @@ class Store {
       });
 
       let voteCounts = onlyVotes.map((vote) => {
-        return BigNumber(vote.value).times(100).toFixed(0);
+        return BigInt(BigNumber(vote.value).times(100).toFixed(0));
       });
 
-      this._callContractWait(
-        gaugesContract,
-        "vote",
-        [parseInt(tokenID), tokens, voteCounts],
-        account,
-        voteTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: voteTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VOTER_ADDRESS,
+          abi: CONTRACTS.VOTER_ABI,
+          functionName: "vote",
+          args: [BigInt(tokenID), tokens, voteCounts],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          this.emitter.emit(ACTIONS.VOTE_RETURNED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: voteTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: voteTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: voteTXID,
+            error: error,
+          });
+        }
+      }
+
+      this.emitter.emit(ACTIONS.VOTE_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5638,7 +6075,7 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -5709,15 +6146,15 @@ class Store {
     content: { asset: BaseAsset; amount: string; gauge: Gauge };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -5760,66 +6197,85 @@ class Store {
         });
       }
 
-      const allowanceCallsPromises = [];
-
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(amount)) {
-        const tokenContract = new web3.eth.Contract(
-          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
-          asset.address
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: allowanceTXID });
+          const { request } = await viemClient.simulateContract({
+            address: asset.address,
+            abi: CONTRACTS.ERC20_ABI,
+            functionName: "approve",
+            args: [gauge.gauge.x_wrapped_bribe_address, BigInt(MAX_UINT256)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const tokenPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            tokenContract,
-            "approve",
-            // we create bribe on x_wrapped_bribe_address
-            [gauge.gauge?.x_wrapped_bribe_address, MAX_UINT256],
-            account,
-            allowanceTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: allowanceTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: allowanceTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        allowanceCallsPromises.push(tokenPromise);
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: allowanceTXID,
+              error: error,
+            });
+          }
+        }
       }
-
-      const done = await Promise.all(allowanceCallsPromises);
-
-      // SUBMIT BRIBE TRANSACTION
-      // we bribe x_wrapped_bribe_address
-      const bribeContract = new web3.eth.Contract(
-        CONTRACTS.BRIBE_ABI as unknown as AbiItem[],
-        gauge.gauge?.x_wrapped_bribe_address
-      );
 
       const sendAmount = BigNumber(amount)
         .times(10 ** asset.decimals)
         .toFixed(0);
 
-      this._callContractWait(
-        bribeContract,
-        "notifyRewardAmount",
-        [asset.address, sendAmount],
-        account,
-        bribeTXID,
-        async (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      // SUBMIT BRIBE TRANSACTION
+      // we bribe x_wrapped_bribe_address
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: bribeTXID });
+        const { request } = await viemClient.simulateContract({
+          address: gauge.gauge.x_wrapped_bribe_address,
+          abi: CONTRACTS.BRIBE_ABI,
+          functionName: "notifyRewardAmount",
+          args: [asset.address, BigInt(sendAmount)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          await this.updatePairsCall(account);
-
-          this.emitter.emit(ACTIONS.BRIBE_CREATED);
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: bribeTXID,
+            txHash: receipt.transactionHash,
+          });
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: bribeTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: bribeTXID,
+            error: error,
+          });
+        }
+      }
+
+      await this.updatePairsCall(account);
+      this.emitter.emit(ACTIONS.BRIBE_CREATED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5829,7 +6285,7 @@ class Store {
   _getBribeAllowance = async (
     token: BaseAsset,
     pair: Gauge,
-    account: { address: `0x${string}` }
+    address: `0x${string}`
   ) => {
     try {
       const allowance = await viemClient.readContract({
@@ -5837,7 +6293,7 @@ class Store {
         abi: CONTRACTS.ERC20_ABI,
         functionName: "allowance",
         // We only bribe x_wrapped_bribe_address
-        args: [account.address, pair.gauge.x_wrapped_bribe_address],
+        args: [address, pair.gauge.x_wrapped_bribe_address],
       });
 
       return formatUnits(allowance, token.decimals);
@@ -5853,7 +6309,7 @@ class Store {
   //   content: { tokenID: string };
   // }) => {
   //   try {
-  //     const account = stores.accountStore.getStore("account");
+  //     const account = stores.accountStore.getStore("address");
   //     if (!account) {
   //       console.warn("account not found");
   //       return null;
@@ -5906,7 +6362,7 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
@@ -6086,7 +6542,7 @@ class Store {
           address: pair.gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "earned",
-          args: [CONTRACTS.GOV_TOKEN_ADDRESS, account.address],
+          args: [CONTRACTS.GOV_TOKEN_ADDRESS, account],
         } as const;
       });
 
@@ -6138,20 +6594,20 @@ class Store {
   claimBribes = async (payload: {
     type: string;
     content: {
-      pair: Pair;
+      pair: Gauge;
       tokenID: string;
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -6173,36 +6629,53 @@ class Store {
       });
 
       // SUBMIT CLAIM TRANSACTION
-      const gaugesContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
-
-      const sendGauges = [pair.gauge?.wrapped_bribe_address];
+      const sendGauges = [pair.gauge.wrapped_bribe_address];
       const sendTokens = [
-        pair.gauge?.bribesEarned?.map((bribe) => {
+        // "!" because you can only claim bribe when you see it, you see it when bribesEarned defined.
+        pair.gauge.bribesEarned!.map((bribe) => {
           return (bribe as Bribe).token.address;
         }),
       ];
 
-      this._callContractWait(
-        gaugesContract,
-        "claimBribes",
-        [sendGauges, sendTokens, tokenID],
-        account,
-        claimTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VOTER_ADDRESS,
+          abi: CONTRACTS.VOTER_ABI,
+          functionName: "claimBribes",
+          args: [sendGauges, sendTokens, BigInt(tokenID)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          this.getRewardBalances({
-            type: "Internal rewards balances",
-            content: { tokenID },
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: claimTXID,
+            txHash: receipt.transactionHash,
           });
-          this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: claimTXID,
+            error: error,
+          });
+        }
+      }
+
+      this.getRewardBalances({
+        type: "Internal rewards balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -6212,20 +6685,20 @@ class Store {
   claimXBribes = async (payload: {
     type: string;
     content: {
-      pair: Pair;
+      pair: Gauge;
       tokenID: string;
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -6247,36 +6720,52 @@ class Store {
       });
 
       // SUBMIT CLAIM TRANSACTION
-      const gaugesContract = new web3.eth.Contract(
-        CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-        CONTRACTS.VOTER_ADDRESS
-      );
-
-      const sendGauges = [pair.gauge?.x_wrapped_bribe_address];
+      const sendGauges = [pair.gauge.x_wrapped_bribe_address];
       const sendTokens = [
-        pair.gauge?.x_bribesEarned?.map((bribe) => {
+        pair.gauge.x_bribesEarned!.map((bribe) => {
           return (bribe as Bribe).token.address;
         }),
       ];
 
-      this._callContractWait(
-        gaugesContract,
-        "claimBribes",
-        [sendGauges, sendTokens, tokenID],
-        account,
-        claimTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VOTER_ADDRESS,
+          abi: CONTRACTS.VOTER_ABI,
+          functionName: "claimBribes",
+          args: [sendGauges, sendTokens, BigInt(tokenID)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-          this.getRewardBalances({
-            type: "Internal rewards balances",
-            content: { tokenID },
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: claimTXID,
+            txHash: receipt.transactionHash,
           });
-          this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: claimTXID,
+            error: error,
+          });
+        }
+      }
+
+      this.getRewardBalances({
+        type: "Internal rewards balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -6291,16 +6780,15 @@ class Store {
     };
   }) => {
     try {
-      const context = this;
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -6312,14 +6800,14 @@ class Store {
       let rewardClaimTXIDs: string[] = [];
       let distributionClaimTXIDs: string[] = [];
 
-      let bribePairs = (pairs as Pair[]).filter((pair) => {
+      let bribePairs = (pairs as Gauge[]).filter((pair) => {
         return pair.rewardType === "Bribe";
       });
-      let xBribePairs = (pairs as Pair[]).filter((pair) => {
+      let xBribePairs = (pairs as Gauge[]).filter((pair) => {
         return pair.rewardType === "XBribe";
       });
 
-      let rewardPairs = (pairs as Pair[]).filter((pair) => {
+      let rewardPairs = (pairs as Gauge[]).filter((pair) => {
         return pair.rewardType === "Reward";
       });
 
@@ -6328,18 +6816,18 @@ class Store {
       });
 
       const sendGauges0 = xBribePairs.map((pair) => {
-        return pair.gauge?.x_wrapped_bribe_address;
+        return pair.gauge.x_wrapped_bribe_address;
       });
       const sendTokens0 = xBribePairs.map((pair) => {
-        return pair.gauge?.x_bribesEarned?.map((bribe) => {
+        return pair.gauge.x_bribesEarned!.map((bribe) => {
           return (bribe as Bribe).token.address;
         });
       });
       const sendGauges = bribePairs.map((pair) => {
-        return pair.gauge?.wrapped_bribe_address;
+        return pair.gauge.wrapped_bribe_address;
       });
       const sendTokens = bribePairs.map((pair) => {
-        return pair.gauge?.bribesEarned?.map((bribe) => {
+        return pair.gauge.bribesEarned!.map((bribe) => {
           return (bribe as Bribe).token.address;
         });
       });
@@ -6408,115 +6896,153 @@ class Store {
       this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
 
       if (xBribePairs.length > 0) {
-        // SUBMIT CLAIM TRANSACTION
-        const gaugesContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claim0TXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "claimBribes",
+            args: [sendGauges0, sendTokens0, BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            gaugesContract,
-            "claimBribes",
-            [sendGauges0, sendTokens0, tokenID],
-            account,
-            claim0TXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: claim0TXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: claim0TXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claim0TXID,
+              error: error,
+            });
+          }
+        }
       }
       if (bribePairs.length > 0) {
-        // SUBMIT CLAIM TRANSACTION
-        const gaugesContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
+        try {
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
+          const { request } = await viemClient.simulateContract({
+            address: CONTRACTS.VOTER_ADDRESS,
+            abi: CONTRACTS.VOTER_ABI,
+            functionName: "claimBribes",
+            args: [sendGauges, sendTokens, BigInt(tokenID)],
+          });
+          const txHash = await walletClient.sendTransaction(request);
 
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          context._callContractWait(
-            gaugesContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            claimTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
+          const receipt = await viemClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
+          if (receipt.status === "success") {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+              uuid: claimTXID,
+              txHash: receipt.transactionHash,
+            });
+          }
+        } catch (error) {
+          if (!(error as Error).toString().includes("-32601")) {
+            if ((error as Error).message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: claimTXID,
+                error: this._mapError((error as Error).message),
+              });
             }
-          );
-        });
-
-        await claimPromise;
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: error,
+            });
+          }
+        }
       }
 
       if (rewardPairs.length > 0) {
         for (let i = 0; i < rewardPairs.length; i++) {
-          const gaugeContract = new web3.eth.Contract(
-            CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-            rewardPairs[i].gauge?.address
-          );
-          const sendTok = [CONTRACTS.GOV_TOKEN_ADDRESS];
+          try {
+            this.emitter.emit(ACTIONS.TX_PENDING, {
+              uuid: rewardClaimTXIDs[i],
+            });
+            const { request } = await viemClient.simulateContract({
+              address: rewardPairs[i].gauge.address,
+              abi: CONTRACTS.GAUGE_ABI,
+              functionName: "getReward",
+              args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+            });
+            const txHash = await walletClient.sendTransaction(request);
 
-          const rewardPromise = new Promise<void>((resolve, reject) => {
-            context._callContractWait(
-              gaugeContract,
-              "getReward",
-              [account.address, sendTok],
-              account,
-              rewardClaimTXIDs[i],
-              (err) => {
-                if (err) {
-                  reject(err);
-                  return;
-                }
-
-                resolve();
+            const receipt = await viemClient.waitForTransactionReceipt({
+              hash: txHash,
+            });
+            if (receipt.status === "success") {
+              this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+                uuid: rewardClaimTXIDs[i],
+                txHash: receipt.transactionHash,
+              });
+            }
+          } catch (error) {
+            if (!(error as Error).toString().includes("-32601")) {
+              if ((error as Error).message) {
+                this.emitter.emit(ACTIONS.TX_REJECTED, {
+                  uuid: rewardClaimTXIDs[i],
+                  error: this._mapError((error as Error).message),
+                });
               }
-            );
-          });
-
-          await Promise.all([rewardPromise]);
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: rewardClaimTXIDs[i],
+                error: error,
+              });
+            }
+          }
         }
       }
 
       if (distribution.length > 0) {
-        const veDistContract = new web3.eth.Contract(
-          CONTRACTS.VE_DIST_ABI as unknown as AbiItem[],
-          CONTRACTS.VE_DIST_ADDRESS
-        );
         for (let i = 0; i < distribution.length; i++) {
-          const rewardPromise = new Promise<void>((resolve, reject) => {
-            context._callContractWait(
-              veDistContract,
-              "claim",
-              [tokenID],
-              account,
-              distributionClaimTXIDs[i],
-              (err) => {
-                if (err) {
-                  reject(err);
-                  return;
-                }
+          try {
+            this.emitter.emit(ACTIONS.TX_PENDING, {
+              uuid: distributionClaimTXIDs[i],
+            });
+            const { request } = await viemClient.simulateContract({
+              address: CONTRACTS.VE_DIST_ADDRESS,
+              abi: CONTRACTS.VE_DIST_ABI,
+              functionName: "claim",
+              args: [BigInt(tokenID)],
+            });
+            const txHash = await walletClient.sendTransaction(request);
 
-                resolve();
+            const receipt = await viemClient.waitForTransactionReceipt({
+              hash: txHash,
+            });
+            if (receipt.status === "success") {
+              this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+                uuid: distributionClaimTXIDs[i],
+                txHash: receipt.transactionHash,
+              });
+            }
+          } catch (error) {
+            if (!(error as Error).toString().includes("-32601")) {
+              if ((error as Error).message) {
+                this.emitter.emit(ACTIONS.TX_REJECTED, {
+                  uuid: distributionClaimTXIDs[i],
+                  error: this._mapError((error as Error).message),
+                });
               }
-            );
-          });
-
-          await Promise.all([rewardPromise]);
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: distributionClaimTXIDs[i],
+                error: error,
+              });
+            }
+          }
         }
       }
 
@@ -6533,18 +7059,18 @@ class Store {
 
   claimRewards = async (payload: {
     type: string;
-    content: { pair: Pair; tokenID: string };
+    content: { pair: Gauge; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -6565,32 +7091,46 @@ class Store {
         ],
       });
 
-      // SUBMIT CLAIM TRANSACTION
-      const gaugeContract = new web3.eth.Contract(
-        CONTRACTS.GAUGE_ABI as unknown as AbiItem[],
-        pair.gauge?.address
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, {
+          uuid: claimTXID,
+        });
+        const { request } = await viemClient.simulateContract({
+          address: pair.gauge?.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "getReward",
+          args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      const sendTokens = [CONTRACTS.GOV_TOKEN_ADDRESS];
-
-      this._callContractWait(
-        gaugeContract,
-        "getReward",
-        [account.address, sendTokens],
-        account,
-        claimTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this.getRewardBalances({
-            type: "internal reward balances",
-            content: { tokenID },
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: claimTXID,
+            txHash: receipt.transactionHash,
           });
-          this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: claimTXID,
+            error: error,
+          });
+        }
+      }
+      this.getRewardBalances({
+        type: "internal reward balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -6602,15 +7142,15 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("account");
+      const account = stores.accountStore.getStore("address");
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const web3 = await stores.accountStore.getWeb3Provider();
-      if (!web3) {
-        console.warn("web3 not found");
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
         return null;
       }
 
@@ -6631,192 +7171,250 @@ class Store {
         ],
       });
 
-      // SUBMIT CLAIM TRANSACTION
-      const veDistContract = new web3.eth.Contract(
-        CONTRACTS.VE_DIST_ABI as unknown as AbiItem[],
-        CONTRACTS.VE_DIST_ADDRESS
-      );
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, {
+          uuid: claimTXID,
+        });
+        const { request } = await viemClient.simulateContract({
+          address: CONTRACTS.VE_DIST_ADDRESS,
+          abi: CONTRACTS.VE_DIST_ABI,
+          functionName: "claim",
+          args: [BigInt(tokenID)],
+        });
+        const txHash = await walletClient.sendTransaction(request);
 
-      this._callContractWait(
-        veDistContract,
-        "claim",
-        [tokenID],
-        account,
-        claimTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
-          }
-
-          this.getRewardBalances({
-            type: "internal reward balances",
-            content: { tokenID },
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: claimTXID,
+            txHash: receipt.transactionHash,
           });
-          this.emitter.emit(ACTIONS.CLAIM_VE_DIST_RETURNED);
         }
-      );
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: claimTXID,
+            error: error,
+          });
+        }
+      }
+
+      this.getRewardBalances({
+        type: "internal reward balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
   };
 
-  _callContractWait = (
-    contract: Contract,
-    method: string,
-    params: any[],
-    account: { address: string },
-    uuid: string,
-    callback: (arg0: Error | string | null) => void | Promise<any> | boolean,
-    sendValue: string | null | undefined = null
+  writeApprove = async (
+    walletClient: WalletClient,
+    txId: string,
+    tokenAddress: `0x${string}`,
+    approveTo: `0x${string}`
   ) => {
-    this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
-    const gasCost = contract.methods[method](...params)
-      .estimateGas({ from: account.address, value: sendValue })
-      .then(async (estimatedGas: BigNumber) => [
-        ...(await stores.accountStore.getGasPriceEIP1559()),
-        estimatedGas,
-      ])
-      .then(
-        ([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]: [
-          number,
-          number,
-          BigNumber
-        ]) => {
-          const context = this;
-          contract.methods[method](...params)
-            .send({
-              from: account.address,
-              gas: estimatedGas,
-              value: sendValue,
-              maxFeePerGas,
-              maxPriorityFeePerGas,
-            })
-            .on("transactionHash", function (txHash: string) {
-              context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
-            })
-            .on("receipt", function (receipt: TransactionReceipt) {
-              context.emitter.emit(ACTIONS.TX_CONFIRMED, {
-                uuid,
-                txHash: receipt.transactionHash,
-              });
-              if (method !== "approve" && method !== "reset") {
-                setTimeout(() => {
-                  context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-                }, 1);
-              }
-              callback(null);
-            })
-            .on("error", function (error: Error) {
-              if (!error.toString().includes("-32601")) {
-                if (error.message) {
-                  context.emitter.emit(ACTIONS.TX_REJECTED, {
-                    uuid,
-                    error: context._mapError(error.message),
-                  });
-                  return callback(error.message);
-                }
-                context.emitter.emit(ACTIONS.TX_REJECTED, {
-                  uuid,
-                  error: error,
-                });
-                callback(error);
-              }
-            })
-            .catch((error: Error) => {
-              if (!error.toString().includes("-32601")) {
-                if (error.message) {
-                  context.emitter.emit(ACTIONS.TX_REJECTED, {
-                    uuid,
-                    error: this._mapError(error.message),
-                  });
-                  return callback(error.message);
-                }
-                context.emitter.emit(ACTIONS.TX_REJECTED, {
-                  uuid,
-                  error: error,
-                });
-                callback(error);
-              }
-            });
-        }
-      )
-      .catch((ex: Error) => {
-        console.log(ex);
-        if (ex.message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid,
-            error: this._mapError(ex.message),
-          });
-          return callback(ex.message);
-        }
-        this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid,
-          error: "Error estimating gas",
-        });
-        callback(ex);
+    try {
+      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
+      const { request } = await viemClient.simulateContract({
+        address: tokenAddress,
+        abi: CONTRACTS.ERC20_ABI,
+        functionName: "approve",
+        args: [approveTo, BigInt(MAX_UINT256)],
       });
-  };
+      const txHash = await walletClient.sendTransaction(request);
 
-  _sendTransactionWait = (
-    web3: Web3,
-    tx: {
-      from: string;
-      to: string;
-      gasPrice: number;
-      data: string;
-      value: string | undefined;
-    },
-    uuid: string,
-    callback: (arg0: Error | null | string) => void
-  ) => {
-    this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
-    const sendTx = web3.eth.sendTransaction(tx);
-    sendTx.on("transactionHash", (txHash) => {
-      this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
-    });
-    sendTx.on("receipt", (receipt) => {
-      this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-        uuid,
-        txHash: receipt.transactionHash,
+      const receipt = await viemClient.waitForTransactionReceipt({
+        hash: txHash,
       });
-      setTimeout(() => {
-        this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-      }, 1);
-      callback(null);
-    });
-    sendTx.on("error", (error) => {
-      if (!error.toString().includes("-32601")) {
-        if (error.message) {
+      if (receipt.status === "success") {
+        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+          uuid: txId,
+          txHash: receipt.transactionHash,
+        });
+      }
+    } catch (error) {
+      if (!(error as Error).toString().includes("-32601")) {
+        if ((error as Error).message) {
           this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid,
-            error: this._mapError(error.message),
+            uuid: txId,
+            error: this._mapError((error as Error).message),
           });
-          return callback(error.message);
         }
         this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid,
+          uuid: txId,
           error: error,
         });
-        callback(error);
       }
-    });
-    sendTx.catch((ex) => {
-      console.log(ex);
-      if (ex.message) {
-        this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid,
-          error: this._mapError(ex.message),
-        });
-        return callback(ex.message);
-      }
-      this.emitter.emit(ACTIONS.TX_REJECTED, {
-        uuid,
-        error: "Error estimating gas",
-      });
-      callback(ex);
-    });
+    }
   };
+
+  // _callContractWait = (
+  //   contract: Contract,
+  //   method: string,
+  //   params: any[],
+  //   account: { address: string },
+  //   uuid: string,
+  //   callback: (arg0: Error | string | null) => void | Promise<any> | boolean,
+  //   sendValue: string | null | undefined = null
+  // ) => {
+  //   this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
+  //   const gasCost = contract.methods[method](...params)
+  //     .estimateGas({ from: account, value: sendValue })
+  //     .then(async (estimatedGas: BigNumber) => [
+  //       ...(await stores.accountStore.getGasPriceEIP1559()),
+  //       estimatedGas,
+  //     ])
+  //     .then(
+  //       ([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]: [
+  //         number,
+  //         number,
+  //         BigNumber
+  //       ]) => {
+  //         const context = this;
+  //         contract.methods[method](...params)
+  //           .send({
+  //             from: account,
+  //             gas: estimatedGas,
+  //             value: sendValue,
+  //             maxFeePerGas,
+  //             maxPriorityFeePerGas,
+  //           })
+  //           .on("transactionHash", function (txHash: string) {
+  //             context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
+  //           })
+  //           .on("receipt", function (receipt: TransactionReceipt) {
+  //             context.emitter.emit(ACTIONS.TX_CONFIRMED, {
+  //               uuid,
+  //               txHash: receipt.transactionHash,
+  //             });
+  //             if (method !== "approve" && method !== "reset") {
+  //               setTimeout(() => {
+  //                 context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+  //               }, 1);
+  //             }
+  //             callback(null);
+  //           })
+  //           .on("error", function (error: Error) {
+  //             if (!error.toString().includes("-32601")) {
+  //               if (error.message) {
+  //                 context.emitter.emit(ACTIONS.TX_REJECTED, {
+  //                   uuid,
+  //                   error: context._mapError(error.message),
+  //                 });
+  //                 return callback(error.message);
+  //               }
+  //               context.emitter.emit(ACTIONS.TX_REJECTED, {
+  //                 uuid,
+  //                 error: error,
+  //               });
+  //               callback(error);
+  //             }
+  //           })
+  //           .catch((error: Error) => {
+  //             if (!error.toString().includes("-32601")) {
+  //               if (error.message) {
+  //                 context.emitter.emit(ACTIONS.TX_REJECTED, {
+  //                   uuid,
+  //                   error: this._mapError(error.message),
+  //                 });
+  //                 return callback(error.message);
+  //               }
+  //               context.emitter.emit(ACTIONS.TX_REJECTED, {
+  //                 uuid,
+  //                 error: error,
+  //               });
+  //               callback(error);
+  //             }
+  //           });
+  //       }
+  //     )
+  //     .catch((ex: Error) => {
+  //       console.log(ex);
+  //       if (ex.message) {
+  //         this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //           uuid,
+  //           error: this._mapError(ex.message),
+  //         });
+  //         return callback(ex.message);
+  //       }
+  //       this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //         uuid,
+  //         error: "Error estimating gas",
+  //       });
+  //       callback(ex);
+  //     });
+  // };
+
+  // _sendTransactionWait = (
+  //   web3: Web3,
+  //   tx: {
+  //     from: string;
+  //     to: string;
+  //     gasPrice: number;
+  //     data: string;
+  //     value: string | undefined;
+  //   },
+  //   uuid: string,
+  //   callback: (arg0: Error | null | string) => void
+  // ) => {
+  //   this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
+  //   const sendTx = web3.eth.sendTransaction(tx);
+  //   sendTx.on("transactionHash", (txHash) => {
+  //     this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
+  //   });
+  //   sendTx.on("receipt", (receipt) => {
+  //     this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+  //       uuid,
+  //       txHash: receipt.transactionHash,
+  //     });
+  //     setTimeout(() => {
+  //       this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+  //     }, 1);
+  //     callback(null);
+  //   });
+  //   sendTx.on("error", (error) => {
+  //     if (!error.toString().includes("-32601")) {
+  //       if (error.message) {
+  //         this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //           uuid,
+  //           error: this._mapError(error.message),
+  //         });
+  //         return callback(error.message);
+  //       }
+  //       this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //         uuid,
+  //         error: error,
+  //       });
+  //       callback(error);
+  //     }
+  //   });
+  //   sendTx.catch((ex) => {
+  //     console.log(ex);
+  //     if (ex.message) {
+  //       this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //         uuid,
+  //         error: this._mapError(ex.message),
+  //       });
+  //       return callback(ex.message);
+  //     }
+  //     this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //       uuid,
+  //       error: "Error estimating gas",
+  //     });
+  //     callback(ex);
+  //   });
+  // };
 
   protected _mapError = (error: string) => {
     const errorMap = new Map<string, string>([

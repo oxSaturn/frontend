@@ -1,48 +1,15 @@
-import { useState, useEffect } from "react";
-import { Typography, Button, Paper } from "@mui/material";
+import { useAccount } from "wagmi";
+
+import { Typography, Paper } from "@mui/material";
 
 import SwapComponent from "../../components/ssSwap/ssSwap";
-import Unlock from "../../components/unlock/unlockModal";
-import { ACTIONS } from "../../stores/constants/constants";
-import stores from "../../stores";
 
 function Swap() {
-  const [account, setAccount] = useState(
-    stores.accountStore.getStore("account")
-  );
-  const [unlockOpen, setUnlockOpen] = useState(false);
-
-  useEffect(() => {
-    const accountConfigure = () => {
-      setAccount(stores.accountStore.getStore("account"));
-      closeUnlock();
-    };
-    const connectWallet = () => {
-      onAddressClicked();
-    };
-
-    stores.emitter.on(ACTIONS.ACCOUNT_CONFIGURED, accountConfigure);
-    stores.emitter.on(ACTIONS.CONNECT_WALLET, connectWallet);
-    return () => {
-      stores.emitter.removeListener(
-        ACTIONS.ACCOUNT_CONFIGURED,
-        accountConfigure
-      );
-      stores.emitter.removeListener(ACTIONS.CONNECT_WALLET, connectWallet);
-    };
-  }, []);
-
-  const onAddressClicked = () => {
-    setUnlockOpen(true);
-  };
-
-  const closeUnlock = () => {
-    setUnlockOpen(false);
-  };
+  const { address } = useAccount();
 
   return (
     <div className="relative mt-0 flex h-full w-full flex-col pt-8">
-      {account && account.address ? (
+      {address ? (
         <SwapComponent />
       ) : (
         <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-[calc(100%-80px)] flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">
@@ -59,18 +26,9 @@ function Swap() {
             >
               Swap between Velocimeter supported stable and volatile assets.
             </Typography>
-            <Button
-              disableElevation
-              className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
-              variant="contained"
-              onClick={onAddressClicked}
-            >
-              <Typography>Connect Wallet to Continue</Typography>
-            </Button>
           </div>
         </Paper>
       )}
-      {unlockOpen && <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />}
     </div>
   );
 }

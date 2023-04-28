@@ -245,7 +245,7 @@ interface QuoteSwapPayload {
 interface QuoteSwapResponse {
   encodedData: {
     router: `0x${string}`;
-    data: string;
+    data: `0x${string}`;
   };
   maxReturn: {
     from: `0x${string}`;

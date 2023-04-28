@@ -1,14 +1,14 @@
-import viemClient from "./connectors/viem";
 import { getContract, formatUnits, parseUnits } from "viem";
 
-import stores from ".";
-import { CONTRACTS, NATIVE_TOKEN } from "./constants/constants";
-
+import viemClient from "./connectors/viem";
+import { CONTRACTS } from "./constants/constants";
 import {
   DefiLlamaTokenPrice,
   DexScrennerPair,
   TokenForPrice,
 } from "./types/types";
+
+import stores from ".";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;
@@ -254,7 +254,7 @@ class Helper {
   };
 
   resolveUnstoppableDomain = async () => {
-    const address = stores.accountStore.getStore("account")?.address;
+    const address = stores.accountStore.getStore("address");
     if (!address) return undefined;
     const res = await fetch("/api/u-domains", {
       method: "POST",

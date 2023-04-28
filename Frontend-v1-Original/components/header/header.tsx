@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import { useAccount } from "wagmi";
 import {
   Typography,
   Button,
@@ -144,10 +145,9 @@ const switchChain = async () => {
 };
 
 function Header() {
-  const accountStore = stores.accountStore.getStore("account");
   const router = useRouter();
+  const { address } = useAccount();
 
-  const [account, setAccount] = useState(accountStore);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [chainInvalid, setChainInvalid] = useState(false);
   const [transactionQueueLength, setTransactionQueueLength] = useState(0);
@@ -157,11 +157,6 @@ function Header() {
   const scrollPosition = useScrollPosition();
 
   useEffect(() => {
-    const accountConfigure = () => {
-      const accountStore = stores.accountStore.getStore("account");
-      setAccount(accountStore);
-      closeUnlock();
-    };
     const connectWallet = () => {
       onAddressClicked();
     };
@@ -179,12 +174,10 @@ function Header() {
 
     ssUpdated();
 
-    stores.emitter.on(ACCOUNT_CONFIGURED, accountConfigure);
     stores.emitter.on(CONNECT_WALLET, connectWallet);
     stores.emitter.on(ACCOUNT_CHANGED, accountChanged);
     stores.emitter.on(UPDATED, ssUpdated);
     return () => {
-      stores.emitter.removeListener(ACCOUNT_CONFIGURED, accountConfigure);
       stores.emitter.removeListener(CONNECT_WALLET, connectWallet);
       stores.emitter.removeListener(ACCOUNT_CHANGED, accountChanged);
       stores.emitter.removeListener(UPDATED, ssUpdated);
@@ -264,7 +257,7 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            {account && account.address ? (
+            {address ? (
               <>
                 <Button
                   disableElevation
@@ -276,7 +269,7 @@ function Header() {
                   onClick={handleClick}
                 >
                   <Typography className="text-sm font-bold">
-                    {domain ?? formatAddress(account.address)}
+                    {domain ?? formatAddress(address)}
                   </Typography>
                   <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-[#7e99b0]" />
                 </Button>
