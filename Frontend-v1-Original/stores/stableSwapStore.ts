@@ -10,7 +10,7 @@ import {
   parseUnits,
   formatEther,
   parseEther,
-  type WalletClient,
+  WalletClient,
 } from "viem";
 import { canto } from "viem/chains";
 
@@ -4607,17 +4607,12 @@ class Store {
     content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
       const walletClient = stores.accountStore.getStore("walletClient");
       if (!walletClient) {
         console.warn("wallet");
         return null;
       }
+      const [account] = await walletClient.getAddresses();
 
       const { fromAsset, toAsset, fromAmount } = payload.content;
 
@@ -4661,7 +4656,7 @@ class Store {
         throw new Error("Wrap Unwrap assets are wrong");
       }
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, tx);
+      this.emitter.emit(ACTIONS.TX_ADDED, tx);
 
       // SUBMIT WRAP_UNWRAP TRANSACTION
       const sendFromAmount = BigNumber(fromAmount)
@@ -4669,25 +4664,26 @@ class Store {
         .toFixed(0);
       if (isWrap) {
         try {
-          await this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
           const { request } = await viemClient.simulateContract({
-            chain: canto,
-            account: walletClient.account,
+            account,
             address: W_NATIVE_ADDRESS as `0x${string}`,
             abi: W_NATIVE_ABI,
             functionName: "deposit",
             args: undefined,
             value: BigInt(sendFromAmount),
           });
-          // FIXME
-          // @ts-expect-error fix this
-          const txHash = await walletClient.writeContract(request);
+          const txHash = await walletClient.writeContract<
+            typeof W_NATIVE_ABI,
+            "deposit",
+            undefined
+          >(request);
 
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
           });
           if (receipt.status === "success") {
-            await this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
               uuid: wrapUnwrapTXID,
               txHash: receipt.transactionHash,
             });
@@ -4709,7 +4705,7 @@ class Store {
         }
       } else {
         try {
-          await this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
           const { request } = await viemClient.simulateContract({
             chain: canto,
             account: walletClient.account,
@@ -4724,7 +4720,7 @@ class Store {
             hash: txHash,
           });
           if (receipt.status === "success") {
-            await this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
               uuid: wrapUnwrapTXID,
               txHash: receipt.transactionHash,
             });
@@ -4748,7 +4744,7 @@ class Store {
       this._getSpecificAssetInfo(account, fromAsset.address);
       this._getSpecificAssetInfo(account, toAsset.address);
 
-      await this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
+      this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -7239,7 +7235,7 @@ class Store {
         functionName: "approve",
         args: [approveTo, BigInt(MAX_UINT256)],
       });
-      const txHash = await walletClient.sendTransaction(request);
+      const txHash = await walletClient.writeContract(request);
 
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash,
@@ -7265,163 +7261,6 @@ class Store {
       }
     }
   };
-
-  // _callContractWait = (
-  //   contract: Contract,
-  //   method: string,
-  //   params: any[],
-  //   account: { address: string },
-  //   uuid: string,
-  //   callback: (arg0: Error | string | null) => void | Promise<any> | boolean,
-  //   sendValue: string | null | undefined = null
-  // ) => {
-  //   this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
-  //   const gasCost = contract.methods[method](...params)
-  //     .estimateGas({ from: account, value: sendValue })
-  //     .then(async (estimatedGas: BigNumber) => [
-  //       ...(await stores.accountStore.getGasPriceEIP1559()),
-  //       estimatedGas,
-  //     ])
-  //     .then(
-  //       ([maxFeePerGas, maxPriorityFeePerGas, estimatedGas]: [
-  //         number,
-  //         number,
-  //         BigNumber
-  //       ]) => {
-  //         const context = this;
-  //         contract.methods[method](...params)
-  //           .send({
-  //             from: account,
-  //             gas: estimatedGas,
-  //             value: sendValue,
-  //             maxFeePerGas,
-  //             maxPriorityFeePerGas,
-  //           })
-  //           .on("transactionHash", function (txHash: string) {
-  //             context.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
-  //           })
-  //           .on("receipt", function (receipt: TransactionReceipt) {
-  //             context.emitter.emit(ACTIONS.TX_CONFIRMED, {
-  //               uuid,
-  //               txHash: receipt.transactionHash,
-  //             });
-  //             if (method !== "approve" && method !== "reset") {
-  //               setTimeout(() => {
-  //                 context.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-  //               }, 1);
-  //             }
-  //             callback(null);
-  //           })
-  //           .on("error", function (error: Error) {
-  //             if (!error.toString().includes("-32601")) {
-  //               if (error.message) {
-  //                 context.emitter.emit(ACTIONS.TX_REJECTED, {
-  //                   uuid,
-  //                   error: context._mapError(error.message),
-  //                 });
-  //                 return callback(error.message);
-  //               }
-  //               context.emitter.emit(ACTIONS.TX_REJECTED, {
-  //                 uuid,
-  //                 error: error,
-  //               });
-  //               callback(error);
-  //             }
-  //           })
-  //           .catch((error: Error) => {
-  //             if (!error.toString().includes("-32601")) {
-  //               if (error.message) {
-  //                 context.emitter.emit(ACTIONS.TX_REJECTED, {
-  //                   uuid,
-  //                   error: this._mapError(error.message),
-  //                 });
-  //                 return callback(error.message);
-  //               }
-  //               context.emitter.emit(ACTIONS.TX_REJECTED, {
-  //                 uuid,
-  //                 error: error,
-  //               });
-  //               callback(error);
-  //             }
-  //           });
-  //       }
-  //     )
-  //     .catch((ex: Error) => {
-  //       console.log(ex);
-  //       if (ex.message) {
-  //         this.emitter.emit(ACTIONS.TX_REJECTED, {
-  //           uuid,
-  //           error: this._mapError(ex.message),
-  //         });
-  //         return callback(ex.message);
-  //       }
-  //       this.emitter.emit(ACTIONS.TX_REJECTED, {
-  //         uuid,
-  //         error: "Error estimating gas",
-  //       });
-  //       callback(ex);
-  //     });
-  // };
-
-  // _sendTransactionWait = (
-  //   web3: Web3,
-  //   tx: {
-  //     from: string;
-  //     to: string;
-  //     gasPrice: number;
-  //     data: string;
-  //     value: string | undefined;
-  //   },
-  //   uuid: string,
-  //   callback: (arg0: Error | null | string) => void
-  // ) => {
-  //   this.emitter.emit(ACTIONS.TX_PENDING, { uuid });
-  //   const sendTx = web3.eth.sendTransaction(tx);
-  //   sendTx.on("transactionHash", (txHash) => {
-  //     this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid, txHash });
-  //   });
-  //   sendTx.on("receipt", (receipt) => {
-  //     this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-  //       uuid,
-  //       txHash: receipt.transactionHash,
-  //     });
-  //     setTimeout(() => {
-  //       this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-  //     }, 1);
-  //     callback(null);
-  //   });
-  //   sendTx.on("error", (error) => {
-  //     if (!error.toString().includes("-32601")) {
-  //       if (error.message) {
-  //         this.emitter.emit(ACTIONS.TX_REJECTED, {
-  //           uuid,
-  //           error: this._mapError(error.message),
-  //         });
-  //         return callback(error.message);
-  //       }
-  //       this.emitter.emit(ACTIONS.TX_REJECTED, {
-  //         uuid,
-  //         error: error,
-  //       });
-  //       callback(error);
-  //     }
-  //   });
-  //   sendTx.catch((ex) => {
-  //     console.log(ex);
-  //     if (ex.message) {
-  //       this.emitter.emit(ACTIONS.TX_REJECTED, {
-  //         uuid,
-  //         error: this._mapError(ex.message),
-  //       });
-  //       return callback(ex.message);
-  //     }
-  //     this.emitter.emit(ACTIONS.TX_REJECTED, {
-  //       uuid,
-  //       error: "Error estimating gas",
-  //     });
-  //     callback(ex);
-  //   });
-  // };
 
   protected _mapError = (error: string) => {
     const errorMap = new Map<string, string>([
