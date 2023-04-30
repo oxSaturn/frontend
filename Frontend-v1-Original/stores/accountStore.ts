@@ -12,7 +12,6 @@ class Store {
   store: {
     address: null | Address;
     walletClient: null | WalletClient;
-    chainInvalid: boolean;
   };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
@@ -21,7 +20,6 @@ class Store {
 
     this.store = {
       address: null,
-      chainInvalid: false,
       walletClient: null,
     };
 

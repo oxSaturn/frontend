@@ -12,6 +12,7 @@ import {
   parseEther,
   type WalletClient,
 } from "viem";
+import { canto } from "viem/chains";
 
 import { Dispatcher } from "flux";
 
@@ -4660,35 +4661,39 @@ class Store {
         throw new Error("Wrap Unwrap assets are wrong");
       }
 
-      this.emitter.emit(ACTIONS.TX_ADDED, tx);
+      await this.emitter.emit(ACTIONS.TX_ADDED, tx);
 
       // SUBMIT WRAP_UNWRAP TRANSACTION
       const sendFromAmount = BigNumber(fromAmount)
         .times(10 ** 18)
         .toFixed(0);
-
       if (isWrap) {
         try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+          await this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
           const { request } = await viemClient.simulateContract({
+            chain: canto,
+            account: walletClient.account,
             address: W_NATIVE_ADDRESS as `0x${string}`,
             abi: W_NATIVE_ABI,
             functionName: "deposit",
             args: undefined,
             value: BigInt(sendFromAmount),
           });
-          const txHash = await walletClient.sendTransaction(request);
+          // FIXME
+          // @ts-expect-error fix this
+          const txHash = await walletClient.writeContract(request);
 
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
           });
           if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            await this.emitter.emit(ACTIONS.TX_CONFIRMED, {
               uuid: wrapUnwrapTXID,
               txHash: receipt.transactionHash,
             });
           }
         } catch (error) {
+          console.error(error);
           if (!(error as Error).toString().includes("-32601")) {
             if ((error as Error).message) {
               this.emitter.emit(ACTIONS.TX_REJECTED, {
@@ -4704,20 +4709,22 @@ class Store {
         }
       } else {
         try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+          await this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
           const { request } = await viemClient.simulateContract({
+            chain: canto,
+            account: walletClient.account,
             address: W_NATIVE_ADDRESS as `0x${string}`,
             abi: W_NATIVE_ABI,
             functionName: "withdraw",
             args: [BigInt(sendFromAmount)],
           });
-          const txHash = await walletClient.sendTransaction(request);
+          const txHash = await walletClient.writeContract(request);
 
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
           });
           if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            await this.emitter.emit(ACTIONS.TX_CONFIRMED, {
               uuid: wrapUnwrapTXID,
               txHash: receipt.transactionHash,
             });
@@ -4741,7 +4748,7 @@ class Store {
       this._getSpecificAssetInfo(account, fromAsset.address);
       this._getSpecificAssetInfo(account, toAsset.address);
 
-      this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
+      await this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { useAccount } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import {
   Typography,
   Button,
@@ -47,9 +47,6 @@ function SiteLogo(props: { className?: string }) {
     />
   );
 }
-
-const { CONNECT_WALLET, ACCOUNT_CONFIGURED, ACCOUNT_CHANGED, UPDATED } =
-  ACTIONS;
 
 function WrongNetworkIcon(props: { className: string }) {
   const { className } = props;
@@ -150,39 +147,26 @@ function Header() {
   const { address } = useAccount();
 
   const [unlockOpen, setUnlockOpen] = useState(false);
-  const [chainInvalid, setChainInvalid] = useState(false);
   const [transactionQueueLength] = useState(0);
   const [domain, setDomain] = useState<string>();
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const { chain } = useNetwork();
   useOnClickOutside(ref, () => setOpen(false));
 
   useEffect(() => {
-    const connectWallet = () => {
-      onAddressClicked();
-    };
-    const accountChanged = () => {
-      const invalid = stores.accountStore.getStore("chainInvalid");
-      setChainInvalid(invalid);
-    };
     const ssUpdated = () => {
       const domain = stores.stableSwapStore.getStore("u_domain");
       setDomain(domain);
     };
 
-    const invalid = stores.accountStore.getStore("chainInvalid");
-    setChainInvalid(invalid);
-
     ssUpdated();
 
-    stores.emitter.on(CONNECT_WALLET, connectWallet);
-    stores.emitter.on(ACCOUNT_CHANGED, accountChanged);
-    stores.emitter.on(UPDATED, ssUpdated);
+    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
     return () => {
-      stores.emitter.removeListener(CONNECT_WALLET, connectWallet);
-      stores.emitter.removeListener(ACCOUNT_CHANGED, accountChanged);
-      stores.emitter.removeListener(UPDATED, ssUpdated);
+      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
     };
   }, []);
 
@@ -330,7 +314,7 @@ function Header() {
           {/* <TransactionQueue setQueueLength={setQueueLength} /> */}
         </div>
       </div>
-      {chainInvalid ? (
+      {chain?.unsupported ? (
         <div className="fixed left-0 top-0 z-[1100] flex h-screen min-w-full flex-1 flex-wrap items-center justify-center bg-[rgba(17,23,42,0.9)] text-center">
           <div>
             <WrongNetworkIcon className="mb-5 text-8xl" />

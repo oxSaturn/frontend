@@ -1,6 +1,8 @@
 import React from "react";
 import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
+import { useConnect } from "wagmi";
+import { canto } from "viem/chains";
 
 const Unlock = ({ closeModal }: { closeModal: () => void }) => {
   return (
@@ -12,15 +14,15 @@ const Unlock = ({ closeModal }: { closeModal: () => void }) => {
         <Close />
       </div>
       <div className="m-auto flex flex-wrap p-3 pt-40 text-center lg:pt-3">
-        <MyComponent closeModal={closeModal} />
+        <Connectors />
       </div>
     </div>
   );
 };
 
-function MyComponent({ closeModal }: { closeModal: () => void }) {
+function Connectors() {
   const width = window.innerWidth;
-
+  const { connectors } = useConnect({ chainId: canto.id });
   return (
     <div
       style={{
@@ -30,6 +32,13 @@ function MyComponent({ closeModal }: { closeModal: () => void }) {
         alignItems: "center",
       }}
     >
+      {connectors.map((connector) => (
+        <div key={connector.id}>
+          <button onClick={() => connector.connect()}>
+            Connect {connector.name}
+          </button>
+        </div>
+      ))}
       {/* // if (name === "MetaMask") {
         //   url = "/connectors/icn-metamask.svg";
         //   descriptor = "Connect to your MetaMask wallet";

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAccount, useNetwork, useWalletClient } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import Head from "next/head";
 import { canto } from "viem/chains";
 
@@ -7,6 +7,7 @@ import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
 import stores from "../../stores";
+import { ACTIONS } from "../../stores/constants/constants";
 
 import classes from "./layout.module.css";
 
@@ -21,17 +22,13 @@ export default function Layout({
   const { data: walletClient } = useWalletClient({
     chainId: canto.id,
   });
-  const { chain } = useNetwork();
-
   useEffect(() => {
     if (walletClient && address) {
-      if (chain?.unsupported) {
-        stores.accountStore.setStore({ chainInvalid: true });
-      }
       stores.accountStore.setStore({ walletClient });
       stores.accountStore.setStore({ address });
+      stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE_SS });
     }
-  }, [walletClient, address, chain?.unsupported]);
+  }, [walletClient, address]);
 
   return (
     <div className={classes.container}>

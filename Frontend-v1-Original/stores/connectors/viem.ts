@@ -8,6 +8,27 @@ import {
 } from "viem";
 import { canto } from "viem/chains";
 import { createClient } from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
+import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
+
+const injectedConnector = new InjectedConnector({
+  chains: [canto],
+});
+
+const walletConnectConnector = new WalletConnectConnector({
+  chains: [canto],
+  options: {
+    projectId: "aa9bd3a3710b5c6ac981c2d222a90d49",
+    metadata: {
+      name: "Velocimeter",
+      description: "Connect to Velocimeter",
+      url: "https://velocimeter.xyz",
+      icons: [
+        "https://user-images.githubusercontent.com/4340952/217877622-17e92d8c-96b2-498b-8580-6c9d49db1456.png",
+      ],
+    },
+  },
+});
 
 import { CONTRACTS } from "../constants/constants";
 
@@ -35,6 +56,9 @@ const client = createPublicClient({
 export const wagmiClient = createClient({
   autoConnect: true,
   publicClient: client,
+  // FIXME
+  // @ts-expect-error
+  connectors: [injectedConnector, walletConnectConnector],
 });
 
 /**
