@@ -98,7 +98,7 @@ function getFeeReceiversAndAmounts(pairs: Pair[], quote: QuoteSwapResponse) {
       (pair.token0_address.toLowerCase() === quote.maxReturn.to.toLowerCase() ||
         pair.token1_address.toLowerCase() === quote.maxReturn.to.toLowerCase())
     ) {
-      feeReceiver = pair.gauge.x_wrapped_bribe_address;
+      feeReceiver = pair.gauge.xx_wrapped_bribe_address;
       pairAddress = pair.address;
       break;
     }
