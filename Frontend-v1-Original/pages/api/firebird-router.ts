@@ -92,14 +92,21 @@ function getFeeReceiversAndAmounts(pairs: Pair[], quote: QuoteSwapResponse) {
     const pair = pairs.find(
       (pair) => pair.address.toLowerCase() === poolOfSwap.toLowerCase()
     );
-    if (pair && hasGauge(pair)) {
+    if (
+      pair &&
+      hasGauge(pair) &&
+      (pair.token0_address.toLowerCase() === quote.maxReturn.to.toLowerCase() ||
+        pair.token1_address.toLowerCase() === quote.maxReturn.to.toLowerCase())
+    ) {
       feeReceiver = pair.gauge.x_wrapped_bribe_address;
       pairAddress = pair.address;
       break;
-    } else if (pair) {
-      pairAddress = pair.address;
-      break;
     }
+  }
+
+  // if no gauge found, use last pair to get fee amount
+  if (pairAddress === "0x0000000000000000000000000000000000000000") {
+    pairAddress = quote.maxReturn.paths[0].swaps[-1].pool;
   }
 
   const feeAmounts = getFeeAmounts(pairs, pairAddress);
