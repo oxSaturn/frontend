@@ -1247,7 +1247,7 @@ class Store {
           weightPercent,
           bribes: bribes,
           x_bribes: x_bribes,
-          xx_bribes: x_bribes,
+          xx_bribes: xx_bribes,
         };
       }
 
