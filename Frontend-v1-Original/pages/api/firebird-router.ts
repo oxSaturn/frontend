@@ -1,7 +1,10 @@
 import BigNumber from "bignumber.js";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { NATIVE_TOKEN } from "../../stores/constants/constants";
+import {
+  NATIVE_TOKEN,
+  W_NATIVE_ADDRESS,
+} from "../../stores/constants/constants";
 import {
   Pair,
   QuoteSwapPayload,
@@ -87,6 +90,10 @@ function getFeeReceiversAndAmounts(pairs: Pair[], quote: QuoteSwapResponse) {
   const poolsOfSwap = quote.maxReturn.paths.flatMap((path) =>
     path.swaps.map((swap) => swap.pool)
   );
+  const tokenOut =
+    quote.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      ? W_NATIVE_ADDRESS
+      : quote.maxReturn.to;
 
   for (const poolOfSwap of poolsOfSwap) {
     const pair = pairs.find(
@@ -95,8 +102,8 @@ function getFeeReceiversAndAmounts(pairs: Pair[], quote: QuoteSwapResponse) {
     if (
       pair &&
       hasGauge(pair) &&
-      (pair.token0_address.toLowerCase() === quote.maxReturn.to.toLowerCase() ||
-        pair.token1_address.toLowerCase() === quote.maxReturn.to.toLowerCase())
+      (pair.token0_address.toLowerCase() === tokenOut.toLowerCase() ||
+        pair.token1_address.toLowerCase() === tokenOut.toLowerCase())
     ) {
       feeReceiver = pair.gauge.xx_wrapped_bribe_address;
       pairAddress = pair.address;
@@ -106,7 +113,7 @@ function getFeeReceiversAndAmounts(pairs: Pair[], quote: QuoteSwapResponse) {
 
   // if no gauge found, use last pair to get fee amount
   if (pairAddress === "0x0000000000000000000000000000000000000000") {
-    pairAddress = quote.maxReturn.paths[0].swaps[-1].pool;
+    pairAddress = quote.maxReturn.paths[0].swaps.at(-1)?.pool ?? pairAddress;
   }
 
   const feeAmounts = getFeeAmounts(pairs, pairAddress);
