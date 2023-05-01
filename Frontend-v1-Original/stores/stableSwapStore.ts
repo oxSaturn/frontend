@@ -3492,6 +3492,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: unstakeTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "withdraw",
@@ -3586,6 +3587,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: unstakeTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "withdraw",
@@ -4250,6 +4252,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
           abi: CONTRACTS.VE_TOKEN_ABI,
           functionName: "create_lock",
@@ -4386,6 +4389,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
           abi: CONTRACTS.VE_TOKEN_ABI,
           functionName: "increase_amount",
@@ -4466,6 +4470,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
           abi: CONTRACTS.VE_TOKEN_ABI,
           functionName: "increase_unlock_time",
@@ -4608,6 +4613,7 @@ class Store {
             uuid: rebaseTXID,
           });
           const { request } = await viemClient.simulateContract({
+            account,
             address: CONTRACTS.VE_DIST_ADDRESS,
             abi: CONTRACTS.VE_DIST_ABI,
             functionName: "claim",
@@ -4646,6 +4652,7 @@ class Store {
           uuid: resetTXID,
         });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VOTER_ADDRESS,
           abi: CONTRACTS.VOTER_ABI,
           functionName: "reset",
@@ -4862,6 +4869,7 @@ class Store {
         try {
           this.emitter.emit(ACTIONS.TX_PENDING, { uuid: resetTXID });
           const { request } = await viemClient.simulateContract({
+            account,
             address: CONTRACTS.VOTER_ADDRESS,
             abi: CONTRACTS.VOTER_ABI,
             functionName: "reset",
@@ -4898,6 +4906,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
           abi: CONTRACTS.VE_TOKEN_ABI,
           functionName: "withdraw",
@@ -4971,6 +4980,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: mergeTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
           abi: CONTRACTS.VE_TOKEN_ABI,
           functionName: "merge",
@@ -5168,6 +5178,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: voteTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VOTER_ADDRESS,
           abi: CONTRACTS.VOTER_ABI,
           functionName: "vote",
@@ -5352,6 +5363,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: bribeTXID });
         const { request } = await viemClient.simulateContract({
+          account,
           address: gauge.gauge.xx_wrapped_bribe_address,
           abi: CONTRACTS.BRIBE_ABI,
           functionName: "notifyRewardAmount",
@@ -6133,6 +6145,7 @@ class Store {
               uuid: rewardClaimTXIDs[i],
             });
             const { request } = await viemClient.simulateContract({
+              account,
               address: rewardPairs[i].gauge.address,
               abi: CONTRACTS.GAUGE_ABI,
               functionName: "getReward",
@@ -6173,6 +6186,7 @@ class Store {
               uuid: distributionClaimTXIDs[i],
             });
             const { request } = await viemClient.simulateContract({
+              account,
               address: CONTRACTS.VE_DIST_ADDRESS,
               abi: CONTRACTS.VE_DIST_ABI,
               functionName: "claim",
@@ -6256,6 +6270,7 @@ class Store {
           uuid: claimTXID,
         });
         const { request } = await viemClient.simulateContract({
+          account,
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
@@ -6336,6 +6351,7 @@ class Store {
           uuid: claimTXID,
         });
         const { request } = await viemClient.simulateContract({
+          account,
           address: CONTRACTS.VE_DIST_ADDRESS,
           abi: CONTRACTS.VE_DIST_ABI,
           functionName: "claim",
@@ -6473,8 +6489,7 @@ class Store {
       try {
         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
         const { request } = await viemClient.simulateContract({
-          chain: canto,
-          account: walletClient.account,
+          account,
           address: W_NATIVE_ADDRESS as `0x${string}`,
           abi: W_NATIVE_ABI,
           functionName: "withdraw",
