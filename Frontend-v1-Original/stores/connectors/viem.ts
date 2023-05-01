@@ -55,7 +55,10 @@ const client = createPublicClient({
 
 export const wagmiClient = createClient({
   autoConnect: true,
-  publicClient: client,
+  publicClient: createPublicClient({
+    chain: canto,
+    transport: dexvaults,
+  }),
   connectors: [injectedConnector, walletConnectConnector],
 });
 

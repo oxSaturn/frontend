@@ -4409,17 +4409,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
       const walletClient = stores.accountStore.getStore("walletClient");
       if (!walletClient) {
         console.warn("wallet");
         return null;
       }
+
+      const [account] = await walletClient.getAddresses();
 
       const { quote, fromAsset, toAsset } = payload.content;
 
@@ -4485,39 +4481,12 @@ class Store {
       if (!allowance) throw new Error("Couldn't fetch allowance");
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(fromAmount)) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: allowanceTXID });
-          const { request } = await viemClient.simulateContract({
-            address: fromAsset.address,
-            abi: CONTRACTS.ERC20_ABI,
-            functionName: "approve",
-            args: [quote.encodedData.router, BigInt(MAX_UINT256)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: allowanceTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: allowanceTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: allowanceTXID,
-              error: error,
-            });
-          }
-        }
+        this.writeApprove(
+          walletClient,
+          allowanceTXID,
+          fromAsset.address,
+          quote.encodedData.router
+        );
       }
 
       // SUBMIT SWAP TRANSACTION
@@ -4662,84 +4631,13 @@ class Store {
       const sendFromAmount = BigNumber(fromAmount)
         .times(10 ** 18)
         .toFixed(0);
-      if (isWrap) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
-          const { request } = await viemClient.simulateContract({
-            account,
-            address: W_NATIVE_ADDRESS as `0x${string}`,
-            abi: W_NATIVE_ABI,
-            functionName: "deposit",
-            args: undefined,
-            value: BigInt(sendFromAmount),
-          });
-          const txHash = await walletClient.writeContract<
-            typeof W_NATIVE_ABI,
-            "deposit",
-            undefined
-          >(request);
 
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: wrapUnwrapTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          console.error(error);
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: wrapUnwrapTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: wrapUnwrapTXID,
-              error: error,
-            });
-          }
-        }
-      } else {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
-          const { request } = await viemClient.simulateContract({
-            chain: canto,
-            account: walletClient.account,
-            address: W_NATIVE_ADDRESS as `0x${string}`,
-            abi: W_NATIVE_ABI,
-            functionName: "withdraw",
-            args: [BigInt(sendFromAmount)],
-          });
-          const txHash = await walletClient.writeContract(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: wrapUnwrapTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: wrapUnwrapTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: wrapUnwrapTXID,
-              error: error,
-            });
-          }
-        }
-      }
+      await this.writeWrapUnwrap(
+        walletClient,
+        isWrap,
+        wrapUnwrapTXID,
+        sendFromAmount
+      );
 
       this._getSpecificAssetInfo(account, fromAsset.address);
       this._getSpecificAssetInfo(account, toAsset.address);
@@ -7259,6 +7157,93 @@ class Store {
           uuid: txId,
           error: error,
         });
+      }
+    }
+  };
+
+  writeWrapUnwrap = async (
+    walletClient: WalletClient,
+    isWrap: boolean,
+    wrapUnwrapTXID: string,
+    sendFromAmount: string
+  ) => {
+    const [account] = await walletClient.getAddresses();
+    if (isWrap) {
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: W_NATIVE_ADDRESS as `0x${string}`,
+          abi: W_NATIVE_ABI,
+          functionName: "deposit",
+          args: undefined,
+          value: BigInt(sendFromAmount),
+        });
+        const txHash = await walletClient.writeContract<
+          typeof W_NATIVE_ABI,
+          "deposit",
+          undefined
+        >(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: wrapUnwrapTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: wrapUnwrapTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: wrapUnwrapTXID,
+            error: error,
+          });
+        }
+      }
+    } else {
+      try {
+        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
+        const { request } = await viemClient.simulateContract({
+          chain: canto,
+          account: walletClient.account,
+          address: W_NATIVE_ADDRESS as `0x${string}`,
+          abi: W_NATIVE_ABI,
+          functionName: "withdraw",
+          args: [BigInt(sendFromAmount)],
+        });
+        const txHash = await walletClient.writeContract(request);
+
+        const receipt = await viemClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+        if (receipt.status === "success") {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: wrapUnwrapTXID,
+            txHash: receipt.transactionHash,
+          });
+        }
+      } catch (error) {
+        if (!(error as Error).toString().includes("-32601")) {
+          if ((error as Error).message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: wrapUnwrapTXID,
+              error: this._mapError((error as Error).message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: wrapUnwrapTXID,
+            error: error,
+          });
+        }
       }
     }
   };
