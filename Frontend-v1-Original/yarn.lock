@@ -1723,10 +1723,10 @@
   resolved "https://registry.yarnpkg.com/@wagmi/chains/-/chains-0.2.18.tgz#e72ac9a26ec5e66345343705dcd92cb181bcdf7b"
   integrity sha512-TqLzrwvUyjjyA24kjPvrhYflvZ8TU7hena+Hl0fH2SW0ENnSB6cd3Uwlk6blv/lfSN0w8mWaRQOchtugKXkHYw==
 
-"@wagmi/connectors@1.0.0-next.1":
-  version "1.0.0-next.1"
-  resolved "https://registry.yarnpkg.com/@wagmi/connectors/-/connectors-1.0.0-next.1.tgz#b6bbaa8f6073459d5dd5e4e184e5b8086daa7bf6"
-  integrity sha512-D4tURl+AXtiAG1KTiHvZglVbVuiHVWCHedivlc8435MSbGGAkerbaIrydUGbgmFVyXQiP7PfSlKfbD0Nc7u2Bw==
+"@wagmi/connectors@1.0.0-next.2":
+  version "1.0.0-next.2"
+  resolved "https://registry.yarnpkg.com/@wagmi/connectors/-/connectors-1.0.0-next.2.tgz#e7921537a735c27d4b4475cf7c6a574b8eaf99a0"
+  integrity sha512-y1LxD7/8NKGskxqqNE1+g/ENtA6md9/0oMgCbporaFTXaXiJh2meGkqVsbPGIJnwCEVJAPrzOMrfpGL1nSoQpA==
   dependencies:
     "@coinbase/wallet-sdk" "^3.6.4"
     "@ledgerhq/connect-kit-loader" "^1.0.1"
@@ -1738,13 +1738,13 @@
     abitype "^0.7.1"
     eventemitter3 "^4.0.7"
 
-"@wagmi/core@1.0.0-next.0":
-  version "1.0.0-next.0"
-  resolved "https://registry.yarnpkg.com/@wagmi/core/-/core-1.0.0-next.0.tgz#d40aed7946bac7d2fa2e13ea28e825b6dfb6abb1"
-  integrity sha512-qUcXgtb1HAb/0z8gdZhtlQyvRoz0EKo9IA3e1EojTY6rfAjpVZR8Dtnn9XNZfY1WglQg3gde5LVG+DYARdbkGw==
+"@wagmi/core@1.0.0-next.1":
+  version "1.0.0-next.1"
+  resolved "https://registry.yarnpkg.com/@wagmi/core/-/core-1.0.0-next.1.tgz#6459978608917814f1678c9f6341e157d995db13"
+  integrity sha512-R+ondC1jIxKGapiEojn1nntL4lqZgTsufE9G3Dn+RGGQy69u0kxUB91sKTlxnzufADLctAhgIs63mzaY1L5G3Q==
   dependencies:
     "@wagmi/chains" "0.2.18"
-    "@wagmi/connectors" "1.0.0-next.1"
+    "@wagmi/connectors" "1.0.0-next.2"
     abitype "^0.7.1"
     eventemitter3 "^4.0.7"
     zustand "^4.3.1"
@@ -6109,15 +6109,15 @@ viem@0.3.16:
     isomorphic-ws "5.0.0"
     ws "8.12.0"
 
-wagmi@^1.0.0-next.0:
-  version "1.0.0-next.0"
-  resolved "https://registry.yarnpkg.com/wagmi/-/wagmi-1.0.0-next.0.tgz#462712817f35dbf7fd94ae8441759f0f5603962d"
-  integrity sha512-sSEqbtxRMXeJwJnOstOKR2kQlMCX9aybwG2/I2qNvEN2p4V4I9R2DGUKh2KX6eGNtwnYchoz3pbt+DkxdlckNw==
+wagmi@^1.0.0-next.1:
+  version "1.0.0-next.1"
+  resolved "https://registry.yarnpkg.com/wagmi/-/wagmi-1.0.0-next.1.tgz#2bc8c1a5e16b9e41a15d954fafa72530684e4bfd"
+  integrity sha512-//SjALtO13Br3nHIbvTJEjuHKkadSC4D/R5sa5lUBWKaGETpepuKaFJgYXj5eYTUCPNBkErYhJ8swsgvKb173Q==
   dependencies:
     "@tanstack/query-sync-storage-persister" "^4.27.1"
     "@tanstack/react-query" "^4.28.0"
     "@tanstack/react-query-persist-client" "^4.28.0"
-    "@wagmi/core" "1.0.0-next.0"
+    "@wagmi/core" "1.0.0-next.1"
     abitype "^0.7.1"
     use-sync-external-store "^1.2.0"
 
