@@ -56,8 +56,6 @@ const client = createPublicClient({
 export const wagmiClient = createClient({
   autoConnect: true,
   publicClient: client,
-  // FIXME
-  // @ts-expect-error
   connectors: [injectedConnector, walletConnectConnector],
 });
 
