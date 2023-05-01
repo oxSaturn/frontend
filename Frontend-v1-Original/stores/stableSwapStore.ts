@@ -2274,40 +2274,7 @@ class Store {
       });
 
       // SUBMIT CREATE GAUGE TRANSACTION
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.VOTER_ABI,
-          address: CONTRACTS.VOTER_ADDRESS,
-          functionName: "createGauge",
-          args: [_pairFor],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: createGaugeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            context.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: createGaugeTXID,
-              error: context._mapError((error as Error).message),
-            });
-          }
-          context.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: createGaugeTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
 
       const gaugeAddress = await viemClient.readContract({
         abi: CONTRACTS.VOTER_ABI,
@@ -2354,40 +2321,7 @@ class Store {
         );
       }
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.GAUGE_ABI,
-          address: gaugeAddress,
-          functionName: "deposit",
-          args: [balanceOf, BigInt(0)],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: stakeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            context.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: stakeTXID,
-              error: context._mapError((error as Error).message),
-            });
-          }
-          context.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: stakeTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeDeposit(walletClient, stakeTXID, gaugeAddress, balanceOf);
 
       await context.updatePairsCall(account);
 
@@ -2611,40 +2545,7 @@ class Store {
       });
 
       // SUBMIT CREATE GAUGE TRANSACTION
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.VOTER_ABI,
-          address: CONTRACTS.VOTER_ADDRESS,
-          functionName: "createGauge",
-          args: [_pairFor],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: createGaugeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            context.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: createGaugeTXID,
-              error: context._mapError((error as Error).message),
-            });
-          }
-          context.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: createGaugeTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
 
       await context.updatePairsCall(account);
 
@@ -2916,40 +2817,12 @@ class Store {
         );
       }
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.GAUGE_ABI,
-          address: pair.gauge.address,
-          functionName: "deposit",
-          args: [balanceOf, BigInt(0)],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: stakeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: stakeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: stakeTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeDeposit(
+        walletClient,
+        stakeTXID,
+        pair.gauge.address,
+        balanceOf
+      );
 
       this._getPairInfo(account);
       this.emitter.emit(ACTIONS.LIQUIDITY_STAKED);
@@ -3172,40 +3045,12 @@ class Store {
         deadline
       );
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.GAUGE_ABI,
-          address: pair.gauge.address,
-          functionName: "deposit",
-          args: [balanceOf, BigInt(0)],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: stakeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: stakeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: stakeTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeDeposit(
+        walletClient,
+        stakeTXID,
+        pair.gauge.address,
+        balanceOf
+      );
 
       this._getPairInfo(account);
       this.emitter.emit(ACTIONS.ADD_LIQUIDITY_AND_STAKED);
@@ -3929,39 +3774,7 @@ class Store {
         ],
       });
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
-        const { request } = await viemClient.simulateContract({
-          address: CONTRACTS.VOTER_ADDRESS,
-          abi: CONTRACTS.VOTER_ABI,
-          functionName: "createGauge",
-          args: [pair.address],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: createGaugeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: createGaugeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: createGaugeTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeCreateGauge(walletClient, createGaugeTXID, pair.address);
 
       await this.updatePairsCall(account);
 
@@ -7204,6 +7017,91 @@ class Store {
             error: error,
           });
         }
+      }
+    }
+  };
+
+  writeCreateGauge = async (
+    walletClient: WalletClient,
+    createGaugeTXID: string,
+    pairAddress: `0x${string}`
+  ) => {
+    const [account] = await walletClient.getAddresses();
+    try {
+      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
+      const { request } = await viemClient.simulateContract({
+        account,
+        address: CONTRACTS.VOTER_ADDRESS,
+        abi: CONTRACTS.VOTER_ABI,
+        functionName: "createGauge",
+        args: [pairAddress],
+      });
+      const txHash = await walletClient.writeContract(request);
+
+      const receipt = await viemClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      if (receipt.status === "success") {
+        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+          uuid: createGaugeTXID,
+          txHash: receipt.transactionHash,
+        });
+      }
+    } catch (error) {
+      if (!(error as Error).toString().includes("-32601")) {
+        if ((error as Error).message) {
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: createGaugeTXID,
+            error: this._mapError((error as Error).message),
+          });
+        }
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid: createGaugeTXID,
+          error: error,
+        });
+      }
+    }
+  };
+
+  writeDeposit = async (
+    walletClient: WalletClient,
+    stakeTXID: string,
+    gaugeAddress: `0x${string}`,
+    balanceOf: bigint
+  ) => {
+    const [account] = await walletClient.getAddresses();
+    try {
+      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
+      const { request } = await viemClient.simulateContract({
+        account,
+        abi: CONTRACTS.GAUGE_ABI,
+        address: gaugeAddress,
+        functionName: "deposit",
+        args: [balanceOf, BigInt(0)],
+      });
+      const txHash = await walletClient.writeContract(request);
+
+      const receipt = await viemClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      if (receipt.status === "success") {
+        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+          uuid: stakeTXID,
+          txHash: receipt.transactionHash,
+        });
+      }
+    } catch (error) {
+      if (!(error as Error).toString().includes("-32601")) {
+        if ((error as Error).message) {
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: stakeTXID,
+            error: this._mapError((error as Error).message),
+          });
+        }
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid: stakeTXID,
+          error: error,
+        });
       }
     }
   };
