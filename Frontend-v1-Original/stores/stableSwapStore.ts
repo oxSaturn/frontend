@@ -4787,6 +4787,7 @@ class Store {
       );
 
       this.setStore({ baseAssets: ba });
+      this.updateSwapAssets(ba);
       this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.log(ex);
