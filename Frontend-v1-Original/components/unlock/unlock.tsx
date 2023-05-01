@@ -1,7 +1,7 @@
 import React from "react";
 import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
-import { useConnect } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { canto } from "viem/chains";
 
 const Unlock = ({ closeModal }: { closeModal: () => void }) => {
@@ -22,7 +22,10 @@ const Unlock = ({ closeModal }: { closeModal: () => void }) => {
 
 function Connectors() {
   const width = window.innerWidth;
-  const { connectors } = useConnect({ chainId: canto.id });
+  const { connector, isReconnecting } = useAccount();
+  const { connect, connectors, isLoading, pendingConnector } = useConnect({
+    chainId: canto.id,
+  });
   return (
     <div
       style={{
@@ -32,52 +35,58 @@ function Connectors() {
         alignItems: "center",
       }}
     >
-      {connectors.map((connector) => (
-        <div key={connector.id}>
-          <button onClick={() => connector.connect()}>
-            Connect {connector.name}
-          </button>
-        </div>
+      {connectors.map((x) => (
+        <button
+          disabled={!x.ready || isReconnecting || connector?.id === x.id}
+          key={x.name}
+          onClick={() => connect({ connector: x })}
+          className="bg-[#272826] font-bold hover:bg-green-900"
+        >
+          {x.name}
+          {!x.ready && " (unsupported)"}
+          {isLoading && x.id === pendingConnector?.id && "…"}
+        </button>
       ))}
-      {/* // if (name === "MetaMask") {
-        //   url = "/connectors/icn-metamask.svg";
-        //   descriptor = "Connect to your MetaMask wallet";
-        // } else if (name === "WalletConnect") {
-        //   url = "/connectors/walletConnectIcon.svg";
-        //   descriptor = "Scan with WalletConnect to connect";
-        // } else if (name === "TrustWallet") {
-        //   url = "/connectors/trustWallet.png";
-        //   descriptor = "Connect to your TrustWallet";
-        // } else if (name === "Portis") {
-        //   url = "/connectors/portisIcon.png";
-        //   descriptor = "Connect with your Portis account";
-        // } else if (name === "Fortmatic") {
-        //   url = "/connectors/fortmaticIcon.png";
-        //   descriptor = "Connect with your Fortmatic account";
-        // } else if (name === "Ledger") {
-        //   url = "/connectors/icn-ledger.svg";
-        //   descriptor = "Connect with your Ledger Device";
-        // } else if (name === "Squarelink") {
-        //   url = "/connectors/squarelink.png";
-        //   descriptor = "Connect with your Squarelink account";
-        // } else if (name === "Trezor") {
-        //   url = "/connectors/trezor.png";
-        //   descriptor = "Connect with your Trezor Device";
-        // } else if (name === "Torus") {
-        //   url = "/connectors/torus.jpg";
-        //   descriptor = "Connect with your Torus account";
-        // } else if (name === "Authereum") {
-        //   url = "/connectors/icn-aethereum.svg";
-        //   descriptor = "Connect with your Authereum account";
-        // } else if (name === "WalletLink") {
-        //   display = "Coinbase Wallet";
-        //   url = "/connectors/coinbaseWalletIcon.svg";
-        //   descriptor = "Connect to your Coinbase wallet";
-        // } else if (name === "Frame") {
-        //   return "";
-        // } */}
     </div>
   );
 }
 
 export default Unlock;
+
+/* // if (name === "MetaMask") {
+  //   url = "/connectors/icn-metamask.svg";
+  //   descriptor = "Connect to your MetaMask wallet";
+  // } else if (name === "WalletConnect") {
+  //   url = "/connectors/walletConnectIcon.svg";
+  //   descriptor = "Scan with WalletConnect to connect";
+  // } else if (name === "TrustWallet") {
+  //   url = "/connectors/trustWallet.png";
+  //   descriptor = "Connect to your TrustWallet";
+  // } else if (name === "Portis") {
+  //   url = "/connectors/portisIcon.png";
+  //   descriptor = "Connect with your Portis account";
+  // } else if (name === "Fortmatic") {
+  //   url = "/connectors/fortmaticIcon.png";
+  //   descriptor = "Connect with your Fortmatic account";
+  // } else if (name === "Ledger") {
+  //   url = "/connectors/icn-ledger.svg";
+  //   descriptor = "Connect with your Ledger Device";
+  // } else if (name === "Squarelink") {
+  //   url = "/connectors/squarelink.png";
+  //   descriptor = "Connect with your Squarelink account";
+  // } else if (name === "Trezor") {
+  //   url = "/connectors/trezor.png";
+  //   descriptor = "Connect with your Trezor Device";
+  // } else if (name === "Torus") {
+  //   url = "/connectors/torus.jpg";
+  //   descriptor = "Connect with your Torus account";
+  // } else if (name === "Authereum") {
+  //   url = "/connectors/icn-aethereum.svg";
+  //   descriptor = "Connect with your Authereum account";
+  // } else if (name === "WalletLink") {
+  //   display = "Coinbase Wallet";
+  //   url = "/connectors/coinbaseWalletIcon.svg";
+  //   descriptor = "Connect to your Coinbase wallet";
+  // } else if (name === "Frame") {
+  //   return "";
+  // } */
