@@ -6739,7 +6739,7 @@ class Store {
             "claimBribes",
             [sendGauges01, sendTokens01, tokenID],
             account,
-            claim0TXID,
+            claim01TXID,
             (err) => {
               if (err) {
                 reject(err);
