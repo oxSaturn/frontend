@@ -12,7 +12,6 @@ import {
   parseEther,
   WalletClient,
 } from "viem";
-import { canto } from "viem/chains";
 
 import { Dispatcher } from "flux";
 
@@ -1245,7 +1244,7 @@ class Store {
           weightPercent,
           bribes: bribes,
           x_bribes: x_bribes,
-          xx_bribes: x_bribes,
+          xx_bribes: xx_bribes,
         };
       }
 
