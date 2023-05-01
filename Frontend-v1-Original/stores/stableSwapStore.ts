@@ -3364,49 +3364,17 @@ class Store {
         .times(sendSlippage)
         .toFixed(0);
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: withdrawTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.ROUTER_ABI,
-          address: CONTRACTS.ROUTER_ADDRESS,
-          functionName: "removeLiquidity",
-          args: [
-            token0.address,
-            token1.address,
-            pair.stable,
-            BigInt(sendAmount),
-            BigInt(sendAmount0Min),
-            BigInt(sendAmount1Min),
-            account,
-            BigInt(deadline),
-          ],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: withdrawTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: withdrawTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: withdrawTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeRemoveLiquidty(
+        walletClient,
+        withdrawTXID,
+        token0.address,
+        token1.address,
+        pair.stable,
+        BigInt(sendAmount),
+        sendAmount0Min,
+        sendAmount1Min,
+        deadline
+      );
 
       this._getPairInfo(account);
       this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
@@ -3555,49 +3523,17 @@ class Store {
         }
       }
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: withdrawTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.ROUTER_ABI,
-          address: CONTRACTS.ROUTER_ADDRESS,
-          functionName: "removeLiquidity",
-          args: [
-            token0.address,
-            token1.address,
-            pair.stable,
-            balanceOf,
-            BigInt(sendAmount0Min),
-            BigInt(sendAmount1Min),
-            account,
-            BigInt(deadline),
-          ],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: withdrawTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: withdrawTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: withdrawTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeRemoveLiquidty(
+        walletClient,
+        withdrawTXID,
+        token0.address,
+        token1.address,
+        pair.stable,
+        balanceOf,
+        sendAmount0Min,
+        sendAmount1Min,
+        deadline
+      );
 
       this._getPairInfo(account);
       this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
@@ -7017,6 +6953,63 @@ class Store {
             error: error,
           });
         }
+      }
+    }
+  };
+
+  writeRemoveLiquidty = async (
+    walletClient: WalletClient,
+    withdrawTXID: string,
+    token0Address: `0x${string}`,
+    token1Address: `0x${string}`,
+    stable: boolean,
+    sendAmount: bigint,
+    sendAmount0Min: string,
+    sendAmount1Min: string,
+    deadline: string
+  ) => {
+    const [account] = await walletClient.getAddresses();
+    try {
+      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: withdrawTXID });
+      const { request } = await viemClient.simulateContract({
+        account,
+        abi: CONTRACTS.ROUTER_ABI,
+        address: CONTRACTS.ROUTER_ADDRESS,
+        functionName: "removeLiquidity",
+        args: [
+          token0Address,
+          token1Address,
+          stable,
+          sendAmount,
+          BigInt(sendAmount0Min),
+          BigInt(sendAmount1Min),
+          account,
+          BigInt(deadline),
+        ],
+      });
+      const txHash = await walletClient.writeContract(request);
+
+      const receipt = await viemClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      if (receipt.status === "success") {
+        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+          uuid: withdrawTXID,
+          txHash: receipt.transactionHash,
+        });
+      }
+    } catch (error) {
+      if (!(error as Error).toString().includes("-32601")) {
+        if ((error as Error).message) {
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: withdrawTXID,
+            error: this._mapError((error as Error).message),
+          });
+        }
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid: withdrawTXID,
+          error: error,
+        });
       }
     }
   };
