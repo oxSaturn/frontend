@@ -1,7 +1,13 @@
 import { useEffect } from "react";
-import { useAccount, useWalletClient } from "wagmi";
+import {
+  useAccount,
+  useNetwork,
+  useSwitchNetwork,
+  useWalletClient,
+} from "wagmi";
 import Head from "next/head";
 import { canto } from "viem/chains";
+import { Button, Typography } from "@mui/material";
 
 import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
@@ -19,6 +25,8 @@ export default function Layout({
   configure?: boolean;
 }) {
   const { address } = useAccount();
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork({ chainId: canto.id });
   const { data: walletClient } = useWalletClient({
     chainId: canto.id,
   });
@@ -62,7 +70,30 @@ export default function Layout({
           </>
         )}
         <SnackbarController />
-        <main>{children}</main>
+        <main>
+          {!chain?.unsupported ? (
+            children
+          ) : (
+            <div className="flex items-center justify-center bg-[rgba(17,23,42,0.9)] text-center">
+              <div>
+                <Typography className="max-w-md text-2xl text-white">
+                  The chain you&apos;re connected to isn&apos;t supported.
+                  Please check that your wallet is connected to Canto Mainnet.
+                </Typography>
+                <Button
+                  className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
+                  variant="contained"
+                  onClick={() => switchNetwork?.()}
+                >
+                  Switch to{" "}
+                  {process.env.NEXT_PUBLIC_CHAINID == "740"
+                    ? "Canto testnet"
+                    : "Canto"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
