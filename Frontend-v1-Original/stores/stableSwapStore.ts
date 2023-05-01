@@ -1812,8 +1812,8 @@ class Store {
                 (b) => b.token.address === xx_bribe.token.address
               );
               if (bribe) {
-                bribe.rewardAmount =
-                  bribe.rewardAmmount + xx_bribe.rewardAmmount;
+                // NOTE: it is defined at this point
+                bribe.rewardAmount! += xx_bribe.rewardAmmount;
               } else {
                 bribes.push({
                   token: xx_bribe.token,
