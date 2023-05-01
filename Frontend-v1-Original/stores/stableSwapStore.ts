@@ -3497,7 +3497,7 @@ class Store {
           functionName: "withdraw",
           args: [BigInt(sendAmount)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -3591,7 +3591,7 @@ class Store {
           functionName: "withdraw",
           args: [BigInt(sendAmount)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -4255,7 +4255,7 @@ class Store {
           functionName: "create_lock",
           args: [BigInt(sendAmount), BigInt(unlockTime)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -4391,7 +4391,7 @@ class Store {
           functionName: "increase_amount",
           args: [BigInt(tokenID), BigInt(sendAmount)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -4471,7 +4471,7 @@ class Store {
           functionName: "increase_unlock_time",
           args: [BigInt(tokenID), BigInt(unlockTime)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -4579,39 +4579,13 @@ class Store {
           });
         });
 
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewardsTXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges, sendTokens, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: rewardsTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: rewardsTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: rewardsTXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          rewardsTXID,
+          sendGauges,
+          sendTokens,
+          tokenID
+        );
       }
 
       if (rewards.veDist.length > 0) {
@@ -4639,7 +4613,7 @@ class Store {
             functionName: "claim",
             args: [BigInt(tokenID)],
           });
-          const txHash = await walletClient.sendTransaction(request);
+          const txHash = await walletClient.writeContract(request);
 
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
@@ -4677,7 +4651,7 @@ class Store {
           functionName: "reset",
           args: [BigInt(tokenID)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -4822,39 +4796,13 @@ class Store {
           });
         });
 
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewards01TXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges, sendTokens, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: rewards01TXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: rewards01TXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: rewards01TXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          rewards01TXID,
+          sendGauges,
+          sendTokens,
+          tokenID
+        );
       }
       if (rewards.xBribes.length > 0) {
         const sendGauges = rewards.xBribes.map((pair) => {
@@ -4866,39 +4814,13 @@ class Store {
           });
         });
 
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewards0TXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges, sendTokens, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: rewards0TXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: rewards0TXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: rewards0TXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          rewards0TXID,
+          sendGauges,
+          sendTokens,
+          tokenID
+        );
       }
 
       if (rewards.bribes.length > 0) {
@@ -4911,39 +4833,13 @@ class Store {
           });
         });
 
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: rewardsTXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges, sendTokens, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: rewardsTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: rewardsTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: rewardsTXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          rewardsTXID,
+          sendGauges,
+          sendTokens,
+          tokenID
+        );
       }
 
       // CHECK if veNFT has votes
@@ -4971,7 +4867,7 @@ class Store {
             functionName: "reset",
             args: [BigInt(tokenID)],
           });
-          const txHash = await walletClient.sendTransaction(request);
+          const txHash = await walletClient.writeContract(request);
 
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
@@ -5007,7 +4903,7 @@ class Store {
           functionName: "withdraw",
           args: [BigInt(tokenID)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -5080,7 +4976,7 @@ class Store {
           functionName: "merge",
           args: [BigInt(from), BigInt(to)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -5226,40 +5122,13 @@ class Store {
             return (bribe as Bribe).token.address;
           });
         });
-
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: bribesTXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges, sendTokens, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: bribesTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: bribesTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: bribesTXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          bribesTXID,
+          sendGauges,
+          sendTokens,
+          tokenID
+        );
       }
 
       // SUBMIT VOTE TRANSACTION
@@ -5304,7 +5173,7 @@ class Store {
           functionName: "vote",
           args: [BigInt(tokenID), tokens, voteCounts],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -5488,7 +5357,7 @@ class Store {
           functionName: "notifyRewardAmount",
           args: [asset.address, BigInt(sendAmount)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -5941,39 +5810,13 @@ class Store {
         }),
       ];
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
-        const { request } = await viemClient.simulateContract({
-          address: CONTRACTS.VOTER_ADDRESS,
-          abi: CONTRACTS.VOTER_ABI,
-          functionName: "claimBribes",
-          args: [sendGauges, sendTokens, BigInt(tokenID)],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: claimTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claimTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: claimTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeClaimBribes(
+        walletClient,
+        claimTXID,
+        sendGauges,
+        sendTokens,
+        tokenID
+      );
 
       this.getRewardBalances({
         type: "Internal rewards balances",
@@ -6030,40 +5873,13 @@ class Store {
           return (bribe as Bribe).token.address;
         }),
       ];
-
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
-        const { request } = await viemClient.simulateContract({
-          address: CONTRACTS.VOTER_ADDRESS,
-          abi: CONTRACTS.VOTER_ABI,
-          functionName: "claimBribes",
-          args: [sendGauges, sendTokens, BigInt(tokenID)],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: claimTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claimTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: claimTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeClaimBribes(
+        walletClient,
+        claimTXID,
+        sendGauges,
+        sendTokens,
+        tokenID
+      );
 
       this.getRewardBalances({
         type: "Internal rewards balances",
@@ -6120,40 +5936,13 @@ class Store {
           return (bribe as Bribe).token.address;
         }),
       ];
-
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
-        const { request } = await viemClient.simulateContract({
-          address: CONTRACTS.VOTER_ADDRESS,
-          abi: CONTRACTS.VOTER_ABI,
-          functionName: "claimBribes",
-          args: [sendGauges, sendTokens, BigInt(tokenID)],
-        });
-        const txHash = await walletClient.sendTransaction(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: claimTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claimTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: claimTXID,
-            error: error,
-          });
-        }
-      }
+      await this.writeClaimBribes(
+        walletClient,
+        claimTXID,
+        sendGauges,
+        sendTokens,
+        tokenID
+      );
 
       this.getRewardBalances({
         type: "Internal rewards balances",
@@ -6310,109 +6099,31 @@ class Store {
       this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
 
       if (xxBribePairs.length > 0) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claim01TXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges01, sendTokens01, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: claim01TXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: claim01TXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claim01TXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          claim01TXID,
+          sendGauges01,
+          sendTokens01,
+          tokenID
+        );
       }
       if (xBribePairs.length > 0) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claim0TXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges0, sendTokens0, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: claim0TXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: claim0TXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claim0TXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          claim0TXID,
+          sendGauges0,
+          sendTokens0,
+          tokenID
+        );
       }
       if (bribePairs.length > 0) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: claimTXID });
-          const { request } = await viemClient.simulateContract({
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "claimBribes",
-            args: [sendGauges, sendTokens, BigInt(tokenID)],
-          });
-          const txHash = await walletClient.sendTransaction(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: claimTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: claimTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claimTXID,
-              error: error,
-            });
-          }
-        }
+        await this.writeClaimBribes(
+          walletClient,
+          claimTXID,
+          sendGauges,
+          sendTokens,
+          tokenID
+        );
       }
 
       if (rewardPairs.length > 0) {
@@ -6427,7 +6138,7 @@ class Store {
               functionName: "getReward",
               args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
             });
-            const txHash = await walletClient.sendTransaction(request);
+            const txHash = await walletClient.writeContract(request);
 
             const receipt = await viemClient.waitForTransactionReceipt({
               hash: txHash,
@@ -6467,7 +6178,7 @@ class Store {
               functionName: "claim",
               args: [BigInt(tokenID)],
             });
-            const txHash = await walletClient.sendTransaction(request);
+            const txHash = await walletClient.writeContract(request);
 
             const receipt = await viemClient.waitForTransactionReceipt({
               hash: txHash,
@@ -6550,7 +6261,7 @@ class Store {
           functionName: "getReward",
           args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -6630,7 +6341,7 @@ class Store {
           functionName: "claim",
           args: [BigInt(tokenID)],
         });
-        const txHash = await walletClient.sendTransaction(request);
+        const txHash = await walletClient.writeContract(request);
 
         const receipt = await viemClient.waitForTransactionReceipt({
           hash: txHash,
@@ -7093,6 +6804,50 @@ class Store {
         }
         this.emitter.emit(ACTIONS.TX_REJECTED, {
           uuid: stakeTXID,
+          error: error,
+        });
+      }
+    }
+  };
+
+  writeClaimBribes = async (
+    walletClient: WalletClient,
+    txId: string,
+    sendGauges: `0x${string}`[],
+    sendTokens: `0x${string}`[][],
+    tokenID: string
+  ) => {
+    const [account] = await walletClient.getAddresses();
+    try {
+      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
+      const { request } = await viemClient.simulateContract({
+        account,
+        address: CONTRACTS.VOTER_ADDRESS,
+        abi: CONTRACTS.VOTER_ABI,
+        functionName: "claimBribes",
+        args: [sendGauges, sendTokens, BigInt(tokenID)],
+      });
+      const txHash = await walletClient.writeContract(request);
+
+      const receipt = await viemClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      if (receipt.status === "success") {
+        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+          uuid: txId,
+          txHash: receipt.transactionHash,
+        });
+      }
+    } catch (error) {
+      if (!(error as Error).toString().includes("-32601")) {
+        if ((error as Error).message) {
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: txId,
+            error: this._mapError((error as Error).message),
+          });
+        }
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid: txId,
           error: error,
         });
       }
