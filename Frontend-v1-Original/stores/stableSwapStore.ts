@@ -4584,7 +4584,7 @@ class Store {
       if (!allowance) throw new Error("Couldn't fetch allowance");
       // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
       if (BigNumber(allowance).lt(fromAmount)) {
-        this.writeApprove(
+        await this.writeApprove(
           walletClient,
           allowanceTXID,
           fromAsset.address,
@@ -7507,7 +7507,9 @@ class Store {
   ) => {
     try {
       this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
+      const [account] = await walletClient.getAddresses();
       const { request } = await viemClient.simulateContract({
+        account,
         address: tokenAddress,
         abi: CONTRACTS.ERC20_ABI,
         functionName: "approve",
