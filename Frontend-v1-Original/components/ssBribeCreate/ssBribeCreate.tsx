@@ -283,8 +283,7 @@ export default function BribeCreate() {
                   : classes.buttonOverride
               }
               color="primary"
-              disabled={true}
-              // disabled={createLoading}
+              disabled={createLoading}
               onClick={onCreate}
             >
               <Typography className={classes.actionButtonText}>

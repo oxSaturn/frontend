@@ -60,7 +60,6 @@ export default function Bribes() {
         size="large"
         className={classes.buttonOverride}
         onClick={onCreate}
-        disabled={true}
       >
         <Typography className={classes.actionButtonText}>
           Create Bribe
