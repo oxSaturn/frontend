@@ -1,21 +1,10 @@
-import { useState } from "react";
 import { useAccount } from "wagmi";
-import { Typography, Button, Paper } from "@mui/material";
+import { Typography, Paper } from "@mui/material";
 
 import Gauges from "../../components/ssVotes/ssVotes";
-import Unlock from "../../components/unlock/unlockModal";
 
 function Vote() {
   const { address } = useAccount();
-  const [unlockOpen, setUnlockOpen] = useState(false);
-
-  const onAddressClicked = () => {
-    setUnlockOpen(true);
-  };
-
-  const closeUnlock = () => {
-    setUnlockOpen(false);
-  };
 
   return (
     <div className="relative mt-0 flex h-full w-full flex-col pt-8">
@@ -40,18 +29,9 @@ function Vote() {
               rewards distribution or create a bribe to encourage others to do
               the same.
             </Typography>
-            <Button
-              disableElevation
-              className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
-              variant="contained"
-              onClick={onAddressClicked}
-            >
-              <Typography>Connect Wallet to Continue</Typography>
-            </Button>
           </div>
         </Paper>
       )}
-      {unlockOpen && <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />}
     </div>
   );
 }
