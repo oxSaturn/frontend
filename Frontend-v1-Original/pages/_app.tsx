@@ -3,6 +3,11 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+// Create a client
+const queryClient = new QueryClient();
 
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
@@ -61,22 +66,25 @@ export default function MyApp({
 
   return (
     <CacheProvider value={emotionCache}>
-      <Head>
-        <title>Velocimeter</title>
-        <meta
-          name="viewport"
-          content="minimum-scale=1, initial-scale=1, width=device-width"
-        />
-      </Head>
-      <ThemeProvider theme={themeConfig}>
-        {accountConfigured ? (
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        ) : (
-          <Configure {...pageProps} />
-        )}
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <Head>
+          <title>Velocimeter</title>
+          <meta
+            name="viewport"
+            content="minimum-scale=1, initial-scale=1, width=device-width"
+          />
+        </Head>
+        <ThemeProvider theme={themeConfig}>
+          {accountConfigured ? (
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          ) : (
+            <Configure {...pageProps} />
+          )}
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </CacheProvider>
   );
 }

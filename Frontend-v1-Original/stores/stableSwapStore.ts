@@ -242,6 +242,10 @@ class Store {
             this.claimAllRewards(payload);
             break;
 
+          case ACTIONS.BRIBE_AUTO_BRIBE:
+            this.bribeAutoBribe(payload);
+            break;
+
           default: {
           }
         }
@@ -6999,6 +7003,64 @@ class Store {
             content: { tokenID },
           });
           this.emitter.emit(ACTIONS.CLAIM_VE_DIST_RETURNED);
+        }
+      );
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  bribeAutoBribe = async (payload: {
+    type: string;
+    content: { address: `0x${string}` };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { address } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let bribeTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Bribe AutoBribe`,
+        verb: "Bribed",
+        transactions: [
+          {
+            uuid: bribeTXID,
+            description: `Bribing AutoBribe`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // SUBMIT CLAIM TRANSACTION
+      const autoBribeContract = new web3.eth.Contract(
+        CONTRACTS.AUTO_BRIBE_ABI as unknown as AbiItem[],
+        address
+      );
+
+      this._callContractWait(
+        autoBribeContract,
+        "bribe",
+        [undefined],
+        account,
+        bribeTXID,
+        (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
         }
       );
     } catch (ex) {
