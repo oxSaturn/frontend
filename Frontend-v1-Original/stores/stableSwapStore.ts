@@ -7051,18 +7051,46 @@ class Store {
         address
       );
 
-      this._callContractWait(
-        autoBribeContract,
-        "bribe",
-        [undefined],
-        account,
-        bribeTXID,
-        (err) => {
-          if (err) {
-            return this.emitter.emit(ACTIONS.ERROR, err);
+      this.emitter.emit(ACTIONS.TX_PENDING, { bribeTXID });
+      autoBribeContract.methods
+        .bribe()
+        .send({ from: account.address })
+        .on("transactionHash", (txHash: string) => {
+          this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid: bribeTXID, txHash });
+        })
+        .on("receipt", (receipt: TransactionReceipt) => {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: bribeTXID,
+            txHash: receipt.transactionHash,
+          });
+        })
+        .on("error", (error: Error) => {
+          if (!error.toString().includes("-32601")) {
+            if (error.message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: bribeTXID,
+                error: this._mapError(error.message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: bribeTXID,
+              error: error,
+            });
           }
-        }
-      );
+        })
+        .catch((ex: Error) => {
+          console.log(ex);
+          if (ex.message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: bribeTXID,
+              error: this._mapError(ex.message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: bribeTXID,
+            error: "Error estimating gas",
+          });
+        });
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
