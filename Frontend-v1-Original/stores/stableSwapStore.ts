@@ -11,6 +11,7 @@ import {
   formatEther,
   parseEther,
   WalletClient,
+  WriteContractReturnType,
 } from "viem";
 
 import { Dispatcher } from "flux";
@@ -3488,8 +3489,7 @@ class Store {
         args: [account],
       });
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: unstakeTXID });
+      const withdrawFunction = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: pair.gauge?.address,
@@ -3498,30 +3498,10 @@ class Store {
           args: [BigInt(sendAmount)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: unstakeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: unstakeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: unstakeTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(unstakeTXID, withdrawFunction);
 
       await this.writeRemoveLiquidty(
         walletClient,
@@ -3583,8 +3563,7 @@ class Store {
         .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: unstakeTXID });
+      const withdrawFunction = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: pair.gauge?.address,
@@ -3593,30 +3572,10 @@ class Store {
           args: [BigInt(sendAmount)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: unstakeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: unstakeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: unstakeTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(unstakeTXID, withdrawFunction);
 
       this._getPairInfo(account);
       this.emitter.emit(ACTIONS.LIQUIDITY_UNSTAKED);
@@ -4248,8 +4207,7 @@ class Store {
         .times(10 ** govToken.decimals)
         .toFixed(0);
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+      const writeCreateLock = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
@@ -4258,30 +4216,10 @@ class Store {
           args: [BigInt(sendAmount), BigInt(unlockTime)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: vestTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: vestTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: vestTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(vestTXID, writeCreateLock);
 
       this._getGovTokenInfo(account);
       this.getNFTByID("fetchAll");
@@ -4385,8 +4323,7 @@ class Store {
         .times(10 ** govToken.decimals)
         .toFixed(0);
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+      const writeIncreaseAmount = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
@@ -4395,30 +4332,10 @@ class Store {
           args: [BigInt(tokenID), BigInt(sendAmount)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: vestTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: vestTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: vestTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(vestTXID, writeIncreaseAmount);
 
       this._getGovTokenInfo(account);
       this._updateVestNFTByID(tokenID);
@@ -4465,9 +4382,7 @@ class Store {
         ],
       });
 
-      // SUBMIT INCREASE TRANSACTION
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+      const writeIncreaseDuration = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
@@ -4476,30 +4391,10 @@ class Store {
           args: [BigInt(tokenID), BigInt(unlockTime)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: vestTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: vestTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: vestTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(vestTXID, writeIncreaseDuration);
 
       this._updateVestNFTByID(tokenID);
 
@@ -4606,11 +4501,7 @@ class Store {
       }
 
       if (rewards.veDist.length > 0) {
-        // SUBMIT CLAIM TRANSACTION
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, {
-            uuid: rebaseTXID,
-          });
+        const writeClaim = async () => {
           const { request } = await viemClient.simulateContract({
             account,
             address: CONTRACTS.VE_DIST_ADDRESS,
@@ -4619,37 +4510,12 @@ class Store {
             args: [BigInt(tokenID)],
           });
           const txHash = await walletClient.writeContract(request);
-
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: rebaseTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: rebaseTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: rebaseTXID,
-              error: error,
-            });
-          }
-        }
+          return txHash;
+        };
+        await this._writeContractWrapper(rebaseTXID, writeClaim);
       }
 
-      // SUBMIT RESET TRANSACTION
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, {
-          uuid: resetTXID,
-        });
+      const writeReset = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VOTER_ADDRESS,
@@ -4658,30 +4524,10 @@ class Store {
           args: [BigInt(tokenID)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: resetTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: resetTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: resetTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(resetTXID, writeReset);
 
       this._updateVestNFTByID(tokenID);
 
@@ -4865,8 +4711,7 @@ class Store {
       }
 
       if (!!voted) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: resetTXID });
+        const writeReset = async () => {
           const { request } = await viemClient.simulateContract({
             account,
             address: CONTRACTS.VOTER_ADDRESS,
@@ -4875,35 +4720,13 @@ class Store {
             args: [BigInt(tokenID)],
           });
           const txHash = await walletClient.writeContract(request);
+          return txHash;
+        };
 
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: resetTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: resetTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: resetTXID,
-              error: error,
-            });
-          }
-        }
+        await this._writeContractWrapper(resetTXID, writeReset);
       }
 
-      // SUBMIT withdraw TRANSACTION
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: vestTXID });
+      const writeWithdrawLock = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
@@ -4912,30 +4735,10 @@ class Store {
           args: [BigInt(tokenID)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: vestTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: vestTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: vestTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(vestTXID, writeWithdrawLock);
 
       this._updateVestNFTByID(tokenID);
 
@@ -4976,8 +4779,7 @@ class Store {
         ],
       });
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: mergeTXID });
+      const writeMergeLock = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VE_TOKEN_ADDRESS,
@@ -4986,30 +4788,10 @@ class Store {
           args: [BigInt(from), BigInt(to)],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: mergeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: mergeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: mergeTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(mergeTXID, writeMergeLock);
 
       this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
     } catch (e) {
@@ -5174,8 +4956,7 @@ class Store {
         return BigInt(BigNumber(vote.value).times(100).toFixed(0));
       });
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: voteTXID });
+      const writeVote = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VOTER_ADDRESS,
@@ -5184,30 +4965,10 @@ class Store {
           args: [BigInt(tokenID), tokens, voteCounts],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: voteTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: voteTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: voteTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(voteTXID, writeVote);
 
       this.emitter.emit(ACTIONS.VOTE_RETURNED);
     } catch (ex) {
@@ -5358,9 +5119,8 @@ class Store {
         .toFixed(0);
 
       // SUBMIT BRIBE TRANSACTION
-      // we bribe x_wrapped_bribe_address
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: bribeTXID });
+      // we bribe xx_wrapped_bribe_address
+      const writeCreateBribe = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: gauge.gauge.xx_wrapped_bribe_address,
@@ -5369,30 +5129,9 @@ class Store {
           args: [asset.address, BigInt(sendAmount)],
         });
         const txHash = await walletClient.writeContract(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: bribeTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: bribeTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: bribeTXID,
-            error: error,
-          });
-        }
-      }
+        return txHash;
+      };
+      await this._writeContractWrapper(bribeTXID, writeCreateBribe);
 
       await this.updatePairsCall(account);
       this.emitter.emit(ACTIONS.BRIBE_CREATED);
@@ -6139,10 +5878,7 @@ class Store {
 
       if (rewardPairs.length > 0) {
         for (let i = 0; i < rewardPairs.length; i++) {
-          try {
-            this.emitter.emit(ACTIONS.TX_PENDING, {
-              uuid: rewardClaimTXIDs[i],
-            });
+          const writeGetReward = async () => {
             const { request } = await viemClient.simulateContract({
               account,
               address: rewardPairs[i].gauge.address,
@@ -6151,39 +5887,15 @@ class Store {
               args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
             });
             const txHash = await walletClient.writeContract(request);
-
-            const receipt = await viemClient.waitForTransactionReceipt({
-              hash: txHash,
-            });
-            if (receipt.status === "success") {
-              this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-                uuid: rewardClaimTXIDs[i],
-                txHash: receipt.transactionHash,
-              });
-            }
-          } catch (error) {
-            if (!(error as Error).toString().includes("-32601")) {
-              if ((error as Error).message) {
-                this.emitter.emit(ACTIONS.TX_REJECTED, {
-                  uuid: rewardClaimTXIDs[i],
-                  error: this._mapError((error as Error).message),
-                });
-              }
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: rewardClaimTXIDs[i],
-                error: error,
-              });
-            }
-          }
+            return txHash;
+          };
+          await this._writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
         }
       }
 
       if (distribution.length > 0) {
         for (let i = 0; i < distribution.length; i++) {
-          try {
-            this.emitter.emit(ACTIONS.TX_PENDING, {
-              uuid: distributionClaimTXIDs[i],
-            });
+          const writeClaim = async () => {
             const { request } = await viemClient.simulateContract({
               account,
               address: CONTRACTS.VE_DIST_ADDRESS,
@@ -6192,30 +5904,12 @@ class Store {
               args: [BigInt(tokenID)],
             });
             const txHash = await walletClient.writeContract(request);
-
-            const receipt = await viemClient.waitForTransactionReceipt({
-              hash: txHash,
-            });
-            if (receipt.status === "success") {
-              this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-                uuid: distributionClaimTXIDs[i],
-                txHash: receipt.transactionHash,
-              });
-            }
-          } catch (error) {
-            if (!(error as Error).toString().includes("-32601")) {
-              if ((error as Error).message) {
-                this.emitter.emit(ACTIONS.TX_REJECTED, {
-                  uuid: distributionClaimTXIDs[i],
-                  error: this._mapError((error as Error).message),
-                });
-              }
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: distributionClaimTXIDs[i],
-                error: error,
-              });
-            }
-          }
+            return txHash;
+          };
+          await this._writeContractWrapper(
+            distributionClaimTXIDs[i],
+            writeClaim
+          );
         }
       }
 
@@ -6264,10 +5958,7 @@ class Store {
         ],
       });
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, {
-          uuid: claimTXID,
-        });
+      const writeGetReward = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: pair.gauge?.address,
@@ -6276,30 +5967,10 @@ class Store {
           args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
         });
         const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeGetReward);
 
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: claimTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claimTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: claimTXID,
-            error: error,
-          });
-        }
-      }
       this.getRewardBalances({
         type: "internal reward balances",
         content: { tokenID },
@@ -6345,10 +6016,7 @@ class Store {
         ],
       });
 
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, {
-          uuid: claimTXID,
-        });
+      const writeClaim = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: CONTRACTS.VE_DIST_ADDRESS,
@@ -6357,30 +6025,9 @@ class Store {
           args: [BigInt(tokenID)],
         });
         const txHash = await walletClient.writeContract(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: claimTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: claimTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: claimTXID,
-            error: error,
-          });
-        }
-      }
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeClaim);
 
       this.getRewardBalances({
         type: "internal reward balances",
@@ -6399,9 +6046,8 @@ class Store {
     tokenAddress: `0x${string}`,
     approveTo: `0x${string}`
   ) => {
-    try {
-      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
-      const [account] = await walletClient.getAddresses();
+    const [account] = await walletClient.getAddresses();
+    const write = async () => {
       const { request } = await viemClient.simulateContract({
         account,
         address: tokenAddress,
@@ -6410,30 +6056,9 @@ class Store {
         args: [approveTo, BigInt(MAX_UINT256)],
       });
       const txHash = await walletClient.writeContract(request);
-
-      const receipt = await viemClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      if (receipt.status === "success") {
-        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-          uuid: txId,
-          txHash: receipt.transactionHash,
-        });
-      }
-    } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: txId,
-            error: this._mapError((error as Error).message),
-          });
-        }
-        this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid: txId,
-          error: error,
-        });
-      }
-    }
+      return txHash;
+    };
+    await this._writeContractWrapper(txId, write);
   };
 
   writeWrapUnwrap = async (
@@ -6443,82 +6068,39 @@ class Store {
     sendFromAmount: string
   ) => {
     const [account] = await walletClient.getAddresses();
+    const wNativeTokenContract = {
+      address: W_NATIVE_ADDRESS as `0x${string}`,
+      abi: W_NATIVE_ABI,
+    } as const;
+    const writeWrap = async () => {
+      const { request } = await viemClient.simulateContract({
+        ...wNativeTokenContract,
+        account,
+        functionName: "deposit",
+        args: undefined,
+        value: BigInt(sendFromAmount),
+      });
+      const txHash = await walletClient.writeContract<
+        typeof W_NATIVE_ABI,
+        "deposit",
+        undefined
+      >(request);
+      return txHash;
+    };
+    const writeUnwrap = async () => {
+      const { request } = await viemClient.simulateContract({
+        ...wNativeTokenContract,
+        account,
+        functionName: "withdraw",
+        args: [BigInt(sendFromAmount)],
+      });
+      const txHash = await walletClient.writeContract(request);
+      return txHash;
+    };
     if (isWrap) {
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: W_NATIVE_ADDRESS as `0x${string}`,
-          abi: W_NATIVE_ABI,
-          functionName: "deposit",
-          args: undefined,
-          value: BigInt(sendFromAmount),
-        });
-        const txHash = await walletClient.writeContract<
-          typeof W_NATIVE_ABI,
-          "deposit",
-          undefined
-        >(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: wrapUnwrapTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: wrapUnwrapTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: wrapUnwrapTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(wrapUnwrapTXID, writeWrap);
     } else {
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: wrapUnwrapTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: W_NATIVE_ADDRESS as `0x${string}`,
-          abi: W_NATIVE_ABI,
-          functionName: "withdraw",
-          args: [BigInt(sendFromAmount)],
-        });
-        const txHash = await walletClient.writeContract(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: wrapUnwrapTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: wrapUnwrapTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: wrapUnwrapTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(wrapUnwrapTXID, writeUnwrap);
     }
   };
 
@@ -6535,150 +6117,85 @@ class Store {
     deadline: string
   ) => {
     const [account] = await walletClient.getAddresses();
+    const routerContract = {
+      abi: CONTRACTS.ROUTER_ABI,
+      address: CONTRACTS.ROUTER_ADDRESS,
+    } as const;
+    const writeWithoutNativeToken = async () => {
+      const { request } = await viemClient.simulateContract({
+        ...routerContract,
+        account,
+        functionName: "addLiquidity",
+        args: [
+          token0.address,
+          token1.address,
+          stable,
+          BigInt(sendAmount0),
+          BigInt(sendAmount1),
+          BigInt(sendAmount0Min),
+          BigInt(sendAmount1Min),
+          account,
+          BigInt(deadline),
+        ],
+      });
+      const txHash = await walletClient.writeContract(request);
+      return txHash;
+    };
+    const writeWithNativeTokenFirst = async () => {
+      const { request } = await viemClient.simulateContract({
+        ...routerContract,
+        account,
+        functionName: "addLiquidityETH",
+        args: [
+          token1.address,
+          stable,
+          BigInt(sendAmount1),
+          BigInt(sendAmount1Min),
+          BigInt(sendAmount0Min),
+          account,
+          BigInt(deadline),
+        ],
+        value: BigInt(sendAmount0),
+      });
+      const txHash = await walletClient.writeContract<
+        typeof CONTRACTS.ROUTER_ABI,
+        "addLiquidityETH",
+        undefined
+      >(request);
+      return txHash;
+    };
+    const writeWithNativeTokenSecond = async () => {
+      const { request } = await viemClient.simulateContract({
+        ...routerContract,
+        account,
+        functionName: "addLiquidityETH",
+        args: [
+          token0.address,
+          stable,
+          BigInt(sendAmount0),
+          BigInt(sendAmount0Min),
+          BigInt(sendAmount1Min),
+          account,
+          BigInt(deadline),
+        ],
+        value: BigInt(sendAmount1),
+      });
+      const txHash = await walletClient.writeContract<
+        typeof CONTRACTS.ROUTER_ABI,
+        "addLiquidityETH",
+        undefined
+      >(request);
+      return txHash;
+    };
     if (
       token0.address !== NATIVE_TOKEN.symbol &&
       token1.address !== NATIVE_TOKEN.symbol
     ) {
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.ROUTER_ABI,
-          address: CONTRACTS.ROUTER_ADDRESS,
-          functionName: "addLiquidity",
-          args: [
-            token0.address,
-            token1.address,
-            stable,
-            BigInt(sendAmount0),
-            BigInt(sendAmount1),
-            BigInt(sendAmount0Min),
-            BigInt(sendAmount1Min),
-            account,
-            BigInt(deadline),
-          ],
-        });
-        const txHash = await walletClient.writeContract(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: depositTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: depositTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: depositTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(depositTXID, writeWithoutNativeToken);
     } else if (token0.address === NATIVE_TOKEN.symbol) {
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.ROUTER_ABI,
-          address: CONTRACTS.ROUTER_ADDRESS,
-          functionName: "addLiquidityETH",
-          args: [
-            token1.address,
-            stable,
-            BigInt(sendAmount1),
-            BigInt(sendAmount1Min),
-            BigInt(sendAmount0Min),
-            account,
-            BigInt(deadline),
-          ],
-          value: BigInt(sendAmount0),
-        });
-        const txHash = await walletClient.writeContract<
-          typeof CONTRACTS.ROUTER_ABI,
-          "addLiquidityETH",
-          undefined
-        >(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: depositTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: depositTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: depositTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(depositTXID, writeWithNativeTokenFirst);
     } else {
-      try {
-        this.emitter.emit(ACTIONS.TX_PENDING, { uuid: depositTXID });
-        const { request } = await viemClient.simulateContract({
-          account,
-          abi: CONTRACTS.ROUTER_ABI,
-          address: CONTRACTS.ROUTER_ADDRESS,
-          functionName: "addLiquidityETH",
-          args: [
-            token0.address,
-            stable,
-            BigInt(sendAmount0),
-            BigInt(sendAmount0Min),
-            BigInt(sendAmount1Min),
-            account,
-            BigInt(deadline),
-          ],
-          value: BigInt(sendAmount1),
-        });
-        const txHash = await walletClient.writeContract<
-          typeof CONTRACTS.ROUTER_ABI,
-          "addLiquidityETH",
-          undefined
-        >(request);
-
-        const receipt = await viemClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-        if (receipt.status === "success") {
-          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-            uuid: depositTXID,
-            txHash: receipt.transactionHash,
-          });
-        }
-      } catch (error) {
-        if (!(error as Error).toString().includes("-32601")) {
-          if ((error as Error).message) {
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: depositTXID,
-              error: this._mapError((error as Error).message),
-            });
-          }
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: depositTXID,
-            error: error,
-          });
-        }
-      }
+      await this._writeContractWrapper(depositTXID, writeWithNativeTokenSecond);
     }
   };
 
@@ -6694,8 +6211,7 @@ class Store {
     deadline: string
   ) => {
     const [account] = await walletClient.getAddresses();
-    try {
-      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: withdrawTXID });
+    const write = async () => {
       const { request } = await viemClient.simulateContract({
         account,
         abi: CONTRACTS.ROUTER_ABI,
@@ -6713,30 +6229,9 @@ class Store {
         ],
       });
       const txHash = await walletClient.writeContract(request);
-
-      const receipt = await viemClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      if (receipt.status === "success") {
-        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-          uuid: withdrawTXID,
-          txHash: receipt.transactionHash,
-        });
-      }
-    } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: withdrawTXID,
-            error: this._mapError((error as Error).message),
-          });
-        }
-        this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid: withdrawTXID,
-          error: error,
-        });
-      }
-    }
+      return txHash;
+    };
+    await this._writeContractWrapper(withdrawTXID, write);
   };
 
   writeCreateGauge = async (
@@ -6745,8 +6240,7 @@ class Store {
     pairAddress: `0x${string}`
   ) => {
     const [account] = await walletClient.getAddresses();
-    try {
-      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: createGaugeTXID });
+    const write = async () => {
       const { request } = await viemClient.simulateContract({
         account,
         address: CONTRACTS.VOTER_ADDRESS,
@@ -6755,30 +6249,9 @@ class Store {
         args: [pairAddress],
       });
       const txHash = await walletClient.writeContract(request);
-
-      const receipt = await viemClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      if (receipt.status === "success") {
-        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-          uuid: createGaugeTXID,
-          txHash: receipt.transactionHash,
-        });
-      }
-    } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: createGaugeTXID,
-            error: this._mapError((error as Error).message),
-          });
-        }
-        this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid: createGaugeTXID,
-          error: error,
-        });
-      }
-    }
+      return txHash;
+    };
+    await this._writeContractWrapper(createGaugeTXID, write);
   };
 
   writeDeposit = async (
@@ -6788,8 +6261,7 @@ class Store {
     balanceOf: bigint
   ) => {
     const [account] = await walletClient.getAddresses();
-    try {
-      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: stakeTXID });
+    const write = async () => {
       const { request } = await viemClient.simulateContract({
         account,
         abi: CONTRACTS.GAUGE_ABI,
@@ -6798,30 +6270,9 @@ class Store {
         args: [balanceOf, BigInt(0)],
       });
       const txHash = await walletClient.writeContract(request);
-
-      const receipt = await viemClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      if (receipt.status === "success") {
-        this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-          uuid: stakeTXID,
-          txHash: receipt.transactionHash,
-        });
-      }
-    } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: stakeTXID,
-            error: this._mapError((error as Error).message),
-          });
-        }
-        this.emitter.emit(ACTIONS.TX_REJECTED, {
-          uuid: stakeTXID,
-          error: error,
-        });
-      }
-    }
+      return txHash;
+    };
+    await this._writeContractWrapper(stakeTXID, write);
   };
 
   writeClaimBribes = async (
@@ -6832,8 +6283,7 @@ class Store {
     tokenID: string
   ) => {
     const [account] = await walletClient.getAddresses();
-    try {
-      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
+    const write = async () => {
       const { request } = await viemClient.simulateContract({
         account,
         address: CONTRACTS.VOTER_ADDRESS,
@@ -6842,6 +6292,19 @@ class Store {
         args: [sendGauges, sendTokens, BigInt(tokenID)],
       });
       const txHash = await walletClient.writeContract(request);
+      return txHash;
+    };
+    await this._writeContractWrapper(txId, write);
+  };
+
+  protected _writeContractWrapper = async (
+    txId: string,
+    write: () => Promise<WriteContractReturnType>
+  ) => {
+    try {
+      this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
+
+      const txHash = await write();
 
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash,
