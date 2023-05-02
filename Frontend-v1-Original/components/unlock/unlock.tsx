@@ -1,5 +1,4 @@
 import React from "react";
-import { Typography, Button, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useAccount, useConnect } from "wagmi";
 import { canto } from "viem/chains";
@@ -13,40 +12,41 @@ const Unlock = ({ closeModal }: { closeModal: () => void }) => {
       >
         <Close />
       </div>
-      <div className="m-auto flex flex-wrap p-3 pt-40 text-center lg:pt-3">
-        <Connectors />
+      <div className="m-auto flex w-full flex-wrap p-2 pt-40 text-center lg:pt-3">
+        <Connectors closeModal={closeModal} />
       </div>
     </div>
   );
 };
 
-function Connectors() {
+function Connectors({ closeModal }: { closeModal: () => void }) {
   const width = window.innerWidth;
-  const { connector, isReconnecting } = useAccount();
+  const { connector, isReconnecting, address } = useAccount();
   const { connect, connectors, isLoading, pendingConnector } = useConnect({
     chainId: canto.id,
+    onSuccess: closeModal,
   });
   return (
     <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: width > 576 ? "space-between" : "center",
-        alignItems: "center",
-      }}
+      className={`flex w-full flex-col items-center gap-4 ${
+        width > 576 ? "justify-between" : "justify-center"
+      }`}
     >
-      {connectors.map((x) => (
-        <button
-          disabled={!x.ready || isReconnecting || connector?.id === x.id}
-          key={x.name}
-          onClick={() => connect({ connector: x })}
-          className="bg-[#272826] font-bold hover:bg-green-900"
-        >
-          {x.name}
-          {!x.ready && " (unsupported)"}
-          {isLoading && x.id === pendingConnector?.id && "…"}
-        </button>
-      ))}
+      {address && <>Connected account: {address}</>}
+      <div className="flex w-full flex-wrap items-center justify-center gap-4">
+        {connectors.map((x) => (
+          <button
+            disabled={!x.ready || isReconnecting || connector?.id === x.id}
+            key={x.name}
+            onClick={() => connect({ connector: x })}
+            className="rounded-md bg-[#272826] p-3 font-bold shadow-glow transition-colors hover:bg-green-900 disabled:pointer-events-none disabled:bg-slate-400 disabled:shadow-none"
+          >
+            {x.name}
+            {!x.ready && " (unsupported)"}
+            {isLoading && x.id === pendingConnector?.id && "…"}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
