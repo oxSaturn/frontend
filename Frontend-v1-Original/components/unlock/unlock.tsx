@@ -1,6 +1,6 @@
 import React from "react";
 import { Close } from "@mui/icons-material";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { canto } from "viem/chains";
 
 const Unlock = ({ closeModal }: { closeModal: () => void }) => {
@@ -26,24 +26,39 @@ function Connectors({ closeModal }: { closeModal: () => void }) {
     chainId: canto.id,
     onSuccess: closeModal,
   });
+  const { disconnect } = useDisconnect();
   return (
     <div
       className={`flex w-full flex-col items-center gap-4 ${
         width > 576 ? "justify-between" : "justify-center"
       }`}
     >
-      {address && <>Connected account: {address}</>}
-      <div className="flex w-full flex-wrap items-center justify-center gap-4">
-        {connectors.map((x) => (
+      {address && (
+        <div className="flex flex-col items-center justify-between">
+          <div>Connected account: {address}</div>
           <button
-            disabled={!x.ready || isReconnecting || connector?.id === x.id}
-            key={x.name}
-            onClick={() => connect({ connector: x })}
+            onClick={() => disconnect()}
+            className="self-end rounded-sm border border-indigo-900 bg-[#272826] p-1 font-bold transition-colors hover:bg-green-900"
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
+      <div className="flex w-full flex-wrap items-center justify-center gap-4">
+        {connectors.map((supportedConnector) => (
+          <button
+            disabled={
+              !supportedConnector.ready ||
+              isReconnecting ||
+              connector?.id === supportedConnector.id
+            }
+            key={supportedConnector.name}
+            onClick={() => connect({ connector: supportedConnector })}
             className="rounded-md bg-[#272826] p-3 font-bold shadow-glow transition-colors hover:bg-green-900 disabled:pointer-events-none disabled:bg-slate-400 disabled:shadow-none"
           >
-            {x.name}
-            {!x.ready && " (unsupported)"}
-            {isLoading && x.id === pendingConnector?.id && "…"}
+            {supportedConnector.name}
+            {!supportedConnector.ready && " (unsupported)"}
+            {isLoading && supportedConnector.id === pendingConnector?.id && "…"}
           </button>
         ))}
       </div>
