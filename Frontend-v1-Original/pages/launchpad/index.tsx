@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Paper, Typography } from "@mui/material";
 
+import LaunchpadTable from "../../components/launchpad/launchpadTable";
 import Unlock from "../../components/unlock/unlockModal";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
@@ -43,8 +44,7 @@ function Launchpad() {
     <div className="relative mt-0 flex h-full w-full flex-col pt-8">
       {account && account.address ? (
         <div>
-          Component table with list of launchpad projects <br />
-          name type status total raised your allocation
+          <LaunchpadTable />
         </div>
       ) : (
         <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-[calc(100%-80px)] flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">

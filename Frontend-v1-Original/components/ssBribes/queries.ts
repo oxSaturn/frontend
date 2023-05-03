@@ -8,6 +8,8 @@ const autoBribesAddresses = [
   "0x0BF10Dd051856FFf28Df0b033108C7513c3E637e",
 ] as const;
 
+// FIXME: Ceazor added bribeName variable but abi is not ready and no contracts deployed.
+
 const getAutoBribes = async () => {
   const autoBribesMap = new Map<`0x${string}`, boolean>();
   for (const address of autoBribesAddresses) {

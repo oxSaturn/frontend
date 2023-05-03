@@ -7,6 +7,7 @@ import {
   MulticallParameters,
 } from "viem";
 import { canto } from "viem/chains";
+
 import { CONTRACTS } from "../constants/constants";
 
 const dexvaults = http("https://canto.dexvaults.com");
