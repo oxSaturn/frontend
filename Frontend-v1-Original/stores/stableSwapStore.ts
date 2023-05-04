@@ -14,10 +14,12 @@ import {
   parseUnits,
   formatEther,
   parseEther,
+  isAddress,
 } from "viem";
 
 import { Dispatcher } from "flux";
 
+import { queryClient } from "../pages/_app";
 import { formatCurrency } from "../utils/utils";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
@@ -244,6 +246,16 @@ class Store {
 
           case ACTIONS.BRIBE_AUTO_BRIBE:
             this.bribeAutoBribe(payload);
+            break;
+
+          case ACTIONS.BUY:
+            this.buy(payload);
+            break;
+          case ACTIONS.CLAIM_EARNED:
+            this.claimEarned(payload);
+            break;
+          case ACTIONS.CLAIM_REF_EARNED:
+            this.claimRefEarned(payload);
             break;
 
           default: {
@@ -6012,6 +6024,27 @@ class Store {
     }
   };
 
+  _getBuyAllowanceNOTE = async (
+    tokenAddress: `0x${string}`,
+    launchpadProjectAddress: `0x${string}`,
+    account: { address: `0x${string}` }
+  ) => {
+    try {
+      const allowance = await viemClient.readContract({
+        address: tokenAddress,
+        abi: CONTRACTS.ERC20_ABI,
+        functionName: "allowance",
+        // We only bribe x_wrapped_bribe_address
+        args: [account.address, launchpadProjectAddress],
+      });
+
+      return formatEther(allowance);
+    } catch (ex) {
+      console.error(ex);
+      return null;
+    }
+  };
+
   // NOTE: Never being used
   // getVestBalances = async (payload: {
   //   type: string;
@@ -7088,6 +7121,332 @@ class Store {
           }
           this.emitter.emit(ACTIONS.TX_REJECTED, {
             uuid: bribeTXID,
+            error: "Error estimating gas",
+          });
+        });
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  buy = async (payload: {
+    type: string;
+    content: {
+      amount: string;
+      refCode: string;
+      projectAddress: string | string[];
+    };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { amount, refCode, projectAddress } = payload.content;
+
+      const refCodeToSend = isAddress(refCode) ? refCode : ZERO_ADDRESS;
+
+      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+        console.warn("projectAddress is not a valid address");
+        return null;
+      }
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let allowanceTXID = this.getTXUUID();
+      let buyTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Participate in Launchpad`,
+        verb: "Participated",
+        transactions: [
+          {
+            uuid: allowanceTXID,
+            description: `Checking your NOTE allowance`,
+            status: "WAITING",
+          },
+          {
+            uuid: buyTXID,
+            description: `Buy worth of ${amount} NOTE`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // CHECK ALLOWANCES AND SET TX DISPLAY
+      const allowance = await this._getBuyAllowanceNOTE(
+        "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+        projectAddress,
+        account
+      );
+      if (!allowance) throw new Error("Error getting bribe allowance");
+      if (BigNumber(allowance).lt(amount)) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: allowanceTXID,
+          description: `Allow the bribe contract to spend your $NOTE`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: allowanceTXID,
+          description: `Allowance on $NOTE sufficient`,
+          status: "DONE",
+        });
+      }
+
+      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+      if (BigNumber(allowance).lt(amount)) {
+        const tokenContract = new web3.eth.Contract(
+          CONTRACTS.ERC20_ABI as unknown as AbiItem[],
+          "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503"
+        );
+
+        const tokenPromise = new Promise<void>((resolve, reject) => {
+          this._callContractWait(
+            tokenContract,
+            "approve",
+            [projectAddress, MAX_UINT256],
+            account,
+            allowanceTXID,
+            (err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve();
+            }
+          );
+        });
+
+        await tokenPromise;
+      }
+
+      // SUBMIT BRIBE TRANSACTION
+      const projectContract = new web3.eth.Contract(
+        CONTRACTS.FAIR_AUCTION_ABI as unknown as AbiItem[],
+        projectAddress
+      );
+
+      const sendAmount = BigNumber(amount)
+        .times(10 ** 18)
+        .toFixed(0);
+
+      this._callContractWait(
+        projectContract,
+        "buy",
+        [sendAmount, refCodeToSend],
+        account,
+        buyTXID,
+        async (err) => {
+          if (err) {
+            return this.emitter.emit(ACTIONS.ERROR, err);
+          }
+          queryClient.invalidateQueries({
+            queryKey: [
+              "launchpadProject",
+              "noteAsset",
+              "userClaimableAndClaimableRefEarnings",
+            ],
+          });
+        }
+      );
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimEarned = async (payload: {
+    type: string;
+    content: {
+      projectAddress: string | string[];
+    };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { projectAddress } = payload.content;
+
+      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+        console.warn("projectAddress is not a valid address");
+        return null;
+      }
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim Earned Amount`,
+        verb: "Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // SUBMIT CLAIM TRANSACTION
+      const fairAuctionContract = new web3.eth.Contract(
+        CONTRACTS.AUTO_BRIBE_ABI as unknown as AbiItem[],
+        projectAddress
+      );
+
+      this.emitter.emit(ACTIONS.TX_PENDING, { claimTXID });
+      fairAuctionContract.methods
+        .claim()
+        .send({ from: account.address })
+        .on("transactionHash", (txHash: string) => {
+          this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid: claimTXID, txHash });
+        })
+        .on("receipt", (receipt: TransactionReceipt) => {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: claimTXID,
+            txHash: receipt.transactionHash,
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["userClaimableAndClaimableRefEarnings"],
+          });
+        })
+        .on("error", (error: Error) => {
+          if (!error.toString().includes("-32601")) {
+            if (error.message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: claimTXID,
+                error: this._mapError(error.message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: error,
+            });
+          }
+        })
+        .catch((ex: Error) => {
+          console.log(ex);
+          if (ex.message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: this._mapError(ex.message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: claimTXID,
+            error: "Error estimating gas",
+          });
+        });
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimRefEarned = async (payload: {
+    type: string;
+    content: {
+      projectAddress: string | string[];
+    };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("account");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const web3 = await stores.accountStore.getWeb3Provider();
+      if (!web3) {
+        console.warn("web3 not found");
+        return null;
+      }
+
+      const { projectAddress } = payload.content;
+
+      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+        console.warn("projectAddress is not a valid address");
+        return null;
+      }
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim Ref Earned Amount`,
+        verb: "Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // SUBMIT CLAIM TRANSACTION
+      const fairAuctionContract = new web3.eth.Contract(
+        CONTRACTS.AUTO_BRIBE_ABI as unknown as AbiItem[],
+        projectAddress
+      );
+
+      this.emitter.emit(ACTIONS.TX_PENDING, { claimTXID });
+      fairAuctionContract.methods
+        .claimRefEarnings()
+        .send({ from: account.address })
+        .on("transactionHash", (txHash: string) => {
+          this.emitter.emit(ACTIONS.TX_SUBMITTED, { uuid: claimTXID, txHash });
+        })
+        .on("receipt", (receipt: TransactionReceipt) => {
+          this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+            uuid: claimTXID,
+            txHash: receipt.transactionHash,
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["userClaimableAndClaimableRefEarnings"],
+          });
+        })
+        .on("error", (error: Error) => {
+          if (!error.toString().includes("-32601")) {
+            if (error.message) {
+              this.emitter.emit(ACTIONS.TX_REJECTED, {
+                uuid: claimTXID,
+                error: this._mapError(error.message),
+              });
+            }
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: error,
+            });
+          }
+        })
+        .catch((ex: Error) => {
+          console.log(ex);
+          if (ex.message) {
+            this.emitter.emit(ACTIONS.TX_REJECTED, {
+              uuid: claimTXID,
+              error: this._mapError(ex.message),
+            });
+          }
+          this.emitter.emit(ACTIONS.TX_REJECTED, {
+            uuid: claimTXID,
             error: "Error estimating gas",
           });
         });

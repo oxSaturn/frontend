@@ -6,9 +6,6 @@ import { ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-// Create a client
-const queryClient = new QueryClient();
-
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
 import Layout from "../components/layout/layout";
@@ -19,6 +16,8 @@ import createEmotionCache from "../utils/createEmotionCache";
 import Configure from "./configure";
 
 import "../styles/global.css";
+
+export const queryClient = new QueryClient();
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();

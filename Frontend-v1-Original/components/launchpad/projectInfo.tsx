@@ -30,18 +30,16 @@ export default function LaunchpadProjectInfo() {
 
   const { isFetching: isFetchingProjectData, data: projectData } =
     useLaunchpadProject(address);
-  const { data: claimableData } = useUserClaimableAndClaimableRefEarnings(
-    account?.address,
-    address
-  );
+  const { data: claimableData, isFetching: isFetchingClaimable } =
+    useUserClaimableAndClaimableRefEarnings(account?.address, address);
+  const { data: asset } = useNoteAsset(account?.address);
 
   const [refCodeValue, setRefCodeValue] = useState(
     refCode && !Array.isArray(refCode) ? refCode : ""
   );
+  const [copied, setCopied] = useState(false);
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<false | string>(false);
-
-  const { data: asset } = useNoteAsset(account?.address);
 
   const [buyLoading, setBuyLoading] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
@@ -52,11 +50,23 @@ export default function LaunchpadProjectInfo() {
 
   const onCopyReferralLink = () => {
     if (!account?.address) return;
+    setCopied(true);
     const url = window.location.href;
     navigator.clipboard.writeText(url + `?refCode=${account?.address}`);
+    setTimeout(() => {
+      setCopied(false);
+    }, 1000);
   };
 
   const onBuy = () => {
+    if (
+      !projectData ||
+      projectData.hasEnded ||
+      buyLoading ||
+      isFetchingProjectData
+    ) {
+      return;
+    }
     setAmountError(false);
 
     let error = false;
@@ -89,10 +99,11 @@ export default function LaunchpadProjectInfo() {
     if (!error) {
       setBuyLoading(true);
       stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_BRIBE,
+        type: ACTIONS.BUY,
         content: {
-          asset: asset,
           amount: amount,
+          refCode: refCodeValue,
+          projectAddress: address,
         },
       });
     }
@@ -104,10 +115,9 @@ export default function LaunchpadProjectInfo() {
     }
     setClaimLoading(true);
     stores.dispatcher.dispatch({
-      type: ACTIONS.CREATE_BRIBE,
+      type: ACTIONS.CLAIM_EARNED,
       content: {
-        asset: asset,
-        amount: amount,
+        projectAddress: address,
       },
     });
   };
@@ -118,10 +128,9 @@ export default function LaunchpadProjectInfo() {
     }
     setClaimLoading(true);
     stores.dispatcher.dispatch({
-      type: ACTIONS.CREATE_BRIBE,
+      type: ACTIONS.CLAIM_REF_EARNED,
       content: {
-        asset: asset,
-        amount: amount,
+        projectAddress: address,
       },
     });
   };
@@ -137,7 +146,7 @@ export default function LaunchpadProjectInfo() {
 
   const setMaxAmount = () => {
     setAmountError(false);
-    if (asset && asset.balance) {
+    if (asset && asset.balance && projectData) {
       setAmount(asset.balance);
     }
   };
@@ -151,116 +160,231 @@ export default function LaunchpadProjectInfo() {
         elevation={0}
         className="m-auto mt-0 flex flex-col bg-transparent p-8 shadow-glow"
       >
-        <Typography variant="h1">Project Name</Typography>
+        <Grid container>
+          <Grid xs={6}>
+            <Typography variant="h1" className="mb-6 uppercase">
+              Project Name -{" "}
+              {isFetchingProjectData
+                ? "Loading..."
+                : projectData
+                ? projectData.tokenSymbol
+                : "Not Found"}
+            </Typography>
+          </Grid>
+          <Grid xs={3}>
+            <Typography variant="body2">Expect to claim:</Typography>
+            <Typography>
+              {isFetchingClaimable || isFetchingProjectData
+                ? "Loading..."
+                : claimableData && projectData
+                ? formatCurrency(claimableData.claimableEarnings) +
+                  projectData.tokenSymbol
+                : "Not Found"}
+            </Typography>
+          </Grid>
+          <Grid xs={3}>
+            <Typography variant="body2">Referral Claim:</Typography>
+            <Typography>
+              {isFetchingClaimable || isFetchingProjectData
+                ? "Loading..."
+                : claimableData && projectData
+                ? formatCurrency(claimableData.claimedRefEarnings) +
+                  projectData.tokenSymbol
+                : "Not Found"}
+            </Typography>
+          </Grid>
+        </Grid>
         <Grid container>
           <Grid xs={true}>
             <Typography variant="body2">Time Left:</Typography>
-            <Typography>7d 4h 5m</Typography>
+            <Typography>
+              {isFetchingProjectData
+                ? "Loading..."
+                : projectData
+                ? projectData.hasEnded
+                  ? "Ended"
+                  : projectData.remainingTime
+                : "Not Found"}
+            </Typography>
           </Grid>
           <Grid xs={true}>
             <Typography variant="body2">Token Price:</Typography>
-            <Typography>{formatCurrency(0.05)} NOTE</Typography>
+            <Typography>
+              {isFetchingProjectData
+                ? "Loading..."
+                : projectData
+                ? formatCurrency(projectData.tokenPrice) + " NOTE"
+                : "Not Found"}
+            </Typography>
+          </Grid>
+          <Grid xs={true}>
+            <Typography variant="body2">Target Raise:</Typography>
+            <Typography>
+              {isFetchingProjectData
+                ? "Loading..."
+                : projectData
+                ? formatCurrency(projectData.minNoteToRaise) + " NOTE"
+                : "Not Found"}
+            </Typography>
           </Grid>
           <Grid xs={true}>
             <Typography variant="body2">Total Raised:</Typography>
-            <Typography>{formatCurrency(6000000)} NOTE</Typography>
+            <Typography>
+              {isFetchingProjectData
+                ? "Loading..."
+                : projectData
+                ? formatCurrency(projectData.totalRaised) + " NOTE"
+                : "Not Found"}
+            </Typography>
+          </Grid>
+          <Grid xs={true}>
+            <Typography variant="body2">Max Raise:</Typography>
+            <Typography>
+              {isFetchingProjectData
+                ? "Loading..."
+                : projectData
+                ? formatCurrency(projectData.maxRaiseAmount) + " NOTE"
+                : "Not Found"}
+            </Typography>
           </Grid>
           <Grid>
             <Button
               variant="outlined"
-              className="border-cantoGreen text-lime-50"
+              className={`min-w-[156px] border-cantoGreen text-lime-50 transition-shadow ${
+                copied ? "shadow-glow" : ""
+              }`}
               onClick={onCopyReferralLink}
             >
-              Copy your referral link
+              {copied ? "Copied" : "Copy Referral Link"}
             </Button>
           </Grid>
         </Grid>
-        <div className="my-1 flex justify-between gap-2">
-          <div className="relative flex-grow-[0.9]">
-            <>
-              <div
-                className="absolute top-2 right-2 z-[1] cursor-pointer"
-                onClick={setMaxAmount}
+        <div className="mt-12 flex justify-between gap-2">
+          {projectData?.hasEnded ? (
+            <div className="relative flex flex-grow-[0.9] flex-col justify-between gap-4">
+              <Button
+                variant="contained"
+                size="large"
+                color="primary"
+                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                disabled={claimLoading}
+                onClick={onClaim}
               >
-                <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
-                  Balance:
-                  {asset && asset.balance
-                    ? " " + formatCurrency(asset.balance)
-                    : ""}
+                <Typography className="font-bold capitalize">
+                  {claimLoading ? `Loading` : `Claim`}
                 </Typography>
-              </div>
-              <div
-                className={`flex w-full flex-wrap items-center rounded-[10px] ${
-                  amountError && "border border-red-500"
-                }`}
+                {claimLoading && (
+                  <CircularProgress size={10} className="ml-2 fill-white" />
+                )}
+              </Button>
+              <Button
+                variant="contained"
+                size="large"
+                color="primary"
+                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                disabled={claimLoading}
+                onClick={onClaimRefEarnings}
               >
-                <img
-                  className="h-16 w-16 rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
-                  alt=""
-                  src={asset?.logoURI}
-                  height="100px"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).onerror = null;
-                    (e.target as HTMLImageElement).src =
-                      "/tokens/unknown-logo.png";
-                  }}
-                />
-                <div className="h-full flex-grow">
+                <Typography className="font-bold capitalize">
+                  {claimLoading ? `Loading` : `Claim ref earnings`}
+                </Typography>
+                {claimLoading && (
+                  <CircularProgress size={10} className="ml-2 fill-white" />
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="relative flex flex-grow-[0.9] flex-col justify-between gap-4">
+              <div className="flex flex-col gap-5">
+                <div
+                  className="absolute top-2 right-2 z-[1] cursor-pointer"
+                  onClick={setMaxAmount}
+                >
+                  <Typography
+                    className="text-xs font-thin text-[#7e99b0]"
+                    noWrap
+                  >
+                    Balance:
+                    {asset && asset.balance
+                      ? " " + formatCurrency(asset.balance) + " NOTE"
+                      : ""}
+                  </Typography>
+                </div>
+                <div
+                  className={`flex w-full flex-wrap items-center rounded-[10px] ${
+                    amountError && "border border-red-500"
+                  }`}
+                >
+                  <div className="p-2">
+                    <img
+                      className="h-10 w-10 rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-2"
+                      alt=""
+                      src={asset?.logoURI}
+                      height="100px"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src =
+                          "/tokens/unknown-logo.png";
+                      }}
+                    />
+                  </div>
+                  <div className="h-full flex-grow">
+                    <TextField
+                      placeholder="0.00 NOTE"
+                      fullWidth
+                      error={!!amountError}
+                      helperText={amountError}
+                      value={amount}
+                      onChange={amountChanged}
+                      autoComplete="off"
+                      disabled={buyLoading || !projectData}
+                      InputProps={{
+                        style: {
+                          fontSize: "46px !important",
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Typography className="text-md">Referral code</Typography>
                   <TextField
-                    placeholder="0.00"
+                    placeholder={ZERO_ADDRESS}
                     fullWidth
-                    error={!!amountError}
-                    helperText={amountError}
-                    value={amount}
-                    onChange={amountChanged}
+                    value={refCodeValue}
+                    onChange={refCodeValueChanged}
                     autoComplete="off"
-                    disabled={buyLoading || claimLoading}
+                    disabled={buyLoading || !projectData}
                     InputProps={{
                       style: {
                         fontSize: "46px !important",
                       },
                     }}
                   />
-                  <Typography color="textSecondary" className="text-xs">
-                    {asset?.symbol}
-                  </Typography>
                 </div>
               </div>
-              <div>
-                <TextField
-                  placeholder={ZERO_ADDRESS}
-                  fullWidth
-                  value={refCodeValue}
-                  onChange={refCodeValueChanged}
-                  autoComplete="off"
-                  disabled={buyLoading}
-                  InputProps={{
-                    style: {
-                      fontSize: "46px !important",
-                    },
-                  }}
-                />
-                <Typography color="textSecondary" className="text-xs">
-                  Referral code
+              <Button
+                variant="contained"
+                size="large"
+                color="primary"
+                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                disabled={
+                  buyLoading ||
+                  !projectData ||
+                  projectData.hasEnded ||
+                  isFetchingProjectData
+                }
+                onClick={onBuy}
+              >
+                <Typography className="font-bold capitalize">
+                  {buyLoading ? `Loading` : `Buy`}
                 </Typography>
-              </div>
-            </>
-            <Button
-              variant="contained"
-              size="large"
-              color="primary"
-              className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
-              disabled={buyLoading}
-              onClick={onBuy}
-            >
-              <Typography className="font-bold capitalize">
-                {buyLoading ? `Loading` : `Buy`}
-              </Typography>
-              {buyLoading && (
-                <CircularProgress size={10} className="ml-2 fill-white" />
-              )}
-            </Button>
-          </div>
+                {buyLoading && (
+                  <CircularProgress size={10} className="ml-2 fill-white" />
+                )}
+              </Button>
+            </div>
+          )}
           <div className="relative max-w-[50%]">
             {`It is a long established fact that a reader will be distracted by
             the readable content of a page when looking at its layout. The point
@@ -274,69 +398,6 @@ export default function LaunchpadProjectInfo() {
             and the like).`}
           </div>
         </div>
-        {/* {isFetching ? "Loading ..." : null}
-        {data && data.hasStarted && (
-          <>
-            <div className="relative mb-1">
-              <div
-                className="absolute top-2 right-2 z-[1] cursor-pointer"
-                onClick={setMaxAmount}
-              >
-                <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
-                  Balance:
-                  {asset && asset.balance
-                    ? " " + formatCurrency(asset.balance)
-                    : ""}
-                </Typography>
-              </div>
-              {asset && asset.balance && amountInUsd && amountInUsd !== "" ? (
-                <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-                  <Typography
-                    className="text-xs font-thin text-[#7e99b0]"
-                    noWrap
-                  >
-                    {"~$" + formatCurrency(amountInUsd)}
-                  </Typography>
-                </div>
-              ) : null}
-              <div
-                className={`flex w-full flex-wrap items-center rounded-[10px] bg-[#272826] ${
-                  amountError && "border border-red-500"
-                }`}
-              >
-                <div className="h-full min-h-[128px] w-32"></div>
-                <div className="h-full flex-[1] flex-grow-[0.98]">
-                  <TextField
-                    placeholder="0.00"
-                    fullWidth
-                    error={!!amountError}
-                    helperText={amountError}
-                    value={amount}
-                    onChange={amountChanged}
-                    autoComplete="off"
-                    disabled={buyLoading || claimLoading}
-                    InputProps={{
-                      style: {
-                        fontSize: "46px !important",
-                      },
-                    }}
-                  />
-                  <Typography color="textSecondary" className="text-xs">
-                    {asset?.symbol}
-                  </Typography>
-                </div>
-              </div>
-            </div>
-            <div>input ref code</div>
-            <button>Buy</button>
-          </>
-        )}
-        {data && data.hasEnded && (
-          <>
-            <div>You got: getExpectedClaimAmount()</div>
-            <button onClick={onClaim}>Claim</button>
-          </>
-        )} */}
       </Paper>
     </div>
   );

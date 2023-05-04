@@ -101,11 +101,11 @@ const getLaunchpadProject = async (projectAddress: Address | undefined) => {
     tokenOfProjectDecimals: Number(decimals),
     hasStarted,
     hasEnded,
-    remainingTime,
-    totalRaised,
-    tokensToDistribute,
-    minNoteToRaise,
-    maxRaiseAmount,
+    remainingTime: Number(remainingTime),
+    totalRaised: formatEther(totalRaised),
+    tokensToDistribute: formatUnits(tokensToDistribute, Number(decimals)),
+    minNoteToRaise: formatEther(minNoteToRaise),
+    maxRaiseAmount: formatEther(maxRaiseAmount),
   };
 };
 
