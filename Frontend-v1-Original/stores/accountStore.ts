@@ -1,10 +1,9 @@
-import { Multicall as Multicall3 } from "ethereum-multicall";
-import Multicall from "@dopex-io/web3-multicall";
-
-import { Dispatcher } from "flux";
 import EventEmitter from "events";
 
-import { ACTIONS, CONTRACTS } from "./constants/constants";
+import { Dispatcher } from "flux";
+import Web3 from "web3";
+
+import { ACTIONS } from "./constants/constants";
 
 import {
   injected,
@@ -12,8 +11,6 @@ import {
   walletlink,
   network,
 } from "./connectors/connectors";
-
-import Web3 from "web3";
 
 type EthWindow = Window &
   typeof globalThis & {
@@ -242,27 +239,6 @@ class Store {
       return null;
     }
     return new Web3(provider);
-  };
-
-  getMulticall = async () => {
-    const web3 = await this.getWeb3Provider();
-    if (!web3) throw new Error("Couldn't get multicall");
-    const multicall = new Multicall({
-      multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-      provider: web3.currentProvider,
-    });
-    return multicall;
-  };
-
-  getMulticall3 = async (tryAggregate: boolean) => {
-    const web3 = await this.getWeb3Provider();
-    if (!web3) throw new Error("Couldn't get web3");
-    const multicall = new Multicall3({
-      web3Instance: web3,
-      tryAggregate,
-      multicallCustomContractAddress: CONTRACTS.MULTICALL_ADDRESS,
-    });
-    return multicall;
   };
 
   getGasPriceEIP1559 = async () => {
