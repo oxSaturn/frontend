@@ -204,7 +204,7 @@ export default function EnhancedTable() {
   const emptyRows = 5 - Math.min(5, filteredProjects.length - page * 5);
 
   return (
-    <div className="w-full">
+    <div className="m-auto w-full max-w-[1400px]">
       <EnhancedTableToolbar setSearch={setSearch} />
       <Paper
         elevation={0}
