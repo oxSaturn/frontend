@@ -1794,32 +1794,15 @@ class Store {
             );
 
             const bribes = pair.gauge.bribes.map((bribe) => {
-              bribe.rewardAmount = bribe.rewardAmmount;
+              bribe.rewardAmount = 0;
               return bribe;
-            });
-            pair.gauge.x_bribes.forEach((x_bribe) => {
-              const bribe = bribes.find(
-                (b) => b.token.address === x_bribe.token.address
-              );
-              if (bribe) {
-                bribe.rewardAmount =
-                  bribe.rewardAmmount + x_bribe.rewardAmmount;
-              } else {
-                bribes.push({
-                  token: x_bribe.token,
-                  rewardAmount: x_bribe.rewardAmmount,
-                  reward_ammount: x_bribe.rewardAmmount,
-                  rewardAmmount: x_bribe.rewardAmmount,
-                });
-              }
             });
             pair.gauge.xx_bribes.forEach((xx_bribe) => {
               const bribe = bribes.find(
                 (b) => b.token.address === xx_bribe.token.address
               );
               if (bribe) {
-                bribe.rewardAmount =
-                  bribe.rewardAmmount + xx_bribe.rewardAmmount;
+                bribe.rewardAmount = xx_bribe.rewardAmmount;
               } else {
                 bribes.push({
                   token: xx_bribe.token,
