@@ -17,27 +17,34 @@ import { useAccount } from "../../hooks/useAccount";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS, ZERO_ADDRESS } from "../../stores/constants/constants";
 
-import { useLaunchpadProject, useNoteAsset } from "./queries";
+import {
+  useLaunchpadProject,
+  useNoteAsset,
+  useUserClaimableAndClaimableRefEarnings,
+} from "./queries";
 
 export default function LaunchpadProjectInfo() {
   const router = useRouter();
   const account = useAccount();
   const { address, refCode } = router.query;
 
+  const { isFetching: isFetchingProjectData, data: projectData } =
+    useLaunchpadProject(address);
+  const { data: claimableData } = useUserClaimableAndClaimableRefEarnings(
+    account?.address,
+    address
+  );
+
   const [refCodeValue, setRefCodeValue] = useState(
     refCode && !Array.isArray(refCode) ? refCode : ""
   );
   const [amount, setAmount] = useState("");
-  const [amountInUsd, setAmountInUsd] = useState("");
   const [amountError, setAmountError] = useState<false | string>(false);
 
   const { data: asset } = useNoteAsset(account?.address);
 
   const [buyLoading, setBuyLoading] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
-
-  const { isFetching: isFetchingProjectData, data: projectData } =
-    useLaunchpadProject(address);
 
   const onBack = () => {
     router.push("/launchpad");
@@ -105,10 +112,25 @@ export default function LaunchpadProjectInfo() {
     });
   };
 
+  const onClaimRefEarnings = () => {
+    if (!projectData || !projectData.hasEnded) {
+      return;
+    }
+    setClaimLoading(true);
+    stores.dispatcher.dispatch({
+      type: ACTIONS.CREATE_BRIBE,
+      content: {
+        asset: asset,
+        amount: amount,
+      },
+    });
+  };
+
   const amountChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmountError(false);
     setAmount(event.target.value);
   };
+
   const refCodeValueChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRefCodeValue(event.target.value);
   };
@@ -167,16 +189,6 @@ export default function LaunchpadProjectInfo() {
                     : ""}
                 </Typography>
               </div>
-              {asset && asset.balance && amountInUsd && amountInUsd !== "" ? (
-                <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-                  <Typography
-                    className="text-xs font-thin text-[#7e99b0]"
-                    noWrap
-                  >
-                    {"~$" + formatCurrency(amountInUsd)}
-                  </Typography>
-                </div>
-              ) : null}
               <div
                 className={`flex w-full flex-wrap items-center rounded-[10px] ${
                   amountError && "border border-red-500"
@@ -329,7 +341,3 @@ export default function LaunchpadProjectInfo() {
     </div>
   );
 }
-
-/* 
-      circ supply and fdv if needed
-*/
