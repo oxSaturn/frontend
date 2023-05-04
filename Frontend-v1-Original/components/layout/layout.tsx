@@ -76,8 +76,8 @@ export default function Layout({
           <div className="flex flex-grow items-center justify-center text-center">
             <div>
               <Typography className="max-w-md text-2xl text-white">
-                The chain you&apos;re connected to isn&apos;t supported. Please
-                check that your wallet is connected to Canto Mainnet.
+                {`The chain you're connected to isn't supported. Please
+                check that your wallet is connected to Canto Mainnet.`}
               </Typography>
               <Button
                 className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
