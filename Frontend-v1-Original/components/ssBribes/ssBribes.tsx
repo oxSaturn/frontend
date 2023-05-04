@@ -74,22 +74,6 @@ export default function Bribes() {
         </Typography>
       </div>
       <AutoBribes />
-      {/* <div className={classes.bribesContainer}>
-        {pairs &&
-          pairs &&
-          pairs.length > 0 &&
-          pairs.map((pair) => {
-            return pair.gauge.bribes.map((bribe) => {
-              return (
-                <BribeCard
-                  key={pair.symbol + bribe.token.symbol}
-                  pair={pair}
-                  bribe={bribe}
-                />
-              );
-            });
-          })}
-      </div> */}
     </div>
   );
 }
@@ -112,13 +96,13 @@ const AutoBribes = () => {
     <div className="flex flex-wrap items-center justify-start gap-5">
       {isLoading ? <div>Loading...</div> : null}
       {mappedAutoBribes &&
-        mappedAutoBribes.map(([address, bribed]) => {
+        mappedAutoBribes.map(([address, { name, bribed }]) => {
           return (
             <div
               key={address}
               className="flex flex-col rounded-lg p-5 shadow-glow"
             >
-              <div>{address}</div>
+              <div>{name}</div>
               <div>{bribed ? "Bribed this epoch" : "Not bribed yet!"}</div>
               <Button
                 onClick={() => onBribe(address)}

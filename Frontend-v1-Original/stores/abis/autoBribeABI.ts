@@ -6,6 +6,7 @@ export const autoBribeABI = [
       { type: "address", name: "_wBribe", internalType: "address" },
       { type: "address", name: "_team", internalType: "address" },
       { type: "uint256", name: "_csrNftId", internalType: "uint256" },
+      { type: "string", name: "_name", internalType: "string" },
     ],
   },
   {
@@ -140,6 +141,13 @@ export const autoBribeABI = [
   {
     type: "function",
     stateMutability: "view",
+    outputs: [{ type: "string", name: "", internalType: "string" }],
+    name: "bribeName",
+    inputs: [],
+  },
+  {
+    type: "function",
+    stateMutability: "view",
     outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
     name: "bribeTokenToWeeksLeft",
     inputs: [{ type: "address", name: "", internalType: "address" }],
@@ -171,16 +179,6 @@ export const autoBribeABI = [
   },
   {
     type: "function",
-    stateMutability: "nonpayable",
-    outputs: [],
-    name: "depositAll",
-    inputs: [
-      { type: "address[]", name: "_bribeTokens", internalType: "address[]" },
-      { type: "uint256", name: "_weeks", internalType: "uint256" },
-    ],
-  },
-  {
-    type: "function",
     stateMutability: "view",
     outputs: [{ type: "bool", name: "", internalType: "bool" }],
     name: "depositSealed",
@@ -199,6 +197,13 @@ export const autoBribeABI = [
     outputs: [],
     name: "inCaseTokensGetStuck",
     inputs: [{ type: "address", name: "_token", internalType: "address" }],
+  },
+  {
+    type: "function",
+    stateMutability: "nonpayable",
+    outputs: [],
+    name: "initProject",
+    inputs: [{ type: "address", name: "_newWallet", internalType: "address" }],
   },
   {
     type: "function",
@@ -226,6 +231,13 @@ export const autoBribeABI = [
     stateMutability: "view",
     outputs: [{ type: "address", name: "", internalType: "address" }],
     name: "project",
+    inputs: [],
+  },
+  {
+    type: "function",
+    stateMutability: "nonpayable",
+    outputs: [],
+    name: "reclockBribeToNow",
     inputs: [],
   },
   {
