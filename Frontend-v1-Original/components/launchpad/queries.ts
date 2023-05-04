@@ -11,6 +11,96 @@ const NOTE = {
   symbol: "NOTE",
 } as const;
 
+const launchpadProjectAddresses = [
+  {
+    address: "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+    name: "Sanko",
+    type: "Fair Auction",
+  },
+] as const;
+
+// <TableCell>{project.name}</TableCell>
+// <TableCell className="max-md:hidden" align="right">
+//   {project.type}
+// </TableCell>
+// <TableCell className="max-md:hidden" align="right">
+//   {project.status}
+// </TableCell>
+// <TableCell className="max-md:hidden" align="right">
+//   {formatCurrency(project.totalRaised)}
+// </TableCell>
+// <TableCell className="max-md:hidden" align="right">
+//   {formatCurrency(project.userAllocation)}
+// </TableCell>
+
+const getLaunchpadProjects = async (userAddress: Address | undefined) => {
+  const projects = [];
+  for (const project of launchpadProjectAddresses) {
+    const fairAuctionContract = {
+      address: project.address,
+      abi: CONTRACTS.FAIR_AUCTION_ABI,
+    } as const;
+
+    const projectTokenAddressPromise = viemClient.readContract({
+      ...fairAuctionContract,
+      functionName: "PROJECT_TOKEN",
+    });
+    const projectStartedPromise = viemClient.readContract({
+      ...fairAuctionContract,
+      functionName: "hasStarted",
+    });
+    const projectEndedPromise = viemClient.readContract({
+      ...fairAuctionContract,
+      functionName: "hasEnded",
+    });
+    const projectTotalRaisedPromise = viemClient.readContract({
+      ...fairAuctionContract,
+      functionName: "totalRaised",
+    });
+
+    const [tokenAddress, started, ended, totalRaised] = await Promise.all([
+      projectTokenAddressPromise,
+      projectStartedPromise,
+      projectEndedPromise,
+      projectTotalRaisedPromise,
+    ]);
+
+    const decimals = await viemClient.readContract({
+      address: tokenAddress,
+      abi: CONTRACTS.ERC20_ABI,
+      functionName: "decimals",
+    });
+
+    let allocation = "0";
+
+    if (userAddress) {
+      const [_allocation] = await viemClient.readContract({
+        ...fairAuctionContract,
+        functionName: "userInfo",
+        args: [userAddress],
+      });
+      allocation = formatUnits(_allocation, Number(decimals));
+    }
+
+    projects.push({
+      address: project.address,
+      name: project.name,
+      type: project.type,
+      status: ended ? "Ended" : started ? "Live" : "Upcoming",
+      totalRaised: formatEther(totalRaised),
+      userAllocation: allocation,
+    });
+  }
+  return projects;
+};
+
+export const useLaunchpadProjects = (userAddress: Address | undefined) => {
+  return useQuery({
+    queryKey: ["launchpadProjects", userAddress],
+    queryFn: () => getLaunchpadProjects(userAddress),
+  });
+};
+
 const getLaunchpadProject = async (projectAddress: Address | undefined) => {
   if (!projectAddress) {
     return;

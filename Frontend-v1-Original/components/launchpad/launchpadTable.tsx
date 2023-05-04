@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   Paper,
   Table,
@@ -13,18 +14,22 @@ import {
   Toolbar,
   TextField,
   InputAdornment,
+  Skeleton,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 
+import { useAccount } from "../../hooks/useAccount";
 import { formatCurrency } from "../../utils/utils";
+
+import { useLaunchpadProjects } from "./queries";
 
 interface Project {
   address: `0x${string}`;
   name: string;
   type: string;
   status: string;
-  totalRaised: number;
-  userAllocation: number;
+  totalRaised: string;
+  userAllocation: string;
 }
 
 const headCells = [
@@ -134,7 +139,8 @@ const EnhancedTableToolbar = (props: LaunchpadToolbarProps) => {
 };
 
 export default function EnhancedTable() {
-  const [projects] = useState<Project[]>([]);
+  const account = useAccount();
+  const { data: projects, isFetching } = useLaunchpadProjects(account?.address);
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState<OrderBy>("project");
@@ -171,7 +177,7 @@ export default function EnhancedTable() {
 
   const filteredProjects = useMemo(
     () =>
-      projects.filter((project) => {
+      projects?.filter((project) => {
         if (!search || search === "") {
           return true;
         }
@@ -192,16 +198,18 @@ export default function EnhancedTable() {
     [projects, search]
   );
 
-  const sortedProjects = useMemo(
-    () =>
-      stableSort(filteredProjects, getComparator(order, orderBy)).slice(
+  const sortedProjects = useMemo(() => {
+    if (filteredProjects) {
+      return stableSort(filteredProjects, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
-      ),
-    [filteredProjects, order, orderBy, page, rowsPerPage]
-  );
+      );
+    }
+  }, [filteredProjects, order, orderBy, page, rowsPerPage]);
 
-  const emptyRows = 5 - Math.min(5, filteredProjects.length - page * 5);
+  const emptyRows = filteredProjects
+    ? 5 - Math.min(5, filteredProjects.length - page * 5)
+    : 1;
 
   return (
     <div className="m-auto w-full max-w-[1400px]">
@@ -222,26 +230,47 @@ export default function EnhancedTable() {
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {sortedProjects.map((project, index) => {
+              {isFetching ? (
+                <TableRow>
+                  <TableCell>
+                    <Skeleton height={56} />
+                  </TableCell>
+                  <TableCell className="max-md:hidden" align="right">
+                    <Skeleton height={56} />
+                  </TableCell>
+                  <TableCell className="max-md:hidden" align="right">
+                    <Skeleton height={56} />
+                  </TableCell>
+                  <TableCell className="max-md:hidden" align="right">
+                    <Skeleton height={56} />
+                  </TableCell>
+                  <TableCell className="max-md:hidden" align="right">
+                    <Skeleton height={56} />
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {sortedProjects?.map((project) => {
                 return (
-                  <TableRow
-                    key={index}
-                    className="hover:bg-[rgba(104,108,122,0.05)]"
+                  <Link
+                    key={project.address}
+                    href={`/launchpad/${project.address}`}
                   >
-                    <TableCell>{project.name}</TableCell>
-                    <TableCell className="max-md:hidden" align="right">
-                      {project.type}
-                    </TableCell>
-                    <TableCell className="max-md:hidden" align="right">
-                      {project.status}
-                    </TableCell>
-                    <TableCell className="max-md:hidden" align="right">
-                      {formatCurrency(project.totalRaised)}
-                    </TableCell>
-                    <TableCell className="max-md:hidden" align="right">
-                      {formatCurrency(project.userAllocation)}
-                    </TableCell>
-                  </TableRow>
+                    <TableRow className="hover:bg-[rgba(104,108,122,0.05)]">
+                      <TableCell>{project.name}</TableCell>
+                      <TableCell className="max-md:hidden" align="right">
+                        {project.type}
+                      </TableCell>
+                      <TableCell className="max-md:hidden" align="right">
+                        {project.status}
+                      </TableCell>
+                      <TableCell className="max-md:hidden" align="right">
+                        {formatCurrency(project.totalRaised)}
+                      </TableCell>
+                      <TableCell className="max-md:hidden" align="right">
+                        {formatCurrency(project.userAllocation)}
+                      </TableCell>
+                    </TableRow>
+                  </Link>
                 );
               })}
               {emptyRows > 0 && (
@@ -255,7 +284,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredProjects.length}
+          count={filteredProjects?.length ?? 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
