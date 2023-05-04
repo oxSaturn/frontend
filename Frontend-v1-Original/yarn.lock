@@ -268,11 +268,6 @@
     stream-browserify "^3.0.0"
     util "^0.12.4"
 
-"@dopex-io/web3-multicall@^0.1.5":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@dopex-io/web3-multicall/-/web3-multicall-0.1.9.tgz#da609bc4a5b8b821d2a5c50a38fb2d5c10c6cb8c"
-  integrity sha512-oLs2x0bdBTvrY83ZzO4v1PXf1If475qoctS5mMSxDtuBwwSd7N8kv/BR+liZF++5r/f+TAfbNJbqsH8NrtQh0w==
-
 "@emotion/babel-plugin@^11.10.5":
   version "11.10.5"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.10.5.tgz#65fa6e1790ddc9e23cc22658a4c5dea423c55c3c"
