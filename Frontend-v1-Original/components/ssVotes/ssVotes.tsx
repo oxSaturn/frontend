@@ -447,7 +447,9 @@ export default function Votes() {
           className="fixed bottom-0 left-0 right-0 z-10 border-t border-solid border-[rgba(126,153,176,0.2)] bg-[#0e110c] md:left-1/2 md:bottom-7 md:max-w-[560px] md:-translate-x-1/2 md:border"
         >
           <Alert severity="error" className="flex justify-center py-5">
-            NFT #{token.id} has already Voted or Reset this epoch.
+            NFT #{token.id} has already{" "}
+            {token.reset ? "Reset" : "Voted"}{" "}
+            this epoch.
           </Alert>
         </Paper>
       ) : (
