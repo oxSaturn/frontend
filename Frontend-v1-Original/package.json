@@ -21,6 +21,8 @@
     "@mui/icons-material": "^5.11.0",
     "@mui/lab": "^5.0.0-alpha.116",
     "@mui/material": "^5.11.5",
+    "@tanstack/react-query": "^4.29.5",
+    "@tanstack/react-query-devtools": "^4.29.6",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "@web3-react/network-connector": "^6.1.9",
@@ -41,6 +43,7 @@
     "web3": "^1.8.1"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^4.29.4",
     "@types/cors": "^2.8.13",
     "@types/flux": "^3.1.11",
     "@types/uuid": "^9.0.0",

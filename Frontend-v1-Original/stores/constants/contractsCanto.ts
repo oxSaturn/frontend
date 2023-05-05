@@ -56,6 +56,9 @@ export const GAUGE_ABI = abis.gaugeABI;
 export const BRIBE_ABI = abis.bribeABI;
 export const TOKEN_ABI = abis.tokenABI;
 
+export const AUTO_BRIBE_ABI = abis.autoBribeABI;
+export const FAIR_AUCTION_ABI = abis.fairAuctionABI;
+
 export const MULTICALL_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
 export const STABLE_TOKEN_ADDRESS =
