@@ -69,8 +69,7 @@ export default function Bribes() {
       <div className={classes.descriptionBox}>
         <Typography variant="h1">Auto Bribes</Typography>
         <Typography variant="body2">
-          Bribe partner autobribes contract and get a portion of week&apos;s
-          bribe.
+          {`Help bribe our partner bribe contract and get 0.5% of this week's bribe.`}
         </Typography>
       </div>
       <AutoBribes />
