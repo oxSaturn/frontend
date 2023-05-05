@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Paper,
   Typography,
@@ -10,9 +10,12 @@ import {
   Select,
   Grid,
   SelectChangeEvent,
+  ListSubheader,
+  type ListSubheaderProps,
+  Alert,
 } from "@mui/material";
 import BigNumber from "bignumber.js";
-import { Search } from "@mui/icons-material";
+import { ExpandMore, Search } from "@mui/icons-material";
 // import { useRouter } from "next/router";
 
 import { formatCurrency } from "../../utils/utils";
@@ -40,6 +43,12 @@ const initialEmptyToken: VestNFT = {
   reset: false,
   lastVoted: BigInt(0),
 };
+
+function MyListSubheader(props: ListSubheaderProps) {
+  return <ListSubheader {...props} className="" />;
+}
+
+MyListSubheader.muiSkipListHighlight = true;
 
 export default function Votes() {
   // const router = useRouter();
@@ -76,7 +85,14 @@ export default function Votes() {
     setVestNFTs(nfts);
 
     if (nfts && nfts.length > 0) {
-      setToken(nfts[0]);
+      const votableNFTs = nfts.filter(
+        (nft) => nft.actionedInCurrentEpoch === false
+      );
+      if (votableNFTs.length > 0) {
+        setToken(votableNFTs[0]);
+      } else {
+        setToken(nfts[0]);
+      }
     }
 
     if (
@@ -212,6 +228,12 @@ export default function Votes() {
   // };
 
   const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
+    const actionedNFTs = options.filter(
+      (option) => option.actionedInCurrentEpoch === true
+    );
+    const votableNFTs = options.filter(
+      (option) => option.actionedInCurrentEpoch === false
+    );
     return (
       <div className={classes.textField}>
         <div className={classes.mediumInputContainer}>
@@ -234,8 +256,49 @@ export default function Votes() {
                   }}
                   sx={{ "& .MuiSelect-select": { height: "inherit" } }}
                 >
-                  {options &&
-                    options.map((option) => {
+                  {votableNFTs.length > 0 ? (
+                    <MyListSubheader>
+                      Available to Vote this Epoch
+                      <ExpandMore />
+                    </MyListSubheader>
+                  ) : null}
+                  {votableNFTs.length > 0 &&
+                    votableNFTs.map((option) => {
+                      return (
+                        <MenuItem
+                          key={option.id}
+                          // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
+                          value={option as any}
+                        >
+                          <div className={classes.menuOption}>
+                            <Typography>Token #{option.id}</Typography>
+                            <div>
+                              <Typography
+                                align="right"
+                                className={classes.smallerText}
+                              >
+                                {formatCurrency(option.lockValue)}
+                              </Typography>
+                              <Typography
+                                align="right"
+                                color="textSecondary"
+                                className={classes.smallerText}
+                              >
+                                {veToken?.symbol}
+                              </Typography>
+                            </div>
+                          </div>
+                        </MenuItem>
+                      );
+                    })}
+                  {actionedNFTs.length > 0 ? (
+                    <MyListSubheader>
+                      Already Voted/Reset this Epoch
+                      <ExpandMore />
+                    </MyListSubheader>
+                  ) : null}
+                  {actionedNFTs.length > 0 &&
+                    actionedNFTs.map((option) => {
                       return (
                         <MenuItem
                           key={option.id}
@@ -378,37 +441,48 @@ export default function Votes() {
           token={token}
         />
       </Paper>
-      <Paper elevation={10} className={classes.actionButtons}>
-        <div className={classes.infoSection}>
-          <Typography>Voting Power Used: </Typography>
-          <Typography
-            className={`${
-              BigNumber(totalVotes).gt(100)
-                ? classes.errorText
-                : classes.helpText
-            }`}
-          >
-            {totalVotes} %
-          </Typography>
-        </div>
-        <div>
-          <Button
-            className={classes.buttonOverrideFixed}
-            variant="contained"
-            size="large"
-            color="primary"
-            disabled={voteLoading || !BigNumber(totalVotes).eq(100)}
-            onClick={onVote}
-          >
-            <Typography className={classes.actionButtonText}>
-              {voteLoading ? `Casting Votes` : `Cast Votes`}
+      {token.actionedInCurrentEpoch ? (
+        <Paper
+          elevation={10}
+          className="fixed bottom-0 left-0 right-0 z-10 border-t border-solid border-[rgba(126,153,176,0.2)] bg-[#0e110c] md:left-1/2 md:bottom-7 md:max-w-[560px] md:-translate-x-1/2 md:border"
+        >
+          <Alert severity="error" className="flex justify-center py-5">
+            NFT #{token.id} has already Voted or Reset this epoch.
+          </Alert>
+        </Paper>
+      ) : (
+        <Paper elevation={10} className={classes.actionButtons}>
+          <div className={classes.infoSection}>
+            <Typography>Voting Power Used: </Typography>
+            <Typography
+              className={`${
+                BigNumber(totalVotes).gt(100)
+                  ? classes.errorText
+                  : classes.helpText
+              }`}
+            >
+              {totalVotes} %
             </Typography>
-            {voteLoading && (
-              <CircularProgress size={10} className={classes.loadingCircle} />
-            )}
-          </Button>
-        </div>
-      </Paper>
+          </div>
+          <div>
+            <Button
+              className={classes.buttonOverrideFixed}
+              variant="contained"
+              size="large"
+              color="primary"
+              disabled={voteLoading || !BigNumber(totalVotes).eq(100)}
+              onClick={onVote}
+            >
+              <Typography className={classes.actionButtonText}>
+                {voteLoading ? `Casting Votes` : `Cast Votes`}
+              </Typography>
+              {voteLoading && (
+                <CircularProgress size={10} className={classes.loadingCircle} />
+              )}
+            </Button>
+          </div>
+        </Paper>
+      )}
       {showWarning && (
         <WarningModal
           close={() => setShowWarning(false)}
