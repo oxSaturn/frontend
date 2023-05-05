@@ -263,15 +263,23 @@ export default function EnhancedTable({
             onRequestSort={handleRequestSort}
           />
           <TableBody>
-            {sortedGauges?.map((row) => (
-              <VotesRow
-                row={row}
-                token={token}
-                defaultVotes={defaultVotes}
-                onSliderChange={onSliderChange}
-                key={row.address}
-              />
-            ))}
+            {sortedGauges?.map((row) => {
+              let sliderValue = defaultVotes.find(
+                (el) => el.address === row?.address
+              )?.value;
+              if (!sliderValue) {
+                sliderValue = 0;
+              }
+              return (
+                <VotesRow
+                  row={row}
+                  token={token}
+                  sliderValue={sliderValue}
+                  onSliderChange={onSliderChange}
+                  key={row.address}
+                />
+              );
+            })}
             {emptyRows > 0 && (
               <TableRow style={{ height: 61 * emptyRows }}>
                 <TableCell colSpan={7} />
@@ -296,25 +304,18 @@ export default function EnhancedTable({
 const VotesRow = memo(function VotesRow({
   row,
   token,
-  defaultVotes,
+  sliderValue,
   onSliderChange,
 }: {
   row: Gauge;
   token: VestNFT;
-  defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
+  sliderValue: number;
   onSliderChange: (
     _event: Event,
     _value: number | number[],
     _row: Gauge
   ) => void;
 }) {
-  let sliderValue = defaultVotes.find(
-    (el) => el.address === row?.address
-  )?.value;
-  if (!sliderValue) {
-    sliderValue = 0;
-  }
-
   let rewardEstimate: number | undefined;
   const votesCasting = (sliderValue / 100) * parseFloat(token?.lockValue);
   if (votesCasting > 0 && row.gauge.weight) {
