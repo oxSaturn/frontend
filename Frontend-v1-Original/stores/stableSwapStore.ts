@@ -7096,6 +7096,7 @@ class Store {
             uuid: bribeTXID,
             txHash: receipt.transactionHash,
           });
+          queryClient.invalidateQueries(["autoBribes"]);
         })
         .on("error", (error: Error) => {
           if (!error.toString().includes("-32601")) {

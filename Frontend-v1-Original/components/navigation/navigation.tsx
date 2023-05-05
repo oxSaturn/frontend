@@ -43,7 +43,8 @@ function Navigation() {
         {renderSubNav("Vote", "vote")}
         {renderSubNav("Rewards", "rewards")}
         {renderSubNav("Bribe", "bribe")}
-        {renderSubNav("Launchpad", "launchpad")}
+        {process.env.NODE_ENV === "development" &&
+          renderSubNav("Launchpad", "launchpad")}
         {renderDocsTab()}
       </>
     );
