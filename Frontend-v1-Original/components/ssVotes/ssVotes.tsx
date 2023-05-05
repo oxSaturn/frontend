@@ -45,7 +45,7 @@ const initialEmptyToken: VestNFT = {
 };
 
 function MyListSubheader(props: ListSubheaderProps) {
-  return <ListSubheader {...props} className="" />;
+  return <ListSubheader {...props} />;
 }
 
 MyListSubheader.muiSkipListHighlight = true;
