@@ -5141,7 +5141,7 @@ class Store {
       await this.getRewardBalances({ type: "internal", content: { tokenID } });
       const rewards = this.getStore("rewards");
 
-      if (rewards.bribes.length > 0) {
+      if (rewards.xxBribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
           description: `Unclaimed bribes found, claiming`,
@@ -5154,12 +5154,12 @@ class Store {
         });
       }
 
-      if (rewards.bribes.length > 0) {
-        const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge?.wrapped_bribe_address;
+      if (rewards.xxBribes.length > 0) {
+        const sendGauges = rewards.xxBribes.map((pair) => {
+          return pair.gauge.xx_wrapped_bribe_address;
         });
-        const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge?.bribesEarned?.map((bribe) => {
+        const sendTokens = rewards.xxBribes.map((pair) => {
+          return pair.gauge.xx_bribesEarned!.map((bribe) => {
             return (bribe as Bribe).token.address;
           });
         });
@@ -5281,7 +5281,6 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let rewards01TXID = this.getTXUUID();
       let rewards0TXID = this.getTXUUID();
-      let rewardsTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
@@ -5297,11 +5296,6 @@ class Store {
           },
           {
             uuid: rewards0TXID,
-            description: `Checking unclaimed bribes`,
-            status: "WAITING",
-          },
-          {
-            uuid: rewardsTXID,
             description: `Checking unclaimed bribes`,
             status: "WAITING",
           },
@@ -5342,18 +5336,6 @@ class Store {
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewards0TXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
-      if (rewards.bribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewardsTXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewardsTXID,
           description: `No unclaimed bribes found`,
           status: "DONE",
         });
@@ -5430,42 +5412,6 @@ class Store {
         await claimPromise;
       }
 
-      if (rewards.bribes.length > 0) {
-        const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge?.wrapped_bribe_address;
-        });
-        const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge?.bribesEarned?.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
-
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
-
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            rewardsTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        await claimPromise;
-      }
-
       // CHECK if veNFT has votes
       const voted = await this._checkNFTVoted(tokenID);
 
@@ -5511,7 +5457,7 @@ class Store {
         resetCallsPromise.push(resetPromise);
       }
 
-      const done = await Promise.all(resetCallsPromise);
+      await Promise.all(resetCallsPromise);
 
       // SUBMIT withdraw TRANSACTION
       const veTokenContract = new web3.eth.Contract(
@@ -5658,18 +5604,12 @@ class Store {
       const { tokenID, votes } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let bribesTXID = this.getTXUUID();
       let voteTXID = this.getTXUUID();
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Cast vote using token #${tokenID}`,
         verb: "Votes Cast",
         transactions: [
-          {
-            uuid: bribesTXID,
-            description: `Check unclaimed bribes`,
-            status: "WAITING",
-          },
           {
             uuid: voteTXID,
             description: `Cast votes`,
@@ -5680,59 +5620,6 @@ class Store {
 
       const pairs = this.getStore("pairs");
       let deadGauges: string[] = [];
-
-      // CHECK unclaimed bribes
-      await this.getRewardBalances({ type: "internal", content: { tokenID } });
-      const rewards = this.getStore("rewards");
-
-      if (rewards.bribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: bribesTXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: bribesTXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
-
-      if (rewards.bribes.length > 0) {
-        const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge?.wrapped_bribe_address;
-        });
-        const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge?.bribesEarned?.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
-
-        const voterContract = new web3.eth.Contract(
-          CONTRACTS.VOTER_ABI as unknown as AbiItem[],
-          CONTRACTS.VOTER_ADDRESS
-        );
-
-        const claimPromise = new Promise<void>((resolve, reject) => {
-          this._callContractWait(
-            voterContract,
-            "claimBribes",
-            [sendGauges, sendTokens, tokenID],
-            account,
-            bribesTXID,
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            }
-          );
-        });
-
-        await claimPromise;
-      }
 
       // SUBMIT INCREASE TRANSACTION
       const gaugesContract = new web3.eth.Contract(
@@ -5883,6 +5770,11 @@ class Store {
 
       const { asset, amount, gauge } = payload.content;
 
+      if (gauge.gauge.xx_wrapped_bribe_address === ZERO_ADDRESS) {
+        console.warn("gauge does not have a bribe address");
+        return null;
+      }
+
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let allowanceTXID = this.getTXUUID();
       let bribeTXID = this.getTXUUID();
@@ -5934,7 +5826,7 @@ class Store {
             tokenContract,
             "approve",
             // we create bribe on xx_wrapped_bribe_address
-            [gauge.gauge?.xx_wrapped_bribe_address, MAX_UINT256],
+            [gauge.gauge.xx_wrapped_bribe_address, MAX_UINT256],
             account,
             allowanceTXID,
             (err) => {
@@ -5957,7 +5849,7 @@ class Store {
       // we bribe xx_wrapped_bribe_address
       const bribeContract = new web3.eth.Contract(
         CONTRACTS.BRIBE_ABI as unknown as AbiItem[],
-        gauge.gauge?.xx_wrapped_bribe_address
+        gauge.gauge.xx_wrapped_bribe_address
       );
 
       const sendAmount = BigNumber(amount)
