@@ -406,5 +406,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/29137/small/original-icon-transparent.png",
     "name": "Amplifi",
     "symbol": "AGG"
+  },
+  {
+    "address": "0xf390830DF829cf22c53c8840554B98eafC5dCBc2",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg",
+    "name": "Pepe",
+    "symbol": "PEPE"
   }
 ]
