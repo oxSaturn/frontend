@@ -15,7 +15,7 @@ import {
   Alert,
 } from "@mui/material";
 import BigNumber from "bignumber.js";
-import { ExpandMore, Search } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 // import { useRouter } from "next/router";
 
 import { formatCurrency } from "../../utils/utils";
@@ -264,7 +264,6 @@ export default function Votes() {
                   {votableNFTs.length > 0 ? (
                     <MyListSubheader>
                       Available to Vote this Epoch
-                      <ExpandMore />
                     </MyListSubheader>
                   ) : null}
                   {votableNFTs.length > 0 &&
@@ -299,7 +298,6 @@ export default function Votes() {
                   {actionedNFTs.length > 0 ? (
                     <MyListSubheader>
                       Already Voted/Reset this Epoch
-                      <ExpandMore />
                     </MyListSubheader>
                   ) : null}
                   {actionedNFTs.length > 0 &&
