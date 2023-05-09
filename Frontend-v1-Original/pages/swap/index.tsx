@@ -21,7 +21,7 @@ function Swap() {
               Swap
             </Typography>
             <Typography
-              className="color-[#7e99b0] my-7 mx-auto max-w-3xl text-center text-base sm:text-lg"
+              className="text-secondaryGray my-7 mx-auto max-w-3xl text-center text-base sm:text-lg"
               variant="body2"
             >
               Swap between Velocimeter supported stable and volatile assets.

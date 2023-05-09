@@ -38,7 +38,7 @@ function Connectors({ closeModal }: { closeModal: () => void }) {
           <div>Connected account: {address}</div>
           <button
             onClick={() => disconnect()}
-            className="self-end rounded-sm border border-indigo-900 bg-[#272826] p-1 font-bold transition-colors hover:bg-green-900"
+            className="self-end rounded-sm border border-indigo-900 bg-primaryBg p-1 font-bold transition-colors hover:bg-green-900"
           >
             Disconnect
           </button>
@@ -54,7 +54,7 @@ function Connectors({ closeModal }: { closeModal: () => void }) {
             }
             key={supportedConnector.name}
             onClick={() => connect({ connector: supportedConnector })}
-            className="rounded-md bg-[#272826] p-3 font-bold shadow-glow transition-colors hover:bg-green-900 disabled:pointer-events-none disabled:bg-slate-400 disabled:shadow-none"
+            className="rounded-md bg-primaryBg p-3 font-bold shadow-glow transition-colors hover:bg-green-900 disabled:pointer-events-none disabled:bg-slate-400 disabled:shadow-none"
           >
             {supportedConnector.name}
             {!supportedConnector.ready && " (unsupported)"}

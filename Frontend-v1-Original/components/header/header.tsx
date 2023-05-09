@@ -93,7 +93,7 @@ function Header() {
             )}
             {transactionQueueLength > 0 && (
               <IconButton
-                className="flex min-h-[40px] items-center rounded-3xl border-none bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+                className="flex min-h-[40px] items-center rounded-3xl border-none bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
                 color="primary"
                 onClick={() => {
                   stores.emitter.emit(ACTIONS.TX_OPEN);
@@ -117,7 +117,7 @@ function Header() {
             {address ? (
               <Button
                 disableElevation
-                className="flex min-h-[40px] items-center rounded-3xl border border-solid border-cantoGreen border-opacity-60 bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
+                className="flex min-h-[40px] items-center rounded-3xl border border-solid border-cantoGreen border-opacity-60 bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
                 variant="contained"
                 color="primary"
                 aria-controls="simple-menu"
@@ -127,12 +127,12 @@ function Header() {
                 <Typography className="text-sm font-bold">
                   {domain ?? formatAddress(address)}
                 </Typography>
-                <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-[#7e99b0]" />
+                <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-secondaryGray" />
               </Button>
             ) : (
               <Button
                 disableElevation
-                className="flex min-h-[40px] items-center rounded-3xl border-none bg-[#040105] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+                className="flex min-h-[40px] items-center rounded-3xl border-none bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
                 variant="contained"
                 color={"primary"}
                 onClick={onAddressClicked}

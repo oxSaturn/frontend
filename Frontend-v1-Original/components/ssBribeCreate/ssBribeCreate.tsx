@@ -357,7 +357,7 @@ function GaugeSelect({
         <div className="flex w-[calc(100%-24px)] flex-col items-start py-2 px-3 md:flex-row md:items-center">
           <div className="relative box-content flex h-20 w-36 p-3">
             <img
-              className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-[#212b48] md:top-3 md:h-16"
+              className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-deepBlue md:top-3 md:h-16"
               alt=""
               src={value && value.token0 ? `${value.token0.logoURI}` : ""}
               onError={(e) => {
@@ -366,7 +366,7 @@ function GaugeSelect({
               }}
             />
             <img
-              className="absolute left-8 top-[calc(50%-1.25rem)] z-10 h-10 rounded-full border-4 border-[#212b48] md:top-3 md:left-14 md:h-16"
+              className="absolute left-8 top-[calc(50%-1.25rem)] z-10 h-10 rounded-full border-4 border-deepBlue md:top-3 md:left-14 md:h-16"
               alt=""
               src={value && value.token1 ? `${value.token1.logoURI}` : ""}
               onError={(e) => {
@@ -420,7 +420,7 @@ function GaugeSelect({
                   <div className="flex w-[calc(100%-24px)] flex-col items-start py-2 px-3 md:flex-row md:items-center">
                     <div className="relative flex h-20 w-36 p-3">
                       <img
-                        className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-[#212b48] md:top-3 md:h-16"
+                        className="absolute left-0 top-[calc(50%-1.25rem)] h-10 rounded-full border-4 border-deepBlue md:top-3 md:h-16"
                         alt=""
                         src={
                           option && option.token0
@@ -434,7 +434,7 @@ function GaugeSelect({
                         }}
                       />
                       <img
-                        className="absolute left-8 top-[calc(50%-1.25rem)] z-10 h-10 rounded-full border-4 border-[#212b48] md:top-3 md:left-14 md:h-16"
+                        className="absolute left-8 top-[calc(50%-1.25rem)] z-10 h-10 rounded-full border-4 border-deepBlue md:top-3 md:left-14 md:h-16"
                         alt=""
                         src={
                           option && option.token1

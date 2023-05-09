@@ -278,7 +278,7 @@ export default function LaunchpadProjectInfo() {
                 variant="contained"
                 size="large"
                 color="primary"
-                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                 disabled={claimLoading}
                 onClick={onClaim}
               >
@@ -293,7 +293,7 @@ export default function LaunchpadProjectInfo() {
                 variant="contained"
                 size="large"
                 color="primary"
-                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                 disabled={claimLoading}
                 onClick={onClaimRefEarnings}
               >
@@ -313,7 +313,7 @@ export default function LaunchpadProjectInfo() {
                   onClick={setMaxAmount}
                 >
                   <Typography
-                    className="text-xs font-thin text-[#7e99b0]"
+                    className="text-xs font-thin text-secondaryGray"
                     noWrap
                   >
                     Balance:
@@ -379,7 +379,7 @@ export default function LaunchpadProjectInfo() {
                 variant="contained"
                 size="large"
                 color="primary"
-                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                 disabled={
                   buyLoading ||
                   !projectData ||

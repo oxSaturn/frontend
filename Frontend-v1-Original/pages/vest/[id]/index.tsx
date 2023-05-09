@@ -156,7 +156,7 @@ function Vest() {
             Vest
           </Typography>
           <Typography
-            className="color-[#7e99b0] my-7 mx-auto max-w-3xl text-center text-base sm:text-lg"
+            className="my-7 mx-auto max-w-3xl text-center text-base text-secondaryGray sm:text-lg"
             variant="body2"
           >
             Lock your FLOW to earn rewards and governance rights. Each locked
