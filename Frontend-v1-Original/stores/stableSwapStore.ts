@@ -2082,7 +2082,6 @@ class Store {
         amount0,
         amount1,
         isStable: stable,
-        token,
         slippage,
       } = payload.content;
 
@@ -2603,7 +2602,7 @@ class Store {
         return null;
       }
 
-      const { token0, token1, amount0, amount1, minLiquidity, pair, slippage } =
+      const { token0, token1, amount0, amount1, pair, slippage } =
         payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
@@ -2761,7 +2760,7 @@ class Store {
         return null;
       }
 
-      const { pair, token } = payload.content;
+      const { pair } = payload.content;
 
       let stakeAllowanceTXID = this.getTXUUID();
       let stakeTXID = this.getTXUUID();
@@ -2866,7 +2865,7 @@ class Store {
         amount1,
         minLiquidity,
         pair,
-        token,
+
         slippage,
       } = payload.content;
 
@@ -3160,7 +3159,7 @@ class Store {
         addy1 = W_NATIVE_ADDRESS as `0x${string}`;
       }
 
-      const [_amountA, _amountB, liquidity] = await viemClient.readContract({
+      const [, liquidity] = await viemClient.readContract({
         address: CONTRACTS.ROUTER_ADDRESS,
         abi: CONTRACTS.ROUTER_ABI,
         functionName: "quoteAddLiquidity",
@@ -4372,7 +4371,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let vestTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Increase unlock time on token #${tokenID}`,
         type: "Vest",
         verb: "Vest Increased",
@@ -4733,7 +4732,7 @@ class Store {
       const { from, to } = payload.content;
 
       let mergeTXID = this.getTXUUID();
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Merge NFT #${from} into #${to}`,
         verb: "NFT Merged",
         transactions: [
@@ -4832,7 +4831,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       const voteTXID = this.getTXUUID();
 
-      // TODO learn why 'await' needed here
+      // NOTE understand OR learn why 'await' needed here and all similar places (only one tx makes it done right away)
       await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Cast vote using token #${tokenID}`,
         verb: "Votes Cast",
@@ -5436,7 +5435,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
         verb: "Rewards Claimed",
         transactions: [
@@ -5501,7 +5500,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
         verb: "Rewards Claimed",
         transactions: [
@@ -5564,7 +5563,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
         verb: "Rewards Claimed",
         transactions: [
@@ -5743,7 +5742,7 @@ class Store {
         }
       }
 
-      this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
+      await this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
 
       if (xxBribePairs.length > 0) {
         await this.writeClaimBribes(
@@ -5901,7 +5900,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim distribution for NFT #${tokenID}`,
         verb: "Rewards Claimed",
         transactions: [
@@ -5959,7 +5958,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let bribeTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Bribe AutoBribe`,
         verb: "Bribed",
         transactions: [
@@ -6128,7 +6127,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim Earned Amount`,
         verb: "Claimed",
         transactions: [
@@ -6190,7 +6189,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim Ref Earned Amount`,
         verb: "Claimed",
         transactions: [
