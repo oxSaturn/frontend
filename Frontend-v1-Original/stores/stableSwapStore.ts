@@ -12,10 +12,12 @@ import {
   parseEther,
   WalletClient,
   WriteContractReturnType,
+  isAddress,
 } from "viem";
 
 import { Dispatcher } from "flux";
 
+import { queryClient } from "../pages/_app";
 import { formatCurrency } from "../utils/utils";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
@@ -238,6 +240,20 @@ class Store {
             break;
           case ACTIONS.CLAIM_ALL_REWARDS:
             this.claimAllRewards(payload);
+            break;
+
+          case ACTIONS.BRIBE_AUTO_BRIBE:
+            this.bribeAutoBribe(payload);
+            break;
+
+          case ACTIONS.BUY:
+            this.buy(payload);
+            break;
+          case ACTIONS.CLAIM_EARNED:
+            this.claimEarned(payload);
+            break;
+          case ACTIONS.CLAIM_REF_EARNED:
+            this.claimRefEarned(payload);
             break;
 
           default: {
@@ -1789,32 +1805,15 @@ class Store {
             );
 
             const bribes = pair.gauge.bribes.map((bribe) => {
-              bribe.rewardAmount = bribe.rewardAmmount;
+              bribe.rewardAmount = 0;
               return bribe;
-            });
-            pair.gauge.x_bribes.forEach((x_bribe) => {
-              const bribe = bribes.find(
-                (b) => b.token.address === x_bribe.token.address
-              );
-              if (bribe) {
-                bribe.rewardAmount =
-                  bribe.rewardAmmount + x_bribe.rewardAmmount;
-              } else {
-                bribes.push({
-                  token: x_bribe.token,
-                  rewardAmount: x_bribe.rewardAmmount,
-                  reward_ammount: x_bribe.rewardAmmount,
-                  rewardAmmount: x_bribe.rewardAmmount,
-                });
-              }
             });
             pair.gauge.xx_bribes.forEach((xx_bribe) => {
               const bribe = bribes.find(
                 (b) => b.token.address === xx_bribe.token.address
               );
               if (bribe) {
-                bribe.rewardAmount =
-                  bribe.rewardAmmount + xx_bribe.rewardAmmount;
+                bribe.rewardAmount = xx_bribe.rewardAmmount;
               } else {
                 bribes.push({
                   token: xx_bribe.token,
@@ -4455,7 +4454,7 @@ class Store {
       await this.getRewardBalances({ type: "internal", content: { tokenID } });
       const rewards = this.getStore("rewards");
 
-      if (rewards.bribes.length > 0) {
+      if (rewards.xxBribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
           description: `Unclaimed bribes found, claiming`,
@@ -4468,12 +4467,12 @@ class Store {
         });
       }
 
-      if (rewards.bribes.length > 0) {
-        const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge.wrapped_bribe_address;
+      if (rewards.xxBribes.length > 0) {
+        const sendGauges = rewards.xxBribes.map((pair) => {
+          return pair.gauge.xx_wrapped_bribe_address;
         });
-        const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge.bribesEarned!.map((bribe) => {
+        const sendTokens = rewards.xxBribes.map((pair) => {
+          return pair.gauge.xx_bribesEarned!.map((bribe) => {
             return (bribe as Bribe).token.address;
           });
         });
@@ -4560,7 +4559,6 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let rewards01TXID = this.getTXUUID();
       let rewards0TXID = this.getTXUUID();
-      let rewardsTXID = this.getTXUUID();
       let resetTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
@@ -4576,11 +4574,6 @@ class Store {
           },
           {
             uuid: rewards0TXID,
-            description: `Checking unclaimed bribes`,
-            status: "WAITING",
-          },
-          {
-            uuid: rewardsTXID,
             description: `Checking unclaimed bribes`,
             status: "WAITING",
           },
@@ -4625,18 +4618,6 @@ class Store {
           status: "DONE",
         });
       }
-      if (rewards.bribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewardsTXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewardsTXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
 
       if (rewards.xxBribes.length > 0) {
         const sendGauges = rewards.xxBribes.map((pair) => {
@@ -4669,25 +4650,6 @@ class Store {
         await this.writeClaimBribes(
           walletClient,
           rewards0TXID,
-          sendGauges,
-          sendTokens,
-          tokenID
-        );
-      }
-
-      if (rewards.bribes.length > 0) {
-        const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge.wrapped_bribe_address;
-        });
-        const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge.bribesEarned!.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
-
-        await this.writeClaimBribes(
-          walletClient,
-          rewardsTXID,
           sendGauges,
           sendTokens,
           tokenID
@@ -4864,18 +4826,12 @@ class Store {
       const { tokenID, votes } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let bribesTXID = this.getTXUUID();
       let voteTXID = this.getTXUUID();
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Cast vote using token #${tokenID}`,
         verb: "Votes Cast",
         transactions: [
-          {
-            uuid: bribesTXID,
-            description: `Check unclaimed bribes`,
-            status: "WAITING",
-          },
           {
             uuid: voteTXID,
             description: `Cast votes`,
@@ -4887,42 +4843,6 @@ class Store {
       const pairs = this.getStore("pairs");
       let deadGauges: string[] = [];
 
-      // CHECK unclaimed bribes
-      await this.getRewardBalances({ type: "internal", content: { tokenID } });
-      const rewards = this.getStore("rewards");
-
-      if (rewards.bribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: bribesTXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: bribesTXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
-
-      if (rewards.bribes.length > 0) {
-        const sendGauges = rewards.bribes.map((pair) => {
-          return pair.gauge.wrapped_bribe_address;
-        });
-        const sendTokens = rewards.bribes.map((pair) => {
-          return pair.gauge.bribesEarned!.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
-        await this.writeClaimBribes(
-          walletClient,
-          bribesTXID,
-          sendGauges,
-          sendTokens,
-          tokenID
-        );
-      }
-
-      // SUBMIT VOTE TRANSACTION
       let onlyVotes = votes.filter((vote) => {
         return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
       });
@@ -5067,6 +4987,11 @@ class Store {
 
       const { asset, amount, gauge } = payload.content;
 
+      if (gauge.gauge.xx_wrapped_bribe_address === ZERO_ADDRESS) {
+        console.warn("gauge does not have a bribe address");
+        return null;
+      }
+
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let allowanceTXID = this.getTXUUID();
       let bribeTXID = this.getTXUUID();
@@ -5162,59 +5087,26 @@ class Store {
     }
   };
 
-  // NOTE: Never being used
-  // getVestBalances = async (payload: {
-  //   type: string;
-  //   content: { tokenID: string };
-  // }) => {
-  //   try {
-  //     const account = stores.accountStore.getStore("address");
-  //     if (!account) {
-  //       console.warn("account not found");
-  //       return null;
-  //     }
+  _getBuyAllowanceNOTE = async (
+    tokenAddress: `0x${string}`,
+    launchpadProjectAddress: `0x${string}`,
+    account: `0x${string}` | null
+  ) => {
+    try {
+      if (!account) throw Error("No account found");
+      const allowance = await viemClient.readContract({
+        address: tokenAddress,
+        abi: CONTRACTS.ERC20_ABI,
+        functionName: "allowance",
+        args: [account, launchpadProjectAddress],
+      });
 
-  //     const { tokenID } = payload.content;
-  //     const pairs = this.getStore("pairs");
-
-  //     if (!pairs) {
-  //       return null;
-  //     }
-
-  //     if (!tokenID) {
-  //       return;
-  //     }
-
-  //     const filteredPairs = pairs.filter(hasGauge);
-
-  //     const bribesEarned = await Promise.all(
-  //       filteredPairs.map(async (pair) => {
-  //         const bribesEarned = await Promise.all(
-  //           pair.gauge.bribes.map(async (bribe) => {
-  //             const earned = await viemClient.readContract({
-  //               address: pair.gauge.wrapped_bribe_address,
-  //               abi: CONTRACTS.BRIBE_ABI,
-  //               functionName: "earned",
-  //               args: [bribe.token.address, BigInt(tokenID)],
-  //             });
-
-  //             return {
-  //               earned: formatUnits(earned, bribe.token.decimals),
-  //             };
-  //           })
-  //         );
-  //         pair.gauge.bribesEarnedValue = bribesEarned;
-
-  //         return pair;
-  //       })
-  //     );
-
-  //     this.emitter.emit(ACTIONS.VEST_BALANCES_RETURNED, bribesEarned);
-  //   } catch (ex) {
-  //     console.error(ex);
-  //     this.emitter.emit(ACTIONS.ERROR, ex);
-  //   }
-  // };
+      return formatEther(allowance);
+    } catch (ex) {
+      console.error(ex);
+      return null;
+    }
+  };
 
   getRewardBalances = async (payload: {
     type: string;
@@ -6034,6 +5926,292 @@ class Store {
         content: { tokenID },
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  bribeAutoBribe = async (payload: {
+    type: string;
+    content: { address: `0x${string}` };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("address");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { address } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let bribeTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Bribe AutoBribe`,
+        verb: "Bribed",
+        transactions: [
+          {
+            uuid: bribeTXID,
+            description: `Bribing AutoBribe`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const writeBribeAutoBribe = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: address,
+          abi: CONTRACTS.AUTO_BRIBE_ABI,
+          functionName: "bribe",
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(bribeTXID, writeBribeAutoBribe);
+
+      queryClient.invalidateQueries(["autoBribes"]);
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  buy = async (payload: {
+    type: string;
+    content: {
+      amount: `${number}`;
+      refCode: string;
+      projectAddress: string | string[];
+    };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("address");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { amount, refCode, projectAddress } = payload.content;
+
+      const sendAmount = parseEther(amount);
+
+      const refCodeToSend = isAddress(refCode) ? refCode : ZERO_ADDRESS;
+
+      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+        console.warn("projectAddress is not a valid address");
+        return null;
+      }
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let allowanceTXID = this.getTXUUID();
+      let buyTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Participate in Launchpad`,
+        verb: "Participated",
+        transactions: [
+          {
+            uuid: allowanceTXID,
+            description: `Checking your NOTE allowance`,
+            status: "WAITING",
+          },
+          {
+            uuid: buyTXID,
+            description: `Buy worth of ${amount} NOTE`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      // CHECK ALLOWANCES AND SET TX DISPLAY
+      const allowance = await this._getBuyAllowanceNOTE(
+        "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+        projectAddress,
+        account
+      );
+      if (!allowance) throw new Error("Error getting bribe allowance");
+      if (BigNumber(allowance).lt(amount)) {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: allowanceTXID,
+          description: `Allow the bribe contract to spend your $NOTE`,
+        });
+      } else {
+        this.emitter.emit(ACTIONS.TX_STATUS, {
+          uuid: allowanceTXID,
+          description: `Allowance on $NOTE sufficient`,
+          status: "DONE",
+        });
+      }
+
+      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+      if (BigNumber(allowance).lt(amount)) {
+        await this.writeApprove(
+          walletClient,
+          allowanceTXID,
+          "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+          projectAddress
+        );
+      }
+
+      const writeBuy = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: projectAddress,
+          abi: CONTRACTS.FAIR_AUCTION_ABI,
+          functionName: "buy",
+          args: [sendAmount, refCodeToSend],
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(buyTXID, writeBuy);
+
+      queryClient.invalidateQueries({
+        queryKey: [
+          "launchpadProject",
+          "noteAsset",
+          "userClaimableAndClaimableRefEarnings",
+        ],
+      });
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimEarned = async (payload: {
+    type: string;
+    content: {
+      projectAddress: string | string[];
+    };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("address");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { projectAddress } = payload.content;
+
+      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+        console.warn("projectAddress is not a valid address");
+        return null;
+      }
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim Earned Amount`,
+        verb: "Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const writeClaim = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: projectAddress,
+          abi: CONTRACTS.FAIR_AUCTION_ABI,
+          functionName: "claim",
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeClaim);
+
+      queryClient.invalidateQueries({
+        queryKey: ["userClaimableAndClaimableRefEarnings"],
+      });
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimRefEarned = async (payload: {
+    type: string;
+    content: {
+      projectAddress: string | string[];
+    };
+  }) => {
+    try {
+      const account = stores.accountStore.getStore("address");
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = stores.accountStore.getStore("walletClient");
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { projectAddress } = payload.content;
+
+      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+        console.warn("projectAddress is not a valid address");
+        return null;
+      }
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim Ref Earned Amount`,
+        verb: "Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const writeClaim = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: projectAddress,
+          abi: CONTRACTS.FAIR_AUCTION_ABI,
+          functionName: "claimRefEarnings",
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeClaim);
+
+      queryClient.invalidateQueries({
+        queryKey: ["userClaimableAndClaimableRefEarnings"],
+      });
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);

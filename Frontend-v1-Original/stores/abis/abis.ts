@@ -11,6 +11,8 @@ import { veDistABI } from "./veDistABI";
 import { minterABI } from "./minterABI";
 import { wethABI } from "./wethABI";
 import { flowConvertorABI } from "./flowConvertorABI";
+import { autoBribeABI } from "./autoBribeABI";
+import { fairAuctionABI } from "./fairAuctionABI";
 
 export default {
   erc20ABI,
@@ -26,4 +28,6 @@ export default {
   minterABI,
   wethABI,
   flowConvertorABI,
+  autoBribeABI,
+  fairAuctionABI,
 };

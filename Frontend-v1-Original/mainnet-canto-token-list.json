@@ -398,5 +398,21 @@
     "logoURI": "https://cdn.discordapp.com/attachments/1094489825404526592/1100874841034338424/underFLOW.png",
     "name": "Flow Undertow",
     "symbol": "underFLOW"
+  },
+  {
+    "address": "0xA649325Aa7C5093d12D6F98EB4378deAe68CE23F",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29137/small/original-icon-transparent.png",
+    "name": "Amplifi",
+    "symbol": "AGG"
+  },
+  {
+    "address": "0xf390830DF829cf22c53c8840554B98eafC5dCBc2",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg",
+    "name": "Pepe",
+    "symbol": "PEPE"
   }
 ]

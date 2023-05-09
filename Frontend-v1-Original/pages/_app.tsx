@@ -4,6 +4,8 @@ import Head from "next/head";
 import { CacheProvider, EmotionCache } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
 import { WagmiConfig } from "wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
@@ -16,6 +18,8 @@ import createEmotionCache from "../utils/createEmotionCache";
 import Configure from "./configure";
 
 import "../styles/global.css";
+
+export const queryClient = new QueryClient();
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
@@ -53,24 +57,27 @@ export default function MyApp({
 
   return (
     <CacheProvider value={emotionCache}>
-      <Head>
-        <title>Velocimeter</title>
-        <meta
-          name="viewport"
-          content="minimum-scale=1, initial-scale=1, width=device-width"
-        />
-      </Head>
-      <ThemeProvider theme={themeConfig}>
-        <WagmiConfig client={wagmiClient}>
-          {accountConfigured ? (
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          ) : (
-            <Configure {...pageProps} />
-          )}
-        </WagmiConfig>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <Head>
+          <title>Velocimeter</title>
+          <meta
+            name="viewport"
+            content="minimum-scale=1, initial-scale=1, width=device-width"
+          />
+        </Head>
+        <ThemeProvider theme={themeConfig}>
+          <WagmiConfig client={wagmiClient}>
+            {accountConfigured ? (
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            ) : (
+              <Configure {...pageProps} />
+            )}
+          </WagmiConfig>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </CacheProvider>
   );
 }

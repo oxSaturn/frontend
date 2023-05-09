@@ -29,8 +29,8 @@ function Navigation() {
     if (activePath.includes("rewards")) {
       setActive("rewards");
     }
-    if (activePath.includes("dashboard")) {
-      setActive("dashboard");
+    if (activePath.includes("launchpad")) {
+      setActive("launchpad");
     }
   }, [router.asPath]);
 
@@ -43,6 +43,8 @@ function Navigation() {
         {renderSubNav("Vote", "vote")}
         {renderSubNav("Rewards", "rewards")}
         {renderSubNav("Bribe", "bribe")}
+        {process.env.NODE_ENV === "development" &&
+          renderSubNav("Launchpad", "launchpad")}
         {renderDocsTab()}
       </>
     );
