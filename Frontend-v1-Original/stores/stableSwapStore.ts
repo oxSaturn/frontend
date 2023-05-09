@@ -13,6 +13,7 @@ import {
   WalletClient,
   WriteContractReturnType,
   isAddress,
+  BaseError,
 } from "viem";
 
 import { Dispatcher } from "flux";
@@ -5839,7 +5840,7 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claimTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
         verb: "Rewards Claimed",
         transactions: [
@@ -6495,18 +6496,24 @@ class Store {
         });
       }
     } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          this.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: txId,
-            error: this._mapError((error as Error).message),
-          });
-        }
+      if (error instanceof Error) {
         this.emitter.emit(ACTIONS.TX_REJECTED, {
           uuid: txId,
-          error: error,
+          error: this._mapError(error.message),
         });
+        return;
       }
+      if (error instanceof BaseError) {
+        this.emitter.emit(ACTIONS.TX_REJECTED, {
+          uuid: txId,
+          error: error.details,
+        });
+        return;
+      }
+      this.emitter.emit(ACTIONS.TX_REJECTED, {
+        uuid: txId,
+        error: error,
+      });
     }
   };
 

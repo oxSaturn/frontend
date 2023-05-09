@@ -37,14 +37,15 @@ const dexvaultsWS = webSocket("wss://canto.dexvaults/ws");
 const plexnode = http("https://mainnode.plexnode.org:8545");
 const nodestake = http("https://jsonrpc.canto.nodestake.top");
 const slingshot = http("https://canto.slingshot.finance");
-const chandrastation = http("https://canto.evm.chandrastation.com/");
-// going to remove neobase because it sends back empty data when can't fetch, this breaks the fallback
+// invalid chain id for signer error thrown by chandrastation for eth_getTransactionReceipt method
+// const chandrastation = http("https://canto.evm.chandrastation.com/");
+// neobase sends back empty data when can't fetch, this breaks the fallback
 // const neobase = http("https://canto.neobase.one");
 
 const client = createPublicClient({
   chain: canto,
   transport: fallback(
-    [dexvaults, dexvaultsWS, plexnode, nodestake, slingshot, chandrastation],
+    [dexvaults, dexvaultsWS, plexnode, nodestake, slingshot],
     {
       rank: {
         interval: 30_000,
