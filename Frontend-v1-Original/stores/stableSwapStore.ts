@@ -4826,9 +4826,10 @@ class Store {
       const { tokenID, votes } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let voteTXID = this.getTXUUID();
+      const voteTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
+      // TODO learn why 'await' needed here
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
         title: `Cast vote using token #${tokenID}`,
         verb: "Votes Cast",
         transactions: [
@@ -4841,9 +4842,9 @@ class Store {
       });
 
       const pairs = this.getStore("pairs");
-      let deadGauges: string[] = [];
+      const deadGauges: string[] = [];
 
-      let onlyVotes = votes.filter((vote) => {
+      const onlyVotes = votes.filter((vote) => {
         return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
       });
 
@@ -4868,11 +4869,11 @@ class Store {
         throw new Error(error_message);
       }
 
-      let tokens = onlyVotes.map((vote) => {
+      const tokens = onlyVotes.map((vote) => {
         return vote.address;
       });
 
-      let voteCounts = onlyVotes.map((vote) => {
+      const voteCounts = onlyVotes.map((vote) => {
         return BigInt(BigNumber(vote.value).times(100).toFixed(0));
       });
 
