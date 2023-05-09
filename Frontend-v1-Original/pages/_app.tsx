@@ -11,7 +11,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import darkTheme from "../theme/dark";
 import Layout from "../components/layout/layout";
 import stores from "../stores/index";
-import { wagmiClient } from "../stores/connectors/viem";
+import { config } from "../stores/connectors/viem";
 import { ACTIONS } from "../stores/constants/constants";
 import createEmotionCache from "../utils/createEmotionCache";
 
@@ -66,7 +66,7 @@ export default function MyApp({
           />
         </Head>
         <ThemeProvider theme={themeConfig}>
-          <WagmiConfig client={wagmiClient}>
+          <WagmiConfig config={config}>
             {accountConfigured ? (
               <Layout>
                 <Component {...pageProps} />

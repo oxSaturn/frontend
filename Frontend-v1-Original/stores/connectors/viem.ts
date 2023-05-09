@@ -7,7 +7,7 @@ import {
   MulticallParameters,
 } from "viem";
 import { canto } from "viem/chains";
-import { createClient } from "wagmi";
+import { createConfig } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 
@@ -53,7 +53,7 @@ const client = createPublicClient({
   ),
 });
 
-export const wagmiClient = createClient({
+export const config = createConfig({
   autoConnect: true,
   publicClient: createPublicClient({
     chain: canto,
