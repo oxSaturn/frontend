@@ -74,7 +74,7 @@ export default function Layout({
           <main>{children}</main>
         ) : (
           <div className="flex flex-grow items-center justify-center text-center">
-            <div>
+            <div className="space-y-2">
               <Typography className="max-w-md text-2xl text-white">
                 {`The chain you're connected to isn't supported. Please
                 check that your wallet is connected to Canto Mainnet.`}

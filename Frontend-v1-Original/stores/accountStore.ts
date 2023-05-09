@@ -1,8 +1,7 @@
 import EventEmitter from "events";
 
 import { Dispatcher } from "flux";
-import { Address } from "viem";
-import { WalletClient } from "wagmi";
+import type { Address, WalletClient } from "viem";
 
 import { ACTIONS } from "./constants/constants";
 

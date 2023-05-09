@@ -10,11 +10,12 @@ import {
   parseUnits,
   formatEther,
   parseEther,
-  WalletClient,
-  WriteContractReturnType,
+  type WalletClient,
+  type WriteContractReturnType,
   isAddress,
   BaseError,
 } from "viem";
+import { canto } from "viem/chains";
 
 import { Dispatcher } from "flux";
 
@@ -3813,6 +3814,7 @@ class Store {
             value: BigInt(quote.maxReturn.totalFrom),
             data: quote.encodedData.data,
             gasPrice: BigInt(quote.maxReturn.gasPrice),
+            chain: canto,
           });
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
@@ -3846,6 +3848,7 @@ class Store {
             value: undefined,
             data: quote.encodedData.data,
             gasPrice: BigInt(quote.maxReturn.gasPrice),
+            chain: canto,
           });
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,

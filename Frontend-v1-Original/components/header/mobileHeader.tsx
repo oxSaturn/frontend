@@ -53,7 +53,7 @@ function Header() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useOnClickOutside(ref, () => setOpen(false));
+  // useOnClickOutside(ref, () => setOpen(false));
 
   useEffect(() => {
     const ssUpdated = () => {
