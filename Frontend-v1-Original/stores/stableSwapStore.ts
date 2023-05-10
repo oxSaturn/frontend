@@ -72,7 +72,6 @@ class Store {
     pairs: Pair[];
     vestNFTs: VestNFT[];
     rewards: {
-      bribes: Gauge[];
       xBribes: Gauge[];
       xxBribes: Gauge[];
       rewards: Gauge[];
@@ -100,7 +99,6 @@ class Store {
       pairs: [],
       vestNFTs: [],
       rewards: {
-        bribes: [],
         xBribes: [],
         xxBribes: [],
         rewards: [],
@@ -223,9 +221,6 @@ class Store {
           //REWARDS
           case ACTIONS.GET_REWARD_BALANCES:
             this.getRewardBalances(payload);
-            break;
-          case ACTIONS.CLAIM_BRIBE:
-            this.claimBribes(payload);
             break;
           case ACTIONS.CLAIM_X_BRIBE:
             this.claimXBribes(payload);
@@ -5141,7 +5136,6 @@ class Store {
         );
       }
 
-      const filteredPairs = structuredClone(gauges);
       const x_filteredPairs = structuredClone(gauges);
       const xx_filteredPairs = structuredClone(gauges);
       const filteredPairs2 = structuredClone(gauges);
@@ -5152,21 +5146,6 @@ class Store {
       let xx_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
 
       if (tokenID) {
-        const calls = filteredPairs.flatMap((pair) =>
-          pair.gauge.bribes.map(
-            (bribe) =>
-              ({
-                address: pair.gauge.wrapped_bribe_address,
-                abi: CONTRACTS.BRIBE_ABI,
-                functionName: "earned",
-                args: [bribe.token.address, BigInt(tokenID)],
-              } as const)
-          )
-        );
-        const callsChunks = chunkArray(calls, 100);
-
-        const earnedBribesAllPairs = await multicallChunks(callsChunks);
-
         const x_calls = x_filteredPairs.flatMap((pair) =>
           pair.gauge.x_bribes.map(
             (bribe) =>
@@ -5196,22 +5175,6 @@ class Store {
         const xx_callsChunks = chunkArray(xx_calls, 100);
 
         const xx_earnedBribesAllPairs = await multicallChunks(xx_callsChunks);
-
-        filteredPairs.forEach((pair) => {
-          const earnedBribesPair = earnedBribesAllPairs.splice(
-            0,
-            pair.gauge.bribes.length
-          );
-          pair.gauge.bribesEarned = pair.gauge.bribes.map((bribe, i) => {
-            return {
-              ...bribe,
-              earned: formatUnits(
-                earnedBribesPair[i],
-                bribe.token.decimals
-              ) as `${number}`,
-            };
-          });
-        });
 
         x_filteredPairs.forEach((pair) => {
           const x_earnedBribesPair = x_earnedBribesAllPairs.splice(
@@ -5244,33 +5207,6 @@ class Store {
             };
           });
         });
-
-        filteredBribes = filteredPairs
-          .filter((pair) => {
-            if (pair.gauge.bribesEarned && pair.gauge.bribesEarned.length > 0) {
-              let shouldReturn = false;
-
-              for (let i = 0; i < pair.gauge.bribesEarned.length; i++) {
-                if (
-                  pair.gauge.bribesEarned[i].earned &&
-                  parseUnits(
-                    pair.gauge.bribesEarned[i].earned as `${number}`,
-                    pair.gauge.bribes[i].token.decimals
-                  ) > 0
-                ) {
-                  shouldReturn = true;
-                }
-              }
-
-              return shouldReturn;
-            }
-
-            return false;
-          })
-          .map((pair) => {
-            pair.rewardType = "Bribe";
-            return pair;
-          });
 
         x_filteredBribes = x_filteredPairs
           .filter((pair) => {
@@ -5392,7 +5328,6 @@ class Store {
       }
 
       const rewards: Store["store"]["rewards"] = {
-        bribes: filteredBribes,
         xBribes: x_filteredBribes,
         xxBribes: xx_filteredBribes,
         rewards: filteredRewards,
@@ -5404,71 +5339,6 @@ class Store {
       });
 
       this.emitter.emit(ACTIONS.REWARD_BALANCES_RETURNED, rewards);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
-
-  claimBribes = async (payload: {
-    type: string;
-    content: {
-      pair: Gauge;
-      tokenID: string;
-    };
-  }) => {
-    try {
-      const account = stores.accountStore.getStore("address");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
-      const walletClient = stores.accountStore.getStore("walletClient");
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
-
-      const { pair, tokenID } = payload.content;
-
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
-
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-        verb: "Rewards Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your bribes`,
-            status: "WAITING",
-          },
-        ],
-      });
-
-      // SUBMIT CLAIM TRANSACTION
-      const sendGauges = [pair.gauge.wrapped_bribe_address];
-      const sendTokens = [
-        // "!" because you can only claim bribe when you see it, you see it when bribesEarned defined.
-        pair.gauge.bribesEarned!.map((bribe) => {
-          return (bribe as Bribe).token.address;
-        }),
-      ];
-
-      await this.writeClaimBribes(
-        walletClient,
-        claimTXID,
-        sendGauges,
-        sendTokens,
-        tokenID
-      );
-
-      this.getRewardBalances({
-        type: "Internal rewards balances",
-        content: { tokenID },
-      });
-      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5626,13 +5496,9 @@ class Store {
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claim01TXID = this.getTXUUID();
       let claim0TXID = this.getTXUUID();
-      let claimTXID = this.getTXUUID();
       let rewardClaimTXIDs: string[] = [];
       let distributionClaimTXIDs: string[] = [];
 
-      let bribePairs = (pairs as Gauge[]).filter((pair) => {
-        return pair.rewardType === "Bribe";
-      });
       let xBribePairs = (pairs as Gauge[]).filter((pair) => {
         return pair.rewardType === "XBribe";
       });
@@ -5664,17 +5530,8 @@ class Store {
           return (bribe as Bribe).token.address;
         });
       });
-      const sendGauges = bribePairs.map((pair) => {
-        return pair.gauge.wrapped_bribe_address;
-      });
-      const sendTokens = bribePairs.map((pair) => {
-        return pair.gauge.bribesEarned!.map((bribe) => {
-          return (bribe as Bribe).token.address;
-        });
-      });
 
       if (
-        bribePairs.length == 0 &&
         xBribePairs.length == 0 &&
         xxBribePairs.length == 0 &&
         rewardPairs.length == 0
@@ -5704,13 +5561,6 @@ class Store {
       if (xBribePairs.length > 0) {
         sendOBJ.transactions.push({
           uuid: claim0TXID,
-          description: `Claiming all your available bribes`,
-          status: TransactionStatus.WAITING,
-        });
-      }
-      if (bribePairs.length > 0) {
-        sendOBJ.transactions.push({
-          uuid: claimTXID,
           description: `Claiming all your available bribes`,
           status: TransactionStatus.WAITING,
         });
@@ -5759,15 +5609,6 @@ class Store {
           claim0TXID,
           sendGauges0,
           sendTokens0,
-          tokenID
-        );
-      }
-      if (bribePairs.length > 0) {
-        await this.writeClaimBribes(
-          walletClient,
-          claimTXID,
-          sendGauges,
-          sendTokens,
           tokenID
         );
       }

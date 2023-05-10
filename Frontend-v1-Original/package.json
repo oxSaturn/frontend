@@ -35,7 +35,7 @@
     "react-use-window-scroll": "^1.0.13",
     "uuid": "^8.3.2",
     "viem": "^0.3.19",
-    "wagmi": "^1.0.0"
+    "wagmi": "^1.0.2"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^4.29.4",
