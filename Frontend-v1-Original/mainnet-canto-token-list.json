@@ -414,5 +414,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg",
     "name": "Pepe",
     "symbol": "PEPE"
+  },
+  {
+    "address": "0xda26D56e2Ef68605e9CB0C9e0e9e5a9867Acb199",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://usd.zone/static/media/USDpluslogoalt.5a06a125697060034e8b.webp",
+    "name": "Ultra Sound Dollar",
+    "symbol": "USD+"
   }
 ]
