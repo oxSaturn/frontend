@@ -74,7 +74,7 @@ function Bribes() {
           <SSBribes />
         </div>
       ) : (
-        <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-[calc(100%-80px)] flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">
+        <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-full flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">
           <BalanceIcon className="mb-8 -mt-20 text-7xl sm:text-8xl" />
           <Typography
             className="text-center font-['Monument'] text-2xl font-thin text-white sm:text-3xl"
@@ -83,7 +83,7 @@ function Bribes() {
             Bribes
           </Typography>
           <Typography
-            className="text-secondaryGray my-7 mx-auto max-w-3xl text-center text-base sm:text-lg"
+            className="my-7 mx-auto max-w-3xl text-center text-base text-secondaryGray sm:text-lg"
             variant="body2"
           >
             Use your veFLOW to vote for your selected pool&apos;s rewards
