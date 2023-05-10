@@ -418,7 +418,7 @@
   {
     "address": "0xda26D56e2Ef68605e9CB0C9e0e9e5a9867Acb199",
     "chainId": 7700,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://usd.zone/static/media/USDpluslogoalt.5a06a125697060034e8b.webp",
     "name": "Ultra Sound Dollar",
     "symbol": "USD+"
