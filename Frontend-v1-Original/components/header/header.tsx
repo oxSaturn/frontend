@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { useAccount } from "wagmi";
-import { Typography, Button, Badge, IconButton } from "@mui/material";
-import { List, ArrowDropDown } from "@mui/icons-material";
+import { Typography, Badge, IconButton } from "@mui/material";
+import { List } from "@mui/icons-material";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 import Navigation from "../navigation/navigation";
-import Unlock from "../unlock/unlockModal";
 import TransactionQueue from "../transactionQueue/transactionQueue";
 import useScrollPosition from "../../hooks/useScrollPosition";
 import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
-import { formatAddress } from "../../utils/utils";
 
 import Info from "./info";
 
@@ -30,9 +28,7 @@ function SiteLogo(props: { className?: string }) {
 
 function Header() {
   const router = useRouter();
-  const { address } = useAccount();
 
-  const [unlockOpen, setUnlockOpen] = useState(false);
   const [transactionQueueLength, setTransactionQueueLength] = useState(0);
 
   const [domain, setDomain] = useState<string>();
@@ -52,14 +48,6 @@ function Header() {
       stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
     };
   }, []);
-
-  const onAddressClicked = () => {
-    setUnlockOpen(true);
-  };
-
-  const closeUnlock = () => {
-    setUnlockOpen(false);
-  };
 
   const setQueueLength = (length: number) => {
     setTransactionQueueLength(length);
@@ -114,38 +102,8 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            {address ? (
-              <Button
-                disableElevation
-                className="flex min-h-[40px] items-center rounded-3xl border border-solid border-cantoGreen border-opacity-60 bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
-                variant="contained"
-                color="primary"
-                aria-controls="simple-menu"
-                aria-haspopup="true"
-                onClick={onAddressClicked}
-              >
-                <Typography className="text-sm font-bold">
-                  {domain ?? formatAddress(address)}
-                </Typography>
-                <ArrowDropDown className="ml-1 -mr-2 -mt-1 text-secondaryGray" />
-              </Button>
-            ) : (
-              <Button
-                disableElevation
-                className="flex min-h-[40px] items-center rounded-3xl border-none bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
-                variant="contained"
-                color={"primary"}
-                onClick={onAddressClicked}
-              >
-                <Typography className="text-sm font-bold">
-                  Connect Wallet
-                </Typography>
-              </Button>
-            )}
+            <ConnectButton showBalance={false} accountStatus="address" />
           </div>
-          {unlockOpen && (
-            <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />
-          )}
           <TransactionQueue setQueueLength={setQueueLength} />
         </div>
       </div>

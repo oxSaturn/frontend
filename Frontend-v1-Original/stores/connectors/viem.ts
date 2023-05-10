@@ -7,41 +7,23 @@ import {
   MulticallParameters,
 } from "viem";
 import { canto } from "viem/chains";
-import { createConfig } from "wagmi";
-import { InjectedConnector } from "wagmi/connectors/injected";
-import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
-
-const injectedConnector = new InjectedConnector({
-  chains: [canto],
-});
-
-const walletConnectConnector = new WalletConnectConnector({
-  chains: [canto],
-  options: {
-    projectId: "aa9bd3a3710b5c6ac981c2d222a90d49",
-    metadata: {
-      name: "Velocimeter",
-      description: "Connect to Velocimeter",
-      url: "https://velocimeter.xyz",
-      icons: [
-        "https://user-images.githubusercontent.com/4340952/217877622-17e92d8c-96b2-498b-8580-6c9d49db1456.png",
-      ],
-    },
-  },
-});
+import { createConfig, configureChains } from "wagmi";
+import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
+import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 
 import { CONTRACTS } from "../constants/constants";
 
+// invalid chain id for signer error thrown by chandrastation for eth_getTransactionReceipt method
+// neobase sends back empty data when can't fetch, this breaks the fallback
 const dexvaults = http("https://canto.dexvaults.com");
 const dexvaultsWS = webSocket("wss://canto.dexvaults/ws");
 const plexnode = http("https://mainnode.plexnode.org:8545");
 const nodestake = http("https://jsonrpc.canto.nodestake.top");
 const slingshot = http("https://canto.slingshot.finance");
-// invalid chain id for signer error thrown by chandrastation for eth_getTransactionReceipt method
 // const chandrastation = http("https://canto.evm.chandrastation.com/");
-// neobase sends back empty data when can't fetch, this breaks the fallback
 // const neobase = http("https://canto.neobase.one");
 
+// used in store for reading blockchain
 const client = createPublicClient({
   chain: canto,
   transport: fallback(
@@ -54,13 +36,44 @@ const client = createPublicClient({
   ),
 });
 
+// rainbow kit set up
+const { chains, publicClient } = configureChains(
+  [canto],
+  [
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://canto.dexvaults.com",
+        webSocket: "wss://canto.dexvaults/ws",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://mainnode.plexnode.org:8545",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://jsonrpc.canto.nodestake.top",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://canto.slingshot.finance",
+      }),
+    }),
+  ]
+);
+const { connectors } = getDefaultWallets({
+  appName: "Velocimeter DEX",
+  projectId: "aa9bd3a3710b5c6ac981c2d222a90d49",
+  chains,
+});
+
+// config for wagmi provider
 export const config = createConfig({
   autoConnect: true,
-  publicClient: createPublicClient({
-    chain: canto,
-    transport: dexvaults,
-  }),
-  connectors: [injectedConnector, walletConnectConnector],
+  publicClient,
+  connectors,
 });
 
 /**
@@ -105,4 +118,5 @@ export async function multicallChunks<
   return promises.flat();
 }
 
+export { chains };
 export default client;
