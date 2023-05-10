@@ -103,7 +103,6 @@ interface Pair {
     weight?: string;
     weightPercent?: string;
     rewardsEarned?: string;
-    bribesEarned?: Bribe[];
     x_bribesEarned?: Bribe[];
     xx_bribesEarned?: Bribe[];
     bribesEarnedValue?: BribeEarned[];
