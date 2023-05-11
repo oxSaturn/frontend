@@ -3020,13 +3020,6 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      const balanceOf = await viemClient.readContract({
-        abi: CONTRACTS.PAIR_ABI,
-        address: pair.address,
-        functionName: "balanceOf",
-        args: [account],
-      });
-
       await this.writeAddLiquidity(
         walletClient,
         depositTXID,
@@ -3039,6 +3032,13 @@ class Store {
         sendAmount1Min,
         deadline
       );
+
+      const balanceOf = await viemClient.readContract({
+        abi: CONTRACTS.PAIR_ABI,
+        address: pair.address,
+        functionName: "balanceOf",
+        args: [account],
+      });
 
       await this.writeDeposit(
         walletClient,
@@ -3477,13 +3477,6 @@ class Store {
         .times(10 ** token1.decimals)
         .toFixed(0);
 
-      const balanceOf = await viemClient.readContract({
-        abi: CONTRACTS.PAIR_ABI,
-        address: pair.address,
-        functionName: "balanceOf",
-        args: [account],
-      });
-
       const withdrawFunction = async () => {
         const { request } = await viemClient.simulateContract({
           account,
@@ -3497,6 +3490,13 @@ class Store {
       };
 
       await this._writeContractWrapper(unstakeTXID, withdrawFunction);
+
+      const balanceOf = await viemClient.readContract({
+        abi: CONTRACTS.PAIR_ABI,
+        address: pair.address,
+        functionName: "balanceOf",
+        args: [account],
+      });
 
       await this.writeRemoveLiquidty(
         walletClient,
