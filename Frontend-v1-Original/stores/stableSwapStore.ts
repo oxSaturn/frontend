@@ -6327,7 +6327,7 @@ class Store {
       this.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
 
       const txHash = await write();
-      await this.sleep(200); // wait for tx to be added to mempool because sometimes encounter error "tx with hash could not be found".
+
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash,
       });
