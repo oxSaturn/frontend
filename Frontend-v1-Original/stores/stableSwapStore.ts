@@ -5141,7 +5141,6 @@ class Store {
       const filteredPairs2 = structuredClone(gauges);
 
       let veDistReward: VeDistReward[] = [];
-      let filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "Bribe"
       let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
       let xx_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
 
