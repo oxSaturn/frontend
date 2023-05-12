@@ -36,6 +36,7 @@ import {
 
 import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
+import tokens from "../../tokens.json";
 
 const headCells = [
   { id: "", numeric: false, disablePadding: true, label: "" },
@@ -614,6 +615,33 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   );
 }
 
+function TokenIcon({
+  token,
+  hasLink = false,
+  classNames = "",
+}: {
+  token: Pair["token0"];
+  hasLink?: boolean;
+  classNames?: string;
+}) {
+  return (
+    <img
+      className={`absolute rounded-[30px] border-[3px] border-[rgb(25,33,56)] ${
+        hasLink
+          ? "transition-all duration-200 hover:scale-125 hover:border-cantoGreen/50"
+          : ""
+      } ${classNames}}`}
+      src={token && token.logoURI ? token.logoURI : ``}
+      width="37"
+      height="37"
+      alt=""
+      onError={(e) => {
+        (e.target as HTMLImageElement).onerror = null;
+        (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+      }}
+    />
+  );
+}
 function Row(props: {
   row: Pair;
   index: number;
@@ -624,6 +652,10 @@ function Row(props: {
   const [open, setOpen] = useState(false);
   const isOdd = index % 2 !== 0;
   const rowClassNames = `${isOdd ? "bg-gray-900" : ""}`;
+  const token0Info =
+    tokens[row.token0.address.toLowerCase() as keyof typeof tokens];
+  const token1Info =
+    tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
   return (
     <React.Fragment key={labelId}>
       <TableRow className={rowClassNames}>
@@ -640,38 +672,38 @@ function Row(props: {
         <TableCell>
           <div className="flex items-center space-x-1">
             <div className="relative flex h-9 w-[70px]">
-              <img
-                className="absolute top-0 left-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-                src={
-                  row && row.token0 && row.token0.logoURI
-                    ? row.token0.logoURI
-                    : ``
-                }
-                width="37"
-                height="37"
-                alt=""
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-              <img
-                className="absolute top-0 left-6 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-                src={
-                  row && row.token1 && row.token1.logoURI
-                    ? row.token1.logoURI
-                    : ``
-                }
-                width="37"
-                height="37"
-                alt=""
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
+              {token0Info?.links.homepage?.[0] ? (
+                <a
+                  href={token0Info?.links.homepage?.[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={token0Info?.name}
+                >
+                  <TokenIcon
+                    token={row.token0}
+                    classNames="top-0 left-0"
+                    hasLink
+                  />
+                </a>
+              ) : (
+                <TokenIcon token={row.token0} classNames="top-0 left-0" />
+              )}
+              {token1Info?.links.homepage?.[0] ? (
+                <a
+                  href={token1Info?.links.homepage?.[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={token1Info?.name}
+                >
+                  <TokenIcon
+                    token={row.token1}
+                    classNames="top-0 left-6 z-[1]"
+                    hasLink
+                  />
+                </a>
+              ) : (
+                <TokenIcon token={row.token1} classNames="top-0 left-6 z-[1]" />
+              )}
             </div>
             <div>
               <Typography
@@ -1047,10 +1079,7 @@ function Row(props: {
         <TableCell className="py-0"></TableCell>
         <TableCell className="py-0" colSpan={9}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <div className="py-3">
-              {row.token0.symbol} / {row.token1.symbol}
-              {/* todo we can insert something useful here, like twitter, site, etc. */}
-            </div>
+            {/* we could add something here when needed */}
           </Collapse>
         </TableCell>
       </TableRow>
