@@ -1,7 +1,7 @@
 /**
  * Fetches all LP tokens from Canto and fetches their info from Coingecko
  * and writes to `lp-tokens.json`
- * @example node scripts/fetch-lp-tokens.mjs
+ * @example node scripts/fetch-tokens.mjs
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -152,6 +152,6 @@ while (tokens.length) {
 }
 // write to file
 fs.writeFileSync(
-  path.join(process.cwd(), "lp-tokens.json"),
+  path.join(process.cwd(), "tokens.json"),
   JSON.stringify(json, null, 2)
 );
