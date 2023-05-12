@@ -2731,7 +2731,6 @@ class Store {
       );
 
       this._getPairInfo(account);
-      this._getGovTokenInfo(account);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
@@ -3051,7 +3050,6 @@ class Store {
       );
 
       this._getPairInfo(account);
-      this._getGovTokenInfo(account);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.ADD_LIQUIDITY_AND_STAKED);
@@ -3378,7 +3376,6 @@ class Store {
       );
 
       this._getPairInfo(account);
-      this._getGovTokenInfo(account);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
@@ -3520,7 +3517,6 @@ class Store {
       );
 
       this._getPairInfo(account);
-      this._getGovTokenInfo(account);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
@@ -5069,6 +5065,9 @@ class Store {
       };
       await this._writeContractWrapper(bribeTXID, writeCreateBribe);
 
+      this._getGovTokenInfo(account);
+      this._getSpecificAssetInfo(account, asset.address);
+
       await this.updatePairsCall(account);
       this.emitter.emit(ACTIONS.BRIBE_CREATED);
     } catch (ex) {
@@ -5476,6 +5475,7 @@ class Store {
         content: { tokenID },
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+      this.getBalances();
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5666,6 +5666,7 @@ class Store {
         content: { tokenID },
       });
       this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
+      this.getBalances();
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5724,6 +5725,7 @@ class Store {
         content: { tokenID },
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+      this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
