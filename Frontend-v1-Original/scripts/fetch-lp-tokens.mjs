@@ -1,3 +1,10 @@
+/**
+ * Fetches all LP tokens from Canto and fetches their info from Coingecko
+ * and writes to `lp-tokens.json`
+ * @example node scripts/fetch-lp-tokens.mjs
+ */
+import fs from "node:fs";
+import path from "node:path";
 import { createPublicClient, http } from "viem";
 import { canto } from "viem/chains";
 const client = createPublicClient({
@@ -104,8 +111,47 @@ let tokens = await client.multicall({
     ])
     .flat(),
 });
-tokens = new Set(tokens.map((token) => token.result));
+tokens = [...new Set(tokens.map((token) => token.result))];
 // now we have a list of token addresses
-// TODO fetch data from coingecko api so users can visit the token page on coingecko?
 // Public API has a rate limit of 10-30 calls/minute, and doesn't come with API key
 // https://api.coingecko.com/api/v3/coins/canto/contract/0x7264610A66EcA758A8ce95CF11Ff5741E1fd0455
+// e.g., {"status":{"error_code":429,"error_message":"You've exceeded the Rate Limit. Please visit https://www.coingecko.com/en/api/pricing to subscribe to our API plans for higher rate limits."}}
+async function fetchTokenInfo(token) {
+  // we'll fetch api from coingecko
+  const json = await fetch(
+    `https://api.coingecko.com/api/v3/coins/canto/contract/${token}`
+  ).then((res) => res.json());
+  if (json.status?.error_code === 429) {
+    // we've exceeded the rate limit, so we'll wait for 61 seconds, note that it's not that acurate in my test
+    console.log("Rate limit exceeded, waiting for 61 seconds...");
+    return new Promise((resolve) =>
+      setTimeout(() => resolve(fetchTokenInfo(token)), 61000)
+    );
+  }
+  if (json.error === "coin not found") {
+    // this token is not on coingecko
+    return null;
+  }
+  return json;
+}
+let json = {};
+while (tokens.length) {
+  const token = tokens.pop();
+  const info = await fetchTokenInfo(token);
+  if (info) {
+    const { id, links, name, symbol } = info;
+    json[token] = {
+      id,
+      links,
+      name,
+      symbol,
+    };
+  } else {
+    json[token] = null;
+  }
+}
+// write to file
+fs.writeFileSync(
+  path.join(process.cwd(), "lp-tokens.json"),
+  JSON.stringify(json, null, 2)
+);
