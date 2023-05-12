@@ -2731,6 +2731,9 @@ class Store {
       );
 
       this._getPairInfo(account);
+      this._getGovTokenInfo(account);
+      this._getSpecificAssetInfo(account, token0.address);
+      this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
     } catch (ex) {
       console.error(ex);
@@ -3048,6 +3051,9 @@ class Store {
       );
 
       this._getPairInfo(account);
+      this._getGovTokenInfo(account);
+      this._getSpecificAssetInfo(account, token0.address);
+      this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.ADD_LIQUIDITY_AND_STAKED);
     } catch (ex) {
       console.error(ex);
@@ -3372,6 +3378,9 @@ class Store {
       );
 
       this._getPairInfo(account);
+      this._getGovTokenInfo(account);
+      this._getSpecificAssetInfo(account, token0.address);
+      this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
     } catch (ex) {
       console.error(ex);
@@ -3511,6 +3520,9 @@ class Store {
       );
 
       this._getPairInfo(account);
+      this._getGovTokenInfo(account);
+      this._getSpecificAssetInfo(account, token0.address);
+      this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
     } catch (ex) {
       console.error(ex);
@@ -3870,7 +3882,7 @@ class Store {
       }
 
       this._getSpecificAssetInfo(account, fromAsset.address);
-      this._getSpecificAssetInfo(account, toAsset.address); // TODO use this instead of get balances dispatch?
+      this._getSpecificAssetInfo(account, toAsset.address);
       this._getPairInfo(account);
 
       this.emitter.emit(ACTIONS.SWAP_RETURNED);
