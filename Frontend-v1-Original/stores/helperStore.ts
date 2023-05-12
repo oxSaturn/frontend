@@ -253,8 +253,7 @@ class Helper {
     return parseFloat(price);
   };
 
-  resolveUnstoppableDomain = async () => {
-    const address = stores.accountStore.getStore("address");
+  resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
     if (!address) return undefined;
     const res = await fetch("/api/u-domains", {
       method: "POST",

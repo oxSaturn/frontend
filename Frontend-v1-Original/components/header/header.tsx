@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { Typography, Badge, IconButton } from "@mui/material";
 import { List } from "@mui/icons-material";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 import Navigation from "../navigation/navigation";
 import TransactionQueue from "../transactionQueue/transactionQueue";
@@ -12,6 +11,7 @@ import { ACTIONS } from "../../stores/constants/constants";
 import stores from "../../stores";
 
 import Info from "./info";
+import { ConnectButton } from "./ConnectButton";
 
 function SiteLogo(props: { className?: string }) {
   const { className } = props;
@@ -31,23 +31,7 @@ function Header() {
 
   const [transactionQueueLength, setTransactionQueueLength] = useState(0);
 
-  const [domain, setDomain] = useState<string>();
-
   const scrollPosition = useScrollPosition();
-
-  useEffect(() => {
-    const ssUpdated = () => {
-      const domain = stores.stableSwapStore.getStore("u_domain");
-      setDomain(domain);
-    };
-
-    ssUpdated();
-
-    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
-    };
-  }, []);
 
   const setQueueLength = (length: number) => {
     setTransactionQueueLength(length);
@@ -102,7 +86,7 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            <ConnectButton showBalance={false} accountStatus="address" />
+            <ConnectButton />
           </div>
           <TransactionQueue setQueueLength={setQueueLength} />
         </div>
