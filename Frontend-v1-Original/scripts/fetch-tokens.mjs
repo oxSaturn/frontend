@@ -136,7 +136,8 @@ async function fetchTokenInfo(token) {
 }
 let json = {};
 while (tokens.length) {
-  const token = tokens.pop();
+  let token = tokens.pop();
+  token = token.toLowerCase();
   const info = await fetchTokenInfo(token);
   if (info) {
     const { id, links, name, symbol } = info;
