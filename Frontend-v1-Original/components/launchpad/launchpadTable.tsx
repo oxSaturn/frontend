@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useAccount } from "wagmi";
 import {
   Paper,
   Table,
@@ -18,7 +19,6 @@ import {
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 
-import { useAccount } from "../../hooks/useAccount";
 import { formatCurrency } from "../../utils/utils";
 
 import { useLaunchpadProjects } from "./queries";
@@ -139,8 +139,8 @@ const EnhancedTableToolbar = (props: LaunchpadToolbarProps) => {
 };
 
 export default function EnhancedTable() {
-  const account = useAccount();
-  const { data: projects, isFetching } = useLaunchpadProjects(account?.address);
+  const { address } = useAccount();
+  const { data: projects, isFetching } = useLaunchpadProjects(address);
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState<OrderBy>("project");

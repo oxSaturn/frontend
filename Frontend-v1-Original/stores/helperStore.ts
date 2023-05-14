@@ -1,14 +1,14 @@
-import viemClient from "./connectors/viem";
 import { getContract, formatUnits, parseUnits } from "viem";
 
-import stores from ".";
-import { CONTRACTS, NATIVE_TOKEN } from "./constants/constants";
-
+import viemClient from "./connectors/viem";
+import { CONTRACTS } from "./constants/constants";
 import {
   DefiLlamaTokenPrice,
   DexScrennerPair,
   TokenForPrice,
 } from "./types/types";
+
+import stores from ".";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;
@@ -253,8 +253,7 @@ class Helper {
     return parseFloat(price);
   };
 
-  resolveUnstoppableDomain = async () => {
-    const address = stores.accountStore.getStore("account")?.address;
+  resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
     if (!address) return undefined;
     const res = await fetch("/api/u-domains", {
       method: "POST",

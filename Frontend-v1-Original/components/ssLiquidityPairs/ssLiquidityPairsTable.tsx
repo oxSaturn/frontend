@@ -262,7 +262,7 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
             color="secondary"
             startIcon={<AddCircleOutline />}
             size="large"
-            className="w-full bg-[#272826] font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
+            className="w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
             onClick={onCreate}
           >
             <Typography className="text-base font-bold">
@@ -291,7 +291,7 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
           <Tooltip placement="top" title="Filter list">
             <IconButton
               onClick={handleClick}
-              className="h-[94.5%] w-full rounded-lg border border-[rgba(126,153,176,0.3)] bg-[#272826] text-cantoGreen"
+              className="h-[94.5%] w-full rounded-lg border border-[rgba(126,153,176,0.3)] bg-primaryBg text-cantoGreen"
               aria-label="filter list"
             >
               <FilterList />
@@ -309,7 +309,7 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
-            <div className="mt-4 min-w-[300px] rounded-lg border border-[rgba(126,153,176,0.2)] bg-[#212b48] p-5 shadow-[0_10px_20px_0_rgba(0,0,0,0.2)]">
+            <div className="mt-4 min-w-[300px] rounded-lg border border-[rgba(126,153,176,0.2)] bg-deepBlue p-5 shadow-[0_10px_20px_0_rgba(0,0,0,0.2)]">
               <Typography
                 className="mb-2 border-b border-b-[rgba(126,153,176,0.2)] pb-5"
                 variant="h5"

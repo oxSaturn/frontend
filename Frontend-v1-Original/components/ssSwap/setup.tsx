@@ -577,7 +577,7 @@ function Setup() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {isWrapUnwrap ? "1.00" : "0.00"}
               </Typography>
-              <Typography className="text-xs text-[#7e99b0]">
+              <Typography className="text-xs text-secondaryGray">
                 {toAssetValue && fromAssetValue
                   ? `${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`
                   : "-"}
@@ -587,7 +587,7 @@ function Setup() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {isWrapUnwrap ? "1.00" : "0.00"}
               </Typography>
-              <Typography className="text-xs text-[#7e99b0]">
+              <Typography className="text-xs text-secondaryGray">
                 {toAssetValue && fromAssetValue
                   ? `${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`
                   : "-"}
@@ -618,7 +618,7 @@ function Setup() {
                 BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
               )}
             </Typography>
-            <Typography className="text-xs text-[#7e99b0]">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondaryGray">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
@@ -626,7 +626,7 @@ function Setup() {
                 BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
               )}
             </Typography>
-            <Typography className="text-xs text-[#7e99b0]">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondaryGray">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
         {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
@@ -667,7 +667,7 @@ function Setup() {
     return (
       <div className="mb-1">
         <label htmlFor="slippage">Slippage</label>
-        <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-[#272826]">
+        <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-primaryBg">
           <TextField
             id="slippage"
             placeholder="0.00"
@@ -709,7 +709,7 @@ function Setup() {
             }
           }}
         >
-          <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
+          <Typography className="text-xs font-thin text-secondaryGray" noWrap>
             Balance:
             {assetValue && assetValue.balance
               ? " " + formatCurrency(assetValue.balance)
@@ -721,7 +721,7 @@ function Setup() {
         amountValueUsd &&
         amountValueUsd !== "" ? (
           <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-            <Typography className="text-xs font-thin text-[#7e99b0]" noWrap>
+            <Typography className="text-xs font-thin text-secondaryGray" noWrap>
               {"~$" +
                 formatCurrency(amountValueUsd) +
                 (type === "To" && diffUsd && diffUsd !== ""
@@ -731,7 +731,7 @@ function Setup() {
           </div>
         ) : null}
         <div
-          className={`flex w-full flex-wrap items-center rounded-[10px] bg-[#272826] ${
+          className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
             (amountError || assetError) && "border border-red-500"
           }`}
         >
@@ -775,7 +775,7 @@ function Setup() {
           className={`${
             !settingsOpen
               ? "hidden"
-              : "absolute z-20 flex h-full w-full flex-col gap-4 bg-[#040105] p-4"
+              : "absolute z-20 flex h-full w-full flex-col gap-4 bg-deepPurple p-4"
           }`}
         >
           <div
@@ -839,7 +839,7 @@ function Setup() {
             variant="contained"
             size="large"
             color="primary"
-            className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+            className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
             disabled={loading || quoteLoading || (!quote && !isWrapUnwrap)}
             onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
           >
@@ -852,7 +852,7 @@ function Setup() {
           </Button>
         </div>
         <div className="mt-2 text-end text-xs">
-          <span className="align-middle text-[#7e99b0]">Powered by </span>
+          <span className="align-middle text-secondaryGray">Powered by </span>
           <a
             href="https://firebird.finance/"
             target="_blank"

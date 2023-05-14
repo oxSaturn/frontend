@@ -54,7 +54,7 @@ function Navigation() {
     return (
       <Link href={"/" + link}>
         <a
-          className={`relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-[#7e99b0] no-underline outline-0 ${
+          className={`text-secondaryGray relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 ${
             active === link
               ? "border-cantoGreen text-white"
               : "border-transparent"
@@ -71,7 +71,7 @@ function Navigation() {
   const renderDocsTab = () => {
     return (
       <button
-        className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize text-[#7e99b0] no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        className="text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         onClick={() => window.open("https://docs.velocimeter.xyz/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Docs</div>

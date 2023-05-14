@@ -80,7 +80,7 @@ export function MergeNFT() {
   return (
     <div className={classes.vestContainer}>
       <Paper elevation={0} className={classes.container2}>
-        <div className="relative flex flex-row items-center justify-center rounded-lg border border-[#212B48] py-5">
+        <div className="relative flex flex-row items-center justify-center rounded-lg border border-deepBlue py-5">
           <Link href={`/vest`} title="back to vest">
             <IconButton className="absolute left-[5px]">
               <ArrowBack className={classes.backIcon} />
@@ -124,7 +124,7 @@ export function MergeNFT() {
             color="primary"
             fullWidth
             size="large"
-            className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+            className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
             onClick={() => onMergeNFT(id as string, selectedNFTId)}
           >
             Merge
