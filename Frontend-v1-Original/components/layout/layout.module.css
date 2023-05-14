@@ -47,6 +47,8 @@
   flex: 1;
   min-height: 100vh;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 @media screen and (max-width: 1200px) {

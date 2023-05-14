@@ -9,7 +9,7 @@ function Configure() {
         height="100%"
         alt="Velocimeter logo"
       />
-      <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-[#040105]" />
+      <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-deepPurple" />
       <div className="pointer-events-none absolute bottom-4 left-4 -z-10 h-[512px] w-[512px] bg-[#d6d6d6] opacity-50 blur-[256px]" />
       <div className="pointer-events-none absolute top-4 right-4 -z-10 h-[512px] w-[512px] bg-[#00f3cb] opacity-50 blur-[256px]" />
     </div>

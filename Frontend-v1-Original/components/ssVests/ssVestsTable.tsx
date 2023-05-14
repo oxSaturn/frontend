@@ -135,7 +135,7 @@ const EnhancedTableToolbar = () => {
             color="secondary"
             startIcon={<EnhancedEncryptionOutlined />}
             size="large"
-            className="w-full bg-[#272826] font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
+            className="w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
             onClick={onCreate}
           >
             <Typography className="text-base font-bold">Create Lock</Typography>

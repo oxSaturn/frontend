@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { useAccount } from "wagmi";
 import {
   Button,
   CircularProgress,
@@ -13,7 +14,6 @@ import { ArrowBack } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import stores from "../../stores";
-import { useAccount } from "../../hooks/useAccount";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS, ZERO_ADDRESS } from "../../stores/constants/constants";
 
@@ -25,14 +25,14 @@ import {
 
 export default function LaunchpadProjectInfo() {
   const router = useRouter();
-  const account = useAccount();
+  const { address: userAddress } = useAccount();
   const { address, refCode } = router.query;
 
   const { isFetching: isFetchingProjectData, data: projectData } =
     useLaunchpadProject(address);
   const { data: claimableData, isFetching: isFetchingClaimable } =
-    useUserClaimableAndClaimableRefEarnings(account?.address, address);
-  const { data: asset } = useNoteAsset(account?.address);
+    useUserClaimableAndClaimableRefEarnings(userAddress, address);
+  const { data: asset } = useNoteAsset(userAddress);
 
   const [refCodeValue, setRefCodeValue] = useState(
     refCode && !Array.isArray(refCode) ? refCode : ""
@@ -49,10 +49,10 @@ export default function LaunchpadProjectInfo() {
   };
 
   const onCopyReferralLink = () => {
-    if (!account?.address) return;
+    if (!userAddress) return;
     setCopied(true);
     const url = window.location.href;
-    navigator.clipboard.writeText(url + `?refCode=${account?.address}`);
+    navigator.clipboard.writeText(url + `?refCode=${userAddress}`);
     setTimeout(() => {
       setCopied(false);
     }, 1000);
@@ -278,7 +278,7 @@ export default function LaunchpadProjectInfo() {
                 variant="contained"
                 size="large"
                 color="primary"
-                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                 disabled={claimLoading}
                 onClick={onClaim}
               >
@@ -293,7 +293,7 @@ export default function LaunchpadProjectInfo() {
                 variant="contained"
                 size="large"
                 color="primary"
-                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                 disabled={claimLoading}
                 onClick={onClaimRefEarnings}
               >
@@ -313,7 +313,7 @@ export default function LaunchpadProjectInfo() {
                   onClick={setMaxAmount}
                 >
                   <Typography
-                    className="text-xs font-thin text-[#7e99b0]"
+                    className="text-xs font-thin text-secondaryGray"
                     noWrap
                   >
                     Balance:
@@ -379,7 +379,7 @@ export default function LaunchpadProjectInfo() {
                 variant="contained"
                 size="large"
                 color="primary"
-                className="bg-[#272826] font-bold text-cantoGreen hover:bg-green-900"
+                className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                 disabled={
                   buyLoading ||
                   !projectData ||
