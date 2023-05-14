@@ -1065,12 +1065,12 @@ function Row(props: {
                   [row.token1, token1Info],
                 ] as const
               ).map(([token, info]) => {
-                return info ? (
+                return (
                   <ListItem disablePadding key={token.address}>
                     <ListItemAvatar className="flex min-w-[70px] justify-end">
                       <Avatar
                         sx={{ width: 34, height: 34 }}
-                        className="mr-[9px] border-2 border-solid border-[rgb(25,33,56)]"
+                        className="mr-[9px] border-2 border-solid border-[rgb(25,33,56)] bg-transparent"
                       >
                         <img
                           loading="lazy"
@@ -1083,7 +1083,7 @@ function Row(props: {
                     <ListItemText
                       primary={
                         <Typography className="text-xs font-extralight">
-                          {info.name}
+                          {token.name}
                         </Typography>
                       }
                       secondary={
@@ -1121,11 +1121,8 @@ function Row(props: {
                       }
                     />
                   </ListItem>
-                ) : null;
+                );
               })}
-              {!token0Info && !token1Info ? (
-                <ListItem>No info available yet</ListItem>
-              ) : null}
             </List>
           </Collapse>
         </TableCell>
