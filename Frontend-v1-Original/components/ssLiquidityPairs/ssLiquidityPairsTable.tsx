@@ -37,6 +37,7 @@ import {
   WarningOutlined,
   KeyboardArrowUp,
   KeyboardArrowDown,
+  OpenInNewOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -44,7 +45,7 @@ import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
 import tokens from "../../tokens.json";
 
 const headCells = [
-  { id: "", numeric: false, disablePadding: true, label: "" },
+  { id: "expand", numeric: false, disablePadding: true, label: "" },
   { id: "pair", numeric: false, disablePadding: false, label: "Pair" },
   {
     id: "balance",
@@ -1068,33 +1069,17 @@ function Row(props: {
               ).map(([token, info]) => {
                 return info ? (
                   <ListItem disablePadding key={token.address}>
-                    <ListItemAvatar className="min-w-[70px] flex justify-end">
+                    <ListItemAvatar className="flex min-w-[70px] justify-end">
                       <Avatar
                         sx={{ width: 34, height: 34 }}
                         className="mr-[9px] border-2 border-solid border-[rgb(25,33,56)]"
                       >
-                        {info?.links?.homepage ? (
-                          <a
-                            href={info?.links?.homepage}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={`Visit ${info?.name} homepage`}
-                          >
-                            <img
-                              loading="lazy"
-                              className="h-[31px] w-[31px]"
-                              src={token?.logoURI ?? "/tokens/unknown-logo.png"}
-                              alt={token?.symbol}
-                            />
-                          </a>
-                        ) : (
-                          <img
-                            loading="lazy"
-                            className="h-[31px] w-[31px]"
-                            src={token?.logoURI ?? "/tokens/unknown-logo.png"}
-                            alt={token?.symbol}
-                          />
-                        )}
+                        <img
+                          loading="lazy"
+                          className="h-[31px] w-[31px]"
+                          src={token?.logoURI ?? "/tokens/unknown-logo.png"}
+                          alt={token?.symbol}
+                        />
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
@@ -1104,14 +1089,32 @@ function Row(props: {
                         </Typography>
                       }
                       secondary={
-                        <a
-                          href={`https://tuber.build/address/${token.address}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-extralight"
-                        >
-                          Contract Address
-                        </a>
+                        <div className="flex items-center">
+                          <a
+                            href={`https://tuber.build/address/${token.address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                          >
+                            Contract Address{" "}
+                            <OpenInNewOutlined fontSize="inherit" />
+                          </a>
+                          {info?.links?.homepage ? (
+                            <>
+                              ・
+                              <a
+                                href={info?.links?.homepage}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                                title={`Visit ${info?.name} homepage`}
+                              >
+                                Home Page{" "}
+                                <OpenInNewOutlined fontSize="inherit" />
+                              </a>
+                            </>
+                          ) : null}
+                        </div>
                       }
                     />
                   </ListItem>
