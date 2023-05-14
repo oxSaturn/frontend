@@ -1,6 +1,6 @@
 /**
- * Fetches all LP tokens from Canto and fetches their info from Coingecko
- * and writes to `lp-tokens.json`
+ * Fetches all LP tokens from Canto and fetches their underlying tokens' info from Coingecko
+ * and writes to `tokens.json`
  * @example node scripts/fetch-tokens.mjs
  */
 import fs from "node:fs";
