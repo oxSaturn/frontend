@@ -1500,8 +1500,6 @@ class Store {
     const pairs = this.getStore("pairs");
     const set = new Set<string>();
     set.add(NATIVE_TOKEN.address.toLowerCase());
-    // todo: api missing token or pool, remove in prod
-    set.add("0xD4ce5e7d9CCfE26c379d8D3aFe787bBB140a9388".toLowerCase());
     pairs.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
@@ -3891,7 +3889,6 @@ class Store {
     type: string;
     content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
   }) => {
-    console.log("try wrap");
     try {
       const walletClient = stores.accountStore.getStore("walletClient");
       if (!walletClient) {
@@ -6108,13 +6105,6 @@ class Store {
       abi: W_NATIVE_ABI,
     } as const;
     const writeWrap = async () => {
-      console.log({
-        ...wNativeTokenContract,
-        account,
-        functionName: "deposit",
-        args: undefined,
-        value: BigInt(sendFromAmount),
-      });
       const { request } = await viemClient.simulateContract({
         ...wNativeTokenContract,
         account,
