@@ -65,7 +65,7 @@ const { chains, publicClient } = configureChains(
 );
 const { connectors } = getDefaultWallets({
   appName: "Velocimeter DEX",
-  projectId: "aa9bd3a3710b5c6ac981c2d222a90d49",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNET_PROJECT_ID!,
   chains,
 });
 
