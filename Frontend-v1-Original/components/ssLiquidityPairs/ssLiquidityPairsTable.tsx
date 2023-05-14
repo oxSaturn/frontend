@@ -1058,8 +1058,6 @@ function Row(props: {
         <TableCell className="py-0"></TableCell>
         <TableCell className="py-0" colSpan={9}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            {/* we could add something here when needed */}
-
             <List disablePadding={true} dense className="pb-4">
               {(
                 [
@@ -1089,32 +1087,37 @@ function Row(props: {
                         </Typography>
                       }
                       secondary={
-                        <div className="flex items-center">
-                          <a
-                            href={`https://tuber.build/address/${token.address}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
-                          >
-                            Contract Address{" "}
-                            <OpenInNewOutlined fontSize="inherit" />
-                          </a>
-                          {info?.links?.homepage ? (
-                            <>
-                              ・
-                              <a
-                                href={info?.links?.homepage}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
-                                title={`Visit ${info?.name} homepage`}
-                              >
-                                Home Page{" "}
-                                <OpenInNewOutlined fontSize="inherit" />
-                              </a>
-                            </>
-                          ) : null}
-                        </div>
+                        <>
+                          <div className="flex items-center">
+                            <a
+                              href={`https://tuber.build/address/${token.address}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                            >
+                              Contract Address{" "}
+                              <OpenInNewOutlined fontSize="inherit" />
+                            </a>
+                            {info?.links?.homepage ? (
+                              <>
+                                ・
+                                <a
+                                  href={info?.links?.homepage}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                                  title={`Visit ${info?.name} homepage`}
+                                >
+                                  Home Page{" "}
+                                  <OpenInNewOutlined fontSize="inherit" />
+                                </a>
+                              </>
+                            ) : null}
+                          </div>
+                          <div className="max-w-[400px] text-xs">
+                            {/* short description here */}
+                          </div>
+                        </>
                       }
                     />
                   </ListItem>
