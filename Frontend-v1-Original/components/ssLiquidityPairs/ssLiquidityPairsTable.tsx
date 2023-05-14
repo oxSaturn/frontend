@@ -22,6 +22,11 @@ import {
   Grid,
   Switch,
   Collapse,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
@@ -615,33 +620,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   );
 }
 
-function TokenIcon({
-  token,
-  hasLink = false,
-  classNames = "",
-}: {
-  token: Pair["token0"];
-  hasLink?: boolean;
-  classNames?: string;
-}) {
-  return (
-    <img
-      className={`absolute rounded-[30px] border-[3px] border-[rgb(25,33,56)] ${
-        hasLink
-          ? "transition-all duration-200 hover:scale-125 hover:border-cantoGreen/50"
-          : ""
-      } ${classNames}}`}
-      src={token && token.logoURI ? token.logoURI : ``}
-      width="37"
-      height="37"
-      alt=""
-      onError={(e) => {
-        (e.target as HTMLImageElement).onerror = null;
-        (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-      }}
-    />
-  );
-}
 function Row(props: {
   row: Pair;
   index: number;
@@ -670,40 +648,40 @@ function Row(props: {
           </IconButton>
         </TableCell>
         <TableCell>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center">
             <div className="relative flex h-9 w-[70px]">
-              {token0Info?.links.homepage?.[0] ? (
-                <a
-                  href={token0Info?.links.homepage?.[0]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={token0Info?.name}
-                >
-                  <TokenIcon
-                    token={row.token0}
-                    classNames="top-0 left-0"
-                    hasLink
-                  />
-                </a>
-              ) : (
-                <TokenIcon token={row.token0} classNames="top-0 left-0" />
-              )}
-              {token1Info?.links.homepage?.[0] ? (
-                <a
-                  href={token1Info?.links.homepage?.[0]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={token1Info?.name}
-                >
-                  <TokenIcon
-                    token={row.token1}
-                    classNames="top-0 left-6 z-[1]"
-                    hasLink
-                  />
-                </a>
-              ) : (
-                <TokenIcon token={row.token1} classNames="top-0 left-6 z-[1]" />
-              )}
+              <img
+                className="absolute top-0 left-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+                src={
+                  row && row.token0 && row.token0.logoURI
+                    ? row.token0.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+              <img
+                className="absolute top-0 left-6 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+                src={
+                  row && row.token1 && row.token1.logoURI
+                    ? row.token1.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
             </div>
             <div>
               <Typography
@@ -1080,6 +1058,69 @@ function Row(props: {
         <TableCell className="py-0" colSpan={9}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             {/* we could add something here when needed */}
+
+            <List disablePadding={true} dense className="pb-4">
+              {(
+                [
+                  [row.token0, token0Info],
+                  [row.token1, token1Info],
+                ] as const
+              ).map(([token, info]) => {
+                return info ? (
+                  <ListItem disablePadding key={token.address}>
+                    <ListItemAvatar className="min-w-[70px] flex justify-end">
+                      <Avatar
+                        sx={{ width: 34, height: 34 }}
+                        className="mr-[9px] border-2 border-solid border-cantoGreen/50"
+                      >
+                        {info?.links?.homepage ? (
+                          <a
+                            href={info?.links?.homepage}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`Visit ${info?.name} homepage`}
+                          >
+                            <img
+                              loading="lazy"
+                              className="h-[31px] w-[31px]"
+                              src={token?.logoURI ?? "/tokens/unknown-logo.png"}
+                              alt={token?.symbol}
+                            />
+                          </a>
+                        ) : (
+                          <img
+                            loading="lazy"
+                            className="h-[31px] w-[31px]"
+                            src={token?.logoURI ?? "/tokens/unknown-logo.png"}
+                            alt={token?.symbol}
+                          />
+                        )}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography className="text-xs font-extralight">
+                          {info.name}
+                        </Typography>
+                      }
+                      secondary={
+                        <a
+                          href={`https://tuber.build/address/${token.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-extralight"
+                        >
+                          Contract Address
+                        </a>
+                      }
+                    />
+                  </ListItem>
+                ) : null;
+              })}
+              {!token0Info && !token1Info ? (
+                <ListItem>No info available yet</ListItem>
+              ) : null}
+            </List>
           </Collapse>
         </TableCell>
       </TableRow>

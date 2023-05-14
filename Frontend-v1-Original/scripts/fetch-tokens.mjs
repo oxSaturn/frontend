@@ -143,7 +143,9 @@ while (tokens.length) {
     const { id, links, name, symbol } = info;
     json[token] = {
       id,
-      links,
+      links: {
+        homepage: links.homepage?.[0],
+      },
       name,
       symbol,
     };
