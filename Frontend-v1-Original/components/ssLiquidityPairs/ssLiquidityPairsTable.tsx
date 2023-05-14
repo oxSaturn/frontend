@@ -1071,7 +1071,7 @@ function Row(props: {
                     <ListItemAvatar className="min-w-[70px] flex justify-end">
                       <Avatar
                         sx={{ width: 34, height: 34 }}
-                        className="mr-[9px] border-2 border-solid border-cantoGreen/50"
+                        className="mr-[9px] border-2 border-solid border-[rgb(25,33,56)]"
                       >
                         {info?.links?.homepage ? (
                           <a
