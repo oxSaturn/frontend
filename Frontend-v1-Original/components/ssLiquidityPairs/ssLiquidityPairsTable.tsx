@@ -690,7 +690,14 @@ function Row(props: {
                 className="text-xs font-extralight"
                 noWrap
               >
-                {row?.symbol}
+                <a
+                  href={`https://dexscreener.com/canto/${row.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="hover:underline"
+                >
+                  {row?.symbol}
+                </a>
               </Typography>
               <Typography
                 variant="h2"
@@ -1092,7 +1099,7 @@ function Row(props: {
                             <a
                               href={`https://tuber.build/address/${token.address}`}
                               target="_blank"
-                              rel="noopener noreferrer"
+                              rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
                             >
                               Contract Address{" "}
@@ -1104,7 +1111,7 @@ function Row(props: {
                                 <a
                                   href={info?.links?.homepage}
                                   target="_blank"
-                                  rel="noopener noreferrer"
+                                  rel="noopener noreferrer nofollow"
                                   className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
                                   title={`Visit ${info?.name} homepage`}
                                 >
