@@ -586,18 +586,11 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {sortedPairs.map((row, index) => {
+              {sortedPairs.map((row) => {
                 if (!row) {
                   return null;
                 }
-                return (
-                  <Row
-                    key={row.address}
-                    row={row}
-                    index={index}
-                    onView={onView}
-                  />
-                );
+                return <Row key={row.address} row={row} onView={onView} />;
               })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 61 * emptyRows }}>
@@ -621,22 +614,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   );
 }
 
-function Row(props: {
-  row: Pair;
-  index: number;
-  onView: (_row: Pair) => void;
-}) {
-  const { row, index, onView } = props;
+function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
+  const { row, onView } = props;
   const [open, setOpen] = useState(false);
-  const isOdd = index % 2 !== 0;
-  const rowClassNames = `${isOdd ? "bg-gray-900" : ""}`;
   const token0Info =
     tokens[row.token0.address.toLowerCase() as keyof typeof tokens];
   const token1Info =
     tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
   return (
     <>
-      <TableRow className={rowClassNames}>
+      <TableRow>
         <TableCell align="right" size="small">
           <IconButton
             aria-label="expand row"
@@ -1060,7 +1047,7 @@ function Row(props: {
           </Button>
         </TableCell>
       </TableRow>
-      <TableRow className={rowClassNames}>
+      <TableRow>
         <TableCell className="py-0"></TableCell>
         <TableCell className="py-0" colSpan={9}>
           <Collapse in={open} timeout="auto" unmountOnExit>
