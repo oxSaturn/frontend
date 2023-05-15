@@ -55,8 +55,6 @@ import {
   TransactionStatus,
 } from "./types/types";
 
-import { TransactionBundle } from "./interfaces/transaction-bundle.interface";
-
 import stores from ".";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
@@ -3921,7 +3919,7 @@ class Store {
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       const wrapUnwrapTXID = this.getTXUUID();
-      const tx: TransactionBundle = {
+      const tx: ITransaction = {
         title: `${action} ${fromSymbol} for ${toSymbol}`,
         type: action,
         verb: `${action} Successful`,
@@ -3931,7 +3929,7 @@ class Store {
             description: `${action} ${formatCurrency(
               fromAmount
             )} ${fromSymbol} for ${toSymbol}`,
-            status: "WAITING",
+            status: TransactionStatus.WAITING,
           },
         ],
       };

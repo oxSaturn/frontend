@@ -422,5 +422,13 @@
     "logoURI": "https://usd.zone/static/media/USDpluslogoalt.5a06a125697060034e8b.webp",
     "name": "Ultra Sound Dollar",
     "symbol": "USD+"
+  },
+  {
+    "address": "0xD4ce5e7d9CCfE26c379d8D3aFe787bBB140a9388",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://www.ponzu.lol/cantoe_icon.png",
+    "name": "Canto Earn",
+    "symbol": "CANTOE"
   }
 ]
