@@ -424,6 +424,30 @@
     "symbol": "USD+"
   },
   {
+    "address": "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.scanto.io/V1.png",
+    "name": "Liquid Staked Canto",
+    "symbol": "sCANTO"
+  },
+  {
+    "address": "0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/05/Sheet_WIP.png",
+    "name": "sCANTO BLOTR",
+    "symbol": "BLOTR"
+  },
+  {
+    "address": "0x4ca88bA558148f5e719A57cEC19fdAd55094813B",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cdn.discordapp.com/attachments/1107657243480031324/1107657816749121657/image.png",
+    "name": "CantoPulse",
+    "symbol": "CPLS"
+  },
+  {
     "address": "0xD4ce5e7d9CCfE26c379d8D3aFe787bBB140a9388",
     "chainId": 7700,
     "decimals": 18,
