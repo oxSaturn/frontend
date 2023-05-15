@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prebuild": "node scripts/fetch-tokens.mjs",
     "export": "next export",
     "build2": "next build && next export",
     "start": "next start",
