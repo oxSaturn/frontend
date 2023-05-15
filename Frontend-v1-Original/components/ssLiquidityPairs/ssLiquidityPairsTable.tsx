@@ -1105,11 +1105,11 @@ function Row(props: {
                               Contract Address{" "}
                               <OpenInNewOutlined fontSize="inherit" />
                             </a>
-                            {info?.links?.homepage ? (
+                            {info?.homepage ? (
                               <>
                                 ・
                                 <a
-                                  href={info?.links?.homepage}
+                                  href={info?.homepage}
                                   target="_blank"
                                   rel="noopener noreferrer nofollow"
                                   className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
