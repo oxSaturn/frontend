@@ -629,13 +629,15 @@ function Row(props: {
   const { row, index, onView } = props;
   const labelId = `enhanced-table-checkbox-${index}`;
   const [open, setOpen] = useState(false);
+  const isOdd = index % 2 !== 0;
+  const rowClassNames = `${isOdd ? "bg-gray-900" : ""}`;
   const token0Info =
     tokens[row.token0.address.toLowerCase() as keyof typeof tokens];
   const token1Info =
     tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
   return (
     <React.Fragment key={labelId}>
-      <TableRow>
+      <TableRow className={rowClassNames}>
         <TableCell align="right" size="small">
           <IconButton
             aria-label="expand row"
@@ -1059,7 +1061,7 @@ function Row(props: {
           </Button>
         </TableCell>
       </TableRow>
-      <TableRow>
+      <TableRow className={rowClassNames}>
         <TableCell className="py-0"></TableCell>
         <TableCell className="py-0" colSpan={9}>
           <Collapse in={open} timeout="auto" unmountOnExit>
