@@ -438,5 +438,13 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/05/Sheet_WIP.png",
     "name": "sCANTO BLOTR",
     "symbol": "BLOTR"
+  },
+  {
+    "address": "0xC31F83dA98a0f52551d2BA8a3262b6B7a4878d05",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cdn.discordapp.com/attachments/1107657243480031324/1107657816749121657/image.png",
+    "name": "CantoPulse",
+    "symbol": "CPLS"
   }
 ]
