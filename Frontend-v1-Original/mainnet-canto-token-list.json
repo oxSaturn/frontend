@@ -422,5 +422,13 @@
     "logoURI": "https://usd.zone/static/media/USDpluslogoalt.5a06a125697060034e8b.webp",
     "name": "Ultra Sound Dollar",
     "symbol": "USD+"
+  },
+  {
+    "address": "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.scanto.io/V1.png",
+    "name": "Liquid Staked Canto",
+    "symbol": "sCANTO"
   }
 ]
