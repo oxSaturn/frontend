@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import viemClient from "../../stores/connectors/viem";
-import { CONTRACTS } from "../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
 
 const autoBribesAddresses = [
   "0x1fc94f96fdd3Fc51E39575161BD6ed920c03fFA0",
@@ -52,7 +52,7 @@ const getAutoBribes = async () => {
 
 export const useAutoBribes = () => {
   return useQuery({
-    queryKey: ["autoBribes"],
+    queryKey: [QUERY_KEYS.AUTO_BRIBES],
     queryFn: getAutoBribes,
   });
 };

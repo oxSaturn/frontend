@@ -4,6 +4,7 @@ import * as contractsTestnet from "./contractsGoerli";
 import * as contractsCanto from "./contractsCanto";
 import * as contracts from "./contracts";
 import * as actions from "./actions";
+import * as queryKeys from "./queryKeys";
 
 let network: "7700" | "42161" | "421613" = "7700";
 
@@ -68,6 +69,7 @@ export const ETHERSCAN_URL = config[network].scan;
 
 export const CONTRACTS = config[network].contracts;
 export const ACTIONS = actions;
+export const QUERY_KEYS = queryKeys;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
