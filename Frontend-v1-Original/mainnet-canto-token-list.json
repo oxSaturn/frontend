@@ -390,5 +390,61 @@
     "logoURI": "https://cdn.discordapp.com/attachments/1099657337981128704/1100026154649403504/ICON_FINAL.png",
     "name": "WelcomeToColin",
     "symbol": "COLIN"
+  },
+  {
+    "address": "0x42F4a26B58bC1f4Fa9652D208a0223947AB742c7",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cdn.discordapp.com/attachments/1094489825404526592/1100874841034338424/underFLOW.png",
+    "name": "Flow Undertow",
+    "symbol": "underFLOW"
+  },
+  {
+    "address": "0xA649325Aa7C5093d12D6F98EB4378deAe68CE23F",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29137/small/original-icon-transparent.png",
+    "name": "Amplifi",
+    "symbol": "AGG"
+  },
+  {
+    "address": "0xf390830DF829cf22c53c8840554B98eafC5dCBc2",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg",
+    "name": "Pepe",
+    "symbol": "PEPE"
+  },
+  {
+    "address": "0xda26D56e2Ef68605e9CB0C9e0e9e5a9867Acb199",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://usd.zone/static/media/USDpluslogoalt.5a06a125697060034e8b.webp",
+    "name": "Ultra Sound Dollar",
+    "symbol": "USD+"
+  },
+  {
+    "address": "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.scanto.io/V1.png",
+    "name": "Liquid Staked Canto",
+    "symbol": "sCANTO"
+  },
+  {
+    "address": "0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/05/Sheet_WIP.png",
+    "name": "sCANTO BLOTR",
+    "symbol": "BLOTR"
+  },
+  {
+    "address": "0x4ca88bA558148f5e719A57cEC19fdAd55094813B",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://cdn.discordapp.com/attachments/1107657243480031324/1107657816749121657/image.png",
+    "name": "CantoPulse",
+    "symbol": "CPLS"
   }
 ]

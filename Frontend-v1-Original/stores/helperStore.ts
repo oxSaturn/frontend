@@ -1,9 +1,7 @@
 import { getContract, formatUnits, parseUnits } from "viem";
 
 import viemClient from "./connectors/viem";
-
-import { CONTRACTS, NATIVE_TOKEN } from "./constants/constants";
-
+import { CONTRACTS } from "./constants/constants";
 import {
   DefiLlamaTokenPrice,
   DexScrennerPair,
@@ -255,8 +253,7 @@ class Helper {
     return parseFloat(price);
   };
 
-  resolveUnstoppableDomain = async () => {
-    const address = stores.accountStore.getStore("account")?.address;
+  resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
     if (!address) return undefined;
     const res = await fetch("/api/u-domains", {
       method: "POST",

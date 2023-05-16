@@ -172,9 +172,9 @@ export default function EnhancedTable({
   }
 
   const onClaim = (reward: Gauge | VeDistReward) => {
-    if (reward.rewardType === "Bribe") {
+    if (reward.rewardType === "XXBribe") {
       stores.dispatcher.dispatch({
-        type: ACTIONS.CLAIM_BRIBE,
+        type: ACTIONS.CLAIM_XX_BRIBE,
         content: { pair: reward, tokenID },
       });
     } else if (reward.rewardType === "XBribe") {
@@ -230,7 +230,7 @@ export default function EnhancedTable({
                     >
                       <TableCell>
                         {isGaugeReward(row) &&
-                          ["Bribe", "XBribe", "Reward"].includes(
+                          ["XBribe", "XXBribe", "Reward"].includes(
                             row.rewardType ?? ""
                           ) && (
                             <div className="flex items-center">
@@ -283,7 +283,10 @@ export default function EnhancedTable({
                                   className="text-xs font-extralight"
                                   color="textSecondary"
                                 >
-                                  {row?.rewardType}
+                                  {row?.rewardType !== "XBribe" &&
+                                  row.rewardType !== "XXBribe"
+                                    ? row?.rewardType
+                                    : "Bribe"}
                                 </Typography>
                               </div>
                             </div>
@@ -347,7 +350,7 @@ export default function EnhancedTable({
                             </div>
                           )}
                           {row &&
-                            row.rewardType === "Bribe" &&
+                            row.rewardType === "XBribe" &&
                             row.gauge &&
                             row.gauge.balance &&
                             row.gauge.totalSupply && (
@@ -393,7 +396,7 @@ export default function EnhancedTable({
                               </>
                             )}
                           {row &&
-                            row.rewardType === "XBribe" &&
+                            row.rewardType === "XXBribe" &&
                             row.gauge &&
                             row.gauge.balance &&
                             row.gauge.totalSupply && (
@@ -510,10 +513,10 @@ export default function EnhancedTable({
                       <TableCell align="right">
                         <div>
                           {row &&
-                            row.rewardType === "Bribe" &&
+                            row.rewardType === "XBribe" &&
                             row.gauge &&
-                            row.gauge.bribesEarned &&
-                            row.gauge.bribesEarned.map((bribe) => {
+                            row.gauge.x_bribesEarned &&
+                            row.gauge.x_bribesEarned.map((bribe) => {
                               return (
                                 <div
                                   className="flex items-center justify-end"
@@ -555,10 +558,10 @@ export default function EnhancedTable({
                               );
                             })}
                           {row &&
-                            row.rewardType === "XBribe" &&
+                            row.rewardType === "XXBribe" &&
                             row.gauge &&
-                            row.gauge.x_bribesEarned &&
-                            row.gauge.x_bribesEarned.map((bribe) => {
+                            row.gauge.xx_bribesEarned &&
+                            row.gauge.xx_bribesEarned.map((bribe) => {
                               return (
                                 <div
                                   className="flex items-center justify-end"
@@ -707,13 +710,13 @@ function descendingComparator(
       return 0;
 
     case "balance":
-      if (isGaugeReward(a) && a.rewardType === "Bribe" && a.gauge.balance) {
+      if (isGaugeReward(a) && a.rewardType === "XXBribe" && a.gauge.balance) {
         aAmount = +a.gauge.balance;
       } else if (isGaugeReward(a) && a.balance) {
         aAmount = +a.balance;
       }
 
-      if (isGaugeReward(b) && b.rewardType === "Bribe" && b.gauge.balance) {
+      if (isGaugeReward(b) && b.rewardType === "XXBribe" && b.gauge.balance) {
         bAmount = +b.gauge.balance;
       } else if (isGaugeReward(b) && b.balance) {
         bAmount = +b.balance;
@@ -728,13 +731,13 @@ function descendingComparator(
       return 0;
 
     case "earned":
-      if (a.rewardType === "Bribe") {
+      if (a.rewardType === "XXBribe") {
         aAmount = a.gauge?.bribes.length;
       } else {
         aAmount = 2;
       }
 
-      if (b.rewardType === "Bribe") {
+      if (b.rewardType === "XXBribe") {
         bAmount = b.gauge?.bribes.length;
       } else {
         bAmount = 2;

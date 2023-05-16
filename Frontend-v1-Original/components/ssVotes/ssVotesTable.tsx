@@ -89,7 +89,7 @@ function EnhancedTableHead(props: {
           >
             <TableSortLabel
               active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
+              direction={orderBy === headCell.id ? order : "desc"}
               onClick={createSortHandler(headCell.id)}
             >
               <Typography variant="h5" className="text-xs font-extralight">
@@ -168,8 +168,11 @@ export default function EnhancedTable({
       setDisabledSort(false);
     }
 
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
+    if (orderBy === property) {
+      setOrder(order === "asc" ? "desc" : "asc");
+    } else {
+      setOrder("desc");
+    }
     setOrderBy(property);
   };
 
