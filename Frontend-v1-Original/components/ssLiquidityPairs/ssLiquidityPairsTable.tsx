@@ -21,6 +21,12 @@ import {
   Fade,
   Grid,
   Switch,
+  Collapse,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
@@ -29,12 +35,17 @@ import {
   Search,
   AddCircleOutline,
   WarningOutlined,
+  KeyboardArrowUp,
+  KeyboardArrowDown,
+  OpenInNewOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
+import tokens from "../../tokens.json";
 
 const headCells = [
+  { id: "expand", numeric: false, disablePadding: true, label: "" },
   { id: "pair", numeric: false, disablePadding: false, label: "Pair" },
   {
     id: "balance",
@@ -575,476 +586,11 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {sortedPairs.map((row, index) => {
+              {sortedPairs.map((row) => {
                 if (!row) {
                   return null;
                 }
-                const labelId = `enhanced-table-checkbox-${index}`;
-
-                return (
-                  <TableRow
-                    key={labelId}
-                    className="hover:bg-[rgba(104,108,122,0.05)]"
-                  >
-                    <TableCell>
-                      <div className="flex items-center">
-                        <div className="relative flex h-9 w-[70px]">
-                          <img
-                            className="absolute top-0 left-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-                            src={
-                              row && row.token0 && row.token0.logoURI
-                                ? row.token0.logoURI
-                                : ``
-                            }
-                            width="37"
-                            height="37"
-                            alt=""
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).onerror = null;
-                              (e.target as HTMLImageElement).src =
-                                "/tokens/unknown-logo.png";
-                            }}
-                          />
-                          <img
-                            className="absolute top-0 left-6 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-                            src={
-                              row && row.token1 && row.token1.logoURI
-                                ? row.token1.logoURI
-                                : ``
-                            }
-                            width="37"
-                            height="37"
-                            alt=""
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).onerror = null;
-                              (e.target as HTMLImageElement).src =
-                                "/tokens/unknown-logo.png";
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Typography
-                            variant="h2"
-                            className="text-xs font-extralight"
-                            noWrap
-                          >
-                            {row?.symbol}
-                          </Typography>
-                          <Typography
-                            variant="h2"
-                            className="text-xs font-extralight"
-                            noWrap
-                            color="textSecondary"
-                          >
-                            {row?.stable ? "Stable Pool" : "Volatile Pool"}
-                          </Typography>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-md:hidden" align="right">
-                      {row &&
-                        row.token0 &&
-                        "balance" in row.token0 &&
-                        row.token0.balance && (
-                          <div className="flex items-center justify-end max-md:block">
-                            <Typography
-                              variant="h2"
-                              className="text-xs font-extralight"
-                            >
-                              {formatCurrency(row.token0.balance)}
-                            </Typography>
-                            <Typography
-                              variant="h5"
-                              className={`min-w-[40xp] text-xs font-extralight`}
-                              color="textSecondary"
-                            >
-                              {row.token0.symbol}
-                            </Typography>
-                          </div>
-                        )}
-                      {!(
-                        row &&
-                        row.token0 &&
-                        "balance" in row.token0 &&
-                        row.token0.balance
-                      ) && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Skeleton
-                            variant="rectangular"
-                            width={120}
-                            height={16}
-                            style={{ marginTop: "1px", marginBottom: "1px" }}
-                          />
-                        </div>
-                      )}
-                      {row &&
-                        row.token1 &&
-                        "balance" in row.token1 &&
-                        row.token1.balance && (
-                          <div className="flex items-center justify-end max-md:block">
-                            <Typography
-                              variant="h2"
-                              className="text-xs font-extralight"
-                            >
-                              {formatCurrency(row.token1.balance)}
-                            </Typography>
-                            <Typography
-                              variant="h5"
-                              className={`min-w-[40xp] text-xs font-extralight`}
-                              color="textSecondary"
-                            >
-                              {row.token1.symbol}
-                            </Typography>
-                          </div>
-                        )}
-                      {!(
-                        row &&
-                        row.token1 &&
-                        "balance" in row.token1 &&
-                        row.token1.balance
-                      ) && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Skeleton
-                            variant="rectangular"
-                            width={120}
-                            height={16}
-                            style={{ marginTop: "1px", marginBottom: "1px" }}
-                          />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-md:hidden" align="right">
-                      {row && row.balance && row.totalSupply && (
-                        <>
-                          <div className="flex items-center justify-end max-md:block">
-                            <Typography
-                              variant="h2"
-                              className="text-xs font-extralight"
-                            >
-                              {formatCurrency(
-                                BigNumber(row.balance)
-                                  .div(row.totalSupply)
-                                  .times(row.reserve0)
-                              )}
-                            </Typography>
-                            <Typography
-                              variant="h5"
-                              className={`min-w-[40xp] text-xs font-extralight`}
-                              color="textSecondary"
-                            >
-                              {row.token0.symbol}
-                            </Typography>
-                          </div>
-                          <div className="flex items-center justify-end max-md:block">
-                            <Typography
-                              variant="h5"
-                              className="text-xs font-extralight"
-                            >
-                              {formatCurrency(
-                                BigNumber(row.balance)
-                                  .div(row.totalSupply)
-                                  .times(row.reserve1)
-                              )}
-                            </Typography>
-                            <Typography
-                              variant="h5"
-                              className={`min-w-[40xp] text-xs font-extralight`}
-                              color="textSecondary"
-                            >
-                              {row.token1.symbol}
-                            </Typography>
-                          </div>
-                        </>
-                      )}
-                      {!(row && row.balance && row.totalSupply) && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Skeleton
-                            variant="rectangular"
-                            width={120}
-                            height={16}
-                            style={{ marginTop: "1px", marginBottom: "1px" }}
-                          />
-                        </div>
-                      )}
-                    </TableCell>
-                    {row && hasGauge(row) && (
-                      <TableCell align="right">
-                        {row.gauge.reserve0 &&
-                          row.gauge.reserve1 &&
-                          row.gauge.balance &&
-                          row.gauge.totalSupply && (
-                            <>
-                              <div className="flex items-center justify-end max-md:block">
-                                <Typography
-                                  variant="h2"
-                                  className="text-xs font-extralight"
-                                >
-                                  {formatCurrency(
-                                    BigNumber(row.gauge.balance)
-                                      .div(row.gauge.totalSupply)
-                                      .times(row.gauge.reserve0)
-                                  )}
-                                </Typography>
-                                <Typography
-                                  variant="h5"
-                                  className={`min-w-[40xp] text-xs font-extralight`}
-                                  color="textSecondary"
-                                >
-                                  {row.token0.symbol}
-                                </Typography>
-                              </div>
-                              <div className="flex items-center justify-end max-md:block">
-                                <Typography
-                                  variant="h5"
-                                  className="text-xs font-extralight"
-                                >
-                                  {formatCurrency(
-                                    BigNumber(row.gauge.balance)
-                                      .div(row.gauge.totalSupply)
-                                      .times(row.gauge.reserve1)
-                                  )}
-                                </Typography>
-                                <Typography
-                                  variant="h5"
-                                  className={`min-w-[40xp] text-xs font-extralight`}
-                                  color="textSecondary"
-                                >
-                                  {row.token1.symbol}
-                                </Typography>
-                              </div>
-                            </>
-                          )}
-                        {!(
-                          row &&
-                          row.gauge &&
-                          row.gauge.balance &&
-                          row.gauge.totalSupply
-                        ) && (
-                          <div className="flex items-center justify-end max-md:block">
-                            <Skeleton
-                              variant="rectangular"
-                              width={120}
-                              height={16}
-                              style={{
-                                marginTop: "1px",
-                                marginBottom: "1px",
-                              }}
-                            />
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
-                    {!(row && row.gauge && row.gauge.address) && (
-                      <TableCell align="right">
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          Gauge not available
-                        </Typography>
-                      </TableCell>
-                    )}
-                    <TableCell className="max-md:hidden" align="right">
-                      {row && row.reserve0 && row.token0 && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Typography
-                            variant="h2"
-                            className="text-xs font-extralight"
-                          >
-                            {formatCurrency(row.reserve0)}
-                          </Typography>
-                          <Typography
-                            variant="h5"
-                            className={`min-w-[40xp] text-xs font-extralight`}
-                            color="textSecondary"
-                          >
-                            {row.token0.symbol}
-                          </Typography>
-                        </div>
-                      )}
-                      {!(row && row.reserve0 && row.token0) && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Skeleton
-                            variant="rectangular"
-                            width={120}
-                            height={16}
-                            style={{ marginTop: "1px", marginBottom: "1px" }}
-                          />
-                        </div>
-                      )}
-                      {row && row.reserve1 && row.token1 && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Typography
-                            variant="h2"
-                            className="text-xs font-extralight"
-                          >
-                            {formatCurrency(row.reserve1)}
-                          </Typography>
-                          <Typography
-                            variant="h5"
-                            className={`min-w-[40xp] text-xs font-extralight`}
-                            color="textSecondary"
-                          >
-                            {row.token1.symbol}
-                          </Typography>
-                        </div>
-                      )}
-                      {!(row && row.reserve1 && row.token1) && (
-                        <div className="flex items-center justify-end max-md:block">
-                          <Skeleton
-                            variant="rectangular"
-                            width={120}
-                            height={16}
-                            style={{ marginTop: "1px", marginBottom: "1px" }}
-                          />
-                        </div>
-                      )}
-                    </TableCell>
-                    {row && row.gauge && row.gauge.address && (
-                      <TableCell className="max-md:hidden" align="right">
-                        {row &&
-                          row.gauge &&
-                          row.gauge.reserve0 &&
-                          row.token0 && (
-                            <div className="flex items-center justify-end max-md:block">
-                              <Typography
-                                variant="h2"
-                                className="text-xs font-extralight"
-                              >
-                                {formatCurrency(row.gauge.reserve0)}
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                className={`min-w-[40xp] text-xs font-extralight`}
-                                color="textSecondary"
-                              >
-                                {row.token0.symbol}
-                              </Typography>
-                            </div>
-                          )}
-                        {!(
-                          row &&
-                          row.gauge &&
-                          row.gauge.reserve0 &&
-                          row.token0
-                        ) && (
-                          <div className="flex items-center justify-end max-md:block">
-                            <Skeleton
-                              variant="rectangular"
-                              width={120}
-                              height={16}
-                              style={{
-                                marginTop: "1px",
-                                marginBottom: "1px",
-                              }}
-                            />
-                          </div>
-                        )}
-                        {row &&
-                          row.gauge &&
-                          row.gauge.reserve1 &&
-                          row.token1 && (
-                            <div className="flex items-center justify-end max-md:block">
-                              <Typography
-                                variant="h2"
-                                className="text-xs font-extralight"
-                              >
-                                {formatCurrency(row.gauge.reserve1)}
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                className={`min-w-[40xp] text-xs font-extralight`}
-                                color="textSecondary"
-                              >
-                                {row.token1.symbol}
-                              </Typography>
-                            </div>
-                          )}
-                        {!(
-                          row &&
-                          row.gauge &&
-                          row.gauge.reserve1 &&
-                          row.token1
-                        ) && (
-                          <div className="flex items-center justify-end max-md:block">
-                            <Skeleton
-                              variant="rectangular"
-                              width={120}
-                              height={16}
-                              style={{
-                                marginTop: "1px",
-                                marginBottom: "1px",
-                              }}
-                            />
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
-                    {!(row && row.gauge && row.gauge.address) && (
-                      <TableCell className="max-md:hidden" align="right">
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          Gauge not available
-                        </Typography>
-                      </TableCell>
-                    )}
-                    <TableCell className="max-2xl:hidden" align="right">
-                      <Typography
-                        variant="h2"
-                        className="text-xs font-extralight"
-                      >
-                        {formatTVL(row.tvl)}
-                      </Typography>
-                    </TableCell>
-                    {row && (row.apr !== undefined || row.apr !== null) && (
-                      <TableCell align="right">
-                        <Grid container spacing={0}>
-                          <Grid item lg={10}>
-                            <Typography
-                              variant="h2"
-                              className="text-xs font-extralight"
-                            >
-                              {row.apr.toFixed(2)}%
-                            </Typography>
-                          </Grid>
-                          {row && row.isAliveGauge === false && (
-                            <Grid item lg={2}>
-                              <Tooltip title="Gauge has been killed">
-                                <WarningOutlined className="ml-2 text-base text-yellow-300" />
-                              </Tooltip>
-                            </Grid>
-                          )}
-                        </Grid>
-                      </TableCell>
-                    )}
-                    {!(row && (row.apr !== undefined || row.apr !== null)) && (
-                      <div className="flex items-center justify-end max-md:block">
-                        <Skeleton
-                          variant="rectangular"
-                          width={120}
-                          height={16}
-                          style={{
-                            marginTop: "1px",
-                            marginBottom: "1px",
-                          }}
-                        />
-                      </div>
-                    )}
-                    <TableCell align="right">
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={() => {
-                          onView(row);
-                        }}
-                      >
-                        Manage
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
+                return <Row key={row.address} row={row} onView={onView} />;
               })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 61 * emptyRows }}>
@@ -1065,6 +611,516 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
         />
       </Paper>
     </div>
+  );
+}
+
+function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
+  const { row, onView } = props;
+  const [open, setOpen] = useState(false);
+  const token0Info =
+    tokens[row.token0.address.toLowerCase() as keyof typeof tokens];
+  const token1Info =
+    tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
+  return (
+    <>
+      <TableRow>
+        <TableCell align="right" size="small">
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+            title="View Pair"
+          >
+            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          </IconButton>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center">
+            <div className="relative flex h-9 w-[70px]">
+              <img
+                className="absolute top-0 left-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+                src={
+                  row && row.token0 && row.token0.logoURI
+                    ? row.token0.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+              <img
+                className="absolute top-0 left-6 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+                src={
+                  row && row.token1 && row.token1.logoURI
+                    ? row.token1.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+            </div>
+            <div>
+              <Typography
+                variant="h2"
+                className="text-xs font-extralight"
+                noWrap
+              >
+                <a
+                  href={`https://dexscreener.com/canto/${row.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="hover:underline"
+                >
+                  {row?.symbol}
+                </a>
+              </Typography>
+              <Typography
+                variant="h2"
+                className="text-xs font-extralight"
+                noWrap
+                color="textSecondary"
+              >
+                {row?.stable ? "Stable Pool" : "Volatile Pool"}
+              </Typography>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell className="max-md:hidden" align="right">
+          {row &&
+            row.token0 &&
+            "balance" in row.token0 &&
+            row.token0.balance && (
+              <div className="flex items-center justify-end max-md:block">
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(row.token0.balance)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={`min-w-[40xp] text-xs font-extralight`}
+                  color="textSecondary"
+                >
+                  {row.token0.symbol}
+                </Typography>
+              </div>
+            )}
+          {!(
+            row &&
+            row.token0 &&
+            "balance" in row.token0 &&
+            row.token0.balance
+          ) && (
+            <div className="flex items-center justify-end max-md:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
+          {row &&
+            row.token1 &&
+            "balance" in row.token1 &&
+            row.token1.balance && (
+              <div className="flex items-center justify-end max-md:block">
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(row.token1.balance)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={`min-w-[40xp] text-xs font-extralight`}
+                  color="textSecondary"
+                >
+                  {row.token1.symbol}
+                </Typography>
+              </div>
+            )}
+          {!(
+            row &&
+            row.token1 &&
+            "balance" in row.token1 &&
+            row.token1.balance
+          ) && (
+            <div className="flex items-center justify-end max-md:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
+        </TableCell>
+        <TableCell className="max-md:hidden" align="right">
+          {row && row.balance && row.totalSupply && (
+            <>
+              <div className="flex items-center justify-end max-md:block">
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(
+                    BigNumber(row.balance)
+                      .div(row.totalSupply)
+                      .times(row.reserve0)
+                  )}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={`min-w-[40xp] text-xs font-extralight`}
+                  color="textSecondary"
+                >
+                  {row.token0.symbol}
+                </Typography>
+              </div>
+              <div className="flex items-center justify-end max-md:block">
+                <Typography variant="h5" className="text-xs font-extralight">
+                  {formatCurrency(
+                    BigNumber(row.balance)
+                      .div(row.totalSupply)
+                      .times(row.reserve1)
+                  )}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={`min-w-[40xp] text-xs font-extralight`}
+                  color="textSecondary"
+                >
+                  {row.token1.symbol}
+                </Typography>
+              </div>
+            </>
+          )}
+          {!(row && row.balance && row.totalSupply) && (
+            <div className="flex items-center justify-end max-md:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
+        </TableCell>
+        {row && hasGauge(row) && (
+          <TableCell align="right">
+            {row.gauge.reserve0 &&
+              row.gauge.reserve1 &&
+              row.gauge.balance &&
+              row.gauge.totalSupply && (
+                <>
+                  <div className="flex items-center justify-end max-md:block">
+                    <Typography
+                      variant="h2"
+                      className="text-xs font-extralight"
+                    >
+                      {formatCurrency(
+                        BigNumber(row.gauge.balance)
+                          .div(row.gauge.totalSupply)
+                          .times(row.gauge.reserve0)
+                      )}
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      className={`min-w-[40xp] text-xs font-extralight`}
+                      color="textSecondary"
+                    >
+                      {row.token0.symbol}
+                    </Typography>
+                  </div>
+                  <div className="flex items-center justify-end max-md:block">
+                    <Typography
+                      variant="h5"
+                      className="text-xs font-extralight"
+                    >
+                      {formatCurrency(
+                        BigNumber(row.gauge.balance)
+                          .div(row.gauge.totalSupply)
+                          .times(row.gauge.reserve1)
+                      )}
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      className={`min-w-[40xp] text-xs font-extralight`}
+                      color="textSecondary"
+                    >
+                      {row.token1.symbol}
+                    </Typography>
+                  </div>
+                </>
+              )}
+            {!(
+              row &&
+              row.gauge &&
+              row.gauge.balance &&
+              row.gauge.totalSupply
+            ) && (
+              <div className="flex items-center justify-end max-md:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{
+                    marginTop: "1px",
+                    marginBottom: "1px",
+                  }}
+                />
+              </div>
+            )}
+          </TableCell>
+        )}
+        {!(row && row.gauge && row.gauge.address) && (
+          <TableCell align="right">
+            <Typography variant="h2" className="text-xs font-extralight">
+              Gauge not available
+            </Typography>
+          </TableCell>
+        )}
+        <TableCell className="max-md:hidden" align="right">
+          {row && row.reserve0 && row.token0 && (
+            <div className="flex items-center justify-end max-md:block">
+              <Typography variant="h2" className="text-xs font-extralight">
+                {formatCurrency(row.reserve0)}
+              </Typography>
+              <Typography
+                variant="h5"
+                className={`min-w-[40xp] text-xs font-extralight`}
+                color="textSecondary"
+              >
+                {row.token0.symbol}
+              </Typography>
+            </div>
+          )}
+          {!(row && row.reserve0 && row.token0) && (
+            <div className="flex items-center justify-end max-md:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
+          {row && row.reserve1 && row.token1 && (
+            <div className="flex items-center justify-end max-md:block">
+              <Typography variant="h2" className="text-xs font-extralight">
+                {formatCurrency(row.reserve1)}
+              </Typography>
+              <Typography
+                variant="h5"
+                className={`min-w-[40xp] text-xs font-extralight`}
+                color="textSecondary"
+              >
+                {row.token1.symbol}
+              </Typography>
+            </div>
+          )}
+          {!(row && row.reserve1 && row.token1) && (
+            <div className="flex items-center justify-end max-md:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
+        </TableCell>
+        {row && row.gauge && row.gauge.address && (
+          <TableCell className="max-md:hidden" align="right">
+            {row && row.gauge && row.gauge.reserve0 && row.token0 && (
+              <div className="flex items-center justify-end max-md:block">
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(row.gauge.reserve0)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={`min-w-[40xp] text-xs font-extralight`}
+                  color="textSecondary"
+                >
+                  {row.token0.symbol}
+                </Typography>
+              </div>
+            )}
+            {!(row && row.gauge && row.gauge.reserve0 && row.token0) && (
+              <div className="flex items-center justify-end max-md:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{
+                    marginTop: "1px",
+                    marginBottom: "1px",
+                  }}
+                />
+              </div>
+            )}
+            {row && row.gauge && row.gauge.reserve1 && row.token1 && (
+              <div className="flex items-center justify-end max-md:block">
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(row.gauge.reserve1)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className={`min-w-[40xp] text-xs font-extralight`}
+                  color="textSecondary"
+                >
+                  {row.token1.symbol}
+                </Typography>
+              </div>
+            )}
+            {!(row && row.gauge && row.gauge.reserve1 && row.token1) && (
+              <div className="flex items-center justify-end max-md:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{
+                    marginTop: "1px",
+                    marginBottom: "1px",
+                  }}
+                />
+              </div>
+            )}
+          </TableCell>
+        )}
+        {!(row && row.gauge && row.gauge.address) && (
+          <TableCell className="max-md:hidden" align="right">
+            <Typography variant="h2" className="text-xs font-extralight">
+              Gauge not available
+            </Typography>
+          </TableCell>
+        )}
+        <TableCell className="max-2xl:hidden" align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
+            {formatTVL(row.tvl)}
+          </Typography>
+        </TableCell>
+        {row && (row.apr !== undefined || row.apr !== null) && (
+          <TableCell align="right">
+            <Grid container spacing={0}>
+              <Grid item lg={10}>
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {row.apr.toFixed(2)}%
+                </Typography>
+              </Grid>
+              {row && row.isAliveGauge === false && (
+                <Grid item lg={2}>
+                  <Tooltip title="Gauge has been killed">
+                    <WarningOutlined className="ml-2 text-base text-yellow-300" />
+                  </Tooltip>
+                </Grid>
+              )}
+            </Grid>
+          </TableCell>
+        )}
+        {!(row && (row.apr !== undefined || row.apr !== null)) && (
+          <div className="flex items-center justify-end max-md:block">
+            <Skeleton
+              variant="rectangular"
+              width={120}
+              height={16}
+              style={{
+                marginTop: "1px",
+                marginBottom: "1px",
+              }}
+            />
+          </div>
+        )}
+        <TableCell align="right">
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              onView(row);
+            }}
+          >
+            Manage
+          </Button>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell className="py-0"></TableCell>
+        <TableCell className="py-0" colSpan={9}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <List disablePadding={true} dense className="pb-4">
+              {(
+                [
+                  [row.token0, token0Info],
+                  [row.token1, token1Info],
+                ] as const
+              ).map(([token, info]) => {
+                return (
+                  <ListItem disablePadding key={token.address}>
+                    <ListItemAvatar className="flex min-w-[70px] justify-end">
+                      <Avatar
+                        sx={{ width: 34, height: 34 }}
+                        className="mr-[9px] border-2 border-solid border-[rgb(25,33,56)] bg-transparent"
+                      >
+                        <img
+                          loading="lazy"
+                          className="h-[31px] w-[31px]"
+                          src={token?.logoURI ?? "/tokens/unknown-logo.png"}
+                          alt={token?.symbol}
+                        />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography className="text-xs font-extralight">
+                          {token.name}
+                        </Typography>
+                      }
+                      secondary={
+                        <>
+                          <div className="flex items-center">
+                            <a
+                              href={`https://tuber.build/address/${token.address}`}
+                              target="_blank"
+                              rel="noopener noreferrer nofollow"
+                              className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                            >
+                              Contract Address{" "}
+                              <OpenInNewOutlined fontSize="inherit" />
+                            </a>
+                            {info?.homepage ? (
+                              <>
+                                ・
+                                <a
+                                  href={info?.homepage}
+                                  target="_blank"
+                                  rel="noopener noreferrer nofollow"
+                                  className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                                  title={`Visit ${info?.name} homepage`}
+                                >
+                                  Home Page{" "}
+                                  <OpenInNewOutlined fontSize="inherit" />
+                                </a>
+                              </>
+                            ) : null}
+                          </div>
+                          <div className="max-w-[400px] text-xs">
+                            {/* short description here */}
+                          </div>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
   );
 }
 

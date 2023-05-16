@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   TextField,
   Typography,
@@ -70,9 +70,12 @@ function Setup() {
 
   const isWrapUnwrap =
     (fromAssetValue?.symbol === "WCANTO" && toAssetValue?.symbol === "CANTO") ||
-    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "WCANTO")
+    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "WCANTO") ||
+    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "CANTOE") ||
+    (fromAssetValue?.symbol === "CANTOE" && toAssetValue?.symbol === "CANTO")
       ? true
       : false;
+  const isWrap = fromAssetValue?.symbol === "CANTO";
 
   const usdDiff = useMemo(() => {
     if (
@@ -354,8 +357,17 @@ function Setup() {
       setQuoteLoading(true);
       setQuoteError(false);
 
+      const isWrapUnwrap =
+        (from?.symbol === "WCANTO" && to?.symbol === "CANTO") ||
+        (from?.symbol === "CANTO" && to?.symbol === "WCANTO") ||
+        (from?.symbol === "CANTO" && to?.symbol === "CANTOE") ||
+        (from?.symbol === "CANTOE" && to?.symbol === "CANTO")
+          ? true
+          : false;
+
       if (isWrapUnwrap) {
         setQuoteLoading(false);
+        setQuote(null);
         setToAmountValue(amount);
         return;
       }
@@ -844,7 +856,13 @@ function Setup() {
             onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
           >
             <Typography className="font-bold capitalize">
-              {loading ? `Loading` : isWrapUnwrap ? `Wrap/Unwrap` : `Swap`}
+              {loading
+                ? `Loading`
+                : isWrapUnwrap
+                ? isWrap
+                  ? "Wrap"
+                  : "Unwrap"
+                : `Swap`}
             </Typography>
             {loading && (
               <CircularProgress size={10} className="ml-2 fill-white" />

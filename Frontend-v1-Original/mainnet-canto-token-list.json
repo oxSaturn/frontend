@@ -446,5 +446,13 @@
     "logoURI": "https://cdn.discordapp.com/attachments/1107657243480031324/1107657816749121657/image.png",
     "name": "CantoPulse",
     "symbol": "CPLS"
+  },
+  {
+    "address": "0xD4ce5e7d9CCfE26c379d8D3aFe787bBB140a9388",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://www.ponzu.lol/cantoe_icon.png",
+    "name": "Canto Earn",
+    "symbol": "CANTOE"
   }
 ]

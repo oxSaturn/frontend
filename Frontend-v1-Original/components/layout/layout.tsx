@@ -62,12 +62,6 @@ export default function Layout({
     <div className={classes.container}>
       <Head>
         <link rel="icon" href="/images/logo-icon.png" />
-        <link
-          rel="preload"
-          href="/fonts/Inter/Inter-Regular.ttf"
-          as="font"
-          crossOrigin=""
-        />
         <meta
           name="description"
           content="Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on Canto."

@@ -450,11 +450,11 @@ class Store {
       }
 
       const pairs = this.getStore("pairs");
-      let thePair: any = pairs.filter((pair) => {
+      const filteredPairs = pairs.filter((pair) => {
         return pair.address.toLowerCase() == pairAddress.toLowerCase();
       });
 
-      if (thePair.length > 0) {
+      if (filteredPairs.length > 0) {
         const pc = {
           abi: CONTRACTS.PAIR_ABI,
           address: pairAddress,
@@ -485,7 +485,7 @@ class Store {
             ],
           });
 
-        const returnPair = thePair[0];
+        const returnPair = filteredPairs[0];
         returnPair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
         returnPair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
         returnPair.reserve0 = formatUnits(reserve0, returnPair.token0.decimals);
@@ -624,7 +624,7 @@ class Store {
         ],
       });
 
-      thePair = {
+      const thePair: Pair = {
         address: pairAddress,
         symbol: symbol,
         decimals: decimals,
@@ -637,6 +637,9 @@ class Store {
             parseInt(token0Decimals.toString())
           ),
           decimals: parseInt(token0Decimals.toString()),
+          name: "",
+          logoURI: "",
+          local: false,
         },
         token1: {
           address: token1,
@@ -646,12 +649,21 @@ class Store {
             parseInt(token1Decimals.toString())
           ),
           decimals: parseInt(token1Decimals.toString()),
+          name: "",
+          logoURI: "",
+          local: false,
         },
+        apr: 0,
+        total_supply: 0,
+        token0_address: token0,
+        token1_address: token1,
         balance: formatUnits(balanceOf, decimals),
         totalSupply: formatUnits(totalSupply, decimals),
         reserve0: formatUnits(reserve0, parseInt(token0Decimals.toString())),
         reserve1: formatUnits(reserve1, parseInt(token1Decimals.toString())),
         tvl: 0,
+        gauge_address: gaugeAddress,
+        isStable: stable,
       };
 
       if (gaugeAddress !== ZERO_ADDRESS) {
@@ -659,10 +671,35 @@ class Store {
           abi: CONTRACTS.GAUGE_ABI,
           address: gaugeAddress,
         } as const;
+
+        const external_bribe = await viemClient.readContract({
+          ...gaugeContract,
+          functionName: "external_bribe",
+        });
+
+        const wrapped_bribe_address = await viemClient.readContract({
+          address: CONTRACTS.WXB_ADDRESS,
+          abi: CONTRACTS.BRIBE_FACTORY_ABI,
+          functionName: "oldBribeToNew",
+          args: [external_bribe],
+        });
+        const x_wrapped_bribe_address = await viemClient.readContract({
+          address: CONTRACTS.X_WXB_ADDRESS,
+          abi: CONTRACTS.BRIBE_FACTORY_ABI,
+          functionName: "oldBribeToNew",
+          args: [external_bribe],
+        });
+        const xx_wrapped_bribe_address = await viemClient.readContract({
+          address: CONTRACTS.XX_WXB_ADDRESS,
+          abi: CONTRACTS.BRIBE_FACTORY_ABI,
+          functionName: "oldBribeToNew",
+          args: [external_bribe],
+        });
+
         //wrapped bribe address is coming from api. if the api doesnt work this will break
         const bribeContract = {
           abi: CONTRACTS.BRIBE_ABI,
-          address: thePair.gauge.wrapped_bribe_address,
+          address: wrapped_bribe_address,
         } as const;
         const bribeContractInstance = getContract({
           ...bribeContract,
@@ -670,7 +707,7 @@ class Store {
         });
         const x_bribeContract = {
           abi: CONTRACTS.BRIBE_ABI,
-          address: thePair.gauge.x_wrapped_bribe_address,
+          address: x_wrapped_bribe_address,
         } as const;
         const x_bribeContractInstance = getContract({
           ...x_bribeContract,
@@ -678,7 +715,7 @@ class Store {
         });
         const xx_bribeContract = {
           abi: CONTRACTS.BRIBE_ABI,
-          address: thePair.gauge.xx_wrapped_bribe_address,
+          address: xx_wrapped_bribe_address,
         } as const;
         const xx_bribeContractInstance = getContract({
           ...xx_bribeContract,
@@ -735,7 +772,7 @@ class Store {
 
             const token = await this.getBaseAsset(tokenAddress);
             if (!token) {
-              return null;
+              throw new Error("No token found. getPairByAddress");
             }
 
             const rewardRate = await viemClient.readContract({
@@ -746,9 +783,14 @@ class Store {
 
             return {
               token: token,
-              rewardAmount: formatUnits(
-                rewardRate * BigInt(604800),
-                token.decimals
+              rewardAmount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
+              ),
+              reward_ammount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
+              ),
+              rewardAmmount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
               ),
             };
           })
@@ -761,7 +803,7 @@ class Store {
 
             const token = await this.getBaseAsset(tokenAddress);
             if (!token) {
-              return null;
+              throw new Error("No token found. getPairByAddress");
             }
 
             const rewardRate = await viemClient.readContract({
@@ -772,9 +814,14 @@ class Store {
 
             return {
               token: token,
-              rewardAmount: formatUnits(
-                rewardRate * BigInt(604800),
-                token.decimals
+              rewardAmount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
+              ),
+              reward_ammount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
+              ),
+              rewardAmmount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
               ),
             };
           })
@@ -787,7 +834,7 @@ class Store {
 
             const token = await this.getBaseAsset(tokenAddress);
             if (!token) {
-              return null;
+              throw new Error("No token found. getPairByAddress");
             }
 
             const rewardRate = await viemClient.readContract({
@@ -798,9 +845,14 @@ class Store {
 
             return {
               token: token,
-              rewardAmount: formatUnits(
-                rewardRate * BigInt(604800),
-                token.decimals
+              rewardAmount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
+              ),
+              reward_ammount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
+              ),
+              rewardAmmount: Number(
+                formatUnits(rewardRate * BigInt(604800), token.decimals)
               ),
             };
           })
@@ -813,15 +865,24 @@ class Store {
 
         thePair.gauge = {
           address: gaugeAddress,
+          apr: 0,
+          votes: 0,
+          tbv: 0,
+          reward: 0,
           bribeAddress: bribeAddress,
+          bribe_address: bribeAddress,
           decimals: 18,
           balance: formatEther(gaugeBalance),
           totalSupply: formatEther(totalSupply),
+          total_supply: Number(formatEther(totalSupply)),
           weight: formatEther(gaugeWeight),
           weightPercent,
           bribes: bribes,
           x_bribes: x_bribes,
           xx_bribes: xx_bribes,
+          wrapped_bribe_address,
+          x_wrapped_bribe_address,
+          xx_wrapped_bribe_address,
         };
       }
 
@@ -2266,8 +2327,8 @@ class Store {
         functionName: "balanceOf",
         args: [account],
       });
-      // FIXME possible place for error
-      const pair = await this.getPairByAddress(_pairFor);
+
+      const pair = (await this.getPairByAddress(_pairFor)) as Gauge | null; // this has to have gauge because it was created moment ago
 
       const stakeAllowance = await this._getStakeAllowance(
         pair,
@@ -2279,12 +2340,14 @@ class Store {
       if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: stakeAllowanceTXID,
-          description: `Allow the router to spend your ${pair.symbol}`,
+          description: `Allow the router to spend your ${
+            pair?.symbol ?? "LP token"
+          }`,
         });
       } else {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: stakeAllowanceTXID,
-          description: `Allowance on ${pair.symbol} sufficient`,
+          description: `Allowance on ${pair?.symbol ?? "LP token"} sufficient`,
           status: "DONE",
         });
       }
@@ -3058,30 +3121,34 @@ class Store {
   };
 
   _getStakeAllowance = async (
-    pair: Gauge,
+    pair: Gauge | null,
     address: `0x${string}`,
     pairAddress?: `0x${string}`
   ) => {
     try {
-      let tokenContract;
       if (pair === null && !!pairAddress) {
-        tokenContract = {
+        const tokenContract = {
           abi: CONTRACTS.ERC20_ABI,
           address: pairAddress,
         } as const;
-      } else {
-        tokenContract = {
+        const allowance = await viemClient.readContract({
+          ...tokenContract,
+          functionName: "allowance",
+          args: [address, pairAddress],
+        });
+        return formatUnits(allowance, PAIR_DECIMALS);
+      } else if (pair !== null) {
+        const tokenContract = {
           abi: CONTRACTS.ERC20_ABI,
           address: pair.address,
         } as const;
+        const allowance = await viemClient.readContract({
+          ...tokenContract,
+          functionName: "allowance",
+          args: [address, pair.gauge.address],
+        });
+        return formatUnits(allowance, PAIR_DECIMALS);
       }
-      const allowance = await viemClient.readContract({
-        ...tokenContract,
-        functionName: "allowance",
-        args: [address, pair.gauge.address],
-      });
-
-      return formatUnits(allowance, PAIR_DECIMALS);
     } catch (ex) {
       console.error(ex);
       return null;
@@ -3882,47 +3949,30 @@ class Store {
       }
       const [account] = await walletClient.getAddresses();
 
-      const { fromAsset, toAsset, fromAmount } = payload.content;
+      const {
+        fromAsset: { address: fromAddress, symbol: fromSymbol },
+        toAsset: { address: toAddress, symbol: toSymbol },
+        fromAmount,
+      } = payload.content;
+      const isWrap = fromSymbol === "CANTO";
+      const action = isWrap ? "Wrap" : "Unwrap";
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let wrapUnwrapTXID = this.getTXUUID();
-      let isWrap;
-      let tx;
-      if (fromAsset.symbol === "WCANTO" && toAsset.symbol === "CANTO") {
-        isWrap = false;
-        tx = {
-          title: `Unwrap WCANTO for CANTO`,
-          type: "Unwrap",
-          verb: "Unwrap Successful",
-          transactions: [
-            {
-              uuid: wrapUnwrapTXID,
-              description: `Unwrap ${formatCurrency(
-                fromAmount
-              )} WCANTO for CANTO`,
-              status: "WAITING",
-            },
-          ],
-        };
-      } else if (fromAsset.symbol === "CANTO" && toAsset.symbol === "WCANTO") {
-        isWrap = true;
-        tx = {
-          title: `Wrap CANTO for WCANTO`,
-          type: "Wrap",
-          verb: "Wrap Successful",
-          transactions: [
-            {
-              uuid: wrapUnwrapTXID,
-              description: `Wrap ${formatCurrency(
-                fromAmount
-              )} CANTO for WCANTO`,
-              status: "WAITING",
-            },
-          ],
-        };
-      } else {
-        throw new Error("Wrap Unwrap assets are wrong");
-      }
+      const wrapUnwrapTXID = this.getTXUUID();
+      const tx: ITransaction = {
+        title: `${action} ${fromSymbol} for ${toSymbol}`,
+        type: action,
+        verb: `${action} Successful`,
+        transactions: [
+          {
+            uuid: wrapUnwrapTXID,
+            description: `${action} ${formatCurrency(
+              fromAmount
+            )} ${fromSymbol} for ${toSymbol}`,
+            status: TransactionStatus.WAITING,
+          },
+        ],
+      };
 
       this.emitter.emit(ACTIONS.TX_ADDED, tx);
 
@@ -3933,13 +3983,14 @@ class Store {
 
       await this.writeWrapUnwrap(
         walletClient,
+        isWrap ? toAddress : fromAddress,
         isWrap,
         wrapUnwrapTXID,
         sendFromAmount
       );
 
-      this._getSpecificAssetInfo(account, fromAsset.address);
-      this._getSpecificAssetInfo(account, toAsset.address);
+      this._getSpecificAssetInfo(account, fromAddress);
+      this._getSpecificAssetInfo(account, toAddress);
 
       this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
     } catch (ex) {
@@ -5854,13 +5905,14 @@ class Store {
 
   writeWrapUnwrap = async (
     walletClient: WalletClient,
+    targetWrapper: `0x${string}`,
     isWrap: boolean,
     wrapUnwrapTXID: string,
     sendFromAmount: string
   ) => {
     const [account] = await walletClient.getAddresses();
     const wNativeTokenContract = {
-      address: W_NATIVE_ADDRESS as `0x${string}`,
+      address: targetWrapper,
       abi: W_NATIVE_ABI,
     } as const;
     const writeWrap = async () => {
@@ -5871,11 +5923,7 @@ class Store {
         args: undefined,
         value: BigInt(sendFromAmount),
       });
-      const txHash = await walletClient.writeContract<
-        typeof W_NATIVE_ABI,
-        "deposit",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     const writeUnwrap = async () => {
@@ -5948,11 +5996,7 @@ class Store {
         ],
         value: BigInt(sendAmount0),
       });
-      const txHash = await walletClient.writeContract<
-        typeof CONTRACTS.ROUTER_ABI,
-        "addLiquidityETH",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     const writeWithNativeTokenSecond = async () => {
@@ -5971,11 +6015,7 @@ class Store {
         ],
         value: BigInt(sendAmount1),
       });
-      const txHash = await walletClient.writeContract<
-        typeof CONTRACTS.ROUTER_ABI,
-        "addLiquidityETH",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     if (
