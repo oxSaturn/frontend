@@ -49,6 +49,15 @@ export default function Layout({
     }
   }, [walletClient, address]);
 
+  useActivePeriod();
+  useInitBaseAssets();
+  useCirculatingSupply();
+  useGovTokenBase();
+  useMarketCap();
+  usePairs();
+  useSwapAssets();
+  useVeToken();
+
   return (
     <div className={classes.container}>
       <Head>

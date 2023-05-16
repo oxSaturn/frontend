@@ -12,6 +12,7 @@ import {
   CONTRACTS,
   NATIVE_TOKEN,
   PAIR_DECIMALS,
+  QUERY_KEYS,
 } from "../../stores/constants/constants";
 import tokenlistArb from "../../mainnet-arb-token-list.json";
 import tokenlistCan from "../../mainnet-canto-token-list.json";
@@ -58,7 +59,7 @@ const getGovTokenBase = () => {
 
 export const useGovTokenBase = () => {
   return useQuery({
-    queryKey: ["govTokenBase"],
+    queryKey: [QUERY_KEYS.GOV_TOKEN_BASE],
     queryFn: getGovTokenBase,
     staleTime: Infinity,
   });
@@ -76,26 +77,21 @@ const getVeToken = () => {
 
 export const useVeToken = () => {
   return useQuery({
-    queryKey: ["veTokenBase"],
+    queryKey: [QUERY_KEYS.VE_TOKEN],
     queryFn: getVeToken,
     staleTime: Infinity,
   });
 };
 
 const getLocalAssets = () => {
-  try {
-    let localBaseAssets: BaseAsset[] = [];
-    const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
+  let localBaseAssets: BaseAsset[] = [];
+  const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
-    if (localBaseAssetsString && localBaseAssetsString !== "") {
-      localBaseAssets = JSON.parse(localBaseAssetsString);
-    }
-
-    return localBaseAssets;
-  } catch (ex) {
-    console.log(ex);
-    return [];
+  if (localBaseAssetsString && localBaseAssetsString !== "") {
+    localBaseAssets = JSON.parse(localBaseAssetsString);
   }
+
+  return localBaseAssets;
 };
 
 const getInitBaseAssets = () => {
@@ -119,32 +115,22 @@ const getInitBaseAssets = () => {
 
 export const useInitBaseAssets = () => {
   return useQuery({
-    queryKey: ["baseAssets"],
+    queryKey: [QUERY_KEYS.BASE_ASSETS],
     queryFn: getInitBaseAssets,
   });
 };
 
 const getPairsData = async () => {
-  try {
-    const response = await fetch(`/api/pairs`);
+  const response = await fetch(`/api/pairs`);
 
-    const pairsCall = (await response.json()) as PairsCallResponse;
+  const pairsCall = (await response.json()) as PairsCallResponse;
 
-    return pairsCall;
-  } catch (ex) {
-    console.log(ex);
-    return {
-      data: [],
-      prices: [],
-      tvl: 0,
-      tbv: 0,
-    };
-  }
+  return pairsCall;
 };
 
 export const usePairsData = () => {
   return useQuery({
-    queryKey: ["pairs-data"],
+    queryKey: [QUERY_KEYS.PAIRS_DATA],
     queryFn: getPairsData,
     refetchInterval: 1000 * 60 * 5,
   });
@@ -173,7 +159,7 @@ const getTbv = (pairsData: PairsCallResponse | undefined) => {
 export const usePairs = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: ["pairs", pairsData],
+    queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
   });
 };
@@ -181,7 +167,7 @@ export const usePairs = () => {
 export const useTokenPrices = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: ["tokenPrices", pairsData],
+    queryKey: [QUERY_KEYS.TOKEN_PRICES, pairsData],
     queryFn: () => getTokenPrices(pairsData),
   });
 };
@@ -189,7 +175,7 @@ export const useTokenPrices = () => {
 export const useTvl = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: ["tvl", pairsData],
+    queryKey: [QUERY_KEYS.TVL, pairsData],
     queryFn: () => getTvl(pairsData),
   });
 };
@@ -197,7 +183,7 @@ export const useTvl = () => {
 export const useTbv = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: ["tbv", pairsData],
+    queryKey: [QUERY_KEYS.TBV, pairsData],
     queryFn: () => getTbv(pairsData),
   });
 };
@@ -225,32 +211,26 @@ export const useSwapAssets = () => {
   const { data: baseAssets } = useInitBaseAssets();
   const { data: pairs } = usePairs();
   return useQuery({
-    queryKey: ["swapAssets", baseAssets, pairs],
+    queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssets, pairs],
     queryFn: () => getSwapAssets(baseAssets, pairs),
   });
 };
 
 const getActivePeriod = async () => {
-  try {
-    const minterContract = getContract({
-      abi: CONTRACTS.MINTER_ABI,
-      address: CONTRACTS.MINTER_ADDRESS,
-      publicClient: viemClient,
-    });
-    const activePeriod = await minterContract.read.active_period();
+  const minterContract = getContract({
+    abi: CONTRACTS.MINTER_ABI,
+    address: CONTRACTS.MINTER_ADDRESS,
+    publicClient: viemClient,
+  });
+  const activePeriod = await minterContract.read.active_period();
 
-    const activePeriodEnd = parseFloat(activePeriod.toString()) + WEEK;
-    return activePeriodEnd;
-  } catch (ex) {
-    console.log("EXCEPTION. ACTIVE PERIOD ERROR");
-    console.log(ex);
-    return 0;
-  }
+  const activePeriodEnd = parseFloat(activePeriod.toString()) + WEEK;
+  return activePeriodEnd;
 };
 
 export const useActivePeriod = () => {
   return useQuery({
-    queryKey: ["activePeriod"],
+    queryKey: [QUERY_KEYS.ACTIVE_PERIOD],
     queryFn: getActivePeriod,
     staleTime: 1000 * 60 * 60 * 24 * 3.5,
   });
@@ -320,7 +300,7 @@ const getCirculatingSupply = async () => {
 
 export const useCirculatingSupply = () => {
   return useQuery({
-    queryKey: ["circulatingSupply"],
+    queryKey: [QUERY_KEYS.CIRCULATING_SUPPLY],
     queryFn: getCirculatingSupply,
     staleTime: 1000 * 60 * 10,
   });
@@ -341,29 +321,9 @@ export const useMarketCap = () => {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: tokenPrices } = useTokenPrices();
   return useQuery({
-    queryKey: ["marketCap", circulatingSupply, tokenPrices],
+    queryKey: [QUERY_KEYS.MARKET_CAP, circulatingSupply, tokenPrices],
     queryFn: () => getMarketCap(circulatingSupply, tokenPrices),
     staleTime: 1000 * 60 * 10,
-  });
-};
-
-const getUnstoppableDomain = async (address: `0x${string}` | undefined) => {
-  if (!address) return undefined;
-  const res = await fetch("/api/u-domains", {
-    method: "POST",
-    body: JSON.stringify({
-      address,
-    }),
-  });
-  const resJson = (await res.json()) as { domain: string };
-  if (!resJson?.domain || resJson?.domain === "") return undefined;
-  return resJson?.domain as string;
-};
-
-export const useUnstoppableDomain = (address: `0x${string}` | undefined) => {
-  return useQuery({
-    queryKey: ["unstoppableDomain", address],
-    queryFn: () => getUnstoppableDomain(address),
   });
 };
 
@@ -391,7 +351,7 @@ const getGovToken = async (
 export const useGovToken = (address: Address | undefined) => {
   const { data: govTokenBase } = useGovTokenBase();
   return useQuery({
-    queryKey: ["govToken", address, govTokenBase],
+    queryKey: [QUERY_KEYS.GOV_TOKEN, address, govTokenBase],
     queryFn: () => getGovToken(address, govTokenBase!), // enabled only when govTokenBase is defined
     enabled: !!govTokenBase,
   });
@@ -504,7 +464,7 @@ export const useVestNfts = (address: Address | undefined) => {
   const { data: veToken } = useVeToken();
   const { data: activePeriod } = useActivePeriod();
   return useQuery({
-    queryKey: ["vestNfts", address, govToken, veToken, activePeriod],
+    queryKey: [QUERY_KEYS.VEST_NFTS, address, govToken, veToken, activePeriod],
     queryFn: () => getVestNFTs(address, govToken, veToken, activePeriod!), // enabled only when activePeriod is defined
     enabled: !!govToken && !!veToken && !!activePeriod,
   });
@@ -614,7 +574,7 @@ export const useBaseAssetWithInfo = (address: Address | undefined) => {
   const queryClient = useQueryClient();
   const { data: initialBaseAssets } = useInitBaseAssets();
   return useQuery({
-    queryKey: ["baseAssetInfo", address, initialBaseAssets],
+    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
     queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
     enabled: !!initialBaseAssets,
     onSuccess: () =>
@@ -896,7 +856,12 @@ export const usePairsWithBalances = (address: Address | undefined) => {
   const { data: pairs } = usePairs();
   const { data: baseAssetsWithInfo } = useBaseAssetWithInfo(address);
   return useQuery({
-    queryKey: ["pairsWithBalances", address, pairs, baseAssetsWithInfo],
+    queryKey: [
+      QUERY_KEYS.PAIRS_WITH_BALANCES,
+      address,
+      pairs,
+      baseAssetsWithInfo,
+    ],
     queryFn: () => getPairsWithInfo(address!, pairs!, baseAssetsWithInfo!),
     enabled: !!address && !!pairs && !!baseAssetsWithInfo,
   });

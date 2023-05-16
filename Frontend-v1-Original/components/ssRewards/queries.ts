@@ -18,49 +18,20 @@ import {
   ACTIONS,
   QUERY_KEYS,
 } from "../../stores/constants/constants";
-import { hasGauge, VeDistReward, Gauge } from "../../stores/types/types";
-
-const getVeTokenBase = () => {
-  return {
-    address: CONTRACTS.VE_TOKEN_ADDRESS,
-    name: CONTRACTS.VE_TOKEN_NAME,
-    symbol: CONTRACTS.VE_TOKEN_SYMBOL,
-    decimals: CONTRACTS.VE_TOKEN_DECIMALS,
-    logoURI: CONTRACTS.VE_TOKEN_LOGO,
-  };
-};
-
-const getGovTokenBase = () => {
-  return {
-    address: CONTRACTS.GOV_TOKEN_ADDRESS,
-    name: CONTRACTS.GOV_TOKEN_NAME,
-    symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
-    decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
-    logoURI: CONTRACTS.GOV_TOKEN_LOGO,
-    balance: "0",
-    balanceOf: "0",
-  };
-};
-
-const getGovTokenInfo = async (address: `0x${string}`) => {
-  const govToken = getGovTokenBase();
-
-  const balanceOf = await viemClient.readContract({
-    abi: CONTRACTS.GOV_TOKEN_ABI,
-    address: CONTRACTS.GOV_TOKEN_ADDRESS,
-    functionName: "balanceOf",
-    args: [address],
-  });
-
-  govToken.balanceOf = balanceOf.toString();
-  govToken.balance = formatUnits(balanceOf, govToken.decimals);
-
-  return govToken;
-};
+import {
+  hasGauge,
+  VeDistReward,
+  Gauge,
+  GovToken,
+  VeToken,
+} from "../../stores/types/types";
+import { useGovToken, useVeToken } from "../../lib/global/queries";
 
 export const getRewardBalances = async (
   address: Address | undefined,
-  tokenID: string
+  tokenID: string | undefined,
+  govToken: GovToken | undefined,
+  veToken: VeToken | undefined
 ) => {
   if (!address) {
     console.warn("account not found");
@@ -68,18 +39,6 @@ export const getRewardBalances = async (
   }
 
   const pairs = stores.stableSwapStore.getStore("pairs");
-  let veToken = stores.stableSwapStore.getStore("veToken");
-  let govToken = stores.stableSwapStore.getStore("govToken");
-  if (!govToken) {
-    // FIXME
-    // @ts-expect-error
-    govToken = await getGovTokenInfo(address);
-  }
-  if (!veToken) {
-    // FIXME
-    // @ts-expect-error
-    veToken = getVeTokenBase();
-  }
 
   if (!govToken || !veToken) {
     throw new Error("govToken or veToken not found");
@@ -296,7 +255,7 @@ export const getRewardBalances = async (
 };
 
 export const useRewards = (
-  tokenID: string,
+  tokenID: string | undefined,
   onSuccess:
     | ((
         _data:
@@ -311,9 +270,11 @@ export const useRewards = (
     | undefined
 ) => {
   const { address } = useAccount();
+  const { data: veToken } = useVeToken();
+  const { data: govToken } = useGovToken(address);
   return useQuery({
-    queryKey: [QUERY_KEYS.REWARDS, address, tokenID],
-    queryFn: () => getRewardBalances(address, tokenID),
+    queryKey: [QUERY_KEYS.REWARDS, address, tokenID, govToken, veToken],
+    queryFn: () => getRewardBalances(address, tokenID, govToken, veToken),
     enabled: !!address,
     onSuccess,
     refetchOnWindowFocus: false,

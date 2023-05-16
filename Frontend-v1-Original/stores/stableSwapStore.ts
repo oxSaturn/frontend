@@ -4438,10 +4438,15 @@ class Store {
         ],
       });
 
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
+      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+
       // CHECK unclaimed bribes
       const rewards = await queryClient.fetchQuery({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-        queryFn: () => getRewardBalances(account, tokenID),
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID, govToken, veToken],
+        queryFn: () => getRewardBalances(account, tokenID, govToken, veToken),
       });
 
       if (rewards && rewards.xxBribes.length > 0) {
@@ -4580,10 +4585,15 @@ class Store {
         ],
       });
 
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
+      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+
       // CHECK unclaimed bribes
       const rewards = await queryClient.fetchQuery({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-        queryFn: () => getRewardBalances(account, tokenID),
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID, govToken, veToken],
+        queryFn: () => getRewardBalances(account, tokenID, govToken, veToken),
       });
 
       if (rewards && rewards.xxBribes.length > 0) {
