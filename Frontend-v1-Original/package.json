@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "export": "next export",
-    "build2": "next build && next export",
+    "fetch-tokens": "node scripts/fetch-tokens.mjs",
     "start": "next start",
     "lint": "next lint",
     "tsc": "tsc --noEmit",

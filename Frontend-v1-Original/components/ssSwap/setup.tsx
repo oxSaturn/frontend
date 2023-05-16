@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   TextField,
   Typography,
@@ -357,8 +357,15 @@ function Setup() {
       setQuoteLoading(true);
       setQuoteError(false);
 
+      const isWrapUnwrap =
+        (from?.symbol === "WCANTO" && to?.symbol === "CANTO") ||
+        (from?.symbol === "CANTO" && to?.symbol === "WCANTO")
+          ? true
+          : false;
+
       if (isWrapUnwrap) {
         setQuoteLoading(false);
+        setQuote(null);
         setToAmountValue(amount);
         return;
       }
