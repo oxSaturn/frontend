@@ -582,7 +582,7 @@ export const useBaseAssetWithInfo = (address: Address | undefined) => {
     queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
     enabled: !!initialBaseAssets,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["swapAssets"] }), // FIXME: probably will need to rethink it
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }), // FIXME: probably will need to rethink it
   });
 };
 
