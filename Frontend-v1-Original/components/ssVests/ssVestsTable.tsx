@@ -152,9 +152,9 @@ export default function EnhancedTable({
   govToken,
   veToken,
 }: {
-  vestNFTs: VestNFT[];
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  vestNFTs: VestNFT[] | undefined;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const router = useRouter();
 
@@ -185,6 +185,25 @@ export default function EnhancedTable({
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
+
+  const onView = (nft: VestNFT) => {
+    router.push(`/vest/${nft.id}`);
+  };
+
+  const onReset = (nft: {
+    lockAmount: string;
+    lockValue: string;
+    lockEnds: string;
+    id: string;
+  }) => {
+    stores.dispatcher.dispatch({
+      type: ACTIONS.RESET_VEST,
+      content: { tokenID: nft.id },
+    });
+  };
+
+  // const emptyRows =
+  //   rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
 
   if (!vestNFTs) {
     return (
@@ -228,25 +247,6 @@ export default function EnhancedTable({
       </div>
     );
   }
-
-  const onView = (nft: VestNFT) => {
-    router.push(`/vest/${nft.id}`);
-  };
-
-  const onReset = (nft: {
-    lockAmount: string;
-    lockValue: string;
-    lockEnds: string;
-    id: string;
-  }) => {
-    stores.dispatcher.dispatch({
-      type: ACTIONS.RESET_VEST,
-      content: { tokenID: nft.id },
-    });
-  };
-
-  // const emptyRows =
-  //   rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
 
   return (
     <div className="w-full">

@@ -23,6 +23,7 @@ import {
   usePairs,
   useSwapAssets,
   useVeToken,
+  useBalances,
 } from "../../lib/global/queries";
 
 import classes from "./layout.module.css";
@@ -55,6 +56,7 @@ export default function Layout({
   usePairs();
   useSwapAssets();
   useVeToken();
+  useBalances();
 
   return (
     <div className={classes.container}>

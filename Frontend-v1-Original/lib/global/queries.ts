@@ -872,7 +872,8 @@ export const usePairsWithBalances = () => {
   });
 };
 
-export const useBalances = (address: Address | undefined) => {
+export const useBalances = () => {
+  const { address } = useAccount();
   useGovToken(address);
   useVestNfts(address);
   useBaseAssetWithInfo(address);
