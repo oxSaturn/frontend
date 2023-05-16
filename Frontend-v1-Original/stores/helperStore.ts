@@ -254,7 +254,7 @@ class Helper {
   };
 
   resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
-    if (!address) return undefined;
+    if (!address) return null;
     const res = await fetch("/api/u-domains", {
       method: "POST",
       body: JSON.stringify({
@@ -262,7 +262,7 @@ class Helper {
       }),
     });
     const resJson = (await res.json()) as { domain: string };
-    if (!resJson?.domain || resJson?.domain === "") return undefined;
+    if (!resJson?.domain || resJson?.domain === "") return null;
     return resJson?.domain as string;
   };
 }

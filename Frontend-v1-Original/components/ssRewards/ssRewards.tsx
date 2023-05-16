@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Typography,
@@ -6,6 +6,7 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  Skeleton,
 } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
@@ -19,8 +20,8 @@ import {
   Gauge,
 } from "../../stores/types/types";
 
-import classes from "./ssRewards.module.css";
 import RewardsTable from "./ssRewardsTable";
+import { useRewards } from "./queries";
 
 const initialEmptyToken: VestNFT = {
   id: "0",
@@ -33,9 +34,6 @@ const initialEmptyToken: VestNFT = {
 };
 
 export default function Rewards() {
-  const [, updateState] = useState<{}>();
-  const forceUpdate = useCallback(() => updateState({}), []);
-
   const [rewards, setRewards] = useState<(Gauge | VeDistReward)[]>([]);
   const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
@@ -50,121 +48,39 @@ export default function Rewards() {
     if (nfts && nfts.length > 0) {
       if (!token || token.lockEnds === "0") {
         setToken(nfts[0]);
-        window.setTimeout(() => {
-          stores.dispatcher.dispatch({
-            type: ACTIONS.GET_REWARD_BALANCES,
-            content: { tokenID: nfts[0].id },
-          });
-        });
-      } else {
-        window.setTimeout(() => {
-          stores.dispatcher.dispatch({
-            type: ACTIONS.GET_REWARD_BALANCES,
-            content: { tokenID: token.id },
-          });
-        });
-      }
-    } else {
-      window.setTimeout(() => {
-        stores.dispatcher.dispatch({
-          type: ACTIONS.GET_REWARD_BALANCES,
-          content: { tokenID: 0 },
-        });
-      });
-    }
-
-    forceUpdate();
-  };
-
-  const rewardBalancesReturned = (
-    rew?: (typeof stores.stableSwapStore)["store"]["rewards"]
-  ) => {
-    if (rew) {
-      if (
-        rew &&
-        rew.xBribes &&
-        rew.xxBribes &&
-        rew.rewards &&
-        rew.veDist &&
-        rew.xBribes.length >= 0 &&
-        rew.xxBribes.length >= 0 &&
-        rew.rewards.length >= 0
-      ) {
-        setRewards([
-          ...rew.xxBribes,
-          ...rew.xBribes,
-          ...rew.rewards,
-          ...rew.veDist,
-        ]);
-      }
-    } else {
-      let re = stores.stableSwapStore.getStore("rewards");
-
-      if (
-        re &&
-        re.xBribes &&
-        re.xxBribes &&
-        re.rewards &&
-        re.veDist &&
-        re.xBribes.length >= 0 &&
-        re.xxBribes.length >= 0 &&
-        re.rewards.length >= 0
-      ) {
-        setRewards([
-          ...re.xxBribes,
-          ...re.xBribes,
-          ...re.rewards,
-          ...re.veDist,
-        ]);
       }
     }
   };
+
+  const { isFetching: isFetchingRewards } = useRewards(token?.id, (data) => {
+    if (data) {
+      if (
+        data.xBribes &&
+        data.xxBribes &&
+        data.rewards &&
+        data.veDist &&
+        data.xBribes.length >= 0 &&
+        data.xxBribes.length >= 0 &&
+        data.rewards.length >= 0
+      ) {
+        setRewards([
+          ...data.xxBribes,
+          ...data.xBribes,
+          ...data.rewards,
+          ...data.veDist,
+        ]);
+      }
+    }
+  });
 
   useEffect(() => {
-    rewardBalancesReturned();
     stableSwapUpdated();
 
     stores.emitter.on(ACTIONS.UPDATED, stableSwapUpdated);
-    stores.emitter.on(ACTIONS.REWARD_BALANCES_RETURNED, rewardBalancesReturned);
     return () => {
       stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
-      stores.emitter.removeListener(
-        ACTIONS.REWARD_BALANCES_RETURNED,
-        rewardBalancesReturned
-      );
     };
   }, [token]);
-
-  useEffect(() => {
-    const claimReturned = () => {
-      setLoading(false);
-    };
-
-    const claimAllReturned = () => {
-      setLoading(false);
-    };
-
-    stableSwapUpdated();
-
-    stores.emitter.on(ACTIONS.CLAIM_REWARD_RETURNED, claimReturned);
-    // stores.emitter.on(ACTIONS.CLAIM_PAIR_FEES_RETURNED, claimReturned);
-    stores.emitter.on(ACTIONS.CLAIM_VE_DIST_RETURNED, claimReturned);
-    stores.emitter.on(ACTIONS.CLAIM_ALL_REWARDS_RETURNED, claimAllReturned);
-    return () => {
-      stores.emitter.removeListener(
-        ACTIONS.CLAIM_REWARD_RETURNED,
-        claimReturned
-      );
-      stores.emitter.removeListener(
-        ACTIONS.CLAIM_VE_DIST_RETURNED,
-        claimReturned
-      );
-      stores.emitter.removeListener(
-        ACTIONS.CLAIM_ALL_REWARDS_RETURNED,
-        claimAllReturned
-      );
-    };
-  }, []);
 
   const onClaimAll = () => {
     setLoading(true);
@@ -174,37 +90,36 @@ export default function Rewards() {
     }
     stores.dispatcher.dispatch({
       type: ACTIONS.CLAIM_ALL_REWARDS,
-      content: { pairs: rewards, tokenID: sendTokenID },
+      content: { rewards, tokenID: sendTokenID },
     });
   };
 
   const handleChange = (event: SelectChangeEvent<VestNFT>) => {
     setToken(event.target.value as VestNFT);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.GET_REWARD_BALANCES,
-      content: { tokenID: (event.target.value as VestNFT).id },
-    });
   };
 
   const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.mediumInputContainer}>
+      <div>
+        <div className="flex min-h-[60px] w-full flex-wrap items-center rounded-lg bg-primaryBg pl-5">
           <Grid container>
             <Grid item lg="auto" md="auto" sm={12} xs={12}>
-              <Typography variant="body2" className={classes.helpText}>
+              <Typography
+                variant="body2"
+                className="mr-4 px-0 py-4 text-secondaryGray"
+              >
                 Please select your veNFT:
               </Typography>
             </Grid>
             <Grid item lg={6} md={6} sm={12} xs={12}>
-              <div className={classes.mediumInputAmount}>
+              <div className="h-full w-full min-w-[300px] flex-[1]">
                 <Select
                   fullWidth
                   value={value}
                   onChange={handleChange}
                   // @ts-expect-error This is because of how material-ui works
                   InputProps={{
-                    className: classes.mediumInput,
+                    className: "text-3xl",
                   }}
                   sx={{ "& .MuiSelect-select": { height: "inherit" } }}
                 >
@@ -216,19 +131,16 @@ export default function Rewards() {
                           // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
                           value={option as any}
                         >
-                          <div className={classes.menuOption}>
+                          <div className="flex w-[calc(100%-24px)] items-center justify-between">
                             <Typography>Token #{option.id}</Typography>
                             <div>
-                              <Typography
-                                align="right"
-                                className={classes.smallerText}
-                              >
+                              <Typography align="right" className="text-xs">
                                 {formatCurrency(option.lockValue)}
                               </Typography>
                               <Typography
                                 align="right"
                                 color="textSecondary"
-                                className={classes.smallerText}
+                                className="text-xs"
                               >
                                 {veToken?.symbol}
                               </Typography>
@@ -247,23 +159,21 @@ export default function Rewards() {
   };
 
   return (
-    <div className={classes.container}>
-      <div className={classes.descriptionBox}>
+    <div className="m-auto mb-5 mt-[100px] w-[calc(100%-40px)] max-w-[1400px] flex-col items-end pb-2 min-[1200px]:mb-16 min-[1200px]:mt-['unset'] min-[1200px]:w-[calc(100%-180px)]">
+      <div className="flex flex-col gap-1 self-start text-left">
         <Typography variant="h1">Rewards</Typography>
         <Typography variant="body2">
           Choose your veFLOW and claim your rewards.
         </Typography>
       </div>
-      <div className={classes.toolbarContainer}>
+      <div className="flex w-full items-center justify-between py-6 px-0">
         <Grid container spacing={1}>
           <Grid item lg="auto" md="auto" sm={12} xs={12}>
-            <div className={classes.tokenIDContainer}>
-              {renderMediumInput(token, vestNFTs)}
-            </div>
+            <div>{renderMediumInput(token, vestNFTs)}</div>
           </Grid>
           <Grid item lg={true} md={true} sm={false} xs={false}>
-            <div className={classes.disclaimerContainer}>
-              <Typography className={classes.disclaimer}>
+            <div className="flex items-center justify-center">
+              <Typography className="rounded-lg border border-cantoGreen bg-primaryBg p-5 text-xs font-extralight">
                 Rewards are an estimation that aren&apos;t exact till the supply
                 -{">"} rewardPerToken calculations have run
               </Typography>
@@ -275,18 +185,20 @@ export default function Rewards() {
               color="secondary"
               startIcon={<AddCircleOutline />}
               size="large"
-              className={classes.buttonOverride}
+              className="w-full min-w-[200px] bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
               onClick={onClaimAll}
               disabled={loading}
             >
-              <Typography className={classes.actionButtonText}>
-                Claim All
-              </Typography>
+              <Typography>Claim All</Typography>
             </Button>
           </Grid>
         </Grid>
       </div>
-      <RewardsTable rewards={rewards} tokenID={token?.id} />
+      {!isFetchingRewards ? (
+        <RewardsTable rewards={rewards} tokenID={token?.id} />
+      ) : (
+        <Skeleton />
+      )}
     </div>
   );
 }

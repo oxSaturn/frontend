@@ -20,6 +20,7 @@ import { canto } from "viem/chains";
 import { Dispatcher } from "flux";
 
 import { queryClient } from "../pages/_app";
+import { getRewardBalances } from "../components/ssRewards/queries";
 import { formatCurrency } from "../utils/utils";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
@@ -34,6 +35,7 @@ import {
   W_NATIVE_ADDRESS,
   W_NATIVE_ABI,
   PAIR_DECIMALS,
+  QUERY_KEYS,
 } from "./constants/constants";
 import viemClient, { chunkArray, multicallChunks } from "./connectors/viem";
 
@@ -71,12 +73,6 @@ class Store {
     veToken: VeToken | null;
     pairs: Pair[];
     vestNFTs: VestNFT[];
-    rewards: {
-      xBribes: Gauge[];
-      xxBribes: Gauge[];
-      rewards: Gauge[];
-      veDist: VeDistReward[];
-    };
     updateDate: number;
     tokenPrices: Map<string, number>;
     tvl: number;
@@ -90,19 +86,13 @@ class Store {
     this.emitter = emitter;
 
     this.store = {
-      baseAssets: [],
+      baseAssets: this._getBaseAssets(),
       swapAssets: [],
       routeAssets: [],
       govToken: null,
       veToken: null,
       pairs: [],
       vestNFTs: [],
-      rewards: {
-        xBribes: [],
-        xxBribes: [],
-        rewards: [],
-        veDist: [],
-      },
       updateDate: 0,
       tokenPrices: new Map(),
       tvl: 0,
@@ -217,9 +207,6 @@ class Store {
           //   break;
 
           //REWARDS
-          case ACTIONS.GET_REWARD_BALANCES:
-            this.getRewardBalances(payload);
-            break;
           case ACTIONS.CLAIM_X_BRIBE:
             this.claimXBribes(payload);
             break;
@@ -1414,7 +1401,7 @@ class Store {
     try {
       this.setStore({ govToken: this._getGovTokenBase() });
       this.setStore({ veToken: this._getVeTokenBase() });
-      this.setStore({ baseAssets: await this._getBaseAssets() });
+      // this.setStore({ baseAssets: this._getBaseAssets() });
       // this.setStore({ routeAssets: await this._getRouteAssets() }); // We dont need it because we use firebird router
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
@@ -1438,7 +1425,7 @@ class Store {
     }
   };
 
-  _getBaseAssets = async () => {
+  _getBaseAssets = () => {
     try {
       // const response = await fetch(
       //   `${process.env.NEXT_PUBLIC_API}/api/v1/assets`,
@@ -4452,10 +4439,12 @@ class Store {
       });
 
       // CHECK unclaimed bribes
-      await this.getRewardBalances({ type: "internal", content: { tokenID } });
-      const rewards = this.getStore("rewards");
+      const rewards = await queryClient.fetchQuery({
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+        queryFn: () => getRewardBalances(account, tokenID),
+      });
 
-      if (rewards.xxBribes.length > 0) {
+      if (rewards && rewards.xxBribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewardsTXID,
           description: `Unclaimed bribes found, claiming`,
@@ -4468,7 +4457,7 @@ class Store {
         });
       }
 
-      if (rewards.xxBribes.length > 0) {
+      if (rewards && rewards.xxBribes.length > 0) {
         const sendGauges = rewards.xxBribes.map((pair) => {
           return pair.gauge.xx_wrapped_bribe_address;
         });
@@ -4487,7 +4476,7 @@ class Store {
         );
       }
 
-      if (rewards.veDist.length > 0) {
+      if (rewards && rewards.veDist.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rebaseTXID,
           description: `Claiming rebase distribution`,
@@ -4500,7 +4489,7 @@ class Store {
         });
       }
 
-      if (rewards.veDist.length > 0) {
+      if (rewards && rewards.veDist.length > 0) {
         const writeClaim = async () => {
           const { request } = await viemClient.simulateContract({
             account,
@@ -4592,10 +4581,12 @@ class Store {
       });
 
       // CHECK unclaimed bribes
-      await this.getRewardBalances({ type: "internal", content: { tokenID } });
-      const rewards = this.getStore("rewards");
+      const rewards = await queryClient.fetchQuery({
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+        queryFn: () => getRewardBalances(account, tokenID),
+      });
 
-      if (rewards.xxBribes.length > 0) {
+      if (rewards && rewards.xxBribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewards01TXID,
           description: `Unclaimed bribes found, claiming`,
@@ -4607,7 +4598,7 @@ class Store {
           status: "DONE",
         });
       }
-      if (rewards.xBribes.length > 0) {
+      if (rewards && rewards.xBribes.length > 0) {
         this.emitter.emit(ACTIONS.TX_STATUS, {
           uuid: rewards0TXID,
           description: `Unclaimed bribes found, claiming`,
@@ -4620,7 +4611,7 @@ class Store {
         });
       }
 
-      if (rewards.xxBribes.length > 0) {
+      if (rewards && rewards.xxBribes.length > 0) {
         const sendGauges = rewards.xxBribes.map((pair) => {
           return pair.gauge.xx_wrapped_bribe_address;
         });
@@ -4638,7 +4629,7 @@ class Store {
           tokenID
         );
       }
-      if (rewards.xBribes.length > 0) {
+      if (rewards && rewards.xBribes.length > 0) {
         const sendGauges = rewards.xBribes.map((pair) => {
           return pair.gauge.x_wrapped_bribe_address;
         });
@@ -5113,243 +5104,6 @@ class Store {
     }
   };
 
-  getRewardBalances = async (payload: {
-    type: string;
-    content: { tokenID: string };
-  }) => {
-    try {
-      const account = stores.accountStore.getStore("address");
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-
-      const { tokenID } = payload.content;
-
-      const pairs = this.getStore("pairs");
-      const veToken = this.getStore("veToken");
-      const govToken = this.getStore("govToken");
-      if (!veToken || !govToken)
-        throw new Error(
-          "Error getting veToken and govToken in getRewardBalances"
-        );
-
-      const gauges = pairs.filter(hasGauge);
-
-      if (typeof window.structuredClone === "undefined") {
-        throw new Error(
-          "Your browser does not support structuredClone. Please use a different browser."
-        );
-      }
-
-      const x_filteredPairs = structuredClone(gauges);
-      const xx_filteredPairs = structuredClone(gauges);
-      const filteredPairs2 = structuredClone(gauges);
-
-      let veDistReward: VeDistReward[] = [];
-      let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
-      let xx_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
-
-      if (tokenID) {
-        const x_calls = x_filteredPairs.flatMap((pair) =>
-          pair.gauge.x_bribes.map(
-            (bribe) =>
-              ({
-                address: pair.gauge.x_wrapped_bribe_address,
-                abi: CONTRACTS.BRIBE_ABI,
-                functionName: "earned",
-                args: [bribe.token.address, BigInt(tokenID)],
-              } as const)
-          )
-        );
-        const x_callsChunks = chunkArray(x_calls, 100);
-
-        const x_earnedBribesAllPairs = await multicallChunks(x_callsChunks);
-
-        const xx_calls = x_filteredPairs.flatMap((pair) =>
-          pair.gauge.xx_bribes.map(
-            (bribe) =>
-              ({
-                address: pair.gauge.xx_wrapped_bribe_address,
-                abi: CONTRACTS.BRIBE_ABI,
-                functionName: "earned",
-                args: [bribe.token.address, BigInt(tokenID)],
-              } as const)
-          )
-        );
-        const xx_callsChunks = chunkArray(xx_calls, 100);
-
-        const xx_earnedBribesAllPairs = await multicallChunks(xx_callsChunks);
-
-        x_filteredPairs.forEach((pair) => {
-          const x_earnedBribesPair = x_earnedBribesAllPairs.splice(
-            0,
-            pair.gauge.x_bribes.length
-          );
-          pair.gauge.x_bribesEarned = pair.gauge.x_bribes.map((bribe, i) => {
-            return {
-              ...bribe,
-              earned: formatUnits(
-                x_earnedBribesPair[i],
-                bribe.token.decimals
-              ) as `${number}`,
-            };
-          });
-        });
-
-        xx_filteredPairs.forEach((pair) => {
-          const xx_earnedBribesPair = xx_earnedBribesAllPairs.splice(
-            0,
-            pair.gauge.xx_bribes.length
-          );
-          pair.gauge.xx_bribesEarned = pair.gauge.xx_bribes.map((bribe, i) => {
-            return {
-              ...bribe,
-              earned: formatUnits(
-                xx_earnedBribesPair[i],
-                bribe.token.decimals
-              ) as `${number}`,
-            };
-          });
-        });
-
-        x_filteredBribes = x_filteredPairs
-          .filter((pair) => {
-            if (
-              pair.gauge.x_bribesEarned &&
-              pair.gauge.x_bribesEarned.length > 0
-            ) {
-              let shouldReturn = false;
-
-              for (let i = 0; i < pair.gauge.x_bribesEarned.length; i++) {
-                if (
-                  pair.gauge.x_bribesEarned[i].earned &&
-                  parseUnits(
-                    pair.gauge.x_bribesEarned[i].earned as `${number}`,
-                    pair.gauge.x_bribes[i].token.decimals
-                  ) > 0
-                ) {
-                  shouldReturn = true;
-                }
-              }
-
-              return shouldReturn;
-            }
-
-            return false;
-          })
-          .map((pair) => {
-            pair.rewardType = "XBribe";
-            return pair;
-          });
-
-        xx_filteredBribes = xx_filteredPairs
-          .filter((pair) => {
-            if (
-              pair.gauge.xx_bribesEarned &&
-              pair.gauge.xx_bribesEarned.length > 0
-            ) {
-              let shouldReturn = false;
-
-              for (let i = 0; i < pair.gauge.xx_bribesEarned.length; i++) {
-                if (
-                  pair.gauge.xx_bribesEarned[i].earned &&
-                  parseUnits(
-                    pair.gauge.xx_bribesEarned[i].earned as `${number}`,
-                    pair.gauge.xx_bribes[i].token.decimals
-                  ) > 0
-                ) {
-                  shouldReturn = true;
-                }
-              }
-
-              return shouldReturn;
-            }
-
-            return false;
-          })
-          .map((pair) => {
-            pair.rewardType = "XXBribe";
-            return pair;
-          });
-
-        const veDistEarned = await viemClient.readContract({
-          address: CONTRACTS.VE_DIST_ADDRESS,
-          abi: CONTRACTS.VE_DIST_ABI,
-          functionName: "claimable",
-          args: [BigInt(tokenID)],
-        });
-
-        const vestNFTs = this.getStore("vestNFTs");
-        let theNFT = vestNFTs.filter((vestNFT) => {
-          return vestNFT.id === tokenID;
-        });
-
-        if (veDistEarned > 0) {
-          veDistReward.push({
-            token: theNFT[0],
-            lockToken: veToken,
-            rewardToken: govToken,
-            earned: formatUnits(veDistEarned, govToken.decimals),
-            rewardType: "Distribution",
-          });
-        }
-      }
-
-      const rewardsCalls = filteredPairs2.map((pair) => {
-        return {
-          address: pair.gauge.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "earned",
-          args: [CONTRACTS.GOV_TOKEN_ADDRESS, account],
-        } as const;
-      });
-
-      const rewardsEarnedCallResult = await viemClient.multicall({
-        allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-        contracts: rewardsCalls,
-      });
-
-      const rewardsEarned = [...filteredPairs2];
-
-      for (let i = 0; i < rewardsEarned.length; i++) {
-        rewardsEarned[i].gauge.rewardsEarned = formatEther(
-          rewardsEarnedCallResult[i]
-        );
-      }
-
-      const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
-      for (let j = 0; j < rewardsEarned.length; j++) {
-        let pair = Object.assign({}, rewardsEarned[j]);
-        if (
-          pair.gauge &&
-          pair.gauge.rewardsEarned &&
-          parseEther(pair.gauge.rewardsEarned as `${number}`) > 0
-        ) {
-          pair.rewardType = "Reward";
-          filteredRewards.push(pair);
-        }
-      }
-
-      const rewards: Store["store"]["rewards"] = {
-        xBribes: x_filteredBribes,
-        xxBribes: xx_filteredBribes,
-        rewards: filteredRewards,
-        veDist: veDistReward,
-      };
-
-      this.setStore({
-        rewards,
-      });
-
-      this.emitter.emit(ACTIONS.REWARD_BALANCES_RETURNED, rewards);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
-
   claimXBribes = async (payload: {
     type: string;
     content: {
@@ -5402,10 +5156,10 @@ class Store {
         tokenID
       );
 
-      this.getRewardBalances({
-        type: "Internal rewards balances",
-        content: { tokenID },
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
       });
+
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
       console.error(ex);
@@ -5465,9 +5219,8 @@ class Store {
         tokenID
       );
 
-      this.getRewardBalances({
-        type: "Internal rewards balances",
-        content: { tokenID },
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
       this.getBalances();
@@ -5480,7 +5233,7 @@ class Store {
   claimAllRewards = async (payload: {
     type: string;
     content: {
-      pairs: Store["store"]["rewards"][keyof Store["store"]["rewards"]];
+      rewards: (Gauge | VeDistReward)[];
       tokenID: string;
     };
   }) => {
@@ -5497,7 +5250,7 @@ class Store {
         return null;
       }
 
-      const { pairs, tokenID } = payload.content;
+      const { rewards, tokenID } = payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let claim01TXID = this.getTXUUID();
@@ -5505,18 +5258,18 @@ class Store {
       let rewardClaimTXIDs: string[] = [];
       let distributionClaimTXIDs: string[] = [];
 
-      let xBribePairs = (pairs as Gauge[]).filter((pair) => {
+      let xBribePairs = (rewards as Gauge[]).filter((pair) => {
         return pair.rewardType === "XBribe";
       });
-      let xxBribePairs = (pairs as Gauge[]).filter((pair) => {
+      let xxBribePairs = (rewards as Gauge[]).filter((pair) => {
         return pair.rewardType === "XXBribe";
       });
 
-      let rewardPairs = (pairs as Gauge[]).filter((pair) => {
+      let rewardPairs = (rewards as Gauge[]).filter((pair) => {
         return pair.rewardType === "Reward";
       });
 
-      let distribution = (pairs as VeDistReward[]).filter((pair) => {
+      let distribution = (rewards as VeDistReward[]).filter((pair) => {
         return pair.rewardType === "Distribution";
       });
 
@@ -5656,9 +5409,8 @@ class Store {
         }
       }
 
-      this.getRewardBalances({
-        type: "Internal reward balances",
-        content: { tokenID },
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.REWARDS],
       });
       this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
       this.getBalances();
@@ -5715,9 +5467,8 @@ class Store {
       };
       await this._writeContractWrapper(claimTXID, writeGetReward);
 
-      this.getRewardBalances({
-        type: "internal reward balances",
-        content: { tokenID },
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
       this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
@@ -5774,9 +5525,8 @@ class Store {
       };
       await this._writeContractWrapper(claimTXID, writeClaim);
 
-      this.getRewardBalances({
-        type: "internal reward balances",
-        content: { tokenID },
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
     } catch (ex) {
@@ -5936,9 +5686,9 @@ class Store {
 
       queryClient.invalidateQueries({
         queryKey: [
-          "launchpadProject",
-          "noteAsset",
-          "userClaimableAndClaimableRefEarnings",
+          QUERY_KEYS.LAUNCHPAD_PROJECT,
+          QUERY_KEYS.NOTE_ASSET,
+          QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS,
         ],
       });
     } catch (ex) {
@@ -6001,7 +5751,7 @@ class Store {
       await this._writeContractWrapper(claimTXID, writeClaim);
 
       queryClient.invalidateQueries({
-        queryKey: ["userClaimableAndClaimableRefEarnings"],
+        queryKey: [QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS],
       });
     } catch (ex) {
       console.error(ex);
@@ -6063,7 +5813,7 @@ class Store {
       await this._writeContractWrapper(claimTXID, writeClaim);
 
       queryClient.invalidateQueries({
-        queryKey: ["userClaimableAndClaimableRefEarnings"],
+        queryKey: [QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS],
       });
     } catch (ex) {
       console.error(ex);

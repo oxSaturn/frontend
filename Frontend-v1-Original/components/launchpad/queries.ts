@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Address, formatEther, formatUnits, isAddress } from "viem";
 
 import viemClient from "../../stores/connectors/viem";
-import { CONTRACTS } from "../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
 
 const NOTE = {
   address: "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
@@ -96,7 +96,7 @@ const getLaunchpadProjects = async (userAddress: Address | undefined) => {
 
 export const useLaunchpadProjects = (userAddress: Address | undefined) => {
   return useQuery({
-    queryKey: ["launchpadProjects", userAddress],
+    queryKey: [QUERY_KEYS.LAUNCHPAD_PROJECT, userAddress],
     queryFn: () => getLaunchpadProjects(userAddress),
   });
 };
@@ -205,7 +205,7 @@ export const useLaunchpadProject = (address: string | string[] | undefined) => {
       ? address
       : undefined;
   return useQuery({
-    queryKey: ["launchpadProject", addy],
+    queryKey: [QUERY_KEYS.LAUNCHPAD_PROJECT, addy],
     queryFn: () => getLaunchpadProject(addy),
     enabled: !!addy,
   });
@@ -233,7 +233,7 @@ const getNoteAsset = async (address: Address | null | undefined) => {
 
 export const useNoteAsset = (address: Address | null | undefined) => {
   return useQuery({
-    queryKey: ["noteAsset", address],
+    queryKey: [QUERY_KEYS.NOTE_ASSET, address],
     queryFn: () => getNoteAsset(address),
     enabled: !!address,
     initialData: {
@@ -294,7 +294,7 @@ export const useUserClaimableAndClaimableRefEarnings = (
   const { data } = useLaunchpadProject(projectAddress);
   return useQuery({
     queryKey: [
-      "userClaimableAndClaimableRefEarnings",
+      QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS,
       addy,
       data?.tokenOfProjectDecimals,
       address,

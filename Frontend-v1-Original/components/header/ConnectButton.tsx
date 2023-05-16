@@ -7,6 +7,7 @@ import {
 } from "@rainbow-me/rainbowkit";
 
 import stores from "../../stores";
+import { QUERY_KEYS } from "../../stores/constants/constants";
 
 export function ConnectButton() {
   const { address } = useAccount();
@@ -14,7 +15,7 @@ export function ConnectButton() {
   const { openAccountModal } = useAccountModal();
 
   const { data: domain } = useQuery({
-    queryKey: ["domain", address],
+    queryKey: [QUERY_KEYS.DOMAIN, address],
     queryFn: () => stores.helper.resolveUnstoppableDomain(address),
   });
 
