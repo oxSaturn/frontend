@@ -3903,20 +3903,6 @@ class Store {
       const isWrap = fromSymbol === "CANTO";
       const action = isWrap ? "Wrap" : "Unwrap";
 
-      const isInvalidWrap =
-        fromSymbol !== "CANTO" &&
-        !(toSymbol === "WCANTO" || toSymbol === "CANTOE");
-      const isInvalidUnwrap =
-        toSymbol !== "CANTO" &&
-        !(fromSymbol === "WCANTO" || fromSymbol === "CANTOE");
-
-      if (
-        (action === "Wrap" && isInvalidWrap) ||
-        (action === "Unwrap" && isInvalidUnwrap)
-      ) {
-        throw new Error("Wrap Unwrap assets are wrong");
-      }
-
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       const wrapUnwrapTXID = this.getTXUUID();
       const tx: ITransaction = {
@@ -6092,14 +6078,14 @@ class Store {
 
   writeWrapUnwrap = async (
     walletClient: WalletClient,
-    targetWrapper: string,
+    targetWrapper: `0x${string}`,
     isWrap: boolean,
     wrapUnwrapTXID: string,
     sendFromAmount: string
   ) => {
     const [account] = await walletClient.getAddresses();
     const wNativeTokenContract = {
-      address: targetWrapper as `0x${string}`,
+      address: targetWrapper,
       abi: W_NATIVE_ABI,
     } as const;
     const writeWrap = async () => {
@@ -6110,11 +6096,7 @@ class Store {
         args: undefined,
         value: BigInt(sendFromAmount),
       });
-      const txHash = await walletClient.writeContract<
-        typeof W_NATIVE_ABI,
-        "deposit",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     const writeUnwrap = async () => {
@@ -6187,11 +6169,7 @@ class Store {
         ],
         value: BigInt(sendAmount0),
       });
-      const txHash = await walletClient.writeContract<
-        typeof CONTRACTS.ROUTER_ABI,
-        "addLiquidityETH",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     const writeWithNativeTokenSecond = async () => {
@@ -6210,11 +6188,7 @@ class Store {
         ],
         value: BigInt(sendAmount1),
       });
-      const txHash = await walletClient.writeContract<
-        typeof CONTRACTS.ROUTER_ABI,
-        "addLiquidityETH",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     if (
