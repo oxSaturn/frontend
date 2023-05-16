@@ -3962,47 +3962,30 @@ class Store {
       }
       const [account] = await walletClient.getAddresses();
 
-      const { fromAsset, toAsset, fromAmount } = payload.content;
+      const {
+        fromAsset: { address: fromAddress, symbol: fromSymbol },
+        toAsset: { address: toAddress, symbol: toSymbol },
+        fromAmount,
+      } = payload.content;
+      const isWrap = fromSymbol === "CANTO";
+      const action = isWrap ? "Wrap" : "Unwrap";
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let wrapUnwrapTXID = this.getTXUUID();
-      let isWrap;
-      let tx;
-      if (fromAsset.symbol === "WCANTO" && toAsset.symbol === "CANTO") {
-        isWrap = false;
-        tx = {
-          title: `Unwrap WCANTO for CANTO`,
-          type: "Unwrap",
-          verb: "Unwrap Successful",
-          transactions: [
-            {
-              uuid: wrapUnwrapTXID,
-              description: `Unwrap ${formatCurrency(
-                fromAmount
-              )} WCANTO for CANTO`,
-              status: "WAITING",
-            },
-          ],
-        };
-      } else if (fromAsset.symbol === "CANTO" && toAsset.symbol === "WCANTO") {
-        isWrap = true;
-        tx = {
-          title: `Wrap CANTO for WCANTO`,
-          type: "Wrap",
-          verb: "Wrap Successful",
-          transactions: [
-            {
-              uuid: wrapUnwrapTXID,
-              description: `Wrap ${formatCurrency(
-                fromAmount
-              )} CANTO for WCANTO`,
-              status: "WAITING",
-            },
-          ],
-        };
-      } else {
-        throw new Error("Wrap Unwrap assets are wrong");
-      }
+      const wrapUnwrapTXID = this.getTXUUID();
+      const tx: ITransaction = {
+        title: `${action} ${fromSymbol} for ${toSymbol}`,
+        type: action,
+        verb: `${action} Successful`,
+        transactions: [
+          {
+            uuid: wrapUnwrapTXID,
+            description: `${action} ${formatCurrency(
+              fromAmount
+            )} ${fromSymbol} for ${toSymbol}`,
+            status: TransactionStatus.WAITING,
+          },
+        ],
+      };
 
       this.emitter.emit(ACTIONS.TX_ADDED, tx);
 
@@ -4013,13 +3996,14 @@ class Store {
 
       await this.writeWrapUnwrap(
         walletClient,
+        isWrap ? toAddress : fromAddress,
         isWrap,
         wrapUnwrapTXID,
         sendFromAmount
       );
 
-      this._getSpecificAssetInfo(account, fromAsset.address);
-      this._getSpecificAssetInfo(account, toAsset.address);
+      this._getSpecificAssetInfo(account, fromAddress);
+      this._getSpecificAssetInfo(account, toAddress);
 
       this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
     } catch (ex) {
@@ -6161,13 +6145,14 @@ class Store {
 
   writeWrapUnwrap = async (
     walletClient: WalletClient,
+    targetWrapper: `0x${string}`,
     isWrap: boolean,
     wrapUnwrapTXID: string,
     sendFromAmount: string
   ) => {
     const [account] = await walletClient.getAddresses();
     const wNativeTokenContract = {
-      address: W_NATIVE_ADDRESS as `0x${string}`,
+      address: targetWrapper,
       abi: W_NATIVE_ABI,
     } as const;
     const writeWrap = async () => {
@@ -6178,11 +6163,7 @@ class Store {
         args: undefined,
         value: BigInt(sendFromAmount),
       });
-      const txHash = await walletClient.writeContract<
-        typeof W_NATIVE_ABI,
-        "deposit",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     const writeUnwrap = async () => {
@@ -6255,11 +6236,7 @@ class Store {
         ],
         value: BigInt(sendAmount0),
       });
-      const txHash = await walletClient.writeContract<
-        typeof CONTRACTS.ROUTER_ABI,
-        "addLiquidityETH",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     const writeWithNativeTokenSecond = async () => {
@@ -6278,11 +6255,7 @@ class Store {
         ],
         value: BigInt(sendAmount1),
       });
-      const txHash = await walletClient.writeContract<
-        typeof CONTRACTS.ROUTER_ABI,
-        "addLiquidityETH",
-        undefined
-      >(request);
+      const txHash = await walletClient.writeContract(request);
       return txHash;
     };
     if (
