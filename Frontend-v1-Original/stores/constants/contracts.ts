@@ -49,6 +49,10 @@ export const ERC20_ABI = abis.erc20ABI;
 export const PAIR_ABI = abis.pairABI;
 export const GAUGE_ABI = abis.gaugeABI;
 export const BRIBE_ABI = abis.bribeABI;
+export const BRIBE_FACTORY_ABI = abis.bribeFactoryABI;
+export const WXB_ADDRESS = "0xEA9E24a2979D4ACbdB4CCE6608F6C45F9c4421d7";
+export const X_WXB_ADDRESS = "0xabd64fCF41469BfD1F5074ba28EeDee4cca0E6a6";
+export const XX_WXB_ADDRESS = "0x1E9C436a3F51b08F7BfAF8410465fCbBf7A0ae1C";
 export const TOKEN_ABI = abis.tokenABI;
 
 export const AUTO_BRIBE_ABI = abis.autoBribeABI;

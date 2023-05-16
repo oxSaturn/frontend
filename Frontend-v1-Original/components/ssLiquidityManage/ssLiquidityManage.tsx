@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -112,14 +112,14 @@ export default function LiquidityManage() {
       );
       setPair(pp);
 
-      if (pp) {
+      if (pp && isBaseAsset(pp.token0) && isBaseAsset(pp.token1)) {
         setWithdrawAsset(pp);
         setAsset0(pp.token0);
         setAsset1(pp.token1);
         setStable(pp.isStable);
       }
 
-      if (pp && BigNumber(pp.balance).gt(0)) {
+      if (pp && pp.balance && BigNumber(pp.balance).gt(0)) {
         setAdvanced(true);
       }
     } else {

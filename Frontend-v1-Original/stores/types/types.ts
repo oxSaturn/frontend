@@ -45,7 +45,7 @@ interface VestNFT {
 }
 
 interface Bribe {
-  token: RouteAsset;
+  token: RouteAsset | BaseAsset;
   reward_ammount: number;
   rewardAmmount: number;
   rewardAmount?: number; // gets assigned in frontend store and eq rewardAmmount
@@ -85,13 +85,11 @@ interface Pair {
     address: `0x${string}`;
     total_supply: number;
     bribe_address: `0x${string}`;
-    fees_address: `0x${string}`;
     wrapped_bribe_address: `0x${string}`;
     x_wrapped_bribe_address: `0x${string}`;
     xx_wrapped_bribe_address: `0x${string}`;
     reward: number;
     bribeAddress: `0x${string}`;
-    feesAddress: `0x${string}`;
     totalSupply: number | string; //gets reassigned to string in frontend store
     bribes: Bribe[];
     x_bribes: Bribe[];
