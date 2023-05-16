@@ -171,10 +171,6 @@ const getLocalToggles = () => {
   return localToggles;
 };
 
-interface PairsTableProps {
-  pairs: Pair[];
-}
-
 interface PairsTableToolbarProps {
   setSearch: (_search: string) => void;
   setToggleActive: (_toggleActive: boolean) => void;
@@ -389,7 +385,11 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
   );
 };
 
-export default function EnhancedTable({ pairs }: PairsTableProps) {
+export default function EnhancedTable({
+  pairs,
+}: {
+  pairs: Pair[] | undefined;
+}) {
   const router = useRouter();
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -442,7 +442,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const filteredPairs = useMemo(
     () =>
       pairs
-        .filter((pair) => {
+        ?.filter((pair) => {
           if (
             pair.isAliveGauge === false &&
             pair.balance &&
@@ -509,16 +509,16 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
 
   const sortedPairs = useMemo(
     () =>
-      stableSort(filteredPairs, getComparator(order, orderBy)).slice(
+      stableSort(filteredPairs ?? [], getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
     [filteredPairs, order, orderBy, page, rowsPerPage]
   );
 
-  const emptyRows = 5 - Math.min(5, filteredPairs.length - page * 5);
+  const emptyRows = 5 - Math.min(5, filteredPairs?.length ?? 0 - page * 5);
 
-  if (pairs.length === 0 || !pairs) {
+  if (!pairs || pairs.length === 0 || !filteredPairs) {
     return (
       <div className="w-full">
         <Skeleton

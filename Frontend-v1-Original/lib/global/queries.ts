@@ -1,3 +1,4 @@
+import { useAccount } from "wagmi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContract, formatUnits, Address, formatEther } from "viem";
 
@@ -232,7 +233,7 @@ export const useActivePeriod = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.ACTIVE_PERIOD],
     queryFn: getActivePeriod,
-    staleTime: 1000 * 60 * 60 * 24 * 3.5,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -310,10 +311,12 @@ const getMarketCap = async (
   circulatingSupply: number | undefined,
   tokenPrices: Map<string, number> | undefined
 ) => {
-  if (!circulatingSupply || !tokenPrices) return 0;
-  const price = tokenPrices.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
+  if (!circulatingSupply || !tokenPrices)
+    throw new Error("Missing circ supply or token prices");
 
-  if (!price || !circulatingSupply) return 0;
+  const price = tokenPrices.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
+  if (!price) throw new Error("Missing price");
+
   return circulatingSupply * price;
 };
 
@@ -324,6 +327,7 @@ export const useMarketCap = () => {
     queryKey: [QUERY_KEYS.MARKET_CAP, circulatingSupply, tokenPrices],
     queryFn: () => getMarketCap(circulatingSupply, tokenPrices),
     staleTime: 1000 * 60 * 10,
+    enabled: !!circulatingSupply && !!tokenPrices,
   });
 };
 
@@ -852,7 +856,8 @@ const getPairsWithInfo = async (
   return ps1;
 };
 
-export const usePairsWithBalances = (address: Address | undefined) => {
+export const usePairsWithBalances = () => {
+  const { address } = useAccount();
   const { data: pairs } = usePairs();
   const { data: baseAssetsWithInfo } = useBaseAssetWithInfo(address);
   return useQuery({
@@ -871,5 +876,5 @@ export const useBalances = (address: Address | undefined) => {
   useGovToken(address);
   useVestNfts(address);
   useBaseAssetWithInfo(address);
-  usePairsWithBalances(address);
+  usePairsWithBalances();
 };

@@ -16,7 +16,6 @@ import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
 import {
-  useActivePeriod,
   useInitBaseAssets,
   useCirculatingSupply,
   useGovTokenBase,
@@ -49,7 +48,6 @@ export default function Layout({
     }
   }, [walletClient, address]);
 
-  useActivePeriod();
   useInitBaseAssets();
   useCirculatingSupply();
   useGovTokenBase();
