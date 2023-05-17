@@ -16,7 +16,7 @@ export default function LockAmount({
   updateLockAmount,
 }: {
   nft: VestNFT;
-  govToken: GovToken | null;
+  govToken: GovToken | undefined;
   updateLockAmount: (_arg: string) => void;
 }) {
   const [, setApprovalLoading] = useState(false);

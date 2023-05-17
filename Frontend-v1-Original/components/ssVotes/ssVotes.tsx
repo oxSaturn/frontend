@@ -17,7 +17,12 @@ import {
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
 
-import { useVestNfts, useVeToken } from "../../lib/global/queries";
+import {
+  usePairsWithGauges,
+  useVestNfts,
+  useVeToken,
+  useVestVotes,
+} from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
 import stores from "../../stores";
@@ -26,7 +31,6 @@ import {
   Gauge,
   hasGauge,
   VestNFT,
-  Vote,
   Votes as VotesType,
 } from "../../stores/types/types";
 
@@ -51,16 +55,11 @@ function MyListSubheader(props: ListSubheaderProps) {
 MyListSubheader.muiSkipListHighlight = true;
 
 export default function Votes() {
-  // const router = useRouter();
-
   const [showWarning, setShowWarning] = useState(false);
 
-  // const [, updateState] = useState<{}>();
-  // const forceUpdate = useCallback(() => updateState({}), []);
-
-  const [gauges, setGauges] = useState<Gauge[]>([]);
+  const [gauges, setGauges] = useState<Gauge[]>();
   const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState<VotesType>([]);
+  const [votes, setVotes] = useState<VotesType>();
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [search, setSearch] = useState("");
 
@@ -77,26 +76,12 @@ export default function Votes() {
         setToken(nfts[0]);
       }
     }
-
-    if (nfts && nfts.length > 0 && gauges && gauges.length > 0) {
-      const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
-      );
-      const defaultSelectedNFT =
-        votableNFTs.length > 0 ? votableNFTs[0] : nfts[0];
-      stores.dispatcher.dispatch({
-        type: ACTIONS.GET_VEST_VOTES,
-        content: { tokenID: defaultSelectedNFT.id },
-      });
-    }
   });
 
-  const ssUpdated = () => {
-    const as = stores.stableSwapStore.getStore("pairs");
-
-    const filteredAssets = as.filter(hasGauge).filter((gauge) => {
+  const { data: pairs } = usePairsWithGauges((pairs) => {
+    const filteredAssets = pairs.filter(hasGauge).filter((gauge) => {
       let sliderValue =
-        votes.find((el) => el.address === gauge.address)?.value ?? 0;
+        votes?.find((el) => el.address === gauge.address)?.value ?? 0;
       if (gauge.isAliveGauge === false && sliderValue === 0) {
         return false;
       }
@@ -104,61 +89,41 @@ export default function Votes() {
     });
     if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
       setGauges(filteredAssets);
-  };
+  });
+
+  useVestVotes(token.id, (votesReturned) => {
+    const votesReturnedMapped = votesReturned?.map((vote) => {
+      return {
+        address: vote?.address,
+        value: BigNumber(
+          vote && vote.votePercent ? vote.votePercent : 0
+        ).toNumber(),
+      };
+    });
+    if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
+      setVotes(votesReturnedMapped);
+
+    const filteredPairs = pairs?.filter(hasGauge).filter((gauge) => {
+      let sliderValue =
+        votesReturnedMapped?.find((el) => el.address === gauge.address)
+          ?.value ?? 0;
+      if (gauge.isAliveGauge === false && sliderValue === 0) {
+        return false;
+      }
+      return true;
+    });
+
+    if (JSON.stringify(filteredPairs) !== JSON.stringify(gauges))
+      setGauges(filteredPairs);
+  });
 
   useEffect(() => {
-    const vestVotesReturned = (votesReturned: Vote[]) => {
-      const votesReturnedMapped = votesReturned.map((vote) => {
-        return {
-          address: vote?.address,
-          value: BigNumber(
-            vote && vote.votePercent ? vote.votePercent : 0
-          ).toNumber(),
-        };
-      });
-      if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
-        setVotes(votesReturnedMapped);
-
-      const pairs = stores.stableSwapStore.getStore("pairs");
-      const filteredPairs = pairs.filter(hasGauge).filter((gauge) => {
-        let sliderValue =
-          votesReturnedMapped.find((el) => el.address === gauge.address)
-            ?.value ?? 0;
-        if (gauge.isAliveGauge === false && sliderValue === 0) {
-          return false;
-        }
-        return true;
-      });
-
-      if (JSON.stringify(filteredPairs) !== JSON.stringify(gauges))
-        setGauges(filteredPairs);
-
-      // forceUpdate();
-    };
-
-    // const vestBalancesReturned = (vals) => {
-    //   setGauges(vals);
-    //   forceUpdate();
-    // };
-
-    const stableSwapUpdated = () => {
-      ssUpdated();
-    };
-
     const voteReturned = () => {
       setVoteLoading(false);
     };
 
-    ssUpdated();
-
-    // stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} })
-
-    stores.emitter.on(ACTIONS.UPDATED, stableSwapUpdated);
     stores.emitter.on(ACTIONS.VOTE_RETURNED, voteReturned);
     stores.emitter.on(ACTIONS.ERROR, voteReturned);
-    stores.emitter.on(ACTIONS.VEST_VOTES_RETURNED, vestVotesReturned);
-    // stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
-    // stores.emitter.on(ACTIONS.VEST_BALANCES_RETURNED, vestBalancesReturned);
 
     const localStorageWarningAccepted =
       window.localStorage.getItem("voting.warning");
@@ -172,18 +137,8 @@ export default function Votes() {
     setShowWarning(false);
 
     return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
       stores.emitter.removeListener(ACTIONS.VOTE_RETURNED, voteReturned);
       stores.emitter.removeListener(ACTIONS.ERROR, voteReturned);
-      stores.emitter.removeListener(
-        ACTIONS.VEST_VOTES_RETURNED,
-        vestVotesReturned
-      );
-      // stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
-      // stores.emitter.removeListener(
-      //   ACTIONS.VEST_BALANCES_RETURNED,
-      //   vestBalancesReturned
-      // );
     };
   }, []);
 
@@ -199,16 +154,12 @@ export default function Votes() {
     window.localStorage.setItem("voting.warning", "accepted");
   };
 
-  let totalVotes = votes.reduce((acc, curr) => {
+  let totalVotes = votes?.reduce((acc, curr) => {
     return (acc += curr.value);
   }, 0);
 
   const handleChange = (event: SelectChangeEvent<VestNFT>) => {
     setToken(event.target.value as VestNFT);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.GET_VEST_VOTES,
-      content: { tokenID: (event.target.value as VestNFT).id },
-    });
   };
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,7 +283,7 @@ export default function Votes() {
 
   const filteredGauges = useMemo(
     () =>
-      gauges.filter((pair) => {
+      gauges?.filter((pair) => {
         if (!search || search === "") {
           return true;
         }
@@ -358,7 +309,7 @@ export default function Votes() {
   );
 
   const bribesAccrued = filteredGauges
-    .reduce(
+    ?.reduce(
       (
         acc: number,
         row: {
@@ -452,7 +403,7 @@ export default function Votes() {
             <Typography>Voting Power Used: </Typography>
             <Typography
               className={`${
-                BigNumber(totalVotes).gt(100)
+                BigNumber(totalVotes ?? 0).gt(100)
                   ? classes.errorText
                   : classes.helpText
               }`}
@@ -466,7 +417,7 @@ export default function Votes() {
               variant="contained"
               size="large"
               color="primary"
-              disabled={voteLoading || !BigNumber(totalVotes).eq(100)}
+              disabled={voteLoading || !BigNumber(totalVotes ?? 0).eq(100)}
               onClick={onVote}
             >
               <Typography className={classes.actionButtonText}>

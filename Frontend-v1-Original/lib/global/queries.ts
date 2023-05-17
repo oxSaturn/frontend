@@ -1,5 +1,9 @@
 import { useAccount } from "wagmi";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  UseQueryOptions,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { getContract, formatUnits, Address, formatEther } from "viem";
 
 import BigNumber from "bignumber.js";
@@ -24,6 +28,7 @@ import {
   PairsCallResponse,
   VeToken,
   VestNFT,
+  Vote,
   hasGauge,
 } from "../../stores/types/types";
 
@@ -157,11 +162,12 @@ const getTbv = (pairsData: PairsCallResponse | undefined) => {
   return pairsData.tbv;
 };
 
-export const usePairs = () => {
+export const usePairs = (onSuccess?: (data: Pair[]) => void) => {
   const { data: pairsData } = usePairsData();
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
+    onSuccess,
   });
 };
 
@@ -869,13 +875,14 @@ const getPairsWithGauges = async (
   return ps1;
 };
 
-export const usePairsWithGauges = () => {
+export const usePairsWithGauges = (onSuccess?: (data: Pair[]) => void) => {
   const { address } = useAccount();
   const { data: pairsWithoutGauges } = usePairsWithoutGauges();
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges,
+    onSuccess,
   });
 };
 
@@ -884,4 +891,80 @@ export const useBalances = () => {
   useVestNfts();
   useBaseAssetWithInfo();
   usePairsWithGauges();
+};
+
+const getVestVotes = async (
+  account: Address | undefined,
+  tokenID: string | undefined,
+  pairs: Pair[] | undefined
+) => {
+  if (!account) {
+    console.warn("account not found");
+    return null;
+  }
+
+  if (!pairs) {
+    return null;
+  }
+
+  if (!tokenID) {
+    return;
+  }
+
+  const filteredPairs = pairs.filter((pair) => {
+    return pair && pair.gauge && pair.gauge.address;
+  });
+
+  const gaugesContract = {
+    abi: CONTRACTS.VOTER_ABI,
+    address: CONTRACTS.VOTER_ADDRESS,
+  } as const;
+
+  const calls = filteredPairs.map((pair) => {
+    return {
+      ...gaugesContract,
+      functionName: "votes",
+      args: [BigInt(tokenID), pair.address],
+    } as const;
+  });
+
+  const voteCounts = await viemClient.multicall({
+    allowFailure: false,
+    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+    contracts: calls,
+  });
+
+  let votes: Vote[] = [];
+
+  const totalVotes = voteCounts.reduce((curr, acc) => {
+    let num = acc > 0 ? acc : acc * BigInt(-1);
+    return curr + num;
+  }, BigInt(0));
+
+  for (let i = 0; i < voteCounts.length; i++) {
+    votes.push({
+      address: filteredPairs[i].address,
+      votePercent:
+        totalVotes > 0 || totalVotes < 0
+          ? parseFloat(
+              ((voteCounts[i] * BigInt(100)) / totalVotes).toString()
+            ).toFixed(0)
+          : "0",
+    });
+  }
+
+  return votes;
+};
+
+export const useVestVotes = (
+  tokenID: string | undefined,
+  onSuccess?: (data: Vote[] | null | undefined) => void
+) => {
+  const { address } = useAccount();
+  const { data: pairs } = usePairs();
+  return useQuery({
+    queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, pairs],
+    queryFn: () => getVestVotes(address, tokenID, pairs),
+    onSuccess,
+  });
 };

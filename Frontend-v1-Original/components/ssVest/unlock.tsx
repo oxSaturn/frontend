@@ -22,8 +22,8 @@ export default function Unlock({
   veToken,
 }: {
   nft: VestNFT;
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const router = useRouter();
 

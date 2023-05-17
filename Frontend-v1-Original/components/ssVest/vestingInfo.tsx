@@ -7,8 +7,8 @@ import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 import classes from "./ssVest.module.css";
 
 interface VestingInfoProps {
-  veToken: VeToken | null;
-  govToken: GovToken | null;
+  veToken: VeToken | undefined;
+  govToken: GovToken | undefined;
   currentNFT?: VestNFT;
   futureNFT?: VestNFT;
   showVestingStructure?: boolean;

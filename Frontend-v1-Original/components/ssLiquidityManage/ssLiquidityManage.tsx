@@ -33,6 +33,7 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
+import { usePairsWithGauges } from "../../lib/global/queries";
 
 export default function LiquidityManage() {
   const router = useRouter();
@@ -85,18 +86,19 @@ export default function LiquidityManage() {
   const [slippage, setSlippage] = useState("2");
   const [slippageError] = useState(false); //TODO setSlippageError if any?
 
-  const ssUpdated = async () => {
-    const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
-    const pairs = stores.stableSwapStore.getStore("pairs");
-
+  usePairsWithGauges((pairs) => {
     const onlyWithBalance = pairs.filter((ppp) => {
       return (
         (ppp.balance && BigNumber(ppp.balance).gt(0)) ||
         (ppp.gauge?.balance && BigNumber(ppp.gauge.balance).gt(0))
       );
     });
-
     setWithdrawAssetOptions(onlyWithBalance);
+  });
+
+  const ssUpdated = async () => {
+    const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
+
     setAssetOptions(storeAssetOptions);
 
     if (

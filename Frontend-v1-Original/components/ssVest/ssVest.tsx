@@ -5,7 +5,8 @@ import moment from "moment";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-import { VeToken, GovToken, VestNFT } from "../../stores/types/types";
+import { VestNFT } from "../../stores/types/types";
+import { useGovToken, useVeToken } from "../../lib/global/queries";
 
 import ExistingLock from "./existingLock";
 import Unlock from "./unlock";
@@ -18,14 +19,12 @@ export default function Vest() {
   const [, updateState] = useState<{}>();
   const forceUpdate = useCallback(() => updateState({}), []);
 
-  const [govToken, setGovToken] = useState<GovToken | null>(null);
-  const [veToken, setVeToken] = useState<VeToken | null>(null);
+  const { data: govToken } = useGovToken();
+  const { data: veToken } = useVeToken();
+
   const [nft, setNFT] = useState<VestNFT | null>(null);
 
   const ssUpdated = async () => {
-    setGovToken(stores.stableSwapStore.getStore("govToken"));
-    setVeToken(stores.stableSwapStore.getStore("veToken"));
-
     if (typeof router.query.id === "string") {
       const nft = await stores.stableSwapStore.getNFTByID(router.query.id);
       setNFT(nft);

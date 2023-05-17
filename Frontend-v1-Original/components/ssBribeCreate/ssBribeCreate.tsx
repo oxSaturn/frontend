@@ -15,6 +15,7 @@ import {
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
+import { usePairs } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
@@ -33,30 +34,29 @@ export default function BribeCreate() {
   const [gauge, setGauge] = useState<Gauge | null>(null);
   const [gaugeOptions, setGaugeOptions] = useState<Gauge[]>([]);
 
+  usePairs((pairs) => {
+    const filteredPairs = pairs
+      .filter(hasGauge)
+      .filter((gauge) => gauge.isAliveGauge);
+    setGaugeOptions(filteredPairs);
+    if (filteredPairs.length > 0 && gauge == null) {
+      const noteFlowPair = filteredPairs.filter((pair) => {
+        return pair.symbol === "vAMM-NOTE/FLOW";
+      });
+      setGauge(noteFlowPair[0] ?? filteredPairs[0]);
+    }
+  });
+
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
     let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
       // @ts-expect-error this is a workaround for the CANTO token
       return option.address !== "CANTO";
     });
-    const storePairs = stores.stableSwapStore.getStore("pairs");
     setAssetOptions(filteredStoreAssetOptions);
-
-    const filteredPairs = storePairs
-      .filter(hasGauge)
-      .filter((gauge) => gauge.isAliveGauge);
-
-    setGaugeOptions(filteredPairs);
 
     if (filteredStoreAssetOptions.length > 0 && asset == null) {
       setAsset(filteredStoreAssetOptions[0]);
-    }
-
-    if (filteredPairs.length > 0 && gauge == null) {
-      const noteFlowPair = filteredPairs.filter((pair) => {
-        return pair.symbol === "vAMM-NOTE/FLOW";
-      });
-      setGauge(noteFlowPair[0] ?? filteredPairs[0]);
     }
   };
 

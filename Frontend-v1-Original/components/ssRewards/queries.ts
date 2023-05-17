@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { deserialize, serialize, useAccount } from "wagmi";
 import {
   type Address,
   formatEther,
@@ -25,25 +25,29 @@ import {
   GovToken,
   VeToken,
   VestNFT,
+  Pair,
 } from "../../stores/types/types";
-import { useGovToken, useVeToken, useVestNfts } from "../../lib/global/queries";
+import { useGovToken, useVeToken, useVestNfts , usePairs } from "../../lib/global/queries";
 
 export const getRewardBalances = async (
   address: Address | undefined,
   tokenID: string | undefined,
   govToken: GovToken | undefined,
   veToken: VeToken | undefined,
-  vestNFTs: VestNFT[] | undefined
+  vestNfts: string,
+  pairs: Pair[] | undefined
 ) => {
   if (!address) {
     console.warn("account not found");
     throw new Error("No address");
   }
 
-  const pairs = stores.stableSwapStore.getStore("pairs");
-
   if (!govToken || !veToken) {
     throw new Error("govToken or veToken not found");
+  }
+
+  if (!pairs) {
+    throw new Error("pairs not found");
   }
 
   const gauges = pairs.filter(hasGauge);
@@ -189,6 +193,8 @@ export const getRewardBalances = async (
       args: [BigInt(tokenID)],
     });
 
+    const vestNFTs = deserialize(vestNfts) as VestNFT[] | undefined;
+
     const theNFT = vestNFTs?.filter((vestNFT) => {
       return vestNFT.id === tokenID;
     });
@@ -276,6 +282,8 @@ export const useRewards = (
   const { data: veToken } = useVeToken();
   const { data: govToken } = useGovToken();
   const { data: vestNFTs } = useVestNfts();
+  const { data: pairs } = usePairs();
+  const serialised_vestNFTs = serialize(vestNFTs);
   return useQuery({
     queryKey: [
       QUERY_KEYS.REWARDS,
@@ -283,11 +291,19 @@ export const useRewards = (
       tokenID,
       govToken,
       veToken,
-      vestNFTs,
+      serialised_vestNFTs,
+      pairs,
     ],
     queryFn: () =>
-      getRewardBalances(address, tokenID, govToken, veToken, vestNFTs),
-    enabled: !!address,
+      getRewardBalances(
+        address,
+        tokenID,
+        govToken,
+        veToken,
+        serialised_vestNFTs,
+        pairs
+      ),
+    enabled: !!address && !!govToken && !!veToken && !!pairs,
     onSuccess,
     refetchOnWindowFocus: false,
     onError: (e) => {

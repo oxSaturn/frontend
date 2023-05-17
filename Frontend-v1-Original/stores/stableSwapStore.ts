@@ -16,6 +16,7 @@ import {
   BaseError,
 } from "viem";
 import { canto } from "viem/chains";
+import { serialize } from "wagmi";
 import { getAccount, getWalletClient } from "@wagmi/core";
 
 import { Dispatcher } from "flux";
@@ -69,10 +70,6 @@ class Store {
   store: {
     baseAssets: BaseAsset[];
     swapAssets: BaseAsset[];
-    routeAssets: RouteAsset[];
-    govToken: GovToken | null;
-    veToken: VeToken | null;
-    pairs: Pair[];
   };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
@@ -82,10 +79,6 @@ class Store {
     this.store = {
       baseAssets: this._getBaseAssets(),
       swapAssets: [],
-      routeAssets: [],
-      govToken: null,
-      veToken: null,
-      pairs: [],
     };
 
     dispatcher.register(
@@ -186,9 +179,9 @@ class Store {
           case ACTIONS.VOTE:
             this.vote(payload);
             break;
-          case ACTIONS.GET_VEST_VOTES:
-            this.getVestVotes(payload);
-            break;
+          // case ACTIONS.GET_VEST_VOTES:
+          //   this.getVestVotes(payload);
+          //   break;
           case ACTIONS.CREATE_BRIBE:
             this.createBribe(payload);
             break;
@@ -275,8 +268,10 @@ class Store {
         return null;
       }
 
-      const veToken = this.getStore("veToken");
-      const govToken = this.getStore("govToken");
+      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
       if (!veToken || !govToken) {
         console.warn("veToken or govToken not found");
         return null;
@@ -378,8 +373,10 @@ class Store {
         return null;
       }
 
-      const veToken = this.getStore("veToken");
-      const govToken = this.getStore("govToken");
+      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
       if (!veToken || !govToken) {
         console.warn("veToken or govToken not found");
         return null;
@@ -455,12 +452,12 @@ class Store {
         return null;
       }
 
-      const pairs = this.getStore("pairs");
-      const filteredPairs = pairs.filter((pair) => {
+      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+      const filteredPairs = pairs?.filter((pair) => {
         return pair.address.toLowerCase() == pairAddress.toLowerCase();
       });
 
-      if (filteredPairs.length > 0) {
+      if (filteredPairs && filteredPairs.length > 0) {
         const pc = {
           abi: CONTRACTS.PAIR_ABI,
           address: pairAddress,
@@ -892,8 +889,8 @@ class Store {
         };
       }
 
-      pairs.push(thePair);
-      this.setStore({ pairs: pairs });
+      pairs?.push(thePair);
+      queryClient.setQueryData<Pair[]>([QUERY_KEYS.PAIRS], pairs);
 
       return thePair;
     } catch (ex) {
@@ -920,8 +917,8 @@ class Store {
       return null;
     }
 
-    const pairs = this.getStore("pairs");
-    let thePair: any = pairs.filter((pair) => {
+    const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+    let thePair: any = pairs?.filter((pair) => {
       return (
         (pair.token0.address.toLowerCase() == addressA.toLowerCase() &&
           pair.token1.address.toLowerCase() == addressB.toLowerCase() &&
@@ -1314,8 +1311,8 @@ class Store {
         };
       }
 
-      pairs.push(thePair);
-      this.setStore({ pairs: pairs });
+      pairs?.push(thePair);
+      queryClient.setQueryData<Pair[]>([QUERY_KEYS.PAIRS], pairs);
 
       return thePair;
     }
@@ -1466,8 +1463,8 @@ class Store {
   // DISPATCHER FUNCTIONS
   configure = async () => {
     try {
-      this.setStore({ govToken: this._getGovTokenBase() });
-      this.setStore({ veToken: this._getVeTokenBase() });
+      // this.setStore({ govToken: this._getGovTokenBase() });
+      // this.setStore({ veToken: this._getVeTokenBase() });
       // this.setStore({ baseAssets: this._getBaseAssets() });
       // this.setStore({ routeAssets: await this._getRouteAssets() }); // We dont need it because we use firebird router
       this.setStore({ pairs: await this._getPairs() });
@@ -1481,7 +1478,6 @@ class Store {
       });
 
       this.emitter.emit(ACTIONS.UPDATED);
-      this.emitter.emit(ACTIONS.CONFIGURED_SS);
 
       setTimeout(() => {
         this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
@@ -1549,10 +1545,10 @@ class Store {
 
   _getSwapAssets = () => {
     const baseAssets = this.getStore("baseAssets");
-    const pairs = this.getStore("pairs");
+    const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
     const set = new Set<string>();
     set.add(NATIVE_TOKEN.address.toLowerCase());
-    pairs.forEach((pair) => {
+    pairs?.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
     });
@@ -1562,10 +1558,10 @@ class Store {
     return [...baseAssetsWeSwap];
   };
   updateSwapAssets = (payload: BaseAsset[]) => {
-    const pairs = this.getStore("pairs");
+    const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
     const set = new Set<string>();
     set.add(NATIVE_TOKEN.address.toLowerCase());
-    pairs.forEach((pair) => {
+    pairs?.forEach((pair) => {
       set.add(pair.token0.address.toLowerCase());
       set.add(pair.token1.address.toLowerCase());
     });
@@ -1604,7 +1600,7 @@ class Store {
         return null;
       }
 
-      this._getGovTokenInfo(account);
+      // this._getGovTokenInfo(account);
       await this._getBaseAssetInfo(account);
       await this._getPairInfo(account);
     } catch (ex) {
@@ -1615,8 +1611,10 @@ class Store {
 
   _getVestNFTs = async (address: `0x${string}`) => {
     try {
-      const veToken = this.getStore("veToken");
-      const govToken = this.getStore("govToken");
+      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
       if (!veToken || !govToken) {
         throw new Error("veToken or govToken not found");
       }
@@ -1691,32 +1689,34 @@ class Store {
     }
   };
 
-  _getGovTokenInfo = async (address: `0x${string}`) => {
-    try {
-      const govToken = this.getStore("govToken");
-      if (!govToken) {
-        console.warn("govToken not found");
-        return null;
-      }
+  // _getGovTokenInfo = async (address: `0x${string}`) => {
+  //   try {
+  //     const govToken = queryClient.getQueryData<GovToken>([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //     ]);
+  //     if (!govToken) {
+  //       console.warn("govToken not found");
+  //       return null;
+  //     }
 
-      const balanceOf = await viemClient.readContract({
-        abi: CONTRACTS.GOV_TOKEN_ABI,
-        address: CONTRACTS.GOV_TOKEN_ADDRESS,
-        functionName: "balanceOf",
-        args: [address],
-      });
+  //     const balanceOf = await viemClient.readContract({
+  //       abi: CONTRACTS.GOV_TOKEN_ABI,
+  //       address: CONTRACTS.GOV_TOKEN_ADDRESS,
+  //       functionName: "balanceOf",
+  //       args: [address],
+  //     });
 
-      govToken.balanceOf = balanceOf.toString();
-      govToken.balance = formatUnits(balanceOf, govToken.decimals);
+  //     govToken.balanceOf = balanceOf.toString();
+  //     govToken.balance = formatUnits(balanceOf, govToken.decimals);
 
-      this.setStore({ govToken });
-      this.emitter.emit(ACTIONS.UPDATED);
+  //     this.setStore({ govToken });
+  //     this.emitter.emit(ACTIONS.UPDATED);
 
-      this._getVestNFTs(address);
-    } catch (ex) {
-      console.log(ex);
-    }
-  };
+  //     this._getVestNFTs(address);
+  //   } catch (ex) {
+  //     console.log(ex);
+  //   }
+  // };
 
   _getPairInfo = async (address: `0x${string}`, overridePairs?: Pair[]) => {
     try {
@@ -1725,7 +1725,7 @@ class Store {
       if (overridePairs) {
         pairs = overridePairs;
       } else {
-        pairs = this.getStore("pairs");
+        pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]) ?? [];
       }
 
       const gaugesContract = {
@@ -4096,8 +4096,10 @@ class Store {
         return null;
       }
 
-      const veToken = this.getStore("veToken");
-      const govToken = this.getStore("govToken");
+      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
       if (!veToken || !govToken) {
         throw new Error("veToken or govToken not found");
       }
@@ -4190,7 +4192,9 @@ class Store {
         return null;
       }
 
-      const govToken = this.getStore("govToken");
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
       if (!govToken) throw new Error("No gov token");
       const { amount, unlockTime } = payload.content;
 
@@ -4265,7 +4269,8 @@ class Store {
 
       await this._writeContractWrapper(vestTXID, writeCreateLock);
 
-      this._getGovTokenInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
+
       this.getNFTByID("fetchAll");
 
       this.emitter.emit(ACTIONS.CREATE_VEST_RETURNED);
@@ -4308,7 +4313,9 @@ class Store {
         return null;
       }
 
-      const govToken = this.getStore("govToken");
+      const govToken = queryClient.getQueryData<GovToken>([
+        QUERY_KEYS.GOV_TOKEN,
+      ]);
       if (!govToken)
         throw new Error("Error getting gov token in increase vest");
       const { amount, tokenID } = payload.content;
@@ -4381,7 +4388,7 @@ class Store {
 
       await this._writeContractWrapper(vestTXID, writeIncreaseAmount);
 
-      this._getGovTokenInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
       this._updateVestNFTByID(tokenID);
 
       this.emitter.emit(ACTIONS.INCREASE_VEST_AMOUNT_RETURNED);
@@ -4502,6 +4509,8 @@ class Store {
       const vestNFTs = queryClient.getQueryData<VestNFT[]>([
         QUERY_KEYS.VEST_NFTS,
       ]);
+      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+      const serialised_vestNFTs = serialize(vestNFTs);
 
       // CHECK unclaimed bribes
       const rewards = await queryClient.fetchQuery({
@@ -4511,10 +4520,18 @@ class Store {
           tokenID,
           govToken,
           veToken,
-          vestNFTs,
+          serialised_vestNFTs,
+          pairs,
         ],
         queryFn: () =>
-          getRewardBalances(account, tokenID, govToken, veToken, vestNFTs),
+          getRewardBalances(
+            account,
+            tokenID,
+            govToken,
+            veToken,
+            serialised_vestNFTs,
+            pairs
+          ),
       });
 
       if (rewards && rewards.xxBribes.length > 0) {
@@ -4660,6 +4677,8 @@ class Store {
       const vestNFTs = queryClient.getQueryData<VestNFT[]>([
         QUERY_KEYS.VEST_NFTS,
       ]);
+      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+      const serialised_vestNFTs = serialize(vestNFTs);
 
       // CHECK unclaimed bribes
       const rewards = await queryClient.fetchQuery({
@@ -4669,10 +4688,18 @@ class Store {
           tokenID,
           govToken,
           veToken,
-          vestNFTs,
+          serialised_vestNFTs,
+          pairs,
         ],
         queryFn: () =>
-          getRewardBalances(account, tokenID, govToken, veToken, vestNFTs),
+          getRewardBalances(
+            account,
+            tokenID,
+            govToken,
+            veToken,
+            serialised_vestNFTs,
+            pairs
+          ),
       });
 
       if (rewards && rewards.xxBribes.length > 0) {
@@ -4927,7 +4954,7 @@ class Store {
         ],
       });
 
-      const pairs = this.getStore("pairs");
+      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
       const deadGauges: string[] = [];
 
       const onlyVotes = votes.filter((vote) => {
@@ -4935,10 +4962,10 @@ class Store {
       });
 
       const votesAddresses = onlyVotes.map((vote) => vote.address);
-      const p = pairs.filter((pair) => {
+      const p = pairs?.filter((pair) => {
         return votesAddresses.includes(pair.address);
       });
-      p.forEach((pair) => {
+      p?.forEach((pair) => {
         if (pair.isAliveGauge === false) {
           deadGauges.push(pair.symbol);
         }
@@ -4984,76 +5011,76 @@ class Store {
     }
   };
 
-  getVestVotes = async (payload: {
-    type: string;
-    content: { tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // getVestVotes = async (payload: {
+  //   type: string;
+  //   content: { tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const { tokenID } = payload.content;
-      const pairs = this.getStore("pairs");
+  //     const { tokenID } = payload.content;
+  //     const pairs = this.getStore("pairs");
 
-      if (!pairs) {
-        return null;
-      }
+  //     if (!pairs) {
+  //       return null;
+  //     }
 
-      if (!tokenID) {
-        return;
-      }
+  //     if (!tokenID) {
+  //       return;
+  //     }
 
-      const filteredPairs = pairs.filter((pair) => {
-        return pair && pair.gauge && pair.gauge.address;
-      });
+  //     const filteredPairs = pairs.filter((pair) => {
+  //       return pair && pair.gauge && pair.gauge.address;
+  //     });
 
-      const gaugesContract = {
-        abi: CONTRACTS.VOTER_ABI,
-        address: CONTRACTS.VOTER_ADDRESS,
-      } as const;
+  //     const gaugesContract = {
+  //       abi: CONTRACTS.VOTER_ABI,
+  //       address: CONTRACTS.VOTER_ADDRESS,
+  //     } as const;
 
-      const calls = filteredPairs.map((pair) => {
-        return {
-          ...gaugesContract,
-          functionName: "votes",
-          args: [BigInt(tokenID), pair.address],
-        } as const;
-      });
+  //     const calls = filteredPairs.map((pair) => {
+  //       return {
+  //         ...gaugesContract,
+  //         functionName: "votes",
+  //         args: [BigInt(tokenID), pair.address],
+  //       } as const;
+  //     });
 
-      const voteCounts = await viemClient.multicall({
-        allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-        contracts: calls,
-      });
+  //     const voteCounts = await viemClient.multicall({
+  //       allowFailure: false,
+  //       multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //       contracts: calls,
+  //     });
 
-      let votes: Vote[] = [];
+  //     let votes: Vote[] = [];
 
-      const totalVotes = voteCounts.reduce((curr, acc) => {
-        let num = acc > 0 ? acc : acc * BigInt(-1);
-        return curr + num;
-      }, BigInt(0));
+  //     const totalVotes = voteCounts.reduce((curr, acc) => {
+  //       let num = acc > 0 ? acc : acc * BigInt(-1);
+  //       return curr + num;
+  //     }, BigInt(0));
 
-      for (let i = 0; i < voteCounts.length; i++) {
-        votes.push({
-          address: filteredPairs[i].address,
-          votePercent:
-            totalVotes > 0 || totalVotes < 0
-              ? parseFloat(
-                  ((voteCounts[i] * BigInt(100)) / totalVotes).toString()
-                ).toFixed(0)
-              : "0",
-        });
-      }
+  //     for (let i = 0; i < voteCounts.length; i++) {
+  //       votes.push({
+  //         address: filteredPairs[i].address,
+  //         votePercent:
+  //           totalVotes > 0 || totalVotes < 0
+  //             ? parseFloat(
+  //                 ((voteCounts[i] * BigInt(100)) / totalVotes).toString()
+  //               ).toFixed(0)
+  //             : "0",
+  //       });
+  //     }
 
-      this.emitter.emit(ACTIONS.VEST_VOTES_RETURNED, votes);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.VEST_VOTES_RETURNED, votes);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   createBribe = async (payload: {
     type: string;
@@ -5145,7 +5172,7 @@ class Store {
       };
       await this._writeContractWrapper(bribeTXID, writeCreateBribe);
 
-      this._getGovTokenInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
       this._getSpecificAssetInfo(account, asset.address);
 
       await this.updatePairsCall(account);

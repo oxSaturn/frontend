@@ -15,7 +15,7 @@ import {
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import { Gauge, Vote, VestNFT } from "../../stores/types/types";
+import { Gauge, Vote, VestNFT, Votes } from "../../stores/types/types";
 
 const headCells = [
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
@@ -114,15 +114,11 @@ export default function EnhancedTable({
   defaultVotes,
   token,
 }: {
-  gauges: Gauge[];
+  gauges: Gauge[] | undefined;
   setParentSliderValues: React.Dispatch<
-    React.SetStateAction<
-      (Pick<Vote, "address"> & {
-        value: number;
-      })[]
-    >
+    React.SetStateAction<Votes | undefined>
   >;
-  defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
+  defaultVotes: Votes | undefined;
   token: VestNFT;
 }) {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -144,7 +140,7 @@ export default function EnhancedTable({
     ) {
       setDisabledSort(true);
     }
-    let newSliderValues = [...defaultVotes];
+    let newSliderValues = defaultVotes ? [...defaultVotes] : [];
 
     newSliderValues = newSliderValues.map((val) => {
       if (asset?.address === val.address && !Array.isArray(value)) {
@@ -191,14 +187,15 @@ export default function EnhancedTable({
   };
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, gauges.length - page * rowsPerPage);
+    rowsPerPage -
+    Math.min(rowsPerPage, (gauges?.length ?? 0) - page * rowsPerPage);
 
   const sortedGauges = useMemo(() => {
     if (disabledSort) {
       return votesRef.current;
     }
     votesRef.current = stableSort(
-      gauges,
+      gauges ?? [],
       getComparator(order, orderBy, defaultVotes, token)
     ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     return votesRef.current;
@@ -239,7 +236,7 @@ export default function EnhancedTable({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={gauges.length}
+          count={gauges?.length ?? 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -301,14 +298,14 @@ const VotesRow = memo(function VotesRow({
 }: {
   row: Gauge;
   token: VestNFT;
-  defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
+  defaultVotes: Votes | undefined;
   onSliderChange: (
     _event: Event,
     _value: number | number[],
     _row: Gauge
   ) => void;
 }) {
-  let sliderValue = defaultVotes.find(
+  let sliderValue = defaultVotes?.find(
     (el) => el.address === row?.address
   )?.value;
   if (!sliderValue) {

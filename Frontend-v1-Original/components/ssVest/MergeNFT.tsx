@@ -39,19 +39,6 @@ export function MergeNFT() {
   };
 
   useEffect(() => {
-    // wait for veToken
-    if (veToken) {
-      if (nfts?.length === 0) {
-        // only refetch when nfts is empty, i.e., when users refresh the page
-        stores.dispatcher.dispatch({
-          type: ACTIONS.GET_VEST_NFTS,
-          content: {},
-        });
-      }
-    }
-  }, [veToken, nfts]);
-
-  useEffect(() => {
     const nftMerged = () => {
       router.push("/vest");
     };

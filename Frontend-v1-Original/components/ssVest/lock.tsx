@@ -31,8 +31,8 @@ export default function Lock({
   govToken,
   veToken,
 }: {
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const inputEl = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
@@ -189,7 +189,7 @@ export default function Lock({
     amountValue: string,
     amountError: string | false,
     amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
-    token: GovToken | null
+    token: GovToken | undefined
   ) => {
     return (
       <div className={classes.textField}>
