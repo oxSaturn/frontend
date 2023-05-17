@@ -33,7 +33,10 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
-import { usePairsWithGauges } from "../../lib/global/queries";
+import {
+  useBaseAssetWithInfo,
+  usePairsWithGauges,
+} from "../../lib/global/queries";
 
 export default function LiquidityManage() {
   const router = useRouter();
@@ -96,10 +99,8 @@ export default function LiquidityManage() {
     setWithdrawAssetOptions(onlyWithBalance);
   });
 
-  const ssUpdated = async () => {
-    const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
-
-    setAssetOptions(storeAssetOptions);
+  useBaseAssetWithInfo(async (baseAssets) => {
+    setAssetOptions(baseAssets);
 
     if (
       router.query.address &&
@@ -127,13 +128,13 @@ export default function LiquidityManage() {
     } else {
       let aa0 = asset0;
       let aa1 = asset1;
-      if (storeAssetOptions.length > 0 && asset0 == null) {
-        setAsset0(storeAssetOptions[0]);
-        aa0 = storeAssetOptions[0];
+      if (baseAssets.length > 0 && asset0 == null) {
+        setAsset0(baseAssets[0]);
+        aa0 = baseAssets[0];
       }
-      if (storeAssetOptions.length > 0 && asset1 == null) {
-        setAsset1(storeAssetOptions[1]);
-        aa1 = storeAssetOptions[1];
+      if (baseAssets.length > 0 && asset1 == null) {
+        setAsset1(baseAssets[1]);
+        aa1 = baseAssets[1];
       }
       if (withdrawAassetOptions.length > 0 && withdrawAsset == null) {
         setWithdrawAsset(withdrawAassetOptions[1]);
@@ -148,7 +149,7 @@ export default function LiquidityManage() {
         setPair(p);
       }
     }
-  };
+  });
 
   useEffect(() => {
     const depositReturned = () => {
@@ -170,7 +171,6 @@ export default function LiquidityManage() {
 
     const createGaugeReturned = () => {
       setCreateLoading(false);
-      ssUpdated();
     };
 
     const errorReturned = () => {
@@ -211,11 +211,6 @@ export default function LiquidityManage() {
       setWithdrawAmount1(res.output.amount1);
     };
 
-    const assetsUpdated = () => {
-      setAssetOptions(stores.stableSwapStore.getStore("baseAssets"));
-    };
-
-    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
     stores.emitter.on(ACTIONS.LIQUIDITY_ADDED, depositReturned);
     stores.emitter.on(ACTIONS.ADD_LIQUIDITY_AND_STAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
@@ -229,13 +224,9 @@ export default function LiquidityManage() {
       quoteRemoveReturned
     );
     stores.emitter.on(ACTIONS.CREATE_GAUGE_RETURNED, createGaugeReturned);
-    stores.emitter.on(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
 
-    ssUpdated();
-
     return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
       stores.emitter.removeListener(ACTIONS.LIQUIDITY_ADDED, depositReturned);
       stores.emitter.removeListener(
         ACTIONS.ADD_LIQUIDITY_AND_STAKED,
@@ -264,14 +255,9 @@ export default function LiquidityManage() {
         ACTIONS.CREATE_GAUGE_RETURNED,
         createGaugeReturned
       );
-      stores.emitter.removeListener(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
     };
   }, []);
-
-  useEffect(() => {
-    ssUpdated();
-  }, [router.query.address]);
 
   const onBack = () => {
     router.push("/liquidity");

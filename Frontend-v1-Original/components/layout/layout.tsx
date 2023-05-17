@@ -35,17 +35,8 @@ export default function Layout({
   children: React.ReactNode;
   configure?: boolean;
 }) {
-  const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({ chainId: canto.id });
-  const { data: walletClient } = useWalletClient({
-    chainId: canto.id,
-  });
-  useEffect(() => {
-    if (walletClient && address) {
-      stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE_SS });
-    }
-  }, [walletClient, address]);
 
   useInitBaseAssets();
   useCirculatingSupply();

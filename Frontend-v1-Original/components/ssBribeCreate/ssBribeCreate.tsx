@@ -15,7 +15,7 @@ import {
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
-import { usePairs } from "../../lib/global/queries";
+import { useBaseAssetWithInfo, usePairs } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
@@ -47,18 +47,17 @@ export default function BribeCreate() {
     }
   });
 
-  const ssUpdated = async () => {
-    const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
-    let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
+  useBaseAssetWithInfo((baseAssets) => {
+    const filteredBaseAssetOptions = baseAssets.filter((option) => {
       // @ts-expect-error this is a workaround for the CANTO token
       return option.address !== "CANTO";
     });
-    setAssetOptions(filteredStoreAssetOptions);
+    setAssetOptions(filteredBaseAssetOptions);
 
-    if (filteredStoreAssetOptions.length > 0 && asset == null) {
-      setAsset(filteredStoreAssetOptions[0]);
+    if (filteredBaseAssetOptions.length > 0 && asset == null) {
+      setAsset(filteredBaseAssetOptions[0]);
     }
-  };
+  });
 
   useEffect(() => {
     const createReturned = () => {
@@ -72,27 +71,12 @@ export default function BribeCreate() {
       setCreateLoading(false);
     };
 
-    const assetsUpdated = () => {
-      const baseAsset = stores.stableSwapStore.getStore("baseAssets");
-      let filteredStoreAssetOptions = baseAsset.filter((option) => {
-        // @ts-expect-error this is a workaround for the CANTO token
-        return option.address !== "CANTO";
-      });
-      setAssetOptions(filteredStoreAssetOptions);
-    };
-
-    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
     stores.emitter.on(ACTIONS.BRIBE_CREATED, createReturned);
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
-
-    ssUpdated();
 
     return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
       stores.emitter.removeListener(ACTIONS.BRIBE_CREATED, createReturned);
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
     };
   }, []);
 

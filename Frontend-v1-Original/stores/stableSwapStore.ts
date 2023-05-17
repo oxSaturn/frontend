@@ -39,14 +39,13 @@ import {
   PAIR_DECIMALS,
   QUERY_KEYS,
 } from "./constants/constants";
-import viemClient, { chunkArray, multicallChunks } from "./connectors/viem";
+import viemClient from "./connectors/viem";
 
 import {
   BaseAsset,
   Pair,
   RouteAsset,
   VeToken,
-  Vote,
   VestNFT,
   GovToken,
   Votes,
@@ -55,7 +54,6 @@ import {
   VeDistReward,
   ITransaction,
   Gauge,
-  hasGauge,
   TransactionStatus,
 } from "./types/types";
 
@@ -67,19 +65,10 @@ const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
-  store: {
-    baseAssets: BaseAsset[];
-    swapAssets: BaseAsset[];
-  };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
     this.dispatcher = dispatcher;
     this.emitter = emitter;
-
-    this.store = {
-      baseAssets: this._getBaseAssets(),
-      swapAssets: [],
-    };
 
     dispatcher.register(
       function (this: Store, payload: { type: string; content: any }) {
@@ -88,12 +77,12 @@ class Store {
           case ACTIONS.CONFIGURE:
             this.configureAccStore();
             break;
-          case ACTIONS.CONFIGURE_SS:
-            this.configure();
-            break;
-          case ACTIONS.GET_BALANCES:
-            this.getBalances();
-            break;
+          // case ACTIONS.CONFIGURE_SS:
+          //   this.configure();
+          //   break;
+          // case ACTIONS.GET_BALANCES:
+          //   this.getBalances();
+          //   break;
           case ACTIONS.SEARCH_ASSET:
             this.searchBaseAsset(payload);
             break;
@@ -229,24 +218,8 @@ class Store {
   }
 
   configureAccStore = async () => {
-    setTimeout(
-      () =>
-        this.dispatcher.dispatch({
-          type: ACTIONS.CONFIGURE_SS,
-        }),
-      100
-    );
     this.emitter.emit(ACTIONS.ACCOUNT_CONFIGURED);
     this.emitter.emit(ACTIONS.CONFIGURE_RETURNED);
-  };
-
-  getStore = <K extends keyof Store["store"]>(index: K) => {
-    return this.store[index];
-  };
-
-  setStore = (obj: { [key: string]: any }) => {
-    this.store = { ...this.store, ...obj };
-    return this.emitter.emit(ACTIONS.STORE_UPDATED);
   };
 
   getNFTByID = async (id: string) => {
@@ -337,7 +310,7 @@ class Store {
         })
       );
 
-      this.setStore({ vestNFTs: nfts });
+      // this.setStore({ vestNFTs: nfts });
 
       theNFT = nfts.filter((nft) => {
         return nft.id == id;
@@ -435,7 +408,7 @@ class Store {
         return nft;
       });
 
-      this.setStore({ vestNFTs: newVestNFTs });
+      return newVestNFTs;
       this.emitter.emit(ACTIONS.UPDATED);
       return null;
     } catch (ex) {
@@ -1337,16 +1310,22 @@ class Store {
           JSON.stringify(localBaseAssets)
         );
 
-        let baseAssets = this.getStore("baseAssets");
-        baseAssets = baseAssets.filter((obj) => {
+        let baseAssets = queryClient.getQueryData<BaseAsset[]>([
+          QUERY_KEYS.BASE_ASSET_INFO,
+        ]);
+        baseAssets = baseAssets?.filter((obj) => {
           return (
             obj.address.toLowerCase() !== asset.address.toLowerCase() &&
             asset.local === true
           );
         });
 
-        this.setStore({ baseAssets: baseAssets });
-        this.updateSwapAssets(baseAssets);
+        // this.setStore({ baseAssets: baseAssets });
+        queryClient.setQueryData<BaseAsset[]>(
+          [QUERY_KEYS.BASE_ASSET_INFO],
+          baseAssets
+        );
+        queryClient.invalidateQueries([QUERY_KEYS.SWAP_ASSETS]);
         this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, baseAssets);
       }
     } catch (ex) {
@@ -1377,12 +1356,14 @@ class Store {
     getBalance?: boolean
   ) => {
     try {
-      const baseAssets = this.getStore("baseAssets");
+      let baseAssets = queryClient.getQueryData<BaseAsset[]>([
+        QUERY_KEYS.BASE_ASSET_INFO,
+      ]);
 
-      const theBaseAsset = baseAssets.filter((as) => {
+      const theBaseAsset = baseAssets?.filter((as) => {
         return as.address.toLowerCase() === address.toLowerCase();
       });
-      if (theBaseAsset.length > 0) {
+      if (theBaseAsset && theBaseAsset.length > 0) {
         return theBaseAsset[0];
       }
 
@@ -1444,12 +1425,20 @@ class Store {
           JSON.stringify(localBaseAssets)
         );
 
-        const baseAssets = this.getStore("baseAssets");
-        const storeBaseAssets = [...baseAssets, newBaseAsset];
+        const baseAssets = queryClient.getQueryData<BaseAsset[]>([
+          QUERY_KEYS.BASE_ASSET_INFO,
+        ]);
+        const storeBaseAssets = baseAssets
+          ? [...baseAssets, newBaseAsset]
+          : [newBaseAsset];
 
-        this.setStore({ baseAssets: storeBaseAssets });
-        this.updateSwapAssets(storeBaseAssets);
-        this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, storeBaseAssets);
+        // this.setStore({ baseAssets: storeBaseAssets });
+        queryClient.setQueryData<BaseAsset[]>(
+          [QUERY_KEYS.BASE_ASSET_INFO],
+          storeBaseAssets
+        );
+        queryClient.invalidateQueries([QUERY_KEYS.SWAP_ASSETS]);
+        // this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, storeBaseAssets);
       }
 
       return newBaseAsset;
@@ -1467,21 +1456,19 @@ class Store {
       // this.setStore({ veToken: this._getVeTokenBase() });
       // this.setStore({ baseAssets: this._getBaseAssets() });
       // this.setStore({ routeAssets: await this._getRouteAssets() }); // We dont need it because we use firebird router
-      this.setStore({ pairs: await this._getPairs() });
-      this.setStore({ swapAssets: this._getSwapAssets() });
-      this.setStore({ updateDate: await stores.helper.getActivePeriod() });
-      this.setStore({
-        circulatingSupply: await stores.helper.getCirculatingSupply(), // TODO move to api
-      });
-      this.setStore({
-        marketCap: await stores.helper.getMarketCap(), // TODO move to api
-      });
-
-      this.emitter.emit(ACTIONS.UPDATED);
-
-      setTimeout(() => {
-        this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
-      }, 1);
+      // this.setStore({ pairs: await this._getPairs() });
+      // this.setStore({ swapAssets: this._getSwapAssets() });
+      // this.setStore({ updateDate: await stores.helper.getActivePeriod() });
+      // this.setStore({
+      //   circulatingSupply: await stores.helper.getCirculatingSupply(), // TODO move to api
+      // });
+      // this.setStore({
+      //   marketCap: await stores.helper.getMarketCap(), // TODO move to api
+      // });
+      // this.emitter.emit(ACTIONS.UPDATED);
+      // setTimeout(() => {
+      //   this.dispatcher.dispatch({ type: ACTIONS.GET_BALANCES });
+      // }, 1);
     } catch (ex) {
       console.log(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -1526,88 +1513,88 @@ class Store {
     }
   };
 
-  _getPairs = async () => {
-    try {
-      const response = await fetch(`/api/pairs`);
+  // _getPairs = async () => {
+  //   try {
+  //     const response = await fetch(`/api/pairs`);
 
-      const pairsCall = await response.json();
+  //     const pairsCall = await response.json();
 
-      this.setStore({ tokenPrices: new Map(pairsCall.prices) });
-      this.setStore({ tvl: pairsCall.tvl });
-      this.setStore({ tbv: pairsCall.tbv });
+  //     this.setStore({ tokenPrices: new Map(pairsCall.prices) });
+  //     this.setStore({ tvl: pairsCall.tvl });
+  //     this.setStore({ tbv: pairsCall.tbv });
 
-      return pairsCall.data;
-    } catch (ex) {
-      console.log(ex);
-      return [];
-    }
-  };
+  //     return pairsCall.data;
+  //   } catch (ex) {
+  //     console.log(ex);
+  //     return [];
+  //   }
+  // };
 
-  _getSwapAssets = () => {
-    const baseAssets = this.getStore("baseAssets");
-    const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
-    const set = new Set<string>();
-    set.add(NATIVE_TOKEN.address.toLowerCase());
-    pairs?.forEach((pair) => {
-      set.add(pair.token0.address.toLowerCase());
-      set.add(pair.token1.address.toLowerCase());
-    });
-    const baseAssetsWeSwap = baseAssets.filter((asset) =>
-      set.has(asset.address.toLowerCase())
-    );
-    return [...baseAssetsWeSwap];
-  };
-  updateSwapAssets = (payload: BaseAsset[]) => {
-    const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
-    const set = new Set<string>();
-    set.add(NATIVE_TOKEN.address.toLowerCase());
-    pairs?.forEach((pair) => {
-      set.add(pair.token0.address.toLowerCase());
-      set.add(pair.token1.address.toLowerCase());
-    });
-    const baseAssetsWeSwap = payload.filter((asset) =>
-      set.has(asset.address.toLowerCase())
-    );
-    this.setStore({ swapAssets: baseAssetsWeSwap });
-    this.emitter.emit(ACTIONS.SWAP_ASSETS_UPDATED, baseAssetsWeSwap);
-  };
+  // _getSwapAssets = () => {
+  //   const baseAssets = this.getStore("baseAssets");
+  //   const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+  //   const set = new Set<string>();
+  //   set.add(NATIVE_TOKEN.address.toLowerCase());
+  //   pairs?.forEach((pair) => {
+  //     set.add(pair.token0.address.toLowerCase());
+  //     set.add(pair.token1.address.toLowerCase());
+  //   });
+  //   const baseAssetsWeSwap = baseAssets.filter((asset) =>
+  //     set.has(asset.address.toLowerCase())
+  //   );
+  //   return [...baseAssetsWeSwap];
+  // };
+  // updateSwapAssets = (payload: BaseAsset[]) => {
+  //   const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+  //   const set = new Set<string>();
+  //   set.add(NATIVE_TOKEN.address.toLowerCase());
+  //   pairs?.forEach((pair) => {
+  //     set.add(pair.token0.address.toLowerCase());
+  //     set.add(pair.token1.address.toLowerCase());
+  //   });
+  //   const baseAssetsWeSwap = payload.filter((asset) =>
+  //     set.has(asset.address.toLowerCase())
+  //   );
+  //   this.setStore({ swapAssets: baseAssetsWeSwap });
+  //   this.emitter.emit(ACTIONS.SWAP_ASSETS_UPDATED, baseAssetsWeSwap);
+  // };
 
-  _getGovTokenBase = () => {
-    return {
-      address: CONTRACTS.GOV_TOKEN_ADDRESS,
-      name: CONTRACTS.GOV_TOKEN_NAME,
-      symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
-      decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
-      logoURI: CONTRACTS.GOV_TOKEN_LOGO,
-    };
-  };
+  // _getGovTokenBase = () => {
+  //   return {
+  //     address: CONTRACTS.GOV_TOKEN_ADDRESS,
+  //     name: CONTRACTS.GOV_TOKEN_NAME,
+  //     symbol: CONTRACTS.GOV_TOKEN_SYMBOL,
+  //     decimals: CONTRACTS.GOV_TOKEN_DECIMALS,
+  //     logoURI: CONTRACTS.GOV_TOKEN_LOGO,
+  //   };
+  // };
 
-  _getVeTokenBase = () => {
-    return {
-      address: CONTRACTS.VE_TOKEN_ADDRESS,
-      name: CONTRACTS.VE_TOKEN_NAME,
-      symbol: CONTRACTS.VE_TOKEN_SYMBOL,
-      decimals: CONTRACTS.VE_TOKEN_DECIMALS,
-      logoURI: CONTRACTS.VE_TOKEN_LOGO,
-    };
-  };
+  // _getVeTokenBase = () => {
+  //   return {
+  //     address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //     name: CONTRACTS.VE_TOKEN_NAME,
+  //     symbol: CONTRACTS.VE_TOKEN_SYMBOL,
+  //     decimals: CONTRACTS.VE_TOKEN_DECIMALS,
+  //     logoURI: CONTRACTS.VE_TOKEN_LOGO,
+  //   };
+  // };
 
-  getBalances = async () => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // getBalances = async () => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      // this._getGovTokenInfo(account);
-      await this._getBaseAssetInfo(account);
-      await this._getPairInfo(account);
-    } catch (ex) {
-      console.log(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     // this._getGovTokenInfo(account);
+  //     await this._getBaseAssetInfo(account);
+  //     await this._getPairInfo(account);
+  //   } catch (ex) {
+  //     console.log(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   _getVestNFTs = async (address: `0x${string}`) => {
     try {
@@ -1681,7 +1668,7 @@ class Store {
         })
       );
 
-      this.setStore({ vestNFTs: nfts });
+      queryClient.setQueryData<VestNFT[]>([QUERY_KEYS.VEST_NFTS], nfts);
       this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.error(ex);
@@ -1718,306 +1705,306 @@ class Store {
   //   }
   // };
 
-  _getPairInfo = async (address: `0x${string}`, overridePairs?: Pair[]) => {
-    try {
-      let pairs: Pair[] = [];
+  // _getPairInfo = async (address: `0x${string}`, overridePairs?: Pair[]) => {
+  //   try {
+  //     let pairs: Pair[] = [];
 
-      if (overridePairs) {
-        pairs = overridePairs;
-      } else {
-        pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]) ?? [];
-      }
+  //     if (overridePairs) {
+  //       pairs = overridePairs;
+  //     } else {
+  //       pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]) ?? [];
+  //     }
 
-      const gaugesContract = {
-        abi: CONTRACTS.VOTER_ABI,
-        address: CONTRACTS.VOTER_ADDRESS,
-      } as const;
+  //     const gaugesContract = {
+  //       abi: CONTRACTS.VOTER_ABI,
+  //       address: CONTRACTS.VOTER_ADDRESS,
+  //     } as const;
 
-      const totalWeight = await viemClient.readContract({
-        ...gaugesContract,
-        functionName: "totalWeight",
-      });
+  //     const totalWeight = await viemClient.readContract({
+  //       ...gaugesContract,
+  //       functionName: "totalWeight",
+  //     });
 
-      const pairCalls = pairs.flatMap((pair) => {
-        return [
-          {
-            address: pair.address,
-            abi: CONTRACTS.PAIR_ABI,
-            functionName: "totalSupply",
-          },
-          {
-            address: pair.address,
-            abi: CONTRACTS.PAIR_ABI,
-            functionName: "reserve0",
-          },
-          {
-            address: pair.address,
-            abi: CONTRACTS.PAIR_ABI,
-            functionName: "reserve1",
-          },
-          {
-            address: pair.address,
-            abi: CONTRACTS.PAIR_ABI,
-            functionName: "balanceOf",
-            args: [address],
-          },
-        ] as const;
-      });
-      const pairCallsChunks = chunkArray(pairCalls, 100);
-      const pairsData = await multicallChunks(pairCallsChunks);
+  //     const pairCalls = pairs.flatMap((pair) => {
+  //       return [
+  //         {
+  //           address: pair.address,
+  //           abi: CONTRACTS.PAIR_ABI,
+  //           functionName: "totalSupply",
+  //         },
+  //         {
+  //           address: pair.address,
+  //           abi: CONTRACTS.PAIR_ABI,
+  //           functionName: "reserve0",
+  //         },
+  //         {
+  //           address: pair.address,
+  //           abi: CONTRACTS.PAIR_ABI,
+  //           functionName: "reserve1",
+  //         },
+  //         {
+  //           address: pair.address,
+  //           abi: CONTRACTS.PAIR_ABI,
+  //           functionName: "balanceOf",
+  //           args: [address],
+  //         },
+  //       ] as const;
+  //     });
+  //     const pairCallsChunks = chunkArray(pairCalls, 100);
+  //     const pairsData = await multicallChunks(pairCallsChunks);
 
-      const ps = await Promise.all(
-        pairs.map(async (pair, i) => {
-          try {
-            const token0 = await this.getBaseAsset(
-              pair.token0.address,
-              false,
-              true
-            );
-            const token1 = await this.getBaseAsset(
-              pair.token1.address,
-              false,
-              true
-            );
+  //     const ps = await Promise.all(
+  //       pairs.map(async (pair, i) => {
+  //         try {
+  //           const token0 = await this.getBaseAsset(
+  //             pair.token0.address,
+  //             false,
+  //             true
+  //           );
+  //           const token1 = await this.getBaseAsset(
+  //             pair.token1.address,
+  //             false,
+  //             true
+  //           );
 
-            const [totalSupply, reserve0, reserve1, balanceOf] =
-              pairsData.slice(i * 4, i * 4 + 4);
+  //           const [totalSupply, reserve0, reserve1, balanceOf] =
+  //             pairsData.slice(i * 4, i * 4 + 4);
 
-            pair.token0 = token0 != null ? token0 : pair.token0;
-            pair.token1 = token1 != null ? token1 : pair.token1;
-            pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
-            pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
-            pair.reserve0 = formatUnits(reserve0, pair.token0.decimals);
-            pair.reserve1 = formatUnits(reserve1, pair.token1.decimals);
+  //           pair.token0 = token0 != null ? token0 : pair.token0;
+  //           pair.token1 = token1 != null ? token1 : pair.token1;
+  //           pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
+  //           pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
+  //           pair.reserve0 = formatUnits(reserve0, pair.token0.decimals);
+  //           pair.reserve1 = formatUnits(reserve1, pair.token1.decimals);
 
-            return pair;
-          } catch (ex) {
-            console.log("EXCEPTION 1");
-            console.log(pair);
-            console.log(ex);
-            return pair;
-          }
-        })
-      );
+  //           return pair;
+  //         } catch (ex) {
+  //           console.log("EXCEPTION 1");
+  //           console.log(pair);
+  //           console.log(ex);
+  //           return pair;
+  //         }
+  //       })
+  //     );
 
-      this.setStore({ pairs: ps });
-      this.emitter.emit(ACTIONS.UPDATED);
+  //     this.setStore({ pairs: ps });
+  //     this.emitter.emit(ACTIONS.UPDATED);
 
-      const gauges = ps.filter(hasGauge);
+  //     const gauges = ps.filter(hasGauge);
 
-      const gaugesAliveCalls = gauges.map((pair) => {
-        return {
-          ...gaugesContract,
-          functionName: "isAlive",
-          args: [pair.gauge.address],
-        } as const;
-      });
-      const gaugesAliveCallsChunks = chunkArray(gaugesAliveCalls);
-      const gaugesAliveData = await multicallChunks(gaugesAliveCallsChunks);
+  //     const gaugesAliveCalls = gauges.map((pair) => {
+  //       return {
+  //         ...gaugesContract,
+  //         functionName: "isAlive",
+  //         args: [pair.gauge.address],
+  //       } as const;
+  //     });
+  //     const gaugesAliveCallsChunks = chunkArray(gaugesAliveCalls);
+  //     const gaugesAliveData = await multicallChunks(gaugesAliveCallsChunks);
 
-      const gaugesCalls = gauges.flatMap((pair) => {
-        return [
-          {
-            address: pair.gauge.address,
-            abi: CONTRACTS.GAUGE_ABI,
-            functionName: "totalSupply",
-          },
-          {
-            address: pair.gauge.address,
-            abi: CONTRACTS.GAUGE_ABI,
-            functionName: "balanceOf",
-            args: [address],
-          },
-          {
-            ...gaugesContract,
-            functionName: "weights",
-            args: [pair.address],
-          },
-        ] as const;
-      });
-      const gaugesCallsChunks = chunkArray(gaugesCalls);
-      const gaugesData = await multicallChunks(gaugesCallsChunks);
+  //     const gaugesCalls = gauges.flatMap((pair) => {
+  //       return [
+  //         {
+  //           address: pair.gauge.address,
+  //           abi: CONTRACTS.GAUGE_ABI,
+  //           functionName: "totalSupply",
+  //         },
+  //         {
+  //           address: pair.gauge.address,
+  //           abi: CONTRACTS.GAUGE_ABI,
+  //           functionName: "balanceOf",
+  //           args: [address],
+  //         },
+  //         {
+  //           ...gaugesContract,
+  //           functionName: "weights",
+  //           args: [pair.address],
+  //         },
+  //       ] as const;
+  //     });
+  //     const gaugesCallsChunks = chunkArray(gaugesCalls);
+  //     const gaugesData = await multicallChunks(gaugesCallsChunks);
 
-      // this is to increment index only if pair hasGauge
-      let outerIndex = 0;
-      const ps1 = ps.map((pair) => {
-        try {
-          if (hasGauge(pair)) {
-            const isAliveGauge = gaugesAliveData[outerIndex];
+  //     // this is to increment index only if pair hasGauge
+  //     let outerIndex = 0;
+  //     const ps1 = ps.map((pair) => {
+  //       try {
+  //         if (hasGauge(pair)) {
+  //           const isAliveGauge = gaugesAliveData[outerIndex];
 
-            const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
-              outerIndex * 3,
-              outerIndex * 3 + 3
-            );
+  //           const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
+  //             outerIndex * 3,
+  //             outerIndex * 3 + 3
+  //           );
 
-            const bribes = pair.gauge.bribes.map((bribe) => {
-              bribe.rewardAmount = 0;
-              return bribe;
-            });
-            pair.gauge.xx_bribes.forEach((xx_bribe) => {
-              const bribe = bribes.find(
-                (b) => b.token.address === xx_bribe.token.address
-              );
-              if (bribe) {
-                bribe.rewardAmount = xx_bribe.rewardAmmount;
-              } else {
-                bribes.push({
-                  token: xx_bribe.token,
-                  rewardAmount: xx_bribe.rewardAmmount,
-                  reward_ammount: xx_bribe.rewardAmmount,
-                  rewardAmmount: xx_bribe.rewardAmmount,
-                });
-              }
-            });
+  //           const bribes = pair.gauge.bribes.map((bribe) => {
+  //             bribe.rewardAmount = 0;
+  //             return bribe;
+  //           });
+  //           pair.gauge.xx_bribes.forEach((xx_bribe) => {
+  //             const bribe = bribes.find(
+  //               (b) => b.token.address === xx_bribe.token.address
+  //             );
+  //             if (bribe) {
+  //               bribe.rewardAmount = xx_bribe.rewardAmmount;
+  //             } else {
+  //               bribes.push({
+  //                 token: xx_bribe.token,
+  //                 rewardAmount: xx_bribe.rewardAmmount,
+  //                 reward_ammount: xx_bribe.rewardAmmount,
+  //                 rewardAmmount: xx_bribe.rewardAmmount,
+  //               });
+  //             }
+  //           });
 
-            pair.gauge.balance = formatEther(gaugeBalance);
-            pair.gauge.totalSupply = formatEther(totalSupply);
+  //           pair.gauge.balance = formatEther(gaugeBalance);
+  //           pair.gauge.totalSupply = formatEther(totalSupply);
 
-            // in ps totalSupply for reassgined to string from number (api sends number)
-            pair.gauge.reserve0 =
-              parseFloat(pair.totalSupply as `${number}`) > 0
-                ? BigNumber(pair.reserve0)
-                    .times(pair.gauge.totalSupply)
-                    .div(pair.totalSupply)
-                    .toFixed(pair.token0.decimals)
-                : "0";
-            // in ps totalSupply for reassgined to string from number (api sends number)
-            pair.gauge.reserve1 =
-              parseFloat(pair.totalSupply as `${number}`) > 0
-                ? BigNumber(pair.reserve1)
-                    .times(pair.gauge.totalSupply)
-                    .div(pair.totalSupply)
-                    .toFixed(pair.token1.decimals)
-                : "0";
-            pair.gauge.weight = formatEther(gaugeWeight);
-            pair.gauge.weightPercent = (
-              (Number(gaugeWeight) * 100) /
-              Number(totalWeight)
-            ).toFixed(2);
-            // NOTE: this is being used in votes table to show aggregated bribes and x_bribes
-            pair.gaugebribes = bribes;
-            pair.isAliveGauge = isAliveGauge;
-            if (isAliveGauge === false) pair.apr = 0;
+  //           // in ps totalSupply for reassgined to string from number (api sends number)
+  //           pair.gauge.reserve0 =
+  //             parseFloat(pair.totalSupply as `${number}`) > 0
+  //               ? BigNumber(pair.reserve0)
+  //                   .times(pair.gauge.totalSupply)
+  //                   .div(pair.totalSupply)
+  //                   .toFixed(pair.token0.decimals)
+  //               : "0";
+  //           // in ps totalSupply for reassgined to string from number (api sends number)
+  //           pair.gauge.reserve1 =
+  //             parseFloat(pair.totalSupply as `${number}`) > 0
+  //               ? BigNumber(pair.reserve1)
+  //                   .times(pair.gauge.totalSupply)
+  //                   .div(pair.totalSupply)
+  //                   .toFixed(pair.token1.decimals)
+  //               : "0";
+  //           pair.gauge.weight = formatEther(gaugeWeight);
+  //           pair.gauge.weightPercent = (
+  //             (Number(gaugeWeight) * 100) /
+  //             Number(totalWeight)
+  //           ).toFixed(2);
+  //           // NOTE: this is being used in votes table to show aggregated bribes and x_bribes
+  //           pair.gaugebribes = bribes;
+  //           pair.isAliveGauge = isAliveGauge;
+  //           if (isAliveGauge === false) pair.apr = 0;
 
-            outerIndex++;
-          }
+  //           outerIndex++;
+  //         }
 
-          return pair;
-        } catch (ex) {
-          console.log("EXCEPTION 2");
-          console.log(pair);
-          console.log(ex);
-          return pair;
-        }
-      });
+  //         return pair;
+  //       } catch (ex) {
+  //         console.log("EXCEPTION 2");
+  //         console.log(pair);
+  //         console.log(ex);
+  //         return pair;
+  //       }
+  //     });
 
-      this.setStore({ pairs: ps1 });
-      this.emitter.emit(ACTIONS.UPDATED);
-    } catch (ex) {
-      console.log(ex);
-    }
-  };
+  //     this.setStore({ pairs: ps1 });
+  //     this.emitter.emit(ACTIONS.UPDATED);
+  //   } catch (ex) {
+  //     console.log(ex);
+  //   }
+  // };
 
-  _getBaseAssetInfo = async (address: `0x${string}`) => {
-    try {
-      const baseAssets = this.getStore("baseAssets");
-      if (!baseAssets) {
-        console.warn("baseAssets not found");
-        return null;
-      }
+  // _getBaseAssetInfo = async (address: `0x${string}`) => {
+  //   try {
+  //     const baseAssets = this.getStore("baseAssets");
+  //     if (!baseAssets) {
+  //       console.warn("baseAssets not found");
+  //       return null;
+  //     }
 
-      const voterContract = {
-        abi: CONTRACTS.VOTER_ABI,
-        address: CONTRACTS.VOTER_ADDRESS,
-      } as const;
+  //     const voterContract = {
+  //       abi: CONTRACTS.VOTER_ABI,
+  //       address: CONTRACTS.VOTER_ADDRESS,
+  //     } as const;
 
-      let baseAssetsWithBalances: BaseAsset[] = [];
+  //     let baseAssetsWithBalances: BaseAsset[] = [];
 
-      const nativeToken = baseAssets.find(
-        (asset) => asset.address === NATIVE_TOKEN.symbol
-      );
-      if (nativeToken) {
-        const balance = await viemClient.getBalance({
-          address,
-        });
-        baseAssetsWithBalances.push({
-          ...nativeToken,
-          balance: formatUnits(balance, nativeToken.decimals),
-          isWhitelisted: true,
-        } as const);
-      }
+  //     const nativeToken = baseAssets.find(
+  //       (asset) => asset.address === NATIVE_TOKEN.symbol
+  //     );
+  //     if (nativeToken) {
+  //       const balance = await viemClient.getBalance({
+  //         address,
+  //       });
+  //       baseAssetsWithBalances.push({
+  //         ...nativeToken,
+  //         balance: formatUnits(balance, nativeToken.decimals),
+  //         isWhitelisted: true,
+  //       } as const);
+  //     }
 
-      const baseAssetsWithoutNativeToken = baseAssets
-        .map((asset) => {
-          if (asset.address !== NATIVE_TOKEN.symbol) {
-            return asset;
-          }
-        })
-        .filter((asset): asset is BaseAsset => asset !== undefined);
-      if (baseAssetsWithoutNativeToken.length === 0) {
-        console.warn("error in base assets logic");
-        return null;
-      }
+  //     const baseAssetsWithoutNativeToken = baseAssets
+  //       .map((asset) => {
+  //         if (asset.address !== NATIVE_TOKEN.symbol) {
+  //           return asset;
+  //         }
+  //       })
+  //       .filter((asset): asset is BaseAsset => asset !== undefined);
+  //     if (baseAssetsWithoutNativeToken.length === 0) {
+  //       console.warn("error in base assets logic");
+  //       return null;
+  //     }
 
-      const baseAssetsWhitelistedCalls = baseAssetsWithoutNativeToken.map(
-        (asset) => {
-          return {
-            ...voterContract,
-            functionName: "isWhitelisted",
-            args: [asset.address],
-          } as const;
-        }
-      );
+  //     const baseAssetsWhitelistedCalls = baseAssetsWithoutNativeToken.map(
+  //       (asset) => {
+  //         return {
+  //           ...voterContract,
+  //           functionName: "isWhitelisted",
+  //           args: [asset.address],
+  //         } as const;
+  //       }
+  //     );
 
-      const baseAssetsBalancesCalls = baseAssetsWithoutNativeToken.map(
-        (asset) => {
-          return {
-            abi: CONTRACTS.ERC20_ABI,
-            address: asset.address,
-            functionName: "balanceOf",
-            args: [address],
-          } as const;
-        }
-      );
+  //     const baseAssetsBalancesCalls = baseAssetsWithoutNativeToken.map(
+  //       (asset) => {
+  //         return {
+  //           abi: CONTRACTS.ERC20_ABI,
+  //           address: asset.address,
+  //           functionName: "balanceOf",
+  //           args: [address],
+  //         } as const;
+  //       }
+  //     );
 
-      const whitelistedCallsChunks = chunkArray(baseAssetsWhitelistedCalls);
-      const baseAssetsWhitelistedResults = await multicallChunks(
-        whitelistedCallsChunks
-      );
+  //     const whitelistedCallsChunks = chunkArray(baseAssetsWhitelistedCalls);
+  //     const baseAssetsWhitelistedResults = await multicallChunks(
+  //       whitelistedCallsChunks
+  //     );
 
-      const balancesCallsChunks = chunkArray(baseAssetsBalancesCalls);
-      const baseAssetsBalancesResults = await multicallChunks(
-        balancesCallsChunks
-      );
+  //     const balancesCallsChunks = chunkArray(baseAssetsBalancesCalls);
+  //     const baseAssetsBalancesResults = await multicallChunks(
+  //       balancesCallsChunks
+  //     );
 
-      for (let i = 0; i < baseAssetsWithoutNativeToken.length; i++) {
-        baseAssetsWithBalances.push({
-          ...baseAssetsWithoutNativeToken[i],
-          balance: formatUnits(
-            baseAssetsBalancesResults[i],
-            baseAssetsWithoutNativeToken[i].decimals
-          ),
-          isWhitelisted: baseAssetsWhitelistedResults[i],
-        });
-      }
-      baseAssets.forEach((baseAsset) => {
-        const baseAssetWithBalance = baseAssetsWithBalances.find(
-          (baseAssetWithBalance) =>
-            baseAssetWithBalance.address === baseAsset.address
-        );
-        if (baseAssetWithBalance) {
-          baseAsset.balance = baseAssetWithBalance.balance;
-          baseAsset.isWhitelisted = baseAssetWithBalance.isWhitelisted;
-        }
-      });
+  //     for (let i = 0; i < baseAssetsWithoutNativeToken.length; i++) {
+  //       baseAssetsWithBalances.push({
+  //         ...baseAssetsWithoutNativeToken[i],
+  //         balance: formatUnits(
+  //           baseAssetsBalancesResults[i],
+  //           baseAssetsWithoutNativeToken[i].decimals
+  //         ),
+  //         isWhitelisted: baseAssetsWhitelistedResults[i],
+  //       });
+  //     }
+  //     baseAssets.forEach((baseAsset) => {
+  //       const baseAssetWithBalance = baseAssetsWithBalances.find(
+  //         (baseAssetWithBalance) =>
+  //           baseAssetWithBalance.address === baseAsset.address
+  //       );
+  //       if (baseAssetWithBalance) {
+  //         baseAsset.balance = baseAssetWithBalance.balance;
+  //         baseAsset.isWhitelisted = baseAssetWithBalance.isWhitelisted;
+  //       }
+  //     });
 
-      this.setStore({ baseAssets: baseAssetsWithBalances });
-      this.updateSwapAssets(baseAssetsWithBalances);
-      this.emitter.emit(ACTIONS.UPDATED);
-    } catch (ex) {
-      console.log(ex);
-    }
-  };
+  //     this.setStore({ baseAssets: baseAssetsWithBalances });
+  //     this.updateSwapAssets(baseAssetsWithBalances);
+  //     this.emitter.emit(ACTIONS.UPDATED);
+  //   } catch (ex) {
+  //     console.log(ex);
+  //   }
+  // };
 
   searchBaseAsset = async (payload: {
     type: string;
@@ -2081,10 +2068,18 @@ class Store {
         JSON.stringify(localBaseAssets)
       );
 
-      const baseAssets = this.getStore("baseAssets");
-      const storeBaseAssets = [...baseAssets, ...localBaseAssets];
+      const baseAssets = queryClient.getQueryData<BaseAsset[]>([
+        QUERY_KEYS.BASE_ASSETS,
+      ]);
+      const storeBaseAssets = baseAssets
+        ? [...baseAssets, ...localBaseAssets]
+        : [...localBaseAssets];
 
-      this.setStore({ baseAssets: storeBaseAssets });
+      // this.setStore({ baseAssets: storeBaseAssets });
+      queryClient.setQueryData<BaseAsset[]>(
+        [QUERY_KEYS.BASE_ASSETS],
+        storeBaseAssets
+      );
 
       this.emitter.emit(ACTIONS.ASSET_SEARCHED, newBaseAsset);
     } catch (ex) {
@@ -2106,8 +2101,6 @@ class Store {
     };
   }) => {
     try {
-      const context = this;
-
       const { address: account } = getAccount();
       if (!account) {
         console.warn("account not found");
@@ -2146,7 +2139,7 @@ class Store {
       });
 
       if (pairFor && pairFor !== ZERO_ADDRESS) {
-        await context.updatePairsCall(account);
+        // await context.updatePairsCall(account);
         this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
         return null;
       }
@@ -2369,7 +2362,7 @@ class Store {
 
       await this.writeDeposit(walletClient, stakeTXID, gaugeAddress, balanceOf);
 
-      await context.updatePairsCall(account);
+      // await context.updatePairsCall(account);
 
       this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
     } catch (ex) {
@@ -2391,8 +2384,6 @@ class Store {
     };
   }) => {
     try {
-      const context = this;
-
       const { address: account } = getAccount();
       if (!account) {
         console.warn("account not found");
@@ -2431,7 +2422,7 @@ class Store {
       });
 
       if (pairFor && pairFor !== ZERO_ADDRESS) {
-        await context.updatePairsCall(account);
+        // await context.updatePairsCall(account);
         this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
         return null;
       }
@@ -2593,7 +2584,7 @@ class Store {
       // SUBMIT CREATE GAUGE TRANSACTION
       await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
 
-      await context.updatePairsCall(account);
+      // await context.updatePairsCall(account);
 
       this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
     } catch (ex) {
@@ -2602,18 +2593,18 @@ class Store {
     }
   };
 
-  updatePairsCall = async (address: `0x${string}`) => {
-    try {
-      // update pairs is same endpoint in API. Pairs are updated in sync on backend
-      const response = await fetch(`/api/pairs`);
-      const pairsCall = await response.json();
-      this.setStore({ pairs: pairsCall.data });
+  // updatePairsCall = async (address: `0x${string}`) => {
+  //   try {
+  //     // update pairs is same endpoint in API. Pairs are updated in sync on backend
+  //     const response = await fetch(`/api/pairs`);
+  //     const pairsCall = await response.json();
+  //     this.setStore({ pairs: pairsCall.data });
 
-      await this._getPairInfo(address, pairsCall.data);
-    } catch (ex) {
-      console.log(ex);
-    }
-  };
+  //     await this._getPairInfo(address, pairsCall.data);
+  //   } catch (ex) {
+  //     console.log(ex);
+  //   }
+  // };
 
   sleep = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -2781,7 +2772,8 @@ class Store {
         deadline
       );
 
-      this._getPairInfo(account);
+      // this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
@@ -2872,7 +2864,9 @@ class Store {
         balanceOf
       );
 
-      this._getPairInfo(account);
+      // this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+
       this.emitter.emit(ACTIONS.LIQUIDITY_STAKED);
     } catch (ex) {
       console.error(ex);
@@ -3100,7 +3094,8 @@ class Store {
         balanceOf
       );
 
-      this._getPairInfo(account);
+      // this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.ADD_LIQUIDITY_AND_STAKED);
@@ -3430,7 +3425,8 @@ class Store {
         deadline
       );
 
-      this._getPairInfo(account);
+      // this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
@@ -3571,7 +3567,8 @@ class Store {
         deadline
       );
 
-      this._getPairInfo(account);
+      // this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
       this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
@@ -3635,7 +3632,8 @@ class Store {
 
       await this._writeContractWrapper(unstakeTXID, withdrawFunction);
 
-      this._getPairInfo(account);
+      // this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
       this.emitter.emit(ACTIONS.LIQUIDITY_UNSTAKED);
     } catch (ex) {
       console.error(ex);
@@ -3730,7 +3728,7 @@ class Store {
 
       await this.writeCreateGauge(walletClient, createGaugeTXID, pair.address);
 
-      await this.updatePairsCall(account);
+      // await this.updatePairsCall(account);
 
       this.emitter.emit(ACTIONS.CREATE_GAUGE_RETURNED);
     } catch (ex) {
@@ -3934,7 +3932,8 @@ class Store {
 
       this._getSpecificAssetInfo(account, fromAsset.address);
       this._getSpecificAssetInfo(account, toAsset.address);
-      this._getPairInfo(account);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      // this._getPairInfo(account);
 
       this.emitter.emit(ACTIONS.SWAP_RETURNED);
     } catch (ex) {
@@ -4010,7 +4009,9 @@ class Store {
     assetAddress: `0x${string}`
   ) => {
     try {
-      const baseAssets = this.getStore("baseAssets");
+      const baseAssets = queryClient.getQueryData<BaseAsset[]>([
+        QUERY_KEYS.BASE_ASSET_INFO,
+      ]);
       if (!baseAssets) {
         console.warn("baseAssets not found");
         return null;
@@ -4040,8 +4041,10 @@ class Store {
         })
       );
 
-      this.setStore({ baseAssets: ba });
-      this.updateSwapAssets(ba);
+      // this.setStore({ baseAssets: ba });
+      queryClient.setQueryData<BaseAsset[]>([QUERY_KEYS.BASE_ASSET_INFO], ba);
+      // this.updateSwapAssets(ba);
+      queryClient.invalidateQueries([QUERY_KEYS.SWAP_ASSETS]);
       this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.log(ex);
@@ -4167,8 +4170,9 @@ class Store {
         })
       );
 
-      this.setStore({ vestNFTs: nfts });
-      this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, nfts);
+      // this.setStore({ vestNFTs: nfts });
+      queryClient.setQueryData<VestNFT[]>([QUERY_KEYS.VEST_NFTS], nfts);
+      // this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, nfts);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5175,7 +5179,7 @@ class Store {
       queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
       this._getSpecificAssetInfo(account, asset.address);
 
-      await this.updatePairsCall(account);
+      // await this.updatePairsCall(account);
       this.emitter.emit(ACTIONS.BRIBE_CREATED);
     } catch (ex) {
       console.error(ex);
@@ -5344,7 +5348,13 @@ class Store {
         queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
       });
       this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
-      this.getBalances();
+
+      queryClient.invalidateQueries([
+        QUERY_KEYS.GOV_TOKEN,
+        QUERY_KEYS.VEST_NFTS,
+        QUERY_KEYS.BASE_ASSET_INFO,
+        QUERY_KEYS.PAIRS_WITH_GAUGES,
+      ]);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -5534,7 +5544,12 @@ class Store {
         queryKey: [QUERY_KEYS.REWARDS],
       });
       this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
-      this.getBalances();
+      queryClient.invalidateQueries([
+        QUERY_KEYS.GOV_TOKEN,
+        QUERY_KEYS.VEST_NFTS,
+        QUERY_KEYS.BASE_ASSET_INFO,
+        QUERY_KEYS.PAIRS_WITH_GAUGES,
+      ]);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);

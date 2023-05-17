@@ -574,7 +574,9 @@ const getBaseAssetsWithInfo = async (
   return baseAssetsWithBalances;
 };
 
-export const useBaseAssetWithInfo = () => {
+export const useBaseAssetWithInfo = (
+  onSuccess?: (data: BaseAsset[]) => void
+) => {
   const queryClient = useQueryClient();
   const { address } = useAccount();
   const { data: initialBaseAssets } = useInitBaseAssets();
@@ -582,18 +584,21 @@ export const useBaseAssetWithInfo = () => {
     queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
     queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
     enabled: !!initialBaseAssets,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }), // FIXME: probably will need to rethink it
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }); // FIXME: probably will need to rethink it
+      onSuccess?.(data);
+    },
   });
 };
 
-export const useSwapAssets = () => {
+export const useSwapAssets = (onSuccess?: (data: BaseAsset[]) => void) => {
   const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
   const { data: pairs } = usePairs();
   return useQuery({
     queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssetsWithInfo, pairs],
     queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
     enabled: !!baseAssetsWithInfo && !!pairs,
+    onSuccess,
   });
 };
 

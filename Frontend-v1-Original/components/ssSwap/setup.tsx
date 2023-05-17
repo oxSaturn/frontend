@@ -34,7 +34,7 @@ import type {
   QuoteSwapResponse,
   FireBirdTokens,
 } from "../../stores/types/types";
-import { useTokenPrices } from "../../lib/global/queries";
+import { useSwapAssets, useTokenPrices } from "../../lib/global/queries";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -68,6 +68,19 @@ function Setup() {
   const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
 
   const { data: tokenPrices } = useTokenPrices();
+
+  useSwapAssets((swapAssets) => {
+    setToAssetOptions(swapAssets);
+    setFromAssetOptions(swapAssets);
+
+    if (swapAssets.length > 0 && toAssetValue == null) {
+      setToAssetValue(swapAssets[0]);
+    }
+
+    if (swapAssets.length > 0 && fromAssetValue == null) {
+      setFromAssetValue(swapAssets[1]);
+    }
+  });
 
   const isWrapUnwrap =
     (fromAssetValue?.symbol === "WCANTO" && toAssetValue?.symbol === "CANTO") ||
@@ -178,34 +191,6 @@ function Setup() {
       }
     };
 
-    const ssUpdated = () => {
-      const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-
-      setToAssetOptions(swapAssets);
-      setFromAssetOptions(swapAssets);
-
-      if (swapAssets.length > 0 && toAssetValue == null) {
-        setToAssetValue(swapAssets[0]);
-      }
-
-      if (swapAssets.length > 0 && fromAssetValue == null) {
-        setFromAssetValue(swapAssets[1]);
-      }
-
-      forceUpdate();
-    };
-
-    const assetsUpdated = (payload: BaseAsset[]) => {
-      if (payload && payload.length > 0) {
-        setToAssetOptions(payload);
-        setFromAssetOptions(payload);
-      } else {
-        const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-        setToAssetOptions(swapAssets);
-        setFromAssetOptions(swapAssets);
-      }
-    };
-
     const swapReturned = () => {
       setLoading(false);
       setFromAmountValue("");
@@ -218,14 +203,9 @@ function Setup() {
     };
 
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
     stores.emitter.on(ACTIONS.SWAP_RETURNED, swapReturned);
     stores.emitter.on(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
-    stores.emitter.on(ACTIONS.SWAP_ASSETS_UPDATED, assetsUpdated);
-    // stores.emitter.on(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
     stores.emitter.on(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
-
-    ssUpdated();
 
     const interval = setInterval(() => {
       if (!loading && !quoteLoading) updateQuote();
@@ -233,11 +213,9 @@ function Setup() {
 
     return () => {
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
       stores.emitter.removeListener(ACTIONS.SWAP_RETURNED, swapReturned);
       stores.emitter.removeListener(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
       stores.emitter.removeListener(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
-      stores.emitter.removeListener(ACTIONS.SWAP_ASSETS_UPDATED, assetsUpdated);
       clearInterval(interval);
     };
   }, [
