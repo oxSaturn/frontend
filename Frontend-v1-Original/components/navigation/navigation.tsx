@@ -166,7 +166,7 @@ function Navigation() {
       <div className="flex items-center rounded-2xl border-0 bg-transparent p-2 text-center shadow-[0_0_0.2em] shadow-cantoGreen max-md:hidden">
         {renderNavs()}
       </div>
-      <div className="flex flex-col items-start p-2 text-center md:hidden">
+      <div className="flex flex-col items-start py-2 text-center md:hidden">
         {renderNavs()}
       </div>
     </>
