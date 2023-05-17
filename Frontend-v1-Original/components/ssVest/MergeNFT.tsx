@@ -13,22 +13,19 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import stores from "../../stores";
-import { VeToken, VestNFT } from "../../stores/types/types";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
+import { useVestNfts, useVeToken } from "../../lib/global/queries";
 
 import classes from "./ssVest.module.css";
 
 export function MergeNFT() {
   const router = useRouter();
   const { id } = router.query;
-  const [nfts, setNfts] = useState<VestNFT[]>(
-    stores.stableSwapStore.getStore("vestNFTs")
-  );
-  const [veToken, setVeToken] = useState<VeToken | null>(
-    stores.stableSwapStore.getStore("veToken")
-  );
   const [selectedNFTId, setSelectedNFTId] = useState<string | null>(null);
+
+  const { data: nfts } = useVestNfts();
+  const { data: veToken } = useVeToken();
 
   const onMergeNFT = (from: string, to: string | null) => {
     if (to === null) return;
@@ -44,7 +41,7 @@ export function MergeNFT() {
   useEffect(() => {
     // wait for veToken
     if (veToken) {
-      if (nfts.length === 0) {
+      if (nfts?.length === 0) {
         // only refetch when nfts is empty, i.e., when users refresh the page
         stores.dispatcher.dispatch({
           type: ACTIONS.GET_VEST_NFTS,
@@ -55,24 +52,13 @@ export function MergeNFT() {
   }, [veToken, nfts]);
 
   useEffect(() => {
-    const ssConfigureCalled = () => {
-      setVeToken(stores.stableSwapStore.getStore("veToken"));
-    };
-    const nftsReturned = (nfts: VestNFT[]) => {
-      setNfts(nfts);
-    };
     const nftMerged = () => {
       router.push("/vest");
     };
-    // wait for veToken
-    stores.emitter.on(ACTIONS.UPDATED, ssConfigureCalled);
-    // wait for nfts
-    stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, nftsReturned);
+
     // wait for nft merged
     stores.emitter.on(ACTIONS.MERGE_NFT_RETURNED, nftMerged);
     return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssConfigureCalled);
-      stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, nftsReturned);
       stores.emitter.removeListener(ACTIONS.MERGE_NFT_RETURNED, nftMerged);
     };
   }, [router]);
@@ -97,25 +83,26 @@ export function MergeNFT() {
                 setSelectedNFTId(e.target.value);
               }}
             >
-              {nfts
-                .filter((nft) => nft.id !== id) // filter out the current nft
-                .map((nft) => {
-                  return (
-                    <MenuItem key={nft.id} value={nft.id}>
-                      <div className="flex w-full items-center justify-between">
-                        <Typography>#{nft.id}</Typography>
-                        <div>
-                          <Typography>
-                            {formatCurrency(nft.lockValue)}
-                          </Typography>
-                          <Typography color="textSecondary">
-                            {veToken?.symbol}
-                          </Typography>
+              {nfts &&
+                nfts
+                  .filter((nft) => nft.id !== id) // filter out the current nft
+                  .map((nft) => {
+                    return (
+                      <MenuItem key={nft.id} value={nft.id}>
+                        <div className="flex w-full items-center justify-between">
+                          <Typography>#{nft.id}</Typography>
+                          <div>
+                            <Typography>
+                              {formatCurrency(nft.lockValue)}
+                            </Typography>
+                            <Typography color="textSecondary">
+                              {veToken?.symbol}
+                            </Typography>
+                          </div>
                         </div>
-                      </div>
-                    </MenuItem>
-                  );
-                })}
+                      </MenuItem>
+                    );
+                  })}
             </Select>
           </FormControl>
           <Button

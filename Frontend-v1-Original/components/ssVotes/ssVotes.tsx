@@ -16,8 +16,8 @@ import {
 } from "@mui/material";
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
-// import { useRouter } from "next/router";
 
+import { useVestNfts, useVeToken } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
 import stores from "../../stores";
@@ -26,12 +26,12 @@ import {
   Gauge,
   hasGauge,
   VestNFT,
-  VeToken,
   Vote,
   Votes as VotesType,
 } from "../../stores/types/types";
 
 import GaugesTable from "./ssVotesTable";
+
 import classes from "./ssVotes.module.css";
 
 const initialEmptyToken: VestNFT = {
@@ -61,13 +61,37 @@ export default function Votes() {
   const [gauges, setGauges] = useState<Gauge[]>([]);
   const [voteLoading, setVoteLoading] = useState(false);
   const [votes, setVotes] = useState<VotesType>([]);
-  const [veToken, setVeToken] = useState<VeToken | null>(null);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
-  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
   const [search, setSearch] = useState("");
 
+  const { data: veToken } = useVeToken();
+
+  const { data: vestNFTs } = useVestNfts((nfts) => {
+    if (nfts && nfts.length > 0) {
+      const votableNFTs = nfts.filter(
+        (nft) => nft.actionedInCurrentEpoch === false
+      );
+      if (votableNFTs.length > 0) {
+        setToken(votableNFTs[0]);
+      } else {
+        setToken(nfts[0]);
+      }
+    }
+
+    if (nfts && nfts.length > 0 && gauges && gauges.length > 0) {
+      const votableNFTs = nfts.filter(
+        (nft) => nft.actionedInCurrentEpoch === false
+      );
+      const defaultSelectedNFT =
+        votableNFTs.length > 0 ? votableNFTs[0] : nfts[0];
+      stores.dispatcher.dispatch({
+        type: ACTIONS.GET_VEST_VOTES,
+        content: { tokenID: defaultSelectedNFT.id },
+      });
+    }
+  });
+
   const ssUpdated = () => {
-    setVeToken(stores.stableSwapStore.getStore("veToken"));
     const as = stores.stableSwapStore.getStore("pairs");
 
     const filteredAssets = as.filter(hasGauge).filter((gauge) => {
@@ -80,43 +104,6 @@ export default function Votes() {
     });
     if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
       setGauges(filteredAssets);
-
-    const nfts = stores.stableSwapStore.getStore("vestNFTs");
-    setVestNFTs(nfts);
-
-    if (nfts && nfts.length > 0) {
-      const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
-      );
-      if (votableNFTs.length > 0) {
-        setToken(votableNFTs[0]);
-      } else {
-        setToken(nfts[0]);
-      }
-    }
-
-    if (
-      nfts &&
-      nfts.length > 0 &&
-      filteredAssets &&
-      filteredAssets.length > 0
-    ) {
-      const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
-      );
-      const defaultSelectedNFT =
-        votableNFTs.length > 0 ? votableNFTs[0] : nfts[0];
-      stores.dispatcher.dispatch({
-        type: ACTIONS.GET_VEST_VOTES,
-        content: { tokenID: defaultSelectedNFT.id },
-      });
-      // stores.dispatcher.dispatch({
-      //   type: ACTIONS.GET_VEST_BALANCES,
-      //   content: { tokenID: nfts[0].id },
-      // });
-    }
-
-    // forceUpdate();
   };
 
   useEffect(() => {
@@ -232,11 +219,14 @@ export default function Votes() {
   //   router.push("/bribe/create");
   // };
 
-  const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
-    const actionedNFTs = options.filter(
+  const renderMediumInput = (
+    value: VestNFT,
+    options: VestNFT[] | undefined
+  ) => {
+    const actionedNFTs = options?.filter(
       (option) => option.actionedInCurrentEpoch === true
     );
-    const votableNFTs = options.filter(
+    const votableNFTs = options?.filter(
       (option) => option.actionedInCurrentEpoch === false
     );
     return (
@@ -261,12 +251,13 @@ export default function Votes() {
                   }}
                   sx={{ "& .MuiSelect-select": { height: "inherit" } }}
                 >
-                  {votableNFTs.length > 0 ? (
+                  {votableNFTs && votableNFTs.length > 0 ? (
                     <MyListSubheader>
                       Available to Vote this Epoch
                     </MyListSubheader>
                   ) : null}
-                  {votableNFTs.length > 0 &&
+                  {votableNFTs &&
+                    votableNFTs.length > 0 &&
                     votableNFTs.map((option) => {
                       return (
                         <MenuItem
@@ -295,12 +286,13 @@ export default function Votes() {
                         </MenuItem>
                       );
                     })}
-                  {actionedNFTs.length > 0 ? (
+                  {actionedNFTs && actionedNFTs.length > 0 ? (
                     <MyListSubheader>
                       Already Voted/Reset this Epoch
                     </MyListSubheader>
                   ) : null}
-                  {actionedNFTs.length > 0 &&
+                  {actionedNFTs &&
+                    actionedNFTs.length > 0 &&
                     actionedNFTs.map((option) => {
                       return (
                         <MenuItem

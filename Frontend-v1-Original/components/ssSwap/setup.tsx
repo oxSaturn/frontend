@@ -34,6 +34,7 @@ import type {
   QuoteSwapResponse,
   FireBirdTokens,
 } from "../../stores/types/types";
+import { useTokenPrices } from "../../lib/global/queries";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -66,7 +67,7 @@ function Setup() {
   const [quoteError, setQuoteError] = useState<string | null | false>(null);
   const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
 
-  const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
+  const { data: tokenPrices } = useTokenPrices();
 
   const isWrapUnwrap =
     (fromAssetValue?.symbol === "WCANTO" && toAssetValue?.symbol === "CANTO") ||
@@ -179,7 +180,6 @@ function Setup() {
 
     const ssUpdated = () => {
       const swapAssets = stores.stableSwapStore.getStore("swapAssets");
-      const tokenPrices = stores.stableSwapStore.getStore("tokenPrices");
 
       setToAssetOptions(swapAssets);
       setFromAssetOptions(swapAssets);
@@ -190,10 +190,6 @@ function Setup() {
 
       if (swapAssets.length > 0 && fromAssetValue == null) {
         setFromAssetValue(swapAssets[1]);
-      }
-
-      if (tokenPrices.size > 0) {
-        setTokenPrices(tokenPrices);
       }
 
       forceUpdate();

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Button,
   Typography,
@@ -13,12 +13,8 @@ import { AddCircleOutline } from "@mui/icons-material";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-import {
-  VeDistReward,
-  VestNFT,
-  VeToken,
-  Gauge,
-} from "../../stores/types/types";
+import { VeDistReward, VestNFT, Gauge } from "../../stores/types/types";
+import { useVeToken, useVestNfts } from "../../lib/global/queries";
 
 import RewardsTable from "./ssRewardsTable";
 import { useRewards } from "./queries";
@@ -37,20 +33,18 @@ export default function Rewards() {
   const [rewards, setRewards] = useState<(Gauge | VeDistReward)[]>([]);
   const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
-  const [veToken, setVeToken] = useState<VeToken | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const stableSwapUpdated = () => {
-    const nfts = stores.stableSwapStore.getStore("vestNFTs");
-    setVestNFTs(nfts);
-    setVeToken(stores.stableSwapStore.getStore("veToken"));
+  const { data: veToken } = useVeToken();
 
-    if (nfts && nfts.length > 0) {
+  useVestNfts((vestNFTs) => {
+    setVestNFTs(vestNFTs);
+    if (vestNFTs && vestNFTs.length > 0) {
       if (!token || token.lockEnds === "0") {
-        setToken(nfts[0]);
+        setToken(vestNFTs[0]);
       }
     }
-  };
+  });
 
   const { isFetching: isFetchingRewards } = useRewards(token?.id, (data) => {
     if (data) {
@@ -72,15 +66,6 @@ export default function Rewards() {
       }
     }
   });
-
-  useEffect(() => {
-    stableSwapUpdated();
-
-    stores.emitter.on(ACTIONS.UPDATED, stableSwapUpdated);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
-    };
-  }, [token]);
 
   const onClaimAll = () => {
     setLoading(true);

@@ -1,14 +1,14 @@
 import { getContract, formatUnits, parseUnits } from "viem";
 
+import { queryClient } from "../pages/_app";
+
 import viemClient from "./connectors/viem";
-import { CONTRACTS } from "./constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "./constants/constants";
 import {
   DefiLlamaTokenPrice,
   DexScrennerPair,
   TokenForPrice,
 } from "./types/types";
-
-import stores from ".";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;
@@ -142,9 +142,9 @@ class Helper {
 
   getMarketCap = async () => {
     const circulatingSupply = await this.getCirculatingSupply();
-    const price = stores.stableSwapStore
-      .getStore("tokenPrices")
-      .get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
+    const price = queryClient
+      .getQueryData<Map<string, number>>([QUERY_KEYS.TOKEN_PRICES])
+      ?.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
 
     if (!price || !circulatingSupply) return 0;
     return circulatingSupply * price;

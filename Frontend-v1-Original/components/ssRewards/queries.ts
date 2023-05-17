@@ -24,14 +24,16 @@ import {
   Gauge,
   GovToken,
   VeToken,
+  VestNFT,
 } from "../../stores/types/types";
-import { useGovToken, useVeToken } from "../../lib/global/queries";
+import { useGovToken, useVeToken, useVestNfts } from "../../lib/global/queries";
 
 export const getRewardBalances = async (
   address: Address | undefined,
   tokenID: string | undefined,
   govToken: GovToken | undefined,
-  veToken: VeToken | undefined
+  veToken: VeToken | undefined,
+  vestNFTs: VestNFT[] | undefined
 ) => {
   if (!address) {
     console.warn("account not found");
@@ -187,13 +189,14 @@ export const getRewardBalances = async (
       args: [BigInt(tokenID)],
     });
 
-    const vestNFTs = stores.stableSwapStore.getStore("vestNFTs");
-    let theNFT = vestNFTs.filter((vestNFT) => {
+    const theNFT = vestNFTs?.filter((vestNFT) => {
       return vestNFT.id === tokenID;
     });
 
     if (veDistEarned > 0) {
       veDistReward.push({
+        // FIXME
+        // @ts-ignore
         token: theNFT[0],
         lockToken: veToken,
         rewardToken: govToken,
@@ -272,9 +275,18 @@ export const useRewards = (
   const { address } = useAccount();
   const { data: veToken } = useVeToken();
   const { data: govToken } = useGovToken();
+  const { data: vestNFTs } = useVestNfts();
   return useQuery({
-    queryKey: [QUERY_KEYS.REWARDS, address, tokenID, govToken, veToken],
-    queryFn: () => getRewardBalances(address, tokenID, govToken, veToken),
+    queryKey: [
+      QUERY_KEYS.REWARDS,
+      address,
+      tokenID,
+      govToken,
+      veToken,
+      vestNFTs,
+    ],
+    queryFn: () =>
+      getRewardBalances(address, tokenID, govToken, veToken, vestNFTs),
     enabled: !!address,
     onSuccess,
     refetchOnWindowFocus: false,

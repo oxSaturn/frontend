@@ -455,7 +455,7 @@ const getVestNFTs = async (
   return nfts;
 };
 
-export const useVestNfts = () => {
+export const useVestNfts = (onSuccess?: (data: VestNFT[]) => void) => {
   const { address } = useAccount();
   const { data: govToken } = useGovToken();
   const { data: veToken } = useVeToken();
@@ -464,6 +464,7 @@ export const useVestNfts = () => {
     queryKey: [QUERY_KEYS.VEST_NFTS, address, govToken, veToken, activePeriod],
     queryFn: () => getVestNFTs(address, govToken, veToken, activePeriod!), // enabled only when activePeriod is defined
     enabled: !!govToken && !!veToken && !!activePeriod,
+    onSuccess,
   });
 };
 
