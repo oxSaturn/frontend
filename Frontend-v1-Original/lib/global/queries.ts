@@ -170,6 +170,7 @@ export const useTokenPrices = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.TOKEN_PRICES, pairsData],
     queryFn: () => getTokenPrices(pairsData),
+    enabled: !!pairsData,
   });
 };
 
@@ -205,16 +206,6 @@ const getSwapAssets = (
     set.has(asset.address.toLowerCase())
   );
   return [...baseAssetsWeSwap];
-};
-
-export const useSwapAssets = () => {
-  // TODO useBaseAssetsWithInfo or useInitBaseAssets ?
-  const { data: baseAssets } = useInitBaseAssets();
-  const { data: pairs } = usePairs();
-  return useQuery({
-    queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssets, pairs],
-    queryFn: () => getSwapAssets(baseAssets, pairs),
-  });
 };
 
 const getActivePeriod = async () => {
@@ -352,7 +343,8 @@ const getGovToken = async (
   return govToken;
 };
 
-export const useGovToken = (address: Address | undefined) => {
+export const useGovToken = () => {
+  const { address } = useAccount();
   const { data: govTokenBase } = useGovTokenBase();
   return useQuery({
     queryKey: [QUERY_KEYS.GOV_TOKEN, address, govTokenBase],
@@ -463,8 +455,9 @@ const getVestNFTs = async (
   return nfts;
 };
 
-export const useVestNfts = (address: Address | undefined) => {
-  const { data: govToken } = useGovToken(address);
+export const useVestNfts = () => {
+  const { address } = useAccount();
+  const { data: govToken } = useGovToken();
   const { data: veToken } = useVeToken();
   const { data: activePeriod } = useActivePeriod();
   return useQuery({
@@ -520,7 +513,7 @@ const getBaseAssetsWithInfo = async (
     .filter((asset): asset is BaseAsset => asset !== undefined);
   if (baseAssetsWithoutNativeToken.length === 0) {
     console.warn("error in base assets logic");
-    return null;
+    throw new Error("error in base assets logic");
   }
 
   const baseAssetsWhitelistedCalls = baseAssetsWithoutNativeToken.map(
@@ -574,8 +567,9 @@ const getBaseAssetsWithInfo = async (
   return baseAssetsWithBalances;
 };
 
-export const useBaseAssetWithInfo = (address: Address | undefined) => {
+export const useBaseAssetWithInfo = () => {
   const queryClient = useQueryClient();
+  const { address } = useAccount();
   const { data: initialBaseAssets } = useInitBaseAssets();
   return useQuery({
     queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
@@ -583,6 +577,16 @@ export const useBaseAssetWithInfo = (address: Address | undefined) => {
     enabled: !!initialBaseAssets,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }), // FIXME: probably will need to rethink it
+  });
+};
+
+export const useSwapAssets = () => {
+  const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
+  const { data: pairs } = usePairs();
+  return useQuery({
+    queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssetsWithInfo, pairs],
+    queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
+    enabled: !!baseAssetsWithInfo && !!pairs,
   });
 };
 
@@ -663,22 +667,11 @@ const getExactBaseAsset = async (
   return newBaseAsset;
 };
 
-// TODO: split to two hooks same way as now ?
-const getPairsWithInfo = async (
+const getPairsWithoutGauges = async (
   address: `0x${string}`,
   pairs: Pair[],
   baseAssets: BaseAsset[]
 ) => {
-  const gaugesContract = {
-    abi: CONTRACTS.VOTER_ABI,
-    address: CONTRACTS.VOTER_ADDRESS,
-  } as const;
-
-  const totalWeight = await viemClient.readContract({
-    ...gaugesContract,
-    functionName: "totalWeight",
-  });
-
   const pairCalls = pairs.flatMap((pair) => {
     return [
       {
@@ -709,43 +702,69 @@ const getPairsWithInfo = async (
 
   const ps = await Promise.all(
     pairs.map(async (pair, i) => {
-      try {
-        const token0 = await getExactBaseAsset(
-          pair.token0.address,
-          baseAssets,
-          false,
-          true
-        );
-        const token1 = await getExactBaseAsset(
-          pair.token1.address,
-          baseAssets,
-          false,
-          true
-        );
+      const token0 = await getExactBaseAsset(
+        pair.token0.address,
+        baseAssets,
+        false,
+        true
+      );
+      const token1 = await getExactBaseAsset(
+        pair.token1.address,
+        baseAssets,
+        false,
+        true
+      );
 
-        const [totalSupply, reserve0, reserve1, balanceOf] = pairsData.slice(
-          i * 4,
-          i * 4 + 4
-        );
+      const [totalSupply, reserve0, reserve1, balanceOf] = pairsData.slice(
+        i * 4,
+        i * 4 + 4
+      );
 
-        pair.token0 = token0 != null ? token0 : pair.token0;
-        pair.token1 = token1 != null ? token1 : pair.token1;
-        pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
-        pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
-        pair.reserve0 = formatUnits(reserve0, pair.token0.decimals);
-        pair.reserve1 = formatUnits(reserve1, pair.token1.decimals);
+      pair.token0 = token0 != null ? token0 : pair.token0;
+      pair.token1 = token1 != null ? token1 : pair.token1;
+      pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
+      pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
+      pair.reserve0 = formatUnits(reserve0, pair.token0.decimals);
+      pair.reserve1 = formatUnits(reserve1, pair.token1.decimals);
 
-        return pair;
-      } catch (ex) {
-        console.log("EXCEPTION 1");
-        console.log(pair);
-        console.log(ex);
-        return pair;
-      }
+      return pair;
     })
   );
 
-  const gauges = ps.filter(hasGauge);
+  return ps;
+};
+// TODO maybe set query data instead of triple hook?
+export const usePairsWithoutGauges = () => {
+  const { address } = useAccount();
+  const { data: pairs } = usePairs();
+  const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
+  return useQuery({
+    queryKey: [
+      QUERY_KEYS.PAIRS_WITHOUT_GAUGES,
+      address,
+      pairs,
+      baseAssetsWithInfo,
+    ],
+    queryFn: () => getPairsWithoutGauges(address!, pairs!, baseAssetsWithInfo!),
+    enabled: !!address && !!pairs && !!baseAssetsWithInfo,
+  });
+};
+
+const getPairsWithGauges = async (
+  address: `0x${string}`,
+  pairsWithoutInfo: Pair[]
+) => {
+  const gaugesContract = {
+    abi: CONTRACTS.VOTER_ABI,
+    address: CONTRACTS.VOTER_ADDRESS,
+  } as const;
+
+  const totalWeight = await viemClient.readContract({
+    ...gaugesContract,
+    functionName: "totalWeight",
+  });
+
+  const gauges = pairsWithoutInfo.filter(hasGauge);
 
   const gaugesAliveCalls = gauges.map((pair) => {
     return {
@@ -782,100 +801,86 @@ const getPairsWithInfo = async (
 
   // this is to increment index only if pair hasGauge
   let outerIndex = 0;
-  const ps1 = ps.map((pair) => {
-    try {
-      if (hasGauge(pair)) {
-        const isAliveGauge = gaugesAliveData[outerIndex];
+  const ps1 = pairsWithoutInfo.map((pair) => {
+    if (hasGauge(pair)) {
+      const isAliveGauge = gaugesAliveData[outerIndex];
 
-        const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
-          outerIndex * 3,
-          outerIndex * 3 + 3
+      const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
+        outerIndex * 3,
+        outerIndex * 3 + 3
+      );
+
+      const bribes = pair.gauge.bribes.map((bribe) => {
+        bribe.rewardAmount = bribe.rewardAmmount;
+        return bribe;
+      });
+      pair.gauge.x_bribes.forEach((x_bribe) => {
+        const bribe = bribes.find(
+          (b) => b.token.address === x_bribe.token.address
         );
+        if (bribe) {
+          bribe.rewardAmount = bribe.rewardAmmount + x_bribe.rewardAmmount;
+        } else {
+          bribes.push({
+            token: x_bribe.token,
+            rewardAmount: x_bribe.rewardAmmount,
+            reward_ammount: x_bribe.rewardAmmount,
+            rewardAmmount: x_bribe.rewardAmmount,
+          });
+        }
+      });
 
-        const bribes = pair.gauge.bribes.map((bribe) => {
-          bribe.rewardAmount = bribe.rewardAmmount;
-          return bribe;
-        });
-        pair.gauge.x_bribes.forEach((x_bribe) => {
-          const bribe = bribes.find(
-            (b) => b.token.address === x_bribe.token.address
-          );
-          if (bribe) {
-            bribe.rewardAmount = bribe.rewardAmmount + x_bribe.rewardAmmount;
-          } else {
-            bribes.push({
-              token: x_bribe.token,
-              rewardAmount: x_bribe.rewardAmmount,
-              reward_ammount: x_bribe.rewardAmmount,
-              rewardAmmount: x_bribe.rewardAmmount,
-            });
-          }
-        });
+      pair.gauge.balance = formatEther(gaugeBalance);
+      pair.gauge.totalSupply = formatEther(totalSupply);
 
-        pair.gauge.balance = formatEther(gaugeBalance);
-        pair.gauge.totalSupply = formatEther(totalSupply);
+      // in ps totalSupply for reassgined to string from number (api sends number)
+      pair.gauge.reserve0 =
+        parseFloat(pair.totalSupply as `${number}`) > 0
+          ? BigNumber(pair.reserve0)
+              .times(pair.gauge.totalSupply)
+              .div(pair.totalSupply)
+              .toFixed(pair.token0.decimals)
+          : "0";
+      // in ps totalSupply for reassgined to string from number (api sends number)
+      pair.gauge.reserve1 =
+        parseFloat(pair.totalSupply as `${number}`) > 0
+          ? BigNumber(pair.reserve1)
+              .times(pair.gauge.totalSupply)
+              .div(pair.totalSupply)
+              .toFixed(pair.token1.decimals)
+          : "0";
+      pair.gauge.weight = formatEther(gaugeWeight);
+      pair.gauge.weightPercent = (
+        (Number(gaugeWeight) * 100) /
+        Number(totalWeight)
+      ).toFixed(2);
+      // NOTE: this is being used in votes table to show aggregated bribes and x_bribes
+      pair.gaugebribes = bribes;
+      pair.isAliveGauge = isAliveGauge;
+      if (isAliveGauge === false) pair.apr = 0;
 
-        // in ps totalSupply for reassgined to string from number (api sends number)
-        pair.gauge.reserve0 =
-          parseFloat(pair.totalSupply as `${number}`) > 0
-            ? BigNumber(pair.reserve0)
-                .times(pair.gauge.totalSupply)
-                .div(pair.totalSupply)
-                .toFixed(pair.token0.decimals)
-            : "0";
-        // in ps totalSupply for reassgined to string from number (api sends number)
-        pair.gauge.reserve1 =
-          parseFloat(pair.totalSupply as `${number}`) > 0
-            ? BigNumber(pair.reserve1)
-                .times(pair.gauge.totalSupply)
-                .div(pair.totalSupply)
-                .toFixed(pair.token1.decimals)
-            : "0";
-        pair.gauge.weight = formatEther(gaugeWeight);
-        pair.gauge.weightPercent = (
-          (Number(gaugeWeight) * 100) /
-          Number(totalWeight)
-        ).toFixed(2);
-        // NOTE: this is being used in votes table to show aggregated bribes and x_bribes
-        pair.gaugebribes = bribes;
-        pair.isAliveGauge = isAliveGauge;
-        if (isAliveGauge === false) pair.apr = 0;
-
-        outerIndex++;
-      }
-
-      return pair;
-    } catch (ex) {
-      console.log("EXCEPTION 2");
-      console.log(pair);
-      console.log(ex);
-      return pair;
+      outerIndex++;
     }
+
+    return pair;
   });
 
   return ps1;
 };
 
-export const usePairsWithBalances = () => {
+export const usePairsWithGauges = () => {
   const { address } = useAccount();
-  const { data: pairs } = usePairs();
-  const { data: baseAssetsWithInfo } = useBaseAssetWithInfo(address);
+  const { data: pairsWithoutGauges } = usePairsWithoutGauges();
   return useQuery({
-    queryKey: [
-      QUERY_KEYS.PAIRS_WITH_BALANCES,
-      address,
-      pairs,
-      baseAssetsWithInfo,
-    ],
-    queryFn: () => getPairsWithInfo(address!, pairs!, baseAssetsWithInfo!),
-    enabled: !!address && !!pairs && !!baseAssetsWithInfo,
+    queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
+    queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
+    enabled: !!address && !!pairsWithoutGauges,
   });
 };
 
 export const useBalances = () => {
-  const { address } = useAccount();
-  useGovToken(address);
-  useVestNfts(address);
-  useBaseAssetWithInfo(address);
-  usePairsWithBalances();
+  useGovToken();
+  useVestNfts();
+  useBaseAssetWithInfo();
+  usePairsWithGauges();
 };

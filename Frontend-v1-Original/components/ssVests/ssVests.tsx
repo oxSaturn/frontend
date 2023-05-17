@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useAccount } from "wagmi";
 import { Typography } from "@mui/material";
 
 import stores from "../../stores";
@@ -11,11 +10,9 @@ import PartnersVests from "./partnersVests";
 import VestsTable from "./ssVestsTable";
 
 export default function Vests() {
-  const { address } = useAccount();
-
-  const { data: govToken } = useGovToken(address);
+  const { data: govToken } = useGovToken();
   const { data: veToken } = useVeToken();
-  const { data: vestNFTs, refetch: refetchVestNfts } = useVestNfts(address);
+  const { data: vestNFTs, refetch: refetchVestNfts } = useVestNfts();
 
   useEffect(() => {
     const resetVestReturned = () => {

@@ -271,7 +271,7 @@ export const useRewards = (
 ) => {
   const { address } = useAccount();
   const { data: veToken } = useVeToken();
-  const { data: govToken } = useGovToken(address);
+  const { data: govToken } = useGovToken();
   return useQuery({
     queryKey: [QUERY_KEYS.REWARDS, address, tokenID, govToken, veToken],
     queryFn: () => getRewardBalances(address, tokenID, govToken, veToken),

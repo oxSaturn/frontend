@@ -14,7 +14,8 @@ export const MARKET_CAP = "marketCap";
 export const GOV_TOKEN = "govToken";
 export const VEST_NFTS = "vestNfts";
 export const BASE_ASSET_INFO = "baseAssetInfo";
-export const PAIRS_WITH_BALANCES = "pairsWithBalances";
+export const PAIRS_WITHOUT_GAUGES = "pairsWithoutGauges";
+export const PAIRS_WITH_GAUGES = "pairsWithGauges";
 
 // rewards
 export const DOMAIN = "domain";
