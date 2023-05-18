@@ -133,8 +133,9 @@ const getPairsData = async () => {
 export const usePairsData = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS_DATA],
-    queryFn: getPairsData,
+    queryFn: () => getPairsData(),
     refetchInterval: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 };
 
