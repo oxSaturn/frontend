@@ -1279,7 +1279,7 @@ function stableSort(array: Pair[], comparator: (_a: Pair, _b: Pair) => number) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-function formatTVL(dataNumber: number) {
+export function formatTVL(dataNumber: number) {
   if (dataNumber < 1_000) {
     return "< $1k";
   } else if (dataNumber < 1_000_000) {

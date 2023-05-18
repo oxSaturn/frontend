@@ -11,14 +11,36 @@ import {
   TablePagination,
   Typography,
   Slider,
+  Collapse,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  IconButton,
 } from "@mui/material";
 import BigNumber from "bignumber.js";
+import {
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  OpenInNewOutlined,
+} from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
 import { Gauge, Vote, VestNFT, Votes } from "../../stores/types/types";
 
+import tokens from "../../tokens.json";
+import { formatTVL } from "../ssLiquidityPairs/ssLiquidityPairsTable";
+
 const headCells = [
+  { id: "expand", numeric: false, disablePadding: true, label: "" },
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
+  {
+    id: "tvl",
+    numeric: true,
+    disablePadding: false,
+    label: "TVL",
+  },
   {
     id: "totalVotes",
     numeric: true,
@@ -303,6 +325,12 @@ const VotesRow = memo(function VotesRow({
     _row: Gauge
   ) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const token0Info =
+    tokens[row.token0.address.toLowerCase() as keyof typeof tokens];
+  const token1Info =
+    tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
+
   let sliderValue = defaultVotes?.find(
     (el) => el.address === row?.address
   )?.value;
@@ -328,151 +356,175 @@ const VotesRow = memo(function VotesRow({
       : 0;
 
   return (
-    <TableRow key={row.gauge.address}>
-      <TableCell>
-        <div className="flex items-center">
-          <div className="relative flex h-[35px] w-[70px]">
-            <img
-              className="absolute left-0 top-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-              src={
-                row && row.token0 && row.token0.logoURI
-                  ? row.token0.logoURI
-                  : ``
-              }
-              width="37"
-              height="37"
-              alt=""
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-            <img
-              className="absolute left-6 top-0 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
-              src={
-                row && row.token1 && row.token1.logoURI
-                  ? row.token1.logoURI
-                  : ``
-              }
-              width="37"
-              height="37"
-              alt=""
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
-          <div>
-            <Typography variant="h2" className="text-xs font-extralight">
-              {row.symbol}
-            </Typography>
-            <Typography
-              variant="h5"
-              className="text-xs font-extralight"
-              color="textSecondary"
-            >
-              {row.isStable ? "Stable Pool" : "Volatile Pool"}
-            </Typography>
-          </div>
-        </div>
-      </TableCell>
-      <TableCell align="right">
-        {!!row.gauge.weight && !!row.gauge.weightPercent ? (
-          <>
-            <Typography variant="h2" className="text-xs font-extralight">
-              {formatCurrency(row.gauge.weight)}
-            </Typography>
-            <Typography
-              variant="h5"
-              className="text-xs font-extralight"
-              color="textSecondary"
-            >
-              {formatCurrency(row.gauge.weightPercent)} %
-            </Typography>
-          </>
-        ) : (
-          <div className="flex items-center justify-end max-[1000px]:block">
-            <Skeleton
-              variant="rectangular"
-              width={120}
-              height={16}
-              style={{ marginTop: "1px", marginBottom: "1px" }}
-            />
-          </div>
-        )}
-      </TableCell>
-      <TableCell align="right">
-        <Typography variant="h2" className="text-xs font-extralight">
-          {formatCurrency(row.gauge.apr)} %
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        <Typography variant="h2" className="text-xs font-extralight">
-          ${formatCurrency(row.gauge.tbv)}
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
-        {row.gaugebribes ? (
-          row.gaugebribes.map((bribe) => {
-            return bribe.rewardAmount !== undefined ? (
-              <div
-                className="flex items-center justify-end"
-                key={bribe.token.symbol}
-              >
-                <Typography variant="h2" className="text-xs font-extralight">
-                  {formatCurrency(bribe.rewardAmount)}
-                </Typography>
-                <Typography
-                  variant="h5"
-                  className="text-xs font-extralight"
-                  color="textSecondary"
+    <>
+      <TableRow>
+        <TableCell align="right" size="small">
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+            title="View Pair"
+          >
+            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          </IconButton>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center">
+            <div className="relative flex h-[35px] w-[70px]">
+              <img
+                className="absolute left-0 top-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+                src={
+                  row && row.token0 && row.token0.logoURI
+                    ? row.token0.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+              <img
+                className="absolute left-6 top-0 z-[1] rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
+                src={
+                  row && row.token1 && row.token1.logoURI
+                    ? row.token1.logoURI
+                    : ``
+                }
+                width="37"
+                height="37"
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).src =
+                    "/tokens/unknown-logo.png";
+                }}
+              />
+            </div>
+            <div>
+              <Typography variant="h2" className="text-xs font-extralight">
+                <a
+                  href={`https://dexscreener.com/canto/${row.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="hover:underline"
                 >
-                  {bribe.token.symbol}
-                </Typography>
-              </div>
-            ) : (
+                  {row.symbol}
+                </a>
+              </Typography>
+              <Typography
+                variant="h5"
+                className="text-xs font-extralight"
+                color="textSecondary"
+              >
+                {row.isStable ? "Stable Pool" : "Volatile Pool"}
+              </Typography>
+            </div>
+          </div>
+        </TableCell>
+        {/* insert tvl */}
+        <TableCell align="right">
+          {!!row.tvl ? formatTVL(row.tvl) : 0}
+        </TableCell>
+        <TableCell align="right">
+          {!!row.gauge.weight && !!row.gauge.weightPercent ? (
+            <>
+              <Typography variant="h2" className="text-xs font-extralight">
+                {formatCurrency(row.gauge.weight)}
+              </Typography>
+              <Typography
+                variant="h5"
+                className="text-xs font-extralight"
+                color="textSecondary"
+              >
+                {formatCurrency(row.gauge.weightPercent)} %
+              </Typography>
+            </>
+          ) : (
+            <div className="flex items-center justify-end max-[1000px]:block">
+              <Skeleton
+                variant="rectangular"
+                width={120}
+                height={16}
+                style={{ marginTop: "1px", marginBottom: "1px" }}
+              />
+            </div>
+          )}
+        </TableCell>
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
+            {formatCurrency(row.gauge.apr)} %
+          </Typography>
+        </TableCell>
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
+            ${formatCurrency(row.gauge.tbv)}
+          </Typography>
+        </TableCell>
+        <TableCell align="right">
+          {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
+          {row.gaugebribes ? (
+            row.gaugebribes.map((bribe) => {
+              return bribe.rewardAmount !== undefined ? (
+                <div
+                  className="flex items-center justify-end"
+                  key={bribe.token.symbol}
+                >
+                  <Typography variant="h2" className="text-xs font-extralight">
+                    {formatCurrency(bribe.rewardAmount)}
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    className="text-xs font-extralight"
+                    color="textSecondary"
+                  >
+                    {bribe.token.symbol}
+                  </Typography>
+                </div>
+              ) : (
+                <div className="flex items-center justify-end max-[1000px]:block">
+                  <Skeleton
+                    variant="rectangular"
+                    width={120}
+                    height={16}
+                    style={{ marginTop: "1px", marginBottom: "1px" }}
+                    key={bribe.token.symbol}
+                  />
+                </div>
+              );
+            })
+          ) : (
+            <>
               <div className="flex items-center justify-end max-[1000px]:block">
                 <Skeleton
                   variant="rectangular"
                   width={120}
                   height={16}
                   style={{ marginTop: "1px", marginBottom: "1px" }}
-                  key={bribe.token.symbol}
                 />
               </div>
-            );
-          })
-        ) : (
-          <>
-            <div className="flex items-center justify-end max-[1000px]:block">
-              <Skeleton
-                variant="rectangular"
-                width={120}
-                height={16}
-                style={{ marginTop: "1px", marginBottom: "1px" }}
-              />
-            </div>
-            <div className="flex items-center justify-end max-[1000px]:block">
-              <Skeleton
-                variant="rectangular"
-                width={120}
-                height={16}
-                style={{ marginTop: "1px", marginBottom: "1px" }}
-              />
-            </div>
-            <div className="flex items-center justify-end max-[1000px]:block">
-              <Skeleton
-                variant="rectangular"
-                width={120}
-                height={16}
-                style={{ marginTop: "1px", marginBottom: "1px" }}
-              />
-            </div>
-          </>
-        )}
-        {/* {row.gauge.bribes.map((bribe, idx) => {
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                />
+              </div>
+              <div className="flex items-center justify-end max-[1000px]:block">
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={16}
+                  style={{ marginTop: "1px", marginBottom: "1px" }}
+                />
+              </div>
+            </>
+          )}
+          {/* {row.gauge.bribes.map((bribe, idx) => {
             return bribe.rewardAmount !== undefined ? (
               <div
                 className="flex items-center justify-end"
@@ -501,56 +553,130 @@ const VotesRow = memo(function VotesRow({
               </div>
             );
           })} */}
-      </TableCell>
-      <TableCell align="right">
-        {!rewardEstimate ? (
-          <>
+        </TableCell>
+        <TableCell align="right">
+          {!rewardEstimate ? (
+            <>
+              <Typography variant="h2" className="text-xs font-extralight">
+                $
+                {formatCurrency(
+                  rewardPerThousand > row.gauge.tbv
+                    ? row.gauge.tbv
+                    : rewardPerThousand
+                )}
+              </Typography>
+              <Typography
+                variant="h5"
+                className="text-xs font-extralight"
+                color="textSecondary"
+              >
+                per 1000 votes
+              </Typography>
+            </>
+          ) : (
             <Typography variant="h2" className="text-xs font-extralight">
-              $
-              {formatCurrency(
-                rewardPerThousand > row.gauge.tbv
-                  ? row.gauge.tbv
-                  : rewardPerThousand
-              )}
+              ${formatCurrency(rewardEstimate)}
             </Typography>
-            <Typography
-              variant="h5"
-              className="text-xs font-extralight"
-              color="textSecondary"
-            >
-              per 1000 votes
-            </Typography>
-          </>
-        ) : (
+          )}
+        </TableCell>
+        <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            ${formatCurrency(rewardEstimate)}
+            {formatCurrency(votesCasting)}
           </Typography>
-        )}
-      </TableCell>
-      <TableCell align="right">
-        <Typography variant="h2" className="text-xs font-extralight">
-          {formatCurrency(votesCasting)}
-        </Typography>
-        <Typography
-          variant="h5"
-          className="text-xs font-extralight"
-          color="textSecondary"
-        >
-          {formatCurrency(sliderValue)} %
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        <Slider
-          valueLabelDisplay="auto"
-          value={sliderValue}
-          onChange={(event, value) => {
-            onSliderChange(event, value, row);
-          }}
-          min={0}
-          max={100}
-        />
-      </TableCell>
-    </TableRow>
+          <Typography
+            variant="h5"
+            className="text-xs font-extralight"
+            color="textSecondary"
+          >
+            {formatCurrency(sliderValue)} %
+          </Typography>
+        </TableCell>
+        <TableCell align="right">
+          <Slider
+            valueLabelDisplay="auto"
+            value={sliderValue}
+            onChange={(event, value) => {
+              onSliderChange(event, value, row);
+            }}
+            min={0}
+            max={100}
+          />
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell className="py-0"></TableCell>
+        <TableCell className="py-0" colSpan={9}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <List disablePadding={true} dense className="pb-4">
+              {(
+                [
+                  [row.token0, token0Info],
+                  [row.token1, token1Info],
+                ] as const
+              ).map(([token, info]) => {
+                return (
+                  <ListItem disablePadding key={token.address}>
+                    <ListItemAvatar className="flex min-w-[70px] justify-end">
+                      <Avatar
+                        sx={{ width: 34, height: 34 }}
+                        className="mr-[9px] border-2 border-solid border-[rgb(25,33,56)] bg-transparent"
+                      >
+                        <img
+                          loading="lazy"
+                          className="h-[31px] w-[31px]"
+                          src={token?.logoURI ?? "/tokens/unknown-logo.png"}
+                          alt={token?.symbol}
+                        />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography className="text-xs font-extralight">
+                          {token.name}
+                        </Typography>
+                      }
+                      secondary={
+                        <>
+                          <div className="flex items-center">
+                            <a
+                              href={`https://tuber.build/address/${token.address}`}
+                              target="_blank"
+                              rel="noopener noreferrer nofollow"
+                              className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                            >
+                              Contract Address{" "}
+                              <OpenInNewOutlined fontSize="inherit" />
+                            </a>
+                            {info?.homepage ? (
+                              <>
+                                ・
+                                <a
+                                  href={info?.homepage}
+                                  target="_blank"
+                                  rel="noopener noreferrer nofollow"
+                                  className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
+                                  title={`Visit ${info?.name} homepage`}
+                                >
+                                  Home Page{" "}
+                                  <OpenInNewOutlined fontSize="inherit" />
+                                </a>
+                              </>
+                            ) : null}
+                          </div>
+                          <div className="max-w-[400px] text-xs">
+                            {/* short description here */}
+                          </div>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
   );
 });
 
@@ -573,6 +699,15 @@ function descendingComparator(
         return -1;
       }
       if (caseB > caseA) {
+        return 1;
+      }
+      return 0;
+
+    case "tvl":
+      if (BigNumber(b.tvl).lt(a.tvl)) {
+        return -1;
+      }
+      if (BigNumber(b.tvl).gt(a.tvl)) {
         return 1;
       }
       return 0;
