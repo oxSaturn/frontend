@@ -431,7 +431,9 @@ const VotesRow = memo(function VotesRow({
         </TableCell>
         {/* insert tvl */}
         <TableCell align="right">
-          {!!row.tvl ? formatTVL(row.tvl) : 0}
+          <Typography variant="h2" className="text-xs font-extralight">
+            {!!row.tvl ? formatTVL(row.tvl) : 0}
+          </Typography>
         </TableCell>
         <TableCell align="right">
           {!!row.gauge.weight && !!row.gauge.weightPercent ? (
