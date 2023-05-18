@@ -15,7 +15,10 @@ import {
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
-import { useBaseAssetWithInfo, useGauges } from "../../lib/global/queries";
+import {
+  useBaseAssetWithInfoNoNative,
+  useGauges,
+} from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
@@ -30,7 +33,6 @@ export default function BribeCreate() {
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
   const [asset, setAsset] = useState<BaseAsset | null>(null);
-  const [assetOptions, setAssetOptions] = useState<BaseAsset[]>([]);
   const [gauge, setGauge] = useState<Gauge | null>(null);
 
   const { data: gaugeOptions } = useGauges();
@@ -43,17 +45,13 @@ export default function BribeCreate() {
     }
   }, [gaugeOptions, gauge]);
 
-  useBaseAssetWithInfo((baseAssets) => {
-    const filteredBaseAssetOptions = baseAssets.filter((option) => {
-      // @ts-expect-error this is a workaround for the CANTO token
-      return option.address !== "CANTO";
-    });
-    setAssetOptions(filteredBaseAssetOptions);
+  const { data: assetOptions } = useBaseAssetWithInfoNoNative();
 
-    if (filteredBaseAssetOptions.length > 0 && asset == null) {
-      setAsset(filteredBaseAssetOptions[0]);
+  useEffect(() => {
+    if (assetOptions && assetOptions.length > 0 && asset == null) {
+      setAsset(assetOptions[0]);
     }
-  });
+  }, [assetOptions, asset]);
 
   useEffect(() => {
     const createReturned = () => {
@@ -149,7 +147,7 @@ export default function BribeCreate() {
     amountError: string | false,
     amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | null,
-    assetOptions: BaseAsset[],
+    assetOptions: BaseAsset[] | undefined,
     onAssetSelect: (_value: BaseAsset) => void
   ) => {
     return (
@@ -456,7 +454,7 @@ function AssetSelect({
   onSelect,
 }: {
   value: BaseAsset | null;
-  assetOptions: BaseAsset[];
+  assetOptions: BaseAsset[] | undefined;
   onSelect: (_value: BaseAsset) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -469,7 +467,7 @@ function AssetSelect({
   };
 
   const filteredAssetOptions = useMemo(() => {
-    const ao = assetOptions.filter((asset) => {
+    const ao = assetOptions?.filter((asset) => {
       if (search && search !== "") {
         return [asset.address, asset.symbol, asset.name].some((s) =>
           s.toLowerCase().includes(search.trim().toLowerCase())

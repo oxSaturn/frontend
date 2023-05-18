@@ -1,4 +1,5 @@
 import { useAccount } from "wagmi";
+import { create } from "zustand";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContract, formatUnits, Address, formatEther } from "viem";
 
@@ -25,6 +26,7 @@ import {
   VeToken,
   VestNFT,
   Vote,
+  Votes,
   hasGauge,
 } from "../../stores/types/types";
 
@@ -140,22 +142,22 @@ export const usePairsData = () => {
 };
 
 const getPairs = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) return [];
+  if (!pairsData) throw new Error("Need pairs data");
   return pairsData.data;
 };
 
 const getTokenPrices = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) return new Map<string, number>();
+  if (!pairsData) throw new Error("Need pairs data");
   return new Map(pairsData.prices);
 };
 
 const getTvl = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) return 0;
+  if (!pairsData) throw new Error("Need pairs data");
   return pairsData.tvl;
 };
 
 const getTbv = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) return 0;
+  if (!pairsData) throw new Error("Need pairs data");
   return pairsData.tbv;
 };
 
@@ -164,6 +166,7 @@ export const usePairs = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
+    enabled: !!pairsData,
   });
 };
 
@@ -172,6 +175,7 @@ export const useGauges = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
+    enabled: !!pairsData,
     select: (pairs) =>
       pairs.filter(hasGauge).filter((gauge) => gauge.isAliveGauge),
   });
@@ -208,7 +212,7 @@ const getSwapAssets = (
   baseAssets: BaseAsset[] | undefined,
   pairs: Pair[] | undefined
 ) => {
-  if (!baseAssets || !pairs) return [];
+  if (!baseAssets || !pairs) throw new Error("Need base assets and pairs");
 
   const set = new Set<string>();
   set.add(NATIVE_TOKEN.address.toLowerCase());
@@ -469,7 +473,7 @@ const getVestNFTs = async (
   return nfts;
 };
 
-export const useVestNfts = (onSuccess?: (data: VestNFT[]) => void) => {
+export const useVestNfts = () => {
   const { address } = useAccount();
   const { data: govToken } = useGovToken();
   const { data: veToken } = useVeToken();
@@ -478,7 +482,6 @@ export const useVestNfts = (onSuccess?: (data: VestNFT[]) => void) => {
     queryKey: [QUERY_KEYS.VEST_NFTS, address, govToken, veToken, activePeriod],
     queryFn: () => getVestNFTs(address, govToken, veToken, activePeriod!), // enabled only when activePeriod is defined
     enabled: !!govToken && !!veToken && !!activePeriod,
-    onSuccess,
   });
 };
 
@@ -582,9 +585,7 @@ const getBaseAssetsWithInfo = async (
   return baseAssetsWithBalances;
 };
 
-export const useBaseAssetWithInfo = (
-  onSuccess?: (data: BaseAsset[]) => void
-) => {
+export const useBaseAssetWithInfo = () => {
   const queryClient = useQueryClient();
   const { address } = useAccount();
   const { data: initialBaseAssets } = useInitBaseAssets();
@@ -592,21 +593,38 @@ export const useBaseAssetWithInfo = (
     queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
     queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
     enabled: !!initialBaseAssets,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }); // FIXME: probably will need to rethink it
-      onSuccess?.(data);
     },
   });
 };
 
-export const useSwapAssets = (onSuccess?: (data: BaseAsset[]) => void) => {
+export const useBaseAssetWithInfoNoNative = () => {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const { data: initialBaseAssets } = useInitBaseAssets();
+  return useQuery({
+    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
+    queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
+    enabled: !!initialBaseAssets,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }); // FIXME: probably will need to rethink it
+    },
+    select: (baseAssets) => {
+      return baseAssets.filter((option) => {
+        return option.address !== NATIVE_TOKEN.address;
+      });
+    },
+  });
+};
+
+export const useSwapAssets = () => {
   const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
   const { data: pairs } = usePairs();
   return useQuery({
     queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssetsWithInfo, pairs],
     queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
     enabled: !!baseAssetsWithInfo && !!pairs,
-    onSuccess,
   });
 };
 
@@ -888,22 +906,32 @@ const getPairsWithGauges = async (
   return ps1;
 };
 
-export const usePairsWithGauges = (onSuccess?: (data: Pair[]) => void) => {
+export const usePairsWithGauges = () => {
   const { address } = useAccount();
   const { data: pairsWithoutGauges } = usePairsWithoutGauges();
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges,
-    onSuccess,
   });
 };
 
-export const useBalances = () => {
-  useGovToken();
-  useVestNfts();
-  useBaseAssetWithInfo();
-  usePairsWithGauges();
+export const usePairsWithGaugesOnlyWithBalance = () => {
+  const { address } = useAccount();
+  const { data: pairsWithoutGauges } = usePairsWithoutGauges();
+  return useQuery({
+    queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
+    queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
+    enabled: !!address && !!pairsWithoutGauges,
+    select: (pairs) => {
+      return pairs.filter((ppp) => {
+        return (
+          (ppp.balance && BigNumber(ppp.balance).gt(0)) ||
+          (ppp.gauge?.balance && BigNumber(ppp.gauge.balance).gt(0))
+        );
+      });
+    },
+  });
 };
 
 const getVestVotes = async (
@@ -913,15 +941,15 @@ const getVestVotes = async (
 ) => {
   if (!account) {
     console.warn("account not found");
-    return null;
+    throw new Error("not found in vest votes");
   }
 
   if (!pairs) {
-    return null;
+    throw new Error("not found in vest votes");
   }
 
   if (!tokenID) {
-    return;
+    throw new Error("no token id");
   }
 
   const filteredPairs = pairs.filter((pair) => {
@@ -969,15 +997,56 @@ const getVestVotes = async (
   return votes;
 };
 
-export const useVestVotes = (
-  tokenID: string | undefined,
-  onSuccess?: (data: Vote[] | null | undefined) => void
-) => {
+interface VotesStore {
+  votes: Votes | undefined;
+  setVotes: (_votes: Votes | undefined) => void;
+}
+
+export const useVotes = create<VotesStore>((set) => ({
+  votes: undefined,
+  setVotes: (votes) => set({ votes }),
+}));
+
+export const useVestVotes = (tokenID: string | undefined) => {
   const { address } = useAccount();
   const { data: pairs } = usePairs();
   return useQuery({
     queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, pairs],
     queryFn: () => getVestVotes(address, tokenID, pairs),
-    onSuccess,
+    enabled: !!address && !!tokenID && !!pairs,
+    refetchOnMount: false,
+    select: (votes) => {
+      const votesValues: Votes | undefined = votes?.map((vote) => {
+        return {
+          address: vote?.address,
+          value: BigNumber(
+            vote && vote.votePercent ? vote.votePercent : 0
+          ).toNumber(),
+        };
+      });
+      return votesValues;
+    },
+    onSuccess: (votes) => useVotes.getState().setVotes(votes),
+  });
+};
+
+export const useGaugesWithGaugesAndVotes = (votes: Votes | undefined) => {
+  const { address } = useAccount();
+  const { data: pairsWithoutGauges } = usePairsWithoutGauges();
+  return useQuery({
+    queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
+    queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
+    enabled: !!address && !!pairsWithoutGauges && !!votes,
+    select: (pairsWithGauges) => {
+      const gauges = pairsWithGauges?.filter(hasGauge).filter((gauge) => {
+        let sliderValue =
+          votes?.find((el) => el.address === gauge.address)?.value ?? 0;
+        if (gauge.isAliveGauge === false && sliderValue === 0) {
+          return false;
+        }
+        return true;
+      });
+      return gauges;
+    },
   });
 };

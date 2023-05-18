@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Typography,
@@ -31,20 +31,20 @@ const initialEmptyToken: VestNFT = {
 
 export default function Rewards() {
   const [rewards, setRewards] = useState<(Gauge | VeDistReward)[]>([]);
-  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [loading, setLoading] = useState(false);
 
   const { data: veToken } = useVeToken();
 
-  useVestNfts((vestNFTs) => {
-    setVestNFTs(vestNFTs);
+  const { data: vestNFTs } = useVestNfts();
+
+  useEffect(() => {
     if (vestNFTs && vestNFTs.length > 0) {
       if (!token || token.lockEnds === "0") {
         setToken(vestNFTs[0]);
       }
     }
-  });
+  }, [vestNFTs, token]);
 
   const { isFetching: isFetchingRewards } = useRewards(token?.id, (data) => {
     if (data) {
@@ -83,7 +83,10 @@ export default function Rewards() {
     setToken(event.target.value as VestNFT);
   };
 
-  const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
+  const renderMediumInput = (
+    value: VestNFT,
+    options: VestNFT[] | undefined
+  ) => {
     return (
       <div>
         <div className="flex min-h-[60px] w-full flex-wrap items-center rounded-lg bg-primaryBg pl-5">

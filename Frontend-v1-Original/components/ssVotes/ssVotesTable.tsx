@@ -115,9 +115,7 @@ export default function EnhancedTable({
   token,
 }: {
   gauges: Gauge[] | undefined;
-  setParentSliderValues: React.Dispatch<
-    React.SetStateAction<Votes | undefined>
-  >;
+  setParentSliderValues: (_votes: Votes | undefined) => void;
   defaultVotes: Votes | undefined;
   token: VestNFT;
 }) {

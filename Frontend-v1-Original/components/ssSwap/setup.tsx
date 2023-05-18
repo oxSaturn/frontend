@@ -69,18 +69,30 @@ function Setup() {
 
   const { data: tokenPrices } = useTokenPrices();
 
-  useSwapAssets((swapAssets) => {
-    setToAssetOptions(swapAssets);
-    setFromAssetOptions(swapAssets);
+  const { data: swapAssetsOptions } = useSwapAssets();
 
-    if (swapAssets.length > 0 && toAssetValue == null) {
-      setToAssetValue(swapAssets[0]);
+  useEffect(() => {
+    if (swapAssetsOptions) {
+      setToAssetOptions(swapAssetsOptions);
+      setFromAssetOptions(swapAssetsOptions);
     }
 
-    if (swapAssets.length > 0 && fromAssetValue == null) {
-      setFromAssetValue(swapAssets[1]);
+    if (
+      swapAssetsOptions &&
+      swapAssetsOptions.length > 0 &&
+      toAssetValue == null
+    ) {
+      setToAssetValue(swapAssetsOptions[0]);
     }
-  });
+
+    if (
+      swapAssetsOptions &&
+      swapAssetsOptions.length > 0 &&
+      fromAssetValue == null
+    ) {
+      setFromAssetValue(swapAssetsOptions[1]);
+    }
+  }, [fromAssetValue, swapAssetsOptions, toAssetValue]);
 
   const isWrapUnwrap =
     (fromAssetValue?.symbol === "WCANTO" && toAssetValue?.symbol === "CANTO") ||

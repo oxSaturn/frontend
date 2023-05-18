@@ -35,7 +35,7 @@ import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
 import {
   useBaseAssetWithInfo,
-  usePairsWithGauges,
+  usePairsWithGaugesOnlyWithBalance,
 } from "../../lib/global/queries";
 
 export default function LiquidityManage() {
@@ -61,10 +61,8 @@ export default function LiquidityManage() {
 
   const [asset0, setAsset0] = useState<BaseAsset | null>(null);
   const [asset1, setAsset1] = useState<BaseAsset | null>(null);
-  const [assetOptions, setAssetOptions] = useState<BaseAsset[]>([]);
 
   const [withdrawAsset, setWithdrawAsset] = useState<Pair | null>(null);
-  const [withdrawAassetOptions, setWithdrawAssetOptions] = useState<Pair[]>([]);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawAmountError, setWithdrawAmountError] = useState<
     string | false
@@ -89,67 +87,74 @@ export default function LiquidityManage() {
   const [slippage, setSlippage] = useState("2");
   const [slippageError] = useState(false); //TODO setSlippageError if any?
 
-  usePairsWithGauges((pairs) => {
-    const onlyWithBalance = pairs.filter((ppp) => {
-      return (
-        (ppp.balance && BigNumber(ppp.balance).gt(0)) ||
-        (ppp.gauge?.balance && BigNumber(ppp.gauge.balance).gt(0))
-      );
-    });
-    setWithdrawAssetOptions(onlyWithBalance);
-  });
+  const { data: withdrawAssetOptions } = usePairsWithGaugesOnlyWithBalance();
 
-  useBaseAssetWithInfo(async (baseAssets) => {
-    setAssetOptions(baseAssets);
+  const { data: assetOptions } = useBaseAssetWithInfo();
 
-    if (
-      router.query.address &&
-      router.query.address !== "create" &&
-      !Array.isArray(router.query.address) &&
-      isAddress(router.query.address)
-    ) {
-      setPairReadOnly(true);
+  useEffect(() => {
+    const syncUI = async () => {
+      if (
+        router.query.address &&
+        router.query.address !== "create" &&
+        !Array.isArray(router.query.address) &&
+        isAddress(router.query.address)
+      ) {
+        setPairReadOnly(true);
 
-      const pp = await stores.stableSwapStore.getPairByAddress(
-        router.query.address
-      );
-      setPair(pp);
-
-      if (pp && isBaseAsset(pp.token0) && isBaseAsset(pp.token1)) {
-        setWithdrawAsset(pp);
-        setAsset0(pp.token0);
-        setAsset1(pp.token1);
-        setStable(pp.isStable);
-      }
-
-      if (pp && pp.balance && BigNumber(pp.balance).gt(0)) {
-        setAdvanced(true);
-      }
-    } else {
-      let aa0 = asset0;
-      let aa1 = asset1;
-      if (baseAssets.length > 0 && asset0 == null) {
-        setAsset0(baseAssets[0]);
-        aa0 = baseAssets[0];
-      }
-      if (baseAssets.length > 0 && asset1 == null) {
-        setAsset1(baseAssets[1]);
-        aa1 = baseAssets[1];
-      }
-      if (withdrawAassetOptions.length > 0 && withdrawAsset == null) {
-        setWithdrawAsset(withdrawAassetOptions[1]);
-      }
-
-      if (aa0 && aa1) {
-        const p = await stores.stableSwapStore.getPair(
-          aa0.address,
-          aa1.address,
-          stable
+        const pp = await stores.stableSwapStore.getPairByAddress(
+          router.query.address
         );
-        setPair(p);
+        setPair(pp);
+
+        if (pp && isBaseAsset(pp.token0) && isBaseAsset(pp.token1)) {
+          setWithdrawAsset(pp);
+          setAsset0(pp.token0);
+          setAsset1(pp.token1);
+          setStable(pp.isStable);
+        }
+
+        if (pp && pp.balance && BigNumber(pp.balance).gt(0)) {
+          setAdvanced(true);
+        }
+      } else {
+        let aa0 = asset0;
+        let aa1 = asset1;
+        if (assetOptions && assetOptions.length > 0 && asset0 == null) {
+          setAsset0(assetOptions[0]);
+          aa0 = assetOptions[0];
+        }
+        if (assetOptions && assetOptions.length > 0 && asset1 == null) {
+          setAsset1(assetOptions[1]);
+          aa1 = assetOptions[1];
+        }
+        if (
+          withdrawAssetOptions &&
+          withdrawAssetOptions.length > 0 &&
+          withdrawAsset == null
+        ) {
+          setWithdrawAsset(withdrawAssetOptions[1]);
+        }
+
+        if (aa0 && aa1) {
+          const p = await stores.stableSwapStore.getPair(
+            aa0.address,
+            aa1.address,
+            stable
+          );
+          setPair(p);
+        }
       }
-    }
-  });
+    };
+    syncUI();
+  }, [
+    asset0,
+    asset1,
+    assetOptions,
+    router.query.address,
+    stable,
+    withdrawAsset,
+    withdrawAssetOptions,
+  ]);
 
   useEffect(() => {
     const depositReturned = () => {
@@ -1038,7 +1043,7 @@ export default function LiquidityManage() {
     amountError: string | false,
     amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | Pair | null,
-    assetOptions: BaseAsset[] | Pair[],
+    assetOptions: BaseAsset[] | Pair[] | undefined,
     onAssetSelect: (_type: string, _asset: BaseAsset) => void,
     onFocus: React.FocusEventHandler<
       HTMLTextAreaElement | HTMLInputElement
@@ -1403,7 +1408,7 @@ export default function LiquidityManage() {
                   withdrawAmountError,
                   withdrawAmountChanged,
                   withdrawAsset,
-                  withdrawAassetOptions,
+                  withdrawAssetOptions,
                   onAssetSelect,
                   null,
                   null
@@ -1858,7 +1863,7 @@ function AssetSelect({
 }: {
   type: string;
   value: BaseAsset | Pair | null;
-  assetOptions: BaseAsset[] | Pair[];
+  assetOptions: BaseAsset[] | Pair[] | undefined;
   onSelect: (_type: string, _asset: BaseAsset) => void;
   disabled: boolean;
 }) {

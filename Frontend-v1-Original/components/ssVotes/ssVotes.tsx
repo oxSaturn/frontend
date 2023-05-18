@@ -18,21 +18,17 @@ import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
 
 import {
-  usePairsWithGauges,
   useVestNfts,
   useVeToken,
   useVestVotes,
+  useGaugesWithGaugesAndVotes,
+  useVotes,
 } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
-import {
-  Gauge,
-  hasGauge,
-  VestNFT,
-  Votes as VotesType,
-} from "../../stores/types/types";
+import { VestNFT } from "../../stores/types/types";
 
 import GaugesTable from "./ssVotesTable";
 
@@ -57,65 +53,28 @@ MyListSubheader.muiSkipListHighlight = true;
 export default function Votes() {
   const [showWarning, setShowWarning] = useState(false);
 
-  const [gauges, setGauges] = useState<Gauge[]>();
   const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState<VotesType>();
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [search, setSearch] = useState("");
 
   const { data: veToken } = useVeToken();
+  const { data: vestNFTs } = useVestNfts();
+  const { votes, setVotes } = useVotes();
+  useVestVotes(token.id);
+  const { data: gauges } = useGaugesWithGaugesAndVotes(votes);
 
-  const { data: vestNFTs } = useVestNfts((nfts) => {
-    if (nfts && nfts.length > 0) {
-      const votableNFTs = nfts.filter(
+  useEffect(() => {
+    if (vestNFTs && vestNFTs.length > 0) {
+      const votableNFTs = vestNFTs.filter(
         (nft) => nft.actionedInCurrentEpoch === false
       );
       if (votableNFTs.length > 0) {
         setToken(votableNFTs[0]);
       } else {
-        setToken(nfts[0]);
+        setToken(vestNFTs[0]);
       }
     }
-  });
-
-  const { data: pairs } = usePairsWithGauges((pairs) => {
-    const filteredAssets = pairs.filter(hasGauge).filter((gauge) => {
-      let sliderValue =
-        votes?.find((el) => el.address === gauge.address)?.value ?? 0;
-      if (gauge.isAliveGauge === false && sliderValue === 0) {
-        return false;
-      }
-      return true;
-    });
-    if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
-      setGauges(filteredAssets);
-  });
-
-  useVestVotes(token.id, (votesReturned) => {
-    const votesReturnedMapped = votesReturned?.map((vote) => {
-      return {
-        address: vote?.address,
-        value: BigNumber(
-          vote && vote.votePercent ? vote.votePercent : 0
-        ).toNumber(),
-      };
-    });
-    if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
-      setVotes(votesReturnedMapped);
-
-    const filteredPairs = pairs?.filter(hasGauge).filter((gauge) => {
-      let sliderValue =
-        votesReturnedMapped?.find((el) => el.address === gauge.address)
-          ?.value ?? 0;
-      if (gauge.isAliveGauge === false && sliderValue === 0) {
-        return false;
-      }
-      return true;
-    });
-
-    if (JSON.stringify(filteredPairs) !== JSON.stringify(gauges))
-      setGauges(filteredPairs);
-  });
+  }, [vestNFTs]);
 
   useEffect(() => {
     const voteReturned = () => {
