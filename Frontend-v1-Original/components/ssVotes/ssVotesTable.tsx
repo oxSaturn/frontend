@@ -432,7 +432,7 @@ const VotesRow = memo(function VotesRow({
         {/* insert tvl */}
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            {!!row.tvl ? formatTVL(row.tvl) : 0}
+            {formatTVL(row.tvl)}
           </Typography>
         </TableCell>
         <TableCell align="right">
