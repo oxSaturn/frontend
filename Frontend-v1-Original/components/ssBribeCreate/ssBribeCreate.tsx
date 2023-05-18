@@ -15,15 +15,12 @@ import {
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
-import {
-  useBaseAssetWithInfoNoNative,
-  useGauges,
-} from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import { BaseAsset, Gauge } from "../../stores/types/types";
 
+import { useBaseAssetWithInfoNoNative, useGauges } from "./queries";
 import classes from "./ssBribeCreate.module.css";
 
 export default function BribeCreate() {

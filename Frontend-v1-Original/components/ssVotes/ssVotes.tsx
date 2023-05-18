@@ -17,13 +17,8 @@ import {
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
 
-import {
-  useVestNfts,
-  useVeToken,
-  useVestVotes,
-  useGaugesWithGaugesAndVotes,
-  useVotes,
-} from "../../lib/global/queries";
+import { useVeToken } from "../../lib/global/queries";
+import { useVestNfts } from "../ssVests/queries";
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
 import stores from "../../stores";
@@ -32,6 +27,7 @@ import { VestNFT } from "../../stores/types/types";
 
 import GaugesTable from "./ssVotesTable";
 
+import { useGaugesWithGaugesAndVotes, useVestVotes, useVotes } from "./queries";
 import classes from "./ssVotes.module.css";
 
 const initialEmptyToken: VestNFT = {

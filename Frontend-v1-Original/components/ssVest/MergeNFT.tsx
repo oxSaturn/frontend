@@ -15,7 +15,8 @@ import { useEffect, useState } from "react";
 import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
 import { ACTIONS } from "../../stores/constants/constants";
-import { useVestNfts, useVeToken } from "../../lib/global/queries";
+import { useVeToken } from "../../lib/global/queries";
+import { useVestNfts } from "../ssVests/queries";
 
 import classes from "./ssVest.module.css";
 

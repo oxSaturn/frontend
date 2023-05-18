@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { CONTRACTS } from "../../stores/constants/constants";
+
 import {
   useActivePeriod,
   useCirculatingSupply,
@@ -8,7 +9,7 @@ import {
   useTbv,
   useTokenPrices,
   useTvl,
-} from "../../lib/global/queries";
+} from "./queries";
 
 export default function Info() {
   const { data: tokenPrices } = useTokenPrices();

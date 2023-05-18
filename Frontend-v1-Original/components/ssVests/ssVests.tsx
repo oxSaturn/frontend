@@ -4,8 +4,9 @@ import { Typography } from "@mui/material";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
-import { useGovToken, useVestNfts, useVeToken } from "../../lib/global/queries";
+import { useGovToken, useVeToken } from "../../lib/global/queries";
 
+import { useVestNfts } from "./queries";
 import PartnersVests from "./partnersVests";
 import VestsTable from "./ssVestsTable";
 

@@ -1,7 +1,6 @@
 import { useAccount } from "wagmi";
-import { create } from "zustand";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getContract, formatUnits, Address, formatEther } from "viem";
+import { useQuery } from "@tanstack/react-query";
+import { formatUnits, Address, formatEther } from "viem";
 
 import BigNumber from "bignumber.js";
 
@@ -23,18 +22,12 @@ import {
   GovToken,
   Pair,
   PairsCallResponse,
-  VeToken,
-  VestNFT,
-  Vote,
-  Votes,
   hasGauge,
 } from "../../stores/types/types";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
 const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
-
-const WEEK = 604800;
 
 /*
 1. Get gov token base
@@ -117,13 +110,6 @@ const getInitBaseAssets = () => {
   return [...baseAssets, ...localBaseAssets];
 };
 
-export const useInitBaseAssets = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.BASE_ASSETS],
-    queryFn: getInitBaseAssets,
-  });
-};
-
 const getPairsData = async () => {
   const response = await fetch(`/api/pairs`);
 
@@ -141,24 +127,9 @@ export const usePairsData = () => {
   });
 };
 
-const getPairs = (pairsData: PairsCallResponse | undefined) => {
+export const getPairs = (pairsData: PairsCallResponse | undefined) => {
   if (!pairsData) throw new Error("Need pairs data");
   return pairsData.data;
-};
-
-const getTokenPrices = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) throw new Error("Need pairs data");
-  return new Map(pairsData.prices);
-};
-
-const getTvl = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) throw new Error("Need pairs data");
-  return pairsData.tvl;
-};
-
-const getTbv = (pairsData: PairsCallResponse | undefined) => {
-  if (!pairsData) throw new Error("Need pairs data");
-  return pairsData.tbv;
 };
 
 export const usePairs = () => {
@@ -167,176 +138,6 @@ export const usePairs = () => {
     queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
     enabled: !!pairsData,
-  });
-};
-
-export const useGauges = () => {
-  const { data: pairsData } = usePairsData();
-  return useQuery({
-    queryKey: [QUERY_KEYS.GAUGES, pairsData],
-    queryFn: () => getPairs(pairsData),
-    enabled: !!pairsData,
-    select: (pairs) =>
-      pairs.filter(hasGauge).filter((gauge) => gauge.isAliveGauge),
-  });
-};
-
-export const useTokenPrices = () => {
-  const { data: pairsData } = usePairsData();
-  return useQuery({
-    queryKey: [QUERY_KEYS.TOKEN_PRICES, pairsData],
-    queryFn: () => getTokenPrices(pairsData),
-    enabled: !!pairsData,
-  });
-};
-
-export const useTvl = () => {
-  const { data: pairsData } = usePairsData();
-  return useQuery({
-    queryKey: [QUERY_KEYS.TVL, pairsData],
-    queryFn: () => getTvl(pairsData),
-    enabled: !!pairsData,
-  });
-};
-
-export const useTbv = () => {
-  const { data: pairsData } = usePairsData();
-  return useQuery({
-    queryKey: [QUERY_KEYS.TBV, pairsData],
-    queryFn: () => getTbv(pairsData),
-    enabled: !!pairsData,
-  });
-};
-
-const getSwapAssets = (
-  baseAssets: BaseAsset[] | undefined,
-  pairs: Pair[] | undefined
-) => {
-  if (!baseAssets || !pairs) throw new Error("Need base assets and pairs");
-
-  const set = new Set<string>();
-  set.add(NATIVE_TOKEN.address.toLowerCase());
-  pairs.forEach((pair) => {
-    set.add(pair.token0.address.toLowerCase());
-    set.add(pair.token1.address.toLowerCase());
-  });
-  const baseAssetsWeSwap = baseAssets.filter((asset) =>
-    set.has(asset.address.toLowerCase())
-  );
-  return [...baseAssetsWeSwap];
-};
-
-const getActivePeriod = async () => {
-  const minterContract = getContract({
-    abi: CONTRACTS.MINTER_ABI,
-    address: CONTRACTS.MINTER_ADDRESS,
-    publicClient: viemClient,
-  });
-  const activePeriod = await minterContract.read.active_period();
-
-  const activePeriodEnd = parseFloat(activePeriod.toString()) + WEEK;
-  return activePeriodEnd;
-};
-
-export const useActivePeriod = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.ACTIVE_PERIOD],
-    queryFn: getActivePeriod,
-    refetchOnWindowFocus: false,
-  });
-};
-
-const getCirculatingSupply = async () => {
-  const flowContract = {
-    abi: CONTRACTS.GOV_TOKEN_ABI,
-    address: CONTRACTS.GOV_TOKEN_ADDRESS,
-  } as const;
-
-  const [
-    totalSupply,
-    lockedSupply,
-    flowInMinter,
-    flowInMsig,
-    flowInRewardsDistributor,
-    flowInTimelockerController,
-  ] = await viemClient.multicall({
-    allowFailure: false,
-    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-    contracts: [
-      {
-        ...flowContract,
-        functionName: "totalSupply",
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
-        args: [CONTRACTS.VE_TOKEN_ADDRESS],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
-        args: [CONTRACTS.MINTER_ADDRESS],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
-        args: [CONTRACTS.MSIG_ADDRESS],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
-        args: [CONTRACTS.VE_DIST_ADDRESS],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
-        args: ["0xd0cC9738866cd82B237A14c92ac60577602d6c18"],
-      },
-    ],
-  });
-
-  const circulatingSupply = formatUnits(
-    totalSupply -
-      lockedSupply -
-      flowInMinter -
-      flowInMsig -
-      flowInRewardsDistributor -
-      flowInTimelockerController,
-    CONTRACTS.GOV_TOKEN_DECIMALS
-  );
-
-  return parseFloat(circulatingSupply);
-};
-
-export const useCirculatingSupply = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.CIRCULATING_SUPPLY],
-    queryFn: getCirculatingSupply,
-    staleTime: 1000 * 60 * 10,
-  });
-};
-
-const getMarketCap = async (
-  circulatingSupply: number | undefined,
-  tokenPrices: Map<string, number> | undefined
-) => {
-  if (!circulatingSupply || !tokenPrices)
-    throw new Error("Missing circ supply or token prices");
-
-  const price = tokenPrices.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
-  if (!price) throw new Error("Missing price");
-
-  return circulatingSupply * price;
-};
-
-export const useMarketCap = () => {
-  const { data: circulatingSupply } = useCirculatingSupply();
-  const { data: tokenPrices } = useTokenPrices();
-  return useQuery({
-    queryKey: [QUERY_KEYS.MARKET_CAP, circulatingSupply, tokenPrices],
-    queryFn: () => getMarketCap(circulatingSupply, tokenPrices),
-    staleTime: 1000 * 60 * 10,
-    enabled: !!circulatingSupply && !!tokenPrices,
   });
 };
 
@@ -371,124 +172,9 @@ export const useGovToken = () => {
   });
 };
 
-const checkNFTLastVoted = async (tokenID: string) => {
-  const _lastVoted = await viemClient.readContract({
-    address: CONTRACTS.VOTER_ADDRESS,
-    abi: CONTRACTS.VOTER_ABI,
-    functionName: "lastVoted",
-    args: [BigInt(tokenID)],
-  });
-  return _lastVoted;
-};
+export const getBaseAssetsWithInfo = async (address: Address | undefined) => {
+  const baseAssets = getInitBaseAssets();
 
-const checkNFTActionEpoch = async (
-  nextEpochTimestamp: number,
-  tokenID: string
-) => {
-  const _lastVoted = await checkNFTLastVoted(tokenID);
-
-  // if last voted eq 0, means never voted
-  if (_lastVoted === BigInt("0")) return [false, _lastVoted] as const;
-  const lastVoted = parseInt(_lastVoted.toString());
-
-  // 7 days epoch length
-  const actionedInCurrentEpoch =
-    lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
-  return [actionedInCurrentEpoch, _lastVoted] as const;
-};
-
-const getVestNFTs = async (
-  address: Address | undefined,
-  govToken: GovToken | undefined,
-  veToken: VeToken | undefined,
-  activePeriod: number
-) => {
-  if (!veToken || !govToken || !address) {
-    return [];
-  }
-
-  const vestingContract = {
-    abi: CONTRACTS.VE_TOKEN_ABI,
-    address: CONTRACTS.VE_TOKEN_ADDRESS,
-  } as const;
-
-  const nftsLength = await viemClient.readContract({
-    ...vestingContract,
-    functionName: "balanceOf",
-    args: [address],
-  });
-
-  const arr = Array.from(
-    { length: parseInt(nftsLength.toString()) },
-    (v, i) => i
-  );
-
-  const nfts: VestNFT[] = await Promise.all(
-    arr.map(async (idx) => {
-      const tokenIndex = await viemClient.readContract({
-        ...vestingContract,
-        functionName: "tokenOfOwnerByIndex",
-        args: [address, BigInt(idx)],
-      });
-      const [[lockedAmount, lockedEnd], lockValue, voted] =
-        await viemClient.multicall({
-          allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-          contracts: [
-            {
-              ...vestingContract,
-              functionName: "locked",
-              args: [tokenIndex],
-            },
-            {
-              ...vestingContract,
-              functionName: "balanceOfNFT",
-              args: [tokenIndex],
-            },
-            {
-              ...vestingContract,
-              functionName: "voted",
-              args: [tokenIndex],
-            },
-          ],
-        });
-
-      const [actionedInCurrentEpoch, lastVoted] = await checkNFTActionEpoch(
-        activePeriod,
-        tokenIndex.toString()
-      );
-
-      return {
-        id: tokenIndex.toString(),
-        lockEnds: lockedEnd.toString(),
-        lockAmount: formatUnits(lockedAmount, govToken.decimals),
-        lockValue: formatUnits(lockValue, veToken.decimals),
-        actionedInCurrentEpoch,
-        reset: actionedInCurrentEpoch && !voted,
-        lastVoted,
-      };
-    })
-  );
-
-  return nfts;
-};
-
-export const useVestNfts = () => {
-  const { address } = useAccount();
-  const { data: govToken } = useGovToken();
-  const { data: veToken } = useVeToken();
-  const { data: activePeriod } = useActivePeriod();
-  return useQuery({
-    queryKey: [QUERY_KEYS.VEST_NFTS, address, govToken, veToken, activePeriod],
-    queryFn: () => getVestNFTs(address, govToken, veToken, activePeriod!), // enabled only when activePeriod is defined
-    enabled: !!govToken && !!veToken && !!activePeriod,
-  });
-};
-
-const getBaseAssetsWithInfo = async (
-  address: Address | undefined,
-  baseAssets: BaseAsset[]
-) => {
   if (!baseAssets) {
     console.warn("baseAssets not found");
     throw new Error("Base assets not found");
@@ -586,49 +272,10 @@ const getBaseAssetsWithInfo = async (
 };
 
 export const useBaseAssetWithInfo = () => {
-  const queryClient = useQueryClient();
   const { address } = useAccount();
-  const { data: initialBaseAssets } = useInitBaseAssets();
   return useQuery({
-    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
-    queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
-    enabled: !!initialBaseAssets,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }); // FIXME: probably will need to rethink it
-    },
-  });
-};
-
-export const useBaseAssetWithInfoNoNative = () => {
-  const queryClient = useQueryClient();
-  const { address } = useAccount();
-  const { data: initialBaseAssets } = useInitBaseAssets();
-  return useQuery({
-    queryKey: [
-      QUERY_KEYS.BASE_ASSET_INFO_NO_NATIVE,
-      address,
-      initialBaseAssets,
-    ],
-    queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
-    enabled: !!initialBaseAssets,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SWAP_ASSETS] }); // FIXME: probably will need to rethink it
-    },
-    select: (baseAssets) => {
-      return baseAssets.filter((option) => {
-        return option.address !== NATIVE_TOKEN.address;
-      });
-    },
-  });
-};
-
-export const useSwapAssets = () => {
-  const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
-  const { data: pairs } = usePairs();
-  return useQuery({
-    queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssetsWithInfo, pairs],
-    queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
-    enabled: !!baseAssetsWithInfo && !!pairs,
+    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address],
+    queryFn: () => getBaseAssetsWithInfo(address), // enabled only when initialBaseAssets is defined
   });
 };
 
@@ -792,7 +439,7 @@ export const usePairsWithoutGauges = () => {
   });
 };
 
-const getPairsWithGauges = async (
+export const getPairsWithGauges = async (
   address: `0x${string}`,
   pairsWithoutInfo: Pair[]
 ) => {
@@ -917,144 +564,5 @@ export const usePairsWithGauges = () => {
     queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges,
-  });
-};
-
-export const usePairsWithGaugesOnlyWithBalance = () => {
-  const { address } = useAccount();
-  const { data: pairsWithoutGauges } = usePairsWithoutGauges();
-  return useQuery({
-    queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
-    queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
-    enabled: !!address && !!pairsWithoutGauges,
-    select: (pairs) => {
-      return pairs.filter((ppp) => {
-        return (
-          (ppp.balance && BigNumber(ppp.balance).gt(0)) ||
-          (ppp.gauge?.balance && BigNumber(ppp.gauge.balance).gt(0))
-        );
-      });
-    },
-  });
-};
-
-const getVestVotes = async (
-  account: Address | undefined,
-  tokenID: string | undefined,
-  pairs: Pair[] | undefined
-) => {
-  if (!account) {
-    console.warn("account not found");
-    throw new Error("not found in vest votes");
-  }
-
-  if (!pairs) {
-    throw new Error("not found in vest votes");
-  }
-
-  if (!tokenID) {
-    throw new Error("no token id");
-  }
-
-  const filteredPairs = pairs.filter((pair) => {
-    return pair && pair.gauge && pair.gauge.address;
-  });
-
-  const gaugesContract = {
-    abi: CONTRACTS.VOTER_ABI,
-    address: CONTRACTS.VOTER_ADDRESS,
-  } as const;
-
-  const calls = filteredPairs.map((pair) => {
-    return {
-      ...gaugesContract,
-      functionName: "votes",
-      args: [BigInt(tokenID), pair.address],
-    } as const;
-  });
-
-  const voteCounts = await viemClient.multicall({
-    allowFailure: false,
-    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-    contracts: calls,
-  });
-
-  let votes: Vote[] = [];
-
-  const totalVotes = voteCounts.reduce((curr, acc) => {
-    let num = acc > 0 ? acc : acc * BigInt(-1);
-    return curr + num;
-  }, BigInt(0));
-
-  for (let i = 0; i < voteCounts.length; i++) {
-    votes.push({
-      address: filteredPairs[i].address,
-      votePercent:
-        totalVotes > 0 || totalVotes < 0
-          ? parseFloat(
-              ((voteCounts[i] * BigInt(100)) / totalVotes).toString()
-            ).toFixed(0)
-          : "0",
-    });
-  }
-
-  return votes;
-};
-
-interface VotesStore {
-  votes: Votes | undefined;
-  setVotes: (_votes: Votes | undefined) => void;
-}
-
-export const useVotes = create<VotesStore>((set) => ({
-  votes: undefined,
-  setVotes: (votes) => set({ votes }),
-}));
-
-export const useVestVotes = (tokenID: string | undefined) => {
-  const { address } = useAccount();
-  const { data: pairs } = usePairs();
-  return useQuery({
-    queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, pairs],
-    queryFn: () => getVestVotes(address, tokenID, pairs),
-    enabled: !!address && !!tokenID && !!pairs,
-    refetchOnMount: false,
-    select: (votes) => {
-      const votesValues: Votes | undefined = votes?.map((vote) => {
-        return {
-          address: vote?.address,
-          value: BigNumber(
-            vote && vote.votePercent ? vote.votePercent : 0
-          ).toNumber(),
-        };
-      });
-      return votesValues;
-    },
-    onSuccess: (votes) => useVotes.getState().setVotes(votes),
-  });
-};
-
-export const useGaugesWithGaugesAndVotes = (votes: Votes | undefined) => {
-  const { address } = useAccount();
-  const { data: pairsWithoutGauges } = usePairsWithoutGauges();
-  return useQuery({
-    queryKey: [
-      QUERY_KEYS.PAIRS_WITH_GAUGES_AND_VOTES,
-      address,
-      pairsWithoutGauges,
-    ],
-    queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
-    enabled: !!address && !!pairsWithoutGauges && !!votes,
-    select: (pairsWithGauges) => {
-      const gauges = pairsWithGauges?.filter(hasGauge).filter((gauge) => {
-        let sliderValue =
-          votes?.find((el) => el.address === gauge.address)?.value ?? 0;
-        if (gauge.isAliveGauge === false && sliderValue === 0) {
-          return false;
-        }
-        return true;
-      });
-      return gauges;
-    },
   });
 };

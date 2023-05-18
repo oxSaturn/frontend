@@ -34,7 +34,9 @@ import type {
   QuoteSwapResponse,
   FireBirdTokens,
 } from "../../stores/types/types";
-import { useSwapAssets, useTokenPrices } from "../../lib/global/queries";
+import { useTokenPrices } from "../header/queries";
+
+import { useSwapAssets } from "./queries";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();

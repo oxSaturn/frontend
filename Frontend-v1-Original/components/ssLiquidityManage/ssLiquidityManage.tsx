@@ -33,10 +33,9 @@ import {
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
-import {
-  useBaseAssetWithInfo,
-  usePairsWithGaugesOnlyWithBalance,
-} from "../../lib/global/queries";
+import { useBaseAssetWithInfo } from "../../lib/global/queries";
+
+import { usePairsWithGaugesOnlyWithBalance } from "./queries";
 
 export default function LiquidityManage() {
   const router = useRouter();

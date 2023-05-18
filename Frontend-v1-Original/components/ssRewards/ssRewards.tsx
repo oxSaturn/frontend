@@ -14,7 +14,8 @@ import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 import { VeDistReward, VestNFT, Gauge } from "../../stores/types/types";
-import { useVeToken, useVestNfts } from "../../lib/global/queries";
+import { useVeToken } from "../../lib/global/queries";
+import { useVestNfts } from "../ssVests/queries";
 
 import RewardsTable from "./ssRewardsTable";
 import { useRewards } from "./queries";

@@ -27,7 +27,8 @@ import {
   VestNFT,
   Pair,
 } from "../../stores/types/types";
-import { useGovToken, useVeToken, useVestNfts , usePairs } from "../../lib/global/queries";
+import { useGovToken, useVeToken, usePairs } from "../../lib/global/queries";
+import { useVestNfts } from "../ssVests/queries";
 
 export const getRewardBalances = async (
   address: Address | undefined,

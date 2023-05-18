@@ -6,6 +6,7 @@ import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
 
 import { useAutoBribes } from "./queries";
+
 import classes from "./ssBribes.module.css";
 
 export default function Bribes() {
