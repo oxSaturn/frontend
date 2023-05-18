@@ -1,9 +1,5 @@
 import { useAccount } from "wagmi";
-import {
-  UseQueryOptions,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getContract, formatUnits, Address, formatEther } from "viem";
 
 import BigNumber from "bignumber.js";
@@ -162,12 +158,21 @@ const getTbv = (pairsData: PairsCallResponse | undefined) => {
   return pairsData.tbv;
 };
 
-export const usePairs = (onSuccess?: (data: Pair[]) => void) => {
+export const usePairs = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
-    onSuccess,
+  });
+};
+
+export const useGauges = () => {
+  const { data: pairsData } = usePairsData();
+  return useQuery({
+    queryKey: [QUERY_KEYS.PAIRS, pairsData],
+    queryFn: () => getPairs(pairsData),
+    select: (pairs) =>
+      pairs.filter(hasGauge).filter((gauge) => gauge.isAliveGauge),
   });
 };
 
@@ -185,6 +190,7 @@ export const useTvl = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.TVL, pairsData],
     queryFn: () => getTvl(pairsData),
+    enabled: !!pairsData,
   });
 };
 
@@ -193,6 +199,7 @@ export const useTbv = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.TBV, pairsData],
     queryFn: () => getTbv(pairsData),
+    enabled: !!pairsData,
   });
 };
 

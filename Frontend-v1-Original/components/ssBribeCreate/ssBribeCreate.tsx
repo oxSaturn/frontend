@@ -15,11 +15,11 @@ import {
 import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
-import { useBaseAssetWithInfo, usePairs } from "../../lib/global/queries";
+import { useBaseAssetWithInfo, useGauges } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
 import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
-import { BaseAsset, Gauge, hasGauge } from "../../stores/types/types";
+import { BaseAsset, Gauge } from "../../stores/types/types";
 
 import classes from "./ssBribeCreate.module.css";
 
@@ -32,20 +32,16 @@ export default function BribeCreate() {
   const [asset, setAsset] = useState<BaseAsset | null>(null);
   const [assetOptions, setAssetOptions] = useState<BaseAsset[]>([]);
   const [gauge, setGauge] = useState<Gauge | null>(null);
-  const [gaugeOptions, setGaugeOptions] = useState<Gauge[]>([]);
 
-  usePairs((pairs) => {
-    const filteredPairs = pairs
-      .filter(hasGauge)
-      .filter((gauge) => gauge.isAliveGauge);
-    setGaugeOptions(filteredPairs);
-    if (filteredPairs.length > 0 && gauge == null) {
-      const noteFlowPair = filteredPairs.filter((pair) => {
-        return pair.symbol === "vAMM-NOTE/FLOW";
+  const { data: gaugeOptions } = useGauges();
+  useEffect(() => {
+    if (gaugeOptions && gaugeOptions.length > 0 && gauge == null) {
+      const noteFlowPair = gaugeOptions.filter((gauge) => {
+        return gauge.symbol === "vAMM-NOTE/FLOW";
       });
-      setGauge(noteFlowPair[0] ?? filteredPairs[0]);
+      setGauge(noteFlowPair[0] ?? gaugeOptions[0]);
     }
-  });
+  }, [gaugeOptions, gauge]);
 
   useBaseAssetWithInfo((baseAssets) => {
     const filteredBaseAssetOptions = baseAssets.filter((option) => {
@@ -290,7 +286,7 @@ function GaugeSelect({
   onSelect,
 }: {
   value: Gauge | null;
-  gaugeOptions: Gauge[];
+  gaugeOptions: Gauge[] | undefined;
   onSelect: (_value: Gauge) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -317,7 +313,7 @@ function GaugeSelect({
   };
 
   const filteredGaugeOptions = useMemo(() => {
-    const go = gaugeOptions.filter((gauge) => {
+    const go = gaugeOptions?.filter((gauge) => {
       if (search && search !== "") {
         return [gauge.address, gauge.token0.symbol, gauge.token1.symbol].some(
           (s) => s.toLowerCase().includes(search.trim().toLowerCase())
@@ -391,7 +387,7 @@ function GaugeSelect({
             }}
           />
           <div className="mt-3 flex w-full flex-col md:min-w-[512px]">
-            {filteredGaugeOptions.map((option) => {
+            {filteredGaugeOptions?.map((option) => {
               return (
                 <MenuItem
                   key={option.address}
