@@ -173,7 +173,7 @@ export const usePairs = () => {
 export const useGauges = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: [QUERY_KEYS.PAIRS, pairsData],
+    queryKey: [QUERY_KEYS.GAUGES, pairsData],
     queryFn: () => getPairs(pairsData),
     enabled: !!pairsData,
     select: (pairs) =>
@@ -604,7 +604,11 @@ export const useBaseAssetWithInfoNoNative = () => {
   const { address } = useAccount();
   const { data: initialBaseAssets } = useInitBaseAssets();
   return useQuery({
-    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, initialBaseAssets],
+    queryKey: [
+      QUERY_KEYS.BASE_ASSET_INFO_NO_NATIVE,
+      address,
+      initialBaseAssets,
+    ],
     queryFn: () => getBaseAssetsWithInfo(address, initialBaseAssets!), // enabled only when initialBaseAssets is defined
     enabled: !!initialBaseAssets,
     onSuccess: () => {
@@ -1034,7 +1038,11 @@ export const useGaugesWithGaugesAndVotes = (votes: Votes | undefined) => {
   const { address } = useAccount();
   const { data: pairsWithoutGauges } = usePairsWithoutGauges();
   return useQuery({
-    queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
+    queryKey: [
+      QUERY_KEYS.PAIRS_WITH_GAUGES_AND_VOTES,
+      address,
+      pairsWithoutGauges,
+    ],
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges && !!votes,
     select: (pairsWithGauges) => {

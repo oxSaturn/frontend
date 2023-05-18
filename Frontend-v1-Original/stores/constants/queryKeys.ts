@@ -28,3 +28,7 @@ export const AUTO_BRIBES = "autoBribes";
 
 // votes
 export const VEST_VOTES = "vestVotes";
+
+export const GAUGES = "gauges";
+export const BASE_ASSET_INFO_NO_NATIVE = "baseAssetInfoNoNative";
+export const PAIRS_WITH_GAUGES_AND_VOTES = "pairsWithGaugesAndVotes";
