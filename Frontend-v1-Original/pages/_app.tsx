@@ -24,7 +24,14 @@ import Configure from "./configure";
 import "../styles/global.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+  },
+});
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
