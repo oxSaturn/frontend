@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 import { Dispatcher } from "flux";
 
 import StableSwapStore from "./stableSwapStore";
-import Helper from "./helperStore";
+import Helper from "./helper";
 
 const dispatcher = new Dispatcher<any>();
 const emitter = new EventEmitter();
