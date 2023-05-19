@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import { Address } from "wagmi";
 
 import { NATIVE_TOKEN, QUERY_KEYS } from "../../stores/constants/constants";
-import { BaseAsset, Pair } from "../../stores/types/types";
+import { BaseAsset, Pair, QuoteSwapResponse } from "../../stores/types/types";
 import { useBaseAssetWithInfo, usePairs } from "../../lib/global/queries";
 
 const getSwapAssets = (
@@ -30,4 +31,26 @@ export const useSwapAssets = () => {
     queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
     enabled: !!baseAssetsWithInfo && !!pairs,
   });
+};
+
+export const quoteSwap = async (
+  address: Address | undefined,
+  options: {
+    fromAsset: BaseAsset | null;
+    toAsset: BaseAsset | null;
+    fromAmount: string;
+    slippage: string;
+  }
+) => {
+  if (!address) throw new Error("no address");
+  const res = await fetch("/api/firebird-router", {
+    method: "POST",
+    body: JSON.stringify({
+      options,
+      address,
+    }),
+  });
+  const resJson = (await res.json()) as QuoteSwapResponse;
+
+  return resJson;
 };

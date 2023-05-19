@@ -231,13 +231,11 @@ type EthWindow = Window &
 
 // FIREBIRD
 interface QuoteSwapPayload {
-  payload: {
-    content: {
-      fromAsset: BaseAsset;
-      toAsset: BaseAsset;
-      fromAmount: string;
-      slippage: string;
-    };
+  options: {
+    fromAsset: BaseAsset;
+    toAsset: BaseAsset;
+    fromAmount: string;
+    slippage: string;
   };
   address: `0x${string}`;
 }

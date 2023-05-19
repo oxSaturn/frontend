@@ -33,3 +33,6 @@ export const GAUGES = "gauges";
 export const BASE_ASSET_INFO_NO_NATIVE = "baseAssetInfoNoNative";
 export const PAIRS_WITH_GAUGES_AND_VOTES = "pairsWithGaugesAndVotes";
 export const PAIRS_WITH_GAUGES_AND_BALANCES = "pairsWithGaugesAndBalances";
+
+// swap
+export const QUOTE_SWAP = "quoteSwap";

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAccount } from "wagmi";
 import {
   TextField,
   Typography,
@@ -26,6 +28,7 @@ import {
   ACTIONS,
   ETHERSCAN_URL,
   NATIVE_TOKEN,
+  QUERY_KEYS,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
 import type {
@@ -36,7 +39,7 @@ import type {
 } from "../../stores/types/types";
 import { useTokenPrices } from "../header/queries";
 
-import { useSwapAssets } from "./queries";
+import { quoteSwap, useSwapAssets } from "./queries";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -72,6 +75,91 @@ function Setup() {
   const { data: tokenPrices } = useTokenPrices();
 
   const { data: swapAssetsOptions } = useSwapAssets();
+
+  const { address } = useAccount();
+
+  const { refetch: refetchQuote } = useQuery({
+    queryKey: [
+      QUERY_KEYS.QUOTE_SWAP,
+      address,
+      fromAssetValue,
+      toAssetValue,
+      fromAmountValue,
+      slippage,
+    ],
+    queryFn: () =>
+      quoteSwap(address, {
+        fromAsset: fromAssetValue,
+        toAsset: toAssetValue,
+        fromAmount: fromAmountValue,
+        slippage,
+      }),
+    onError: () => {
+      setQuote(null);
+      setQuoteLoading(false);
+      setToAmountValue("");
+      setToAmountValueUsd("");
+    },
+    onSuccess: (firebirdQuote) => {
+      if (!fromAssetValue || !toAssetValue) {
+        setQuoteLoading(false);
+        setQuote(null);
+        setToAmountValue("");
+        setToAmountValueUsd("");
+        setQuoteError(
+          "Insufficient liquidity or no route available to complete swap"
+        );
+        return;
+      }
+      if (
+        firebirdQuote.encodedData &&
+        firebirdQuote.maxReturn &&
+        firebirdQuote.maxReturn.totalFrom ===
+          BigNumber(fromAmountValue)
+            .multipliedBy(10 ** fromAssetValue.decimals)
+            .toFixed(0) &&
+        (firebirdQuote.maxReturn.from.toLowerCase() ===
+          fromAssetValue.address.toLowerCase() ||
+          (firebirdQuote.maxReturn.from ===
+            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+            fromAssetValue.address === NATIVE_TOKEN.address)) &&
+        (firebirdQuote.maxReturn.to.toLowerCase() ===
+          toAssetValue.address.toLowerCase() ||
+          (firebirdQuote.maxReturn.to ===
+            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+            toAssetValue.address === NATIVE_TOKEN.address))
+      ) {
+        setQuoteLoading(false);
+        if (BigNumber(firebirdQuote.maxReturn.totalTo).eq(0)) {
+          setQuote(null);
+          setToAmountValue("");
+          setToAmountValueUsd("");
+          setQuoteError(
+            "Insufficient liquidity or no route available to complete swap"
+          );
+          return;
+        }
+
+        setToAmountValue(
+          BigNumber(firebirdQuote.maxReturn.totalTo)
+            .div(10 ** toAssetValue.decimals)
+            .toFixed(toAssetValue.decimals, BigNumber.ROUND_DOWN)
+        );
+        const toAddressLookUp =
+          firebirdQuote.maxReturn.to ===
+          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            ? W_NATIVE_ADDRESS.toLowerCase()
+            : firebirdQuote.maxReturn.to.toLowerCase();
+        const toUsdValue = BigNumber(firebirdQuote.maxReturn.totalTo)
+          .div(10 ** toAssetValue.decimals)
+          .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
+          .toFixed(2);
+        setToAmountValueUsd(toUsdValue);
+        setQuote(firebirdQuote);
+      }
+    },
+    refetchOnWindowFocus: true,
+  });
 
   useEffect(() => {
     if (swapAssetsOptions) {
@@ -147,64 +235,6 @@ function Setup() {
       setQuoteLoading(false);
     };
 
-    const quoteReturned = (val: QuoteSwapResponse) => {
-      if (!val || !fromAssetValue || !toAssetValue) {
-        setQuoteLoading(false);
-        setQuote(null);
-        setToAmountValue("");
-        setToAmountValueUsd("");
-        setQuoteError(
-          "Insufficient liquidity or no route available to complete swap"
-        );
-        return;
-      }
-      if (
-        val &&
-        val.encodedData &&
-        val.maxReturn &&
-        val.maxReturn.totalFrom ===
-          BigNumber(fromAmountValue)
-            .multipliedBy(10 ** fromAssetValue.decimals)
-            .toFixed(0) &&
-        (val.maxReturn.from.toLowerCase() ===
-          fromAssetValue.address.toLowerCase() ||
-          (val.maxReturn.from ===
-            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
-            fromAssetValue.address === NATIVE_TOKEN.address)) &&
-        (val.maxReturn.to.toLowerCase() ===
-          toAssetValue.address.toLowerCase() ||
-          (val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
-            toAssetValue.address === NATIVE_TOKEN.address))
-      ) {
-        setQuoteLoading(false);
-        if (BigNumber(val.maxReturn.totalTo).eq(0)) {
-          setQuote(null);
-          setToAmountValue("");
-          setToAmountValueUsd("");
-          setQuoteError(
-            "Insufficient liquidity or no route available to complete swap"
-          );
-          return;
-        }
-
-        setToAmountValue(
-          BigNumber(val.maxReturn.totalTo)
-            .div(10 ** toAssetValue.decimals)
-            .toFixed(toAssetValue.decimals, BigNumber.ROUND_DOWN)
-        );
-        const toAddressLookUp =
-          val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-            ? W_NATIVE_ADDRESS.toLowerCase()
-            : val.maxReturn.to.toLowerCase();
-        const toUsdValue = BigNumber(val.maxReturn.totalTo)
-          .div(10 ** toAssetValue.decimals)
-          .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
-          .toFixed(2);
-        setToAmountValueUsd(toUsdValue);
-        setQuote(val);
-      }
-    };
-
     const swapReturned = () => {
       setLoading(false);
       setFromAmountValue("");
@@ -218,7 +248,6 @@ function Setup() {
 
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
     stores.emitter.on(ACTIONS.SWAP_RETURNED, swapReturned);
-    stores.emitter.on(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
     stores.emitter.on(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
 
     const interval = setInterval(() => {
@@ -229,7 +258,6 @@ function Setup() {
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
       stores.emitter.removeListener(ACTIONS.SWAP_RETURNED, swapReturned);
       stores.emitter.removeListener(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
-      stores.emitter.removeListener(ACTIONS.QUOTE_SWAP_RETURNED, quoteReturned);
       clearInterval(interval);
     };
   }, [
@@ -275,8 +303,7 @@ function Setup() {
         (
           parseFloat(fromAmountValue) *
           (tokenPrices?.get(
-            // @ts-expect-error this is a workaround for the CANTO token
-            value.address === "CANTO"
+            value.address === NATIVE_TOKEN.address
               ? W_NATIVE_ADDRESS.toLowerCase()
               : value.address.toLowerCase()
           ) ?? 0)
@@ -309,8 +336,7 @@ function Setup() {
         (
           parseFloat(event.target.value) *
           (tokenPrices?.get(
-            // @ts-expect-error this is a workaround for the CANTO token
-            fromAssetValue?.address === "CANTO"
+            fromAssetValue?.address === NATIVE_TOKEN.address
               ? W_NATIVE_ADDRESS.toLowerCase()
               : fromAssetValue
               ? fromAssetValue?.address.toLowerCase()
@@ -360,15 +386,7 @@ function Setup() {
         return;
       }
 
-      stores.dispatcher.dispatch({
-        type: ACTIONS.QUOTE_SWAP,
-        content: {
-          fromAsset: from,
-          toAsset: to,
-          fromAmount: amount,
-          slippage: slippage !== "" ? parseFloat(slippage) / 100 : 0.005,
-        },
-      });
+      refetchQuote();
     }
   };
 
@@ -503,8 +521,7 @@ function Setup() {
       (
         parseFloat(am) *
         (tokenPrices?.get(
-          // @ts-expect-error this is a workaround for the CANTO token
-          fromAssetValue?.address === "CANTO"
+          fromAssetValue?.address === NATIVE_TOKEN.address
             ? W_NATIVE_ADDRESS.toLowerCase()
             : fromAssetValue
             ? fromAssetValue.address.toLowerCase()
@@ -533,8 +550,7 @@ function Setup() {
       (
         parseFloat(fromAmountValue) *
         (tokenPrices?.get(
-          // @ts-expect-error this is a workaround for the CANTO token
-          ta.address === "CANTO"
+          ta.address === NATIVE_TOKEN.address
             ? W_NATIVE_ADDRESS.toLowerCase()
             : ta.address.toLowerCase()
         ) ?? 0)
