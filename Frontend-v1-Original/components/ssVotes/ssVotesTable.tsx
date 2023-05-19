@@ -137,11 +137,9 @@ export default function EnhancedTable({
 }: {
   gauges: Gauge[];
   setParentSliderValues: React.Dispatch<
-    React.SetStateAction<
-      (Pick<Vote, "address"> & {
-        value: number;
-      })[]
-    >
+    (Pick<Vote, "address"> & {
+      value: number;
+    })[]
   >;
   defaultVotes: Array<Pick<Vote, "address"> & { value: number }>;
   token: VestNFT;

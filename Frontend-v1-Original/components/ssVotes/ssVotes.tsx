@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useReducer } from "react";
 import {
   Paper,
   Typography,
@@ -50,75 +50,178 @@ function MyListSubheader(props: ListSubheaderProps) {
 
 MyListSubheader.muiSkipListHighlight = true;
 
+type ACTION =
+  | { type: "showWarning" }
+  | { type: "hideWarning" }
+  | { type: "vote" }
+  | { type: "voteDone" }
+  | { type: "setVeToken"; veToken: VeToken | null }
+  | { type: "setSearch"; search: string }
+  | { type: "setGauges"; gauges: Gauge[] }
+  | { type: "setVestNFTs"; vestNFTs: VestNFT[] }
+  | { type: "setToken"; token: VestNFT }
+  | { type: "setVotes"; votes: VotesType };
+interface State {
+  showWarning: boolean;
+  isVoting: boolean;
+  veToken: VeToken | null;
+  search: string;
+  gauges: Gauge[];
+  vestNFTs: VestNFT[]; // all nfts
+  token: VestNFT; // current selected nft
+  votes: VotesType; // votes of current selected nft
+}
+
+function reducer(state: State, action: ACTION) {
+  switch (action.type) {
+    case "showWarning":
+      return { ...state, showWarning: true };
+    case "hideWarning":
+      return { ...state, showWarning: false };
+    case "vote":
+      return { ...state, isVoting: true };
+    case "voteDone":
+      return { ...state, isVoting: false };
+    case "setVeToken":
+      return { ...state, veToken: action.veToken };
+    case "setSearch":
+      return { ...state, search: action.search };
+    case "setGauges":
+      return { ...state, gauges: action.gauges };
+    case "setVestNFTs":
+      return { ...state, vestNFTs: action.vestNFTs };
+    case "setToken":
+      return { ...state, token: action.token };
+    case "setVotes":
+      return { ...state, votes: action.votes };
+    default:
+      return state;
+  }
+}
 export default function Votes() {
-  // const router = useRouter();
+  const [state, dispatch] = useReducer(reducer, {
+    showWarning: false,
+    isVoting: false,
+    veToken: null,
+    search: "",
+    gauges: [],
+    vestNFTs: [],
+    token: initialEmptyToken,
+    votes: [],
+  });
 
-  const [showWarning, setShowWarning] = useState(false);
-
-  // const [, updateState] = useState<{}>();
-  // const forceUpdate = useCallback(() => updateState({}), []);
-
-  const [gauges, setGauges] = useState<Gauge[]>([]);
-  const [voteLoading, setVoteLoading] = useState(false);
-  const [votes, setVotes] = useState<VotesType>([]);
-  const [veToken, setVeToken] = useState<VeToken | null>(null);
-  const [token, setToken] = useState<VestNFT>(initialEmptyToken);
-  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
-  const [search, setSearch] = useState("");
-
-  const ssUpdated = () => {
-    setVeToken(stores.stableSwapStore.getStore("veToken"));
-    const as = stores.stableSwapStore.getStore("pairs");
-
-    const filteredAssets = as.filter(hasGauge).filter((gauge) => {
-      let sliderValue =
-        votes.find((el) => el.address === gauge.address)?.value ?? 0;
-      if (gauge.isAliveGauge === false && sliderValue === 0) {
-        return false;
-      }
-      return true;
-    });
-    if (JSON.stringify(filteredAssets) !== JSON.stringify(gauges))
-      setGauges(filteredAssets);
-
-    const nfts = stores.stableSwapStore.getStore("vestNFTs");
-    setVestNFTs(nfts);
-
-    if (nfts && nfts.length > 0) {
-      const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
-      );
-      if (votableNFTs.length > 0) {
-        setToken(votableNFTs[0]);
-      } else {
-        setToken(nfts[0]);
-      }
-    }
-
-    if (
-      nfts &&
-      nfts.length > 0 &&
-      filteredAssets &&
-      filteredAssets.length > 0
-    ) {
-      const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
-      );
-      const defaultSelectedNFT =
-        votableNFTs.length > 0 ? votableNFTs[0] : nfts[0];
-      stores.dispatcher.dispatch({
-        type: ACTIONS.GET_VEST_VOTES,
-        content: { tokenID: defaultSelectedNFT.id },
+  // set veToken
+  useEffect(() => {
+    const veTokenReady = () => {
+      dispatch({
+        type: "setVeToken",
+        veToken: stores.stableSwapStore.getStore("veToken"),
       });
-      // stores.dispatcher.dispatch({
-      //   type: ACTIONS.GET_VEST_BALANCES,
-      //   content: { tokenID: nfts[0].id },
-      // });
+    };
+    // there're two emitters in stableSwapStore when veToken is ready
+    // 1. ACTIONS.CONFIGURED_SS
+    // 2. ACTIONS.UPDATED
+    // we use the second one here
+    stores.emitter.on(ACTIONS.UPDATED, veTokenReady);
+    return () => {
+      stores.emitter.removeListener(ACTIONS.UPDATED, veTokenReady);
+    };
+  }, []);
+
+  // set gauges
+  // similar to set veToken
+  useEffect(() => {
+    const pairsReady = () => {
+      const as = stores.stableSwapStore.getStore("pairs");
+
+      const filteredAssets = as.filter(hasGauge).filter((gauge) => {
+        let sliderValue =
+          state.votes.find((el) => el.address === gauge.address)?.value ?? 0;
+        if (gauge.isAliveGauge === false && sliderValue === 0) {
+          // gauge could be alive with votes in last epoch while killed in current epoch
+          return false;
+        }
+        return true;
+      });
+      dispatch({
+        type: "setGauges",
+        gauges: filteredAssets,
+      });
+    };
+    stores.emitter.on(ACTIONS.UPDATED, pairsReady);
+    return () => {
+      stores.emitter.removeListener(ACTIONS.UPDATED, pairsReady);
+    };
+  }, [state.votes]);
+
+  // set vestNFTs
+  useEffect(() => {
+    const nftsReady = () => {
+      const nfts = stores.stableSwapStore.getStore("vestNFTs");
+      dispatch({
+        type: "setVestNFTs",
+        vestNFTs: nfts,
+      });
+    };
+    stores.emitter.on(ACTIONS.UPDATED, nftsReady);
+    stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, nftsReady); // run `getVestNFTs` in stableSwapStore
+    // TODO we should update nfts when user votes successfully
+    return () => {
+      stores.emitter.removeListener(ACTIONS.UPDATED, nftsReady);
+      stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, nftsReady);
+    };
+  }, []);
+
+  // set token
+  useEffect(() => {
+    const nfts = state.vestNFTs;
+    if (state.token.id !== "0") {
+      // if we have selected a nft, chances are we don't need to select again
+      // but user might have voted with the nft,
+      // and we need to update the token's data
+      const nft = nfts.find((nft) => nft.id === state.token.id);
+      if (
+        nft &&
+        nft?.actionedInCurrentEpoch !== state.token.actionedInCurrentEpoch &&
+        nft?.lastVoted !== state.token.lastVoted
+      ) {
+        dispatch({
+          type: "setToken",
+          token: nft,
+        });
+      }
+      return;
+    } else {
+      // if we haven't selected a nft, we need to select one
+      if (nfts && nfts.length > 0) {
+        const votableNFTs = nfts.filter(
+          (nft) => nft.actionedInCurrentEpoch === false
+        );
+        if (votableNFTs.length > 0) {
+          dispatch({
+            type: "setToken",
+            token: votableNFTs[0],
+          });
+        } else {
+          dispatch({
+            type: "setToken",
+            token: nfts[0],
+          });
+        }
+      }
     }
+  }, [state.vestNFTs, state.token]);
 
-    // forceUpdate();
-  };
+  // fetch votes data for the selected nft
+  useEffect(() => {
+    if (state.token.id === "0") return;
+    stores.dispatcher.dispatch({
+      type: ACTIONS.GET_VEST_VOTES,
+      content: { tokenID: state.token.id },
+    });
+  }, [state.token]);
 
+  // set votes
   useEffect(() => {
     const vestVotesReturned = (votesReturned: Vote[]) => {
       const votesReturnedMapped = votesReturned.map((vote) => {
@@ -129,82 +232,62 @@ export default function Votes() {
           ).toNumber(),
         };
       });
-      if (JSON.stringify(votesReturnedMapped) !== JSON.stringify(votes))
-        setVotes(votesReturnedMapped);
-
-      const pairs = stores.stableSwapStore.getStore("pairs");
-      const filteredPairs = pairs.filter(hasGauge).filter((gauge) => {
-        let sliderValue =
-          votesReturnedMapped.find((el) => el.address === gauge.address)
-            ?.value ?? 0;
-        if (gauge.isAliveGauge === false && sliderValue === 0) {
-          return false;
-        }
-        return true;
+      dispatch({
+        type: "setVotes",
+        votes: votesReturnedMapped,
       });
-
-      if (JSON.stringify(filteredPairs) !== JSON.stringify(gauges))
-        setGauges(filteredPairs);
-
-      // forceUpdate();
     };
 
-    // const vestBalancesReturned = (vals) => {
-    //   setGauges(vals);
-    //   forceUpdate();
-    // };
-
-    const stableSwapUpdated = () => {
-      ssUpdated();
-    };
-
-    const voteReturned = () => {
-      setVoteLoading(false);
-    };
-
-    ssUpdated();
-
-    // stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} })
-
-    stores.emitter.on(ACTIONS.UPDATED, stableSwapUpdated);
-    stores.emitter.on(ACTIONS.VOTE_RETURNED, voteReturned);
-    stores.emitter.on(ACTIONS.ERROR, voteReturned);
     stores.emitter.on(ACTIONS.VEST_VOTES_RETURNED, vestVotesReturned);
-    // stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
-    // stores.emitter.on(ACTIONS.VEST_BALANCES_RETURNED, vestBalancesReturned);
 
+    return () => {
+      stores.emitter.removeListener(
+        ACTIONS.VEST_VOTES_RETURNED,
+        vestVotesReturned
+      );
+    };
+  }, []);
+
+  // handle warning
+  useEffect(() => {
     const localStorageWarningAccepted =
       window.localStorage.getItem("voting.warning");
     if (
       !localStorageWarningAccepted ||
       localStorageWarningAccepted !== "accepted"
     ) {
-      setShowWarning(true);
-      return;
+      dispatch({ type: "showWarning" });
+    } else {
+      dispatch({ type: "hideWarning" });
     }
-    setShowWarning(false);
+  }, []);
 
+  // on vote result returned
+  useEffect(() => {
+    const voteReturned = () => {
+      dispatch({ type: "voteDone" });
+      // update current nft's data
+      stores.dispatcher.dispatch({
+        type: ACTIONS.GET_VEST_NFTS,
+      });
+    };
+    stores.emitter.on(ACTIONS.VOTE_RETURNED, voteReturned);
+
+    const errorReturned = () => {
+      dispatch({ type: "voteDone" });
+    };
+    stores.emitter.on(ACTIONS.ERROR, errorReturned);
     return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
       stores.emitter.removeListener(ACTIONS.VOTE_RETURNED, voteReturned);
       stores.emitter.removeListener(ACTIONS.ERROR, voteReturned);
-      stores.emitter.removeListener(
-        ACTIONS.VEST_VOTES_RETURNED,
-        vestVotesReturned
-      );
-      // stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned)
-      // stores.emitter.removeListener(
-      //   ACTIONS.VEST_BALANCES_RETURNED,
-      //   vestBalancesReturned
-      // );
     };
   }, []);
 
   const onVote = () => {
-    setVoteLoading(true);
+    dispatch({ type: "vote" });
     stores.dispatcher.dispatch({
       type: ACTIONS.VOTE,
-      content: { votes, tokenID: token.id },
+      content: { votes: state.votes, tokenID: state.token.id },
     });
   };
 
@@ -212,25 +295,26 @@ export default function Votes() {
     window.localStorage.setItem("voting.warning", "accepted");
   };
 
-  let totalVotes = votes.reduce((acc, curr) => {
+  let totalVotes = state.votes.reduce((acc, curr) => {
     return (acc += curr.value);
   }, 0);
 
-  const handleChange = (event: SelectChangeEvent<VestNFT>) => {
-    setToken(event.target.value as VestNFT);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.GET_VEST_VOTES,
-      content: { tokenID: (event.target.value as VestNFT).id },
-    });
+  const handleChange = (event: SelectChangeEvent<string>) => {
+    const nft = state.vestNFTs.find((nft) => nft.id === event.target.value);
+    if (nft) {
+      dispatch({
+        type: "setToken",
+        token: nft,
+      });
+    }
   };
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
+    dispatch({
+      type: "setSearch",
+      search: event.target.value,
+    });
   };
-
-  // const onBribe = () => {
-  //   router.push("/bribe/create");
-  // };
 
   const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     const actionedNFTs = options.filter(
@@ -253,7 +337,7 @@ export default function Votes() {
               <div className={classes.mediumInputAmount}>
                 <Select
                   fullWidth
-                  value={value}
+                  value={value.id}
                   onChange={handleChange}
                   // @ts-expect-error This is because of how material-ui works
                   InputProps={{
@@ -272,7 +356,7 @@ export default function Votes() {
                         <MenuItem
                           key={option.id}
                           // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
-                          value={option as any}
+                          value={option.id}
                         >
                           <div className={classes.menuOption}>
                             <Typography>Token #{option.id}</Typography>
@@ -288,7 +372,7 @@ export default function Votes() {
                                 color="textSecondary"
                                 className={classes.smallerText}
                               >
-                                {veToken?.symbol}
+                                {state.veToken?.symbol}
                               </Typography>
                             </div>
                           </div>
@@ -306,7 +390,7 @@ export default function Votes() {
                         <MenuItem
                           key={option.id}
                           // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
-                          value={option as any}
+                          value={option.id}
                         >
                           <div className={classes.menuOption}>
                             <Typography>Token #{option.id}</Typography>
@@ -322,7 +406,7 @@ export default function Votes() {
                                 color="textSecondary"
                                 className={classes.smallerText}
                               >
-                                {veToken?.symbol}
+                                {state.veToken?.symbol}
                               </Typography>
                             </div>
                           </div>
@@ -340,12 +424,12 @@ export default function Votes() {
 
   const filteredGauges = useMemo(
     () =>
-      gauges.filter((pair) => {
-        if (!search || search === "") {
+      state.gauges.filter((pair) => {
+        if (!state.search || state.search === "") {
           return true;
         }
 
-        const searchLower = search.toLowerCase();
+        const searchLower = state.search.toLowerCase();
 
         if (
           pair.symbol.toLowerCase().includes(searchLower) ||
@@ -362,7 +446,7 @@ export default function Votes() {
 
         return false;
       }),
-    [gauges, search]
+    [state.gauges, state.search]
   );
 
   const bribesAccrued = filteredGauges
@@ -418,7 +502,7 @@ export default function Votes() {
               variant="outlined"
               fullWidth
               placeholder="CANTO, NOTE, 0x..."
-              value={search}
+              value={state.search}
               onChange={onSearchChanged}
               InputProps={{
                 startAdornment: (
@@ -431,7 +515,7 @@ export default function Votes() {
           </Grid>
           <Grid item lg="auto" sm={12} xs={12}>
             <div className={classes.tokenIDContainer}>
-              {renderMediumInput(token, vestNFTs)}
+              {renderMediumInput(state.token, state.vestNFTs)}
             </div>
           </Grid>
         </Grid>
@@ -439,19 +523,24 @@ export default function Votes() {
       <Paper elevation={0} className={classes.tableContainer}>
         <GaugesTable
           gauges={filteredGauges}
-          setParentSliderValues={setVotes}
-          defaultVotes={votes}
-          token={token}
+          setParentSliderValues={(votes) =>
+            dispatch({
+              type: "setVotes",
+              votes,
+            })
+          }
+          defaultVotes={state.votes}
+          token={state.token}
         />
       </Paper>
-      {token.actionedInCurrentEpoch ? (
+      {state.token.actionedInCurrentEpoch ? (
         <Paper
           elevation={10}
           className="fixed bottom-0 left-0 right-0 z-10 border-t border-solid border-[rgba(126,153,176,0.2)] bg-[#0e110c] md:left-1/2 md:bottom-7 md:max-w-[560px] md:-translate-x-1/2 md:border"
         >
           <Alert severity="error" className="flex justify-center py-5">
-            NFT #{token.id} has already {token.reset ? "Reset" : "Voted"} this
-            epoch.
+            NFT #{state.token.id} has already{" "}
+            {state.token.reset ? "Reset" : "Voted"} this epoch.
           </Alert>
         </Paper>
       ) : (
@@ -474,22 +563,22 @@ export default function Votes() {
               variant="contained"
               size="large"
               color="primary"
-              disabled={voteLoading || !BigNumber(totalVotes).eq(100)}
+              disabled={state.isVoting || !BigNumber(totalVotes).eq(100)}
               onClick={onVote}
             >
               <Typography className={classes.actionButtonText}>
-                {voteLoading ? `Casting Votes` : `Cast Votes`}
+                {state.isVoting ? `Casting Votes` : `Cast Votes`}
               </Typography>
-              {voteLoading && (
+              {state.isVoting && (
                 <CircularProgress size={10} className={classes.loadingCircle} />
               )}
             </Button>
           </div>
         </Paper>
       )}
-      {showWarning && (
+      {state.showWarning && (
         <WarningModal
-          close={() => setShowWarning(false)}
+          close={() => dispatch({ type: "hideWarning" })}
           acceptWarning={acceptWarning}
         />
       )}
