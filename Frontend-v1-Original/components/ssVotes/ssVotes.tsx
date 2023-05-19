@@ -164,8 +164,7 @@ export default function Votes() {
       });
     };
     stores.emitter.on(ACTIONS.UPDATED, nftsReady);
-    stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, nftsReady); // run `getVestNFTs` in stableSwapStore
-    // TODO we should update nfts when user votes successfully
+    stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, nftsReady); // when user calls `getVestNFTs` in stableSwapStore to update nfts
     return () => {
       stores.emitter.removeListener(ACTIONS.UPDATED, nftsReady);
       stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, nftsReady);
@@ -190,7 +189,6 @@ export default function Votes() {
           token: nft,
         });
       }
-      return;
     } else {
       // if we haven't selected a nft, we need to select one
       if (nfts && nfts.length > 0) {
