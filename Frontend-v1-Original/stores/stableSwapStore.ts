@@ -132,9 +132,9 @@ class Store {
           // case ACTIONS.QUOTE_SWAP:
           //   this.quoteSwap(payload);
           //   break;
-          case ACTIONS.SWAP:
-            this.swap(payload);
-            break;
+          // case ACTIONS.SWAP:
+          //   this.swap(payload);
+          //   break;
 
           // WRAP / UNWRAP:
           case ACTIONS.WRAP_UNWRAP:
@@ -3768,179 +3768,179 @@ class Store {
     }
   };
 
-  swap = async (payload: {
-    type: string;
-    content: {
-      quote: QuoteSwapResponse;
-      fromAsset: BaseAsset;
-      toAsset: BaseAsset;
-    };
-  }) => {
-    try {
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  // swap = async (payload: {
+  //   type: string;
+  //   content: {
+  //     quote: QuoteSwapResponse;
+  //     fromAsset: BaseAsset;
+  //     toAsset: BaseAsset;
+  //   };
+  // }) => {
+  //   try {
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const [account] = await walletClient.getAddresses();
+  //     const [account] = await walletClient.getAddresses();
 
-      const { quote, fromAsset, toAsset } = payload.content;
+  //     const { quote, fromAsset, toAsset } = payload.content;
 
-      const fromAmount = BigNumber(quote.maxReturn.totalFrom)
-        .div(10 ** fromAsset.decimals)
-        .toFixed(fromAsset.decimals);
+  //     const fromAmount = BigNumber(quote.maxReturn.totalFrom)
+  //       .div(10 ** fromAsset.decimals)
+  //       .toFixed(fromAsset.decimals);
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let swapTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let swapTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Swap ${fromAsset.symbol} for ${toAsset.symbol}`,
-        type: "Swap",
-        verb: "Swap Successful",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your ${fromAsset.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: swapTXID,
-            description: `Swap ${formatCurrency(fromAmount)} ${
-              fromAsset.symbol
-            } for ${toAsset.symbol}`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Swap ${fromAsset.symbol} for ${toAsset.symbol}`,
+  //       type: "Swap",
+  //       verb: "Swap Successful",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${fromAsset.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: swapTXID,
+  //           description: `Swap ${formatCurrency(fromAmount)} ${
+  //             fromAsset.symbol
+  //           } for ${toAsset.symbol}`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      let allowance: string | null = "0";
+  //     let allowance: string | null = "0";
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (fromAsset.address !== NATIVE_TOKEN.symbol) {
-        allowance = await this._getFirebirdSwapAllowance(
-          fromAsset,
-          account,
-          quote
-        );
-        if (!allowance) throw new Error("Couldn't fetch allowance");
-        if (BigNumber(allowance).lt(fromAmount)) {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowanceTXID,
-            description: `Allow the router to spend your ${fromAsset.symbol}`,
-          });
-        } else {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowanceTXID,
-            description: `Allowance on ${fromAsset.symbol} sufficient`,
-            status: "DONE",
-          });
-        }
-      } else {
-        allowance = MAX_UINT256;
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on ${fromAsset.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     if (fromAsset.address !== NATIVE_TOKEN.symbol) {
+  //       allowance = await this._getFirebirdSwapAllowance(
+  //         fromAsset,
+  //         account,
+  //         quote
+  //       );
+  //       if (!allowance) throw new Error("Couldn't fetch allowance");
+  //       if (BigNumber(allowance).lt(fromAmount)) {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowanceTXID,
+  //           description: `Allow the router to spend your ${fromAsset.symbol}`,
+  //         });
+  //       } else {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowanceTXID,
+  //           description: `Allowance on ${fromAsset.symbol} sufficient`,
+  //           status: "DONE",
+  //         });
+  //       }
+  //     } else {
+  //       allowance = MAX_UINT256;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${fromAsset.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (!allowance) throw new Error("Couldn't fetch allowance");
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(fromAmount)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          fromAsset.address,
-          quote.encodedData.router
-        );
-      }
+  //     if (!allowance) throw new Error("Couldn't fetch allowance");
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(fromAmount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         fromAsset.address,
+  //         quote.encodedData.router
+  //       );
+  //     }
 
-      // SUBMIT SWAP TRANSACTION
-      if (
-        quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-      ) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
-          const txHash = await walletClient.sendTransaction({
-            account,
-            to: quote.encodedData.router,
-            value: BigInt(quote.maxReturn.totalFrom),
-            data: quote.encodedData.data,
-            gasPrice: BigInt(quote.maxReturn.gasPrice),
-            chain: canto,
-          });
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: swapTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: swapTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: swapTXID,
-              error: error,
-            });
-          }
-        }
-      } else {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
-          const txHash = await walletClient.sendTransaction({
-            account,
-            to: quote.encodedData.router,
-            value: undefined,
-            data: quote.encodedData.data,
-            gasPrice: BigInt(quote.maxReturn.gasPrice),
-            chain: canto,
-          });
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: swapTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: swapTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: swapTXID,
-              error: error,
-            });
-          }
-        }
-      }
+  //     // SUBMIT SWAP TRANSACTION
+  //     if (
+  //       quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  //     ) {
+  //       try {
+  //         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+  //         const txHash = await walletClient.sendTransaction({
+  //           account,
+  //           to: quote.encodedData.router,
+  //           value: BigInt(quote.maxReturn.totalFrom),
+  //           data: quote.encodedData.data,
+  //           gasPrice: BigInt(quote.maxReturn.gasPrice),
+  //           chain: canto,
+  //         });
+  //         const receipt = await viemClient.waitForTransactionReceipt({
+  //           hash: txHash,
+  //         });
+  //         if (receipt.status === "success") {
+  //           this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+  //             uuid: swapTXID,
+  //             txHash: receipt.transactionHash,
+  //           });
+  //         }
+  //       } catch (error) {
+  //         if (!(error as Error).toString().includes("-32601")) {
+  //           if ((error as Error).message) {
+  //             this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //               uuid: swapTXID,
+  //               error: this._mapError((error as Error).message),
+  //             });
+  //           }
+  //           this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //             uuid: swapTXID,
+  //             error: error,
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       try {
+  //         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+  //         const txHash = await walletClient.sendTransaction({
+  //           account,
+  //           to: quote.encodedData.router,
+  //           value: undefined,
+  //           data: quote.encodedData.data,
+  //           gasPrice: BigInt(quote.maxReturn.gasPrice),
+  //           chain: canto,
+  //         });
+  //         const receipt = await viemClient.waitForTransactionReceipt({
+  //           hash: txHash,
+  //         });
+  //         if (receipt.status === "success") {
+  //           this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+  //             uuid: swapTXID,
+  //             txHash: receipt.transactionHash,
+  //           });
+  //         }
+  //       } catch (error) {
+  //         if (!(error as Error).toString().includes("-32601")) {
+  //           if ((error as Error).message) {
+  //             this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //               uuid: swapTXID,
+  //               error: this._mapError((error as Error).message),
+  //             });
+  //           }
+  //           this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //             uuid: swapTXID,
+  //             error: error,
+  //           });
+  //         }
+  //       }
+  //     }
 
-      this._getSpecificAssetInfo(account, fromAsset.address);
-      this._getSpecificAssetInfo(account, toAsset.address);
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
-      // this._getPairInfo(account);
+  //     this._getSpecificAssetInfo(account, fromAsset.address);
+  //     this._getSpecificAssetInfo(account, toAsset.address);
+  //     queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+  //     // this._getPairInfo(account);
 
-      this.emitter.emit(ACTIONS.SWAP_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.SWAP_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   wrapOrUnwrap = async (payload: {
     type: string;
@@ -4052,25 +4052,25 @@ class Store {
     }
   };
 
-  _getFirebirdSwapAllowance = async (
-    token: BaseAsset,
-    address: `0x${string}`,
-    quote: QuoteSwapResponse
-  ) => {
-    try {
-      const allowance = await viemClient.readContract({
-        address: token.address,
-        abi: CONTRACTS.ERC20_ABI,
-        functionName: "allowance",
-        args: [address, quote.encodedData.router],
-      });
+  // _getFirebirdSwapAllowance = async (
+  //   token: BaseAsset,
+  //   address: `0x${string}`,
+  //   quote: QuoteSwapResponse
+  // ) => {
+  //   try {
+  //     const allowance = await viemClient.readContract({
+  //       address: token.address,
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       functionName: "allowance",
+  //       args: [address, quote.encodedData.router],
+  //     });
 
-      return formatUnits(allowance, token.decimals);
-    } catch (ex) {
-      console.error(ex);
-      return null;
-    }
-  };
+  //     return formatUnits(allowance, token.decimals);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     return null;
+  //   }
+  // };
 
   // _getSwapAllowance = async (
   //   token: BaseAsset,
@@ -4091,93 +4091,93 @@ class Store {
   //   }
   // };
 
-  getVestNFTs = async () => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // getVestNFTs = async () => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
-      const govToken = queryClient.getQueryData<GovToken>([
-        QUERY_KEYS.GOV_TOKEN,
-      ]);
-      if (!veToken || !govToken) {
-        throw new Error("veToken or govToken not found");
-      }
+  //     const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+  //     const govToken = queryClient.getQueryData<GovToken>([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //     ]);
+  //     if (!veToken || !govToken) {
+  //       throw new Error("veToken or govToken not found");
+  //     }
 
-      const vestingContract = {
-        abi: CONTRACTS.VE_TOKEN_ABI,
-        address: CONTRACTS.VE_TOKEN_ADDRESS,
-      } as const;
+  //     const vestingContract = {
+  //       abi: CONTRACTS.VE_TOKEN_ABI,
+  //       address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //     } as const;
 
-      const nftsLength = await viemClient.readContract({
-        ...vestingContract,
-        functionName: "balanceOf",
-        args: [account],
-      });
+  //     const nftsLength = await viemClient.readContract({
+  //       ...vestingContract,
+  //       functionName: "balanceOf",
+  //       args: [account],
+  //     });
 
-      const arr = Array.from(
-        { length: parseInt(nftsLength.toString()) },
-        (v, i) => i
-      );
+  //     const arr = Array.from(
+  //       { length: parseInt(nftsLength.toString()) },
+  //       (v, i) => i
+  //     );
 
-      const nfts = await Promise.all(
-        arr.map(async (idx) => {
-          const tokenIndex = await viemClient.readContract({
-            ...vestingContract,
-            functionName: "tokenOfOwnerByIndex",
-            args: [account, BigInt(idx)] as const,
-          });
+  //     const nfts = await Promise.all(
+  //       arr.map(async (idx) => {
+  //         const tokenIndex = await viemClient.readContract({
+  //           ...vestingContract,
+  //           functionName: "tokenOfOwnerByIndex",
+  //           args: [account, BigInt(idx)] as const,
+  //         });
 
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
-            await viemClient.multicall({
-              allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-              contracts: [
-                {
-                  ...vestingContract,
-                  functionName: "locked",
-                  args: [tokenIndex],
-                },
-                {
-                  ...vestingContract,
-                  functionName: "balanceOfNFT",
-                  args: [tokenIndex],
-                },
-                {
-                  ...vestingContract,
-                  functionName: "voted",
-                  args: [tokenIndex],
-                },
-              ],
-            });
+  //         const [[lockedAmount, lockedEnd], lockValue, voted] =
+  //           await viemClient.multicall({
+  //             allowFailure: false,
+  //             multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //             contracts: [
+  //               {
+  //                 ...vestingContract,
+  //                 functionName: "locked",
+  //                 args: [tokenIndex],
+  //               },
+  //               {
+  //                 ...vestingContract,
+  //                 functionName: "balanceOfNFT",
+  //                 args: [tokenIndex],
+  //               },
+  //               {
+  //                 ...vestingContract,
+  //                 functionName: "voted",
+  //                 args: [tokenIndex],
+  //               },
+  //             ],
+  //           });
 
-          const [actionedInCurrentEpoch, lastVoted] =
-            await this._checkNFTActionEpoch(tokenIndex.toString());
+  //         const [actionedInCurrentEpoch, lastVoted] =
+  //           await this._checkNFTActionEpoch(tokenIndex.toString());
 
-          // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
-          return {
-            id: tokenIndex.toString(),
-            lockEnds: lockedEnd.toString(),
-            lockAmount: formatUnits(lockedAmount, govToken.decimals),
-            lockValue: formatUnits(lockValue, veToken.decimals),
-            actionedInCurrentEpoch,
-            reset: actionedInCurrentEpoch && !voted,
-            lastVoted,
-          };
-        })
-      );
+  //         // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
+  //         return {
+  //           id: tokenIndex.toString(),
+  //           lockEnds: lockedEnd.toString(),
+  //           lockAmount: formatUnits(lockedAmount, govToken.decimals),
+  //           lockValue: formatUnits(lockValue, veToken.decimals),
+  //           actionedInCurrentEpoch,
+  //           reset: actionedInCurrentEpoch && !voted,
+  //           lastVoted,
+  //         };
+  //       })
+  //     );
 
-      // this.setStore({ vestNFTs: nfts });
-      queryClient.setQueryData<VestNFT[]>([QUERY_KEYS.VEST_NFTS], nfts);
-      // this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, nfts);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     // this.setStore({ vestNFTs: nfts });
+  //     queryClient.setQueryData<VestNFT[]>([QUERY_KEYS.VEST_NFTS], nfts);
+  //     // this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, nfts);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   createVest = async (payload: {
     type: string;

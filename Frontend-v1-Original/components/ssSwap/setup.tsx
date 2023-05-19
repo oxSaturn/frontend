@@ -40,6 +40,7 @@ import type {
 import { useTokenPrices } from "../header/queries";
 
 import { quoteSwap, useSwapAssets } from "./queries";
+import { useSwap } from "./mutations";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -73,9 +74,8 @@ function Setup() {
   const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
 
   const { data: tokenPrices } = useTokenPrices();
-
   const { data: swapAssetsOptions } = useSwapAssets();
-
+  const { mutate: swap } = useSwap();
   const { address } = useAccount();
 
   const { refetch: refetchQuote } = useQuery({
@@ -447,14 +447,10 @@ function Setup() {
 
     if (!error) {
       setLoading(true);
-
-      stores.dispatcher.dispatch({
-        type: ACTIONS.SWAP,
-        content: {
-          fromAsset: fromAssetValue,
-          toAsset: toAssetValue,
-          quote,
-        },
+      swap({
+        quote,
+        fromAsset: fromAssetValue,
+        toAsset: toAssetValue,
       });
     }
   };

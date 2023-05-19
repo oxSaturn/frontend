@@ -76,8 +76,8 @@ export const QUOTE_REMOVE_LIQUIDITY_RETURNED =
 export const CREATE_GAUGE = "CREATE_GAUGE";
 export const CREATE_GAUGE_RETURNED = "CREATE_GAUGE_RETURNED";
 
-//SWAPS
-export const SWAP = "SWAP";
+// //SWAPS
+// export const SWAP = "SWAP";
 export const SWAP_RETURNED = "SWAP_RETURNED";
 
 export const QUOTE_SWAP = "QUOTE_SWAP";

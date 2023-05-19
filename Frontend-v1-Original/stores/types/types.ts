@@ -210,7 +210,7 @@ interface ITransaction {
     uuid: string;
     description: string;
     status: TransactionStatus;
-    txHash?: string;
+    txHash?: `0x${string}`;
     error?: string;
   }[];
 }
