@@ -74,9 +74,9 @@ class Store {
       function (this: Store, payload: { type: string; content: any }) {
         console.log("<< Payload of dispatched event", payload);
         switch (payload.type) {
-          case ACTIONS.CONFIGURE:
-            this.configureAccStore();
-            break;
+          // case ACTIONS.CONFIGURE:
+          //   this.configureAccStore();
+          //   break;
           // case ACTIONS.CONFIGURE_SS:
           //   this.configure();
           //   break;
@@ -87,8 +87,8 @@ class Store {
             this.searchBaseAsset(payload);
             break;
 
-          case ACTIONS.UPDATED:
-            break;
+          // case ACTIONS.UPDATED:
+          //   break;
 
           // LIQUIDITY
           case ACTIONS.CREATE_PAIR_AND_STAKE:
@@ -217,10 +217,10 @@ class Store {
     );
   }
 
-  configureAccStore = async () => {
-    this.emitter.emit(ACTIONS.ACCOUNT_CONFIGURED);
-    this.emitter.emit(ACTIONS.CONFIGURE_RETURNED);
-  };
+  // configureAccStore = async () => {
+  //   this.emitter.emit(ACTIONS.ACCOUNT_CONFIGURED);
+  //   this.emitter.emit(ACTIONS.CONFIGURE_RETURNED);
+  // };
 
   getNFTByID = async (id: string) => {
     try {
