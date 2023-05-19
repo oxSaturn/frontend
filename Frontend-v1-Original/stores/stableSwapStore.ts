@@ -129,9 +129,9 @@ class Store {
             break;
 
           // SWAP
-          case ACTIONS.QUOTE_SWAP:
-            this.quoteSwap(payload);
-            break;
+          // case ACTIONS.QUOTE_SWAP:
+          //   this.quoteSwap(payload);
+          //   break;
           case ACTIONS.SWAP:
             this.swap(payload);
             break;
@@ -142,9 +142,9 @@ class Store {
             break;
 
           // VESTING
-          case ACTIONS.GET_VEST_NFTS:
-            this.getVestNFTs();
-            break;
+          // case ACTIONS.GET_VEST_NFTS:
+          //   this.getVestNFTs();
+          //   break;
           case ACTIONS.CREATE_VEST:
             this.createVest(payload);
             break;
