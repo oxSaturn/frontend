@@ -46,6 +46,8 @@ function Navigation() {
         {process.env.NODE_ENV === "development" &&
           renderSubNav("Launchpad", "launchpad")}
         {renderDocsTab()}
+        {renderScantoTab()}
+
       </>
     );
   };
