@@ -74,16 +74,11 @@ function Navigation() {
   const renderDocsTab = () => {
     return (
       <button
-        className="flex text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        className="text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         onClick={() => window.open("https://docs.velocimeter.xyz/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Docs</div>
-        <Image
-      src="https://www.scanto.io/_next/image?url=%2FsCANTO.png&w=48&q=75"
-      width={20}
-      height={20}
-      alt="sCANTO Token Icon"
-    />
+
       </button>
     );
   };
@@ -95,11 +90,16 @@ function Navigation() {
   const renderScantoTab = () => {
     return (
       <button
-        className="text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium  no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        className="flex text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium  no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         onClick={() => window.open("https://www.scanto.io/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Mint sCANTO</div>
-        <
+        <Image
+      src="https://www.scanto.io/_next/image?url=%2FsCANTO.png&w=48&q=75"
+      width={20}
+      height={20}
+      alt="sCANTO Token Icon"
+    />
       </button>
     );
   };
