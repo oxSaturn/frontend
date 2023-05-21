@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Image from 'next/image';
 import Link from "next/link";
 
 function Navigation() {
@@ -73,13 +74,23 @@ function Navigation() {
   const renderDocsTab = () => {
     return (
       <button
-        className="text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        className="flex text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         onClick={() => window.open("https://docs.velocimeter.xyz/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Docs</div>
+        <Image
+      src="/profile.png"
+      width={500}
+      height={500}
+      alt="Picture of the author"
+    />
       </button>
     );
   };
+
+
+ 
+
 
   const renderScantoTab = () => {
     return (
@@ -88,6 +99,7 @@ function Navigation() {
         onClick={() => window.open("https://www.scanto.io/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Mint sCANTO</div>
+        <
       </button>
     );
   };
