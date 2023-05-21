@@ -95,7 +95,7 @@ function Navigation() {
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Mint sCANTO</div>
         <Image
-      src="public/images/sCANTO.png"
+      src="/images/sCANTO.png"
       width={20}
       height={20}
       alt="sCANTO Token Icon"
