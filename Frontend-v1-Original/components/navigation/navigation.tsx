@@ -79,6 +79,17 @@ function Navigation() {
     );
   };
 
+  const renderScantoTab = () => {
+    return (
+      <button
+        className="text-secondaryGray relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] py-6 pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        onClick={() => window.open("https://www.scanto.io/", "_blank")}
+      >
+        <div className="m-0 pl-0 text-center text-xs xs:text-base">Mint sCANTO</div>
+      </button>
+    );
+  };
+
   return (
     <>
       <div className="flex items-center rounded-2xl border-0 bg-transparent p-2 text-center shadow-[0_0_0.2em] shadow-cantoGreen max-md:hidden">
