@@ -79,10 +79,10 @@ function Navigation() {
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Docs</div>
         <Image
-      src="/profile.png"
-      width={500}
-      height={500}
-      alt="Picture of the author"
+      src="https://www.scanto.io/_next/image?url=%2FsCANTO.png&w=48&q=75"
+      width={20}
+      height={20}
+      alt="sCANTO Token Icon"
     />
       </button>
     );
