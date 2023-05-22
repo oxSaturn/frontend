@@ -1,29 +1,12 @@
 import { Typography, CircularProgress } from "@mui/material";
 
-import {
-  usePairs,
-  usePairsWithoutGauges,
-  usePairsWithGauges,
-} from "../../lib/global/queries";
+import PairsTable from "./ssLiquidityPairsTable";
+import { useTablePairs } from "./queries";
 
 import classes from "./ssLiquidityPairs.module.css";
-import PairsTable from "./ssLiquidityPairsTable";
 
 export default function LiquidityPairs() {
-  const { data: initPairs, isFetching: isFetchingInitPairs } = usePairs();
-  const { data: pairsWithoutGauges, isFetching: isFetchingWithoutGauges } =
-    usePairsWithoutGauges();
-  const { data: pairsWithGauges, isFetching: isFetchingWithGauges } =
-    usePairsWithGauges();
-
-  const pairs = pairsWithGauges
-    ? pairsWithGauges
-    : pairsWithoutGauges
-    ? pairsWithoutGauges
-    : initPairs;
-
-  const isFetching =
-    isFetchingWithGauges || isFetchingWithoutGauges || isFetchingInitPairs;
+  const { data: tablePairs, isFetching } = useTablePairs();
   return (
     <div className={classes.container}>
       <div className={classes.descriptionTvlBox}>
@@ -36,7 +19,7 @@ export default function LiquidityPairs() {
         </div>
         {isFetching && <CircularProgress size={20} />}
       </div>
-      <PairsTable pairs={pairs} />
+      <PairsTable pairs={tablePairs} />
     </div>
   );
 }
