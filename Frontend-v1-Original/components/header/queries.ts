@@ -39,7 +39,6 @@ export const useCirculatingSupply = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.CIRCULATING_SUPPLY],
     queryFn: getCirculatingSupply,
-    staleTime: 1000 * 60 * 10,
   });
 };
 
@@ -49,7 +48,6 @@ export const useMarketCap = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.MARKET_CAP, circulatingSupply, tokenPrices],
     queryFn: () => getMarketCap(circulatingSupply, tokenPrices),
-    staleTime: 1000 * 60 * 10,
     enabled: !!circulatingSupply && !!tokenPrices,
   });
 };
@@ -63,7 +61,7 @@ export const useActivePeriod = () => {
 };
 
 const getActivePeriod = async () => {
-  const activePeriod = viemClient.readContract({
+  const activePeriod = await viemClient.readContract({
     abi: CONTRACTS.MINTER_ABI,
     address: CONTRACTS.MINTER_ADDRESS,
     functionName: "active_period",
