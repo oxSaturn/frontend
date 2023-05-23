@@ -462,5 +462,13 @@
     "logoURI": "https://www.ponzu.lol/cantoe_icon.png",
     "name": "Canto Earn",
     "symbol": "CANTOE"
+  },
+  {
+    "address": "0x0E63A6385C954C1C049D597F7C43E541c2Fb217E",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://pin.ski/439xHmO",
+    "name": "Canto Pizzapolis",
+    "symbol": "CIZZA"
   }
 ]
