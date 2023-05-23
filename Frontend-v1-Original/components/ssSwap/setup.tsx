@@ -185,11 +185,11 @@ function Setup() {
       setFromAssetOptions(swapAssets);
 
       if (swapAssets.length > 0 && toAssetValue == null) {
-        setToAssetValue(swapAssets[0]);
+        setToAssetValue(swapAssets[1]);
       }
 
       if (swapAssets.length > 0 && fromAssetValue == null) {
-        setFromAssetValue(swapAssets[1]);
+        setFromAssetValue(swapAssets[0]);
       }
 
       if (tokenPrices.size > 0) {
