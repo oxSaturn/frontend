@@ -124,6 +124,15 @@ function getFeeReceiversAndAmounts(pairs: Pair[], quote: QuoteSwapResponse) {
     .map((feeReceiver) => encodeURIComponent(feeReceiver))
     .join(",");
 
+  if (
+    quote.maxReturn.to.toLowerCase() ===
+      "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed".toLowerCase() ||
+    quote.maxReturn.from.toLowerCase() ===
+      "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed".toLowerCase()
+  ) {
+    return { feeReceivers, feeAmounts: "0" };
+  }
+
   return { feeReceivers, feeAmounts };
 }
 
