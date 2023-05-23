@@ -1,26 +1,16 @@
 import EventEmitter from "events";
 
 import { Dispatcher } from "flux";
-import type { Address, WalletClient } from "viem";
 
 import { ACTIONS } from "./constants/constants";
 
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
-  store: {
-    address: null | Address;
-    walletClient: null | WalletClient;
-  };
 
   constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
     this.dispatcher = dispatcher;
     this.emitter = emitter;
-
-    this.store = {
-      address: null,
-      walletClient: null,
-    };
 
     dispatcher.register(
       function (this: Store, payload: { type: string }) {
@@ -33,15 +23,6 @@ class Store {
         }
       }.bind(this)
     );
-  }
-
-  getStore = <K extends keyof Store["store"]>(index: K) => {
-    return this.store[index];
-  };
-
-  setStore(obj: { [key: string]: any }) {
-    this.store = { ...this.store, ...obj };
-    return this.emitter.emit(ACTIONS.STORE_UPDATED);
   }
 
   configure = async () => {

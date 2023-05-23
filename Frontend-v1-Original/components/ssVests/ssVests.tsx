@@ -34,9 +34,9 @@ export default function Vests() {
   }, []);
 
   useEffect(() => {
-    if (address)
+    if (address && govToken && veToken)
       stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
-  }, [address]);
+  }, [address, govToken, veToken]);
 
   useEffect(() => {
     const vestNFTsReturned = (nfts: VestNFT[]) => {

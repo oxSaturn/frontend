@@ -32,8 +32,6 @@ export default function Layout({
   });
   useEffect(() => {
     if (walletClient && address) {
-      stores.accountStore.setStore({ walletClient });
-      stores.accountStore.setStore({ address });
       stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE_SS });
     }
   }, [walletClient, address]);
