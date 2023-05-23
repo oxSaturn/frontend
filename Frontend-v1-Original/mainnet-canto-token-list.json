@@ -1,5 +1,13 @@
 [
   {
+    "address": "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.scanto.io/V1.png",
+    "name": "Liquid Staked Canto",
+    "symbol": "sCANTO"
+  },
+  {
     "address": "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B",
     "chainId": 7700,
     "decimals": 18,
@@ -424,12 +432,12 @@
     "symbol": "USD+"
   },
   {
-    "address": "0x9F823D534954Fc119E31257b3dDBa0Db9E2Ff4ed",
+    "address": "0x445c3d1aeE75AbB9aa01304F89DD4D2EAB6fEEC1",
     "chainId": 7700,
     "decimals": 18,
-    "logoURI": "https://docs.scanto.io/V1.png",
-    "name": "Liquid Staked Canto",
-    "symbol": "sCANTO"
+    "logoURI": "https://cdn.discordapp.com/attachments/1099877888632819753/1109194548992811178/USDplusPluslogo.png",
+    "name": "Ultra Sound Dollar v2",
+    "symbol": "USD++"
   },
   {
     "address": "0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE",
@@ -454,5 +462,13 @@
     "logoURI": "https://www.ponzu.lol/cantoe_icon.png",
     "name": "Canto Earn",
     "symbol": "CANTOE"
+  },
+  {
+    "address": "0x0E63A6385C954C1C049D597F7C43E541c2Fb217E",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://pin.ski/439xHmO",
+    "name": "Canto Pizzapolis",
+    "symbol": "CIZZA"
   }
 ]
