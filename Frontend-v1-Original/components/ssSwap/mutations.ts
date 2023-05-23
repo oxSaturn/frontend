@@ -6,7 +6,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import viemClient from "../../stores/connectors/viem";
 import stores from "../../stores";
-import { BaseAsset, QuoteSwapResponse } from "../../stores/types/types";
+import {
+  BaseAsset,
+  ITransaction,
+  QuoteSwapResponse,
+  TransactionStatus,
+} from "../../stores/types/types";
 import { formatCurrency, getTXUUID } from "../../utils/utils";
 import {
   ACTIONS,
@@ -15,7 +20,7 @@ import {
   NATIVE_TOKEN,
   QUERY_KEYS,
 } from "../../stores/constants/constants";
-import { writeApprove } from "../../lib/global/mutations";
+import { writeApprove, writeWrapUnwrap } from "../../lib/global/mutations";
 
 const getFirebirdSwapAllowance = async (
   token: BaseAsset,
@@ -185,11 +190,9 @@ const swap = async (options: {
       }
     }
   }
-
-  stores.emitter.emit(ACTIONS.SWAP_RETURNED);
 };
 
-export const useSwap = () => {
+export const useSwap = (onSuccess: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (options: {
@@ -201,6 +204,78 @@ export const useSwap = () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO_NO_NATIVE]);
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      onSuccess();
+    },
+  });
+};
+
+const wrapOrUnwrap = async (options: {
+  fromAsset: BaseAsset | null;
+  toAsset: BaseAsset | null;
+  fromAmount: string;
+}) => {
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    throw new Error("wallet");
+  }
+  if (!options.fromAsset || !options.toAsset) {
+    throw new Error("assets");
+  }
+
+  const {
+    fromAsset: { address: fromAddress, symbol: fromSymbol },
+    toAsset: { address: toAddress, symbol: toSymbol },
+    fromAmount,
+  } = options;
+  const isWrap = fromSymbol === "CANTO";
+  const action = isWrap ? "Wrap" : "Unwrap";
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  const wrapUnwrapTXID = getTXUUID();
+  const tx: ITransaction = {
+    title: `${action} ${fromSymbol} for ${toSymbol}`,
+    type: action,
+    verb: `${action} Successful`,
+    transactions: [
+      {
+        uuid: wrapUnwrapTXID,
+        description: `${action} ${formatCurrency(
+          fromAmount
+        )} ${fromSymbol} for ${toSymbol}`,
+        status: TransactionStatus.WAITING,
+      },
+    ],
+  };
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, tx);
+
+  // SUBMIT WRAP_UNWRAP TRANSACTION
+  const sendFromAmount = BigNumber(fromAmount)
+    .times(10 ** 18)
+    .toFixed(0);
+
+  await writeWrapUnwrap(
+    walletClient,
+    isWrap ? toAddress : fromAddress,
+    isWrap,
+    wrapUnwrapTXID,
+    sendFromAmount
+  );
+};
+
+export const useWrapOrUnwrap = (onSuccess: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (options: {
+      fromAsset: BaseAsset | null;
+      toAsset: BaseAsset | null;
+      fromAmount: string;
+    }) => wrapOrUnwrap(options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO_NO_NATIVE]);
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      onSuccess();
     },
   });
 };

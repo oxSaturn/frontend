@@ -23,7 +23,6 @@ import { Dispatcher } from "flux";
 
 import { queryClient } from "../pages/_app";
 import { getRewardBalances } from "../components/ssRewards/queries";
-import { formatCurrency } from "../utils/utils";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
 import tokenlistCan from "../mainnet-canto-token-list.json";
@@ -137,9 +136,9 @@ class Store {
           //   break;
 
           // WRAP / UNWRAP:
-          case ACTIONS.WRAP_UNWRAP:
-            this.wrapOrUnwrap(payload);
-            break;
+          // case ACTIONS.WRAP_UNWRAP:
+          //   this.wrapOrUnwrap(payload);
+          //   break;
 
           // VESTING
           // case ACTIONS.GET_VEST_NFTS:
@@ -3737,36 +3736,36 @@ class Store {
     }
   };
 
-  quoteSwap = async (payload: {
-    type: string;
-    content: {
-      fromAsset: BaseAsset;
-      toAsset: BaseAsset;
-      fromAmount: string;
-      slippage: number;
-    };
-  }) => {
-    const { address } = getAccount();
-    if (!address) throw new Error("no address");
-    try {
-      const res = await fetch("/api/firebird-router", {
-        method: "POST",
-        body: JSON.stringify({
-          payload,
-          address,
-        }),
-      });
-      const resJson = (await res.json()) as QuoteSwapResponse;
+  // quoteSwap = async (payload: {
+  //   type: string;
+  //   content: {
+  //     fromAsset: BaseAsset;
+  //     toAsset: BaseAsset;
+  //     fromAmount: string;
+  //     slippage: number;
+  //   };
+  // }) => {
+  //   const { address } = getAccount();
+  //   if (!address) throw new Error("no address");
+  //   try {
+  //     const res = await fetch("/api/firebird-router", {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         payload,
+  //         address,
+  //       }),
+  //     });
+  //     const resJson = (await res.json()) as QuoteSwapResponse;
 
-      const returnValue = resJson;
+  //     const returnValue = resJson;
 
-      this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, returnValue);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, null);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, returnValue);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, null);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   // swap = async (payload: {
   //   type: string;
@@ -3942,67 +3941,67 @@ class Store {
   //   }
   // };
 
-  wrapOrUnwrap = async (payload: {
-    type: string;
-    content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
-  }) => {
-    try {
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
-      const [account] = await walletClient.getAddresses();
+  // wrapOrUnwrap = async (payload: {
+  //   type: string;
+  //   content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
+  // }) => {
+  //   try {
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
+  //     const [account] = await walletClient.getAddresses();
 
-      const {
-        fromAsset: { address: fromAddress, symbol: fromSymbol },
-        toAsset: { address: toAddress, symbol: toSymbol },
-        fromAmount,
-      } = payload.content;
-      const isWrap = fromSymbol === "CANTO";
-      const action = isWrap ? "Wrap" : "Unwrap";
+  //     const {
+  //       fromAsset: { address: fromAddress, symbol: fromSymbol },
+  //       toAsset: { address: toAddress, symbol: toSymbol },
+  //       fromAmount,
+  //     } = payload.content;
+  //     const isWrap = fromSymbol === "CANTO";
+  //     const action = isWrap ? "Wrap" : "Unwrap";
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      const wrapUnwrapTXID = this.getTXUUID();
-      const tx: ITransaction = {
-        title: `${action} ${fromSymbol} for ${toSymbol}`,
-        type: action,
-        verb: `${action} Successful`,
-        transactions: [
-          {
-            uuid: wrapUnwrapTXID,
-            description: `${action} ${formatCurrency(
-              fromAmount
-            )} ${fromSymbol} for ${toSymbol}`,
-            status: TransactionStatus.WAITING,
-          },
-        ],
-      };
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     const wrapUnwrapTXID = this.getTXUUID();
+  //     const tx: ITransaction = {
+  //       title: `${action} ${fromSymbol} for ${toSymbol}`,
+  //       type: action,
+  //       verb: `${action} Successful`,
+  //       transactions: [
+  //         {
+  //           uuid: wrapUnwrapTXID,
+  //           description: `${action} ${formatCurrency(
+  //             fromAmount
+  //           )} ${fromSymbol} for ${toSymbol}`,
+  //           status: TransactionStatus.WAITING,
+  //         },
+  //       ],
+  //     };
 
-      this.emitter.emit(ACTIONS.TX_ADDED, tx);
+  //     this.emitter.emit(ACTIONS.TX_ADDED, tx);
 
-      // SUBMIT WRAP_UNWRAP TRANSACTION
-      const sendFromAmount = BigNumber(fromAmount)
-        .times(10 ** 18)
-        .toFixed(0);
+  //     // SUBMIT WRAP_UNWRAP TRANSACTION
+  //     const sendFromAmount = BigNumber(fromAmount)
+  //       .times(10 ** 18)
+  //       .toFixed(0);
 
-      await this.writeWrapUnwrap(
-        walletClient,
-        isWrap ? toAddress : fromAddress,
-        isWrap,
-        wrapUnwrapTXID,
-        sendFromAmount
-      );
+  //     await this.writeWrapUnwrap(
+  //       walletClient,
+  //       isWrap ? toAddress : fromAddress,
+  //       isWrap,
+  //       wrapUnwrapTXID,
+  //       sendFromAmount
+  //     );
 
-      this._getSpecificAssetInfo(account, fromAddress);
-      this._getSpecificAssetInfo(account, toAddress);
+  //     this._getSpecificAssetInfo(account, fromAddress);
+  //     this._getSpecificAssetInfo(account, toAddress);
 
-      this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.WRAP_UNWRAP_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   _getSpecificAssetInfo = async (
     address: `0x${string}`,
@@ -5978,45 +5977,45 @@ class Store {
     await this._writeContractWrapper(txId, write);
   };
 
-  writeWrapUnwrap = async (
-    walletClient: WalletClient,
-    targetWrapper: `0x${string}`,
-    isWrap: boolean,
-    wrapUnwrapTXID: string,
-    sendFromAmount: string
-  ) => {
-    const [account] = await walletClient.getAddresses();
-    const wNativeTokenContract = {
-      address: targetWrapper,
-      abi: W_NATIVE_ABI,
-    } as const;
-    const writeWrap = async () => {
-      const { request } = await viemClient.simulateContract({
-        ...wNativeTokenContract,
-        account,
-        functionName: "deposit",
-        args: undefined,
-        value: BigInt(sendFromAmount),
-      });
-      const txHash = await walletClient.writeContract(request);
-      return txHash;
-    };
-    const writeUnwrap = async () => {
-      const { request } = await viemClient.simulateContract({
-        ...wNativeTokenContract,
-        account,
-        functionName: "withdraw",
-        args: [BigInt(sendFromAmount)],
-      });
-      const txHash = await walletClient.writeContract(request);
-      return txHash;
-    };
-    if (isWrap) {
-      await this._writeContractWrapper(wrapUnwrapTXID, writeWrap);
-    } else {
-      await this._writeContractWrapper(wrapUnwrapTXID, writeUnwrap);
-    }
-  };
+  // writeWrapUnwrap = async (
+  //   walletClient: WalletClient,
+  //   targetWrapper: `0x${string}`,
+  //   isWrap: boolean,
+  //   wrapUnwrapTXID: string,
+  //   sendFromAmount: string
+  // ) => {
+  //   const [account] = await walletClient.getAddresses();
+  //   const wNativeTokenContract = {
+  //     address: targetWrapper,
+  //     abi: W_NATIVE_ABI,
+  //   } as const;
+  //   const writeWrap = async () => {
+  //     const { request } = await viemClient.simulateContract({
+  //       ...wNativeTokenContract,
+  //       account,
+  //       functionName: "deposit",
+  //       args: undefined,
+  //       value: BigInt(sendFromAmount),
+  //     });
+  //     const txHash = await walletClient.writeContract(request);
+  //     return txHash;
+  //   };
+  //   const writeUnwrap = async () => {
+  //     const { request } = await viemClient.simulateContract({
+  //       ...wNativeTokenContract,
+  //       account,
+  //       functionName: "withdraw",
+  //       args: [BigInt(sendFromAmount)],
+  //     });
+  //     const txHash = await walletClient.writeContract(request);
+  //     return txHash;
+  //   };
+  //   if (isWrap) {
+  //     await this._writeContractWrapper(wrapUnwrapTXID, writeWrap);
+  //   } else {
+  //     await this._writeContractWrapper(wrapUnwrapTXID, writeUnwrap);
+  //   }
+  // };
 
   writeAddLiquidity = async (
     walletClient: WalletClient,

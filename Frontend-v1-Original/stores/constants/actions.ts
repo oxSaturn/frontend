@@ -78,13 +78,13 @@ export const CREATE_GAUGE_RETURNED = "CREATE_GAUGE_RETURNED";
 
 // //SWAPS
 // export const SWAP = "SWAP";
-export const SWAP_RETURNED = "SWAP_RETURNED";
+// export const SWAP_RETURNED = "SWAP_RETURNED";
 
-export const QUOTE_SWAP = "QUOTE_SWAP";
-export const QUOTE_SWAP_RETURNED = "QUOTE_SWAP_RETURNED";
+// export const QUOTE_SWAP = "QUOTE_SWAP";
+// export const QUOTE_SWAP_RETURNED = "QUOTE_SWAP_RETURNED";
 
-export const WRAP_UNWRAP = "WRAP_UNWRAP";
-export const WRAP_UNWRAP_RETURNED = "WRAP_UNWRAP_RETURNED";
+// export const WRAP_UNWRAP = "WRAP_UNWRAP";
+// export const WRAP_UNWRAP_RETURNED = "WRAP_UNWRAP_RETURNED";
 
 // VESTING
 // export const GET_VEST_NFTS = "GET_VEST_NFTS";

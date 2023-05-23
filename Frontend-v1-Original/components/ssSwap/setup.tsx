@@ -40,7 +40,7 @@ import type {
 import { useTokenPrices } from "../header/queries";
 
 import { quoteSwap, useSwapAssets } from "./queries";
-import { useSwap } from "./mutations";
+import { useSwap, useWrapOrUnwrap } from "./mutations";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -73,9 +73,21 @@ function Setup() {
   const [quoteError, setQuoteError] = useState<string | null | false>(null);
   const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
 
+  const swapReturned = () => {
+    setLoading(false);
+    setFromAmountValue("");
+    setToAmountValue("");
+    setFromAmountValueUsd("");
+    setToAmountValueUsd("");
+    calculateReceiveAmount("", fromAssetValue, toAssetValue);
+    setQuote(null);
+    setQuoteLoading(false);
+  };
+
   const { data: tokenPrices } = useTokenPrices();
   const { data: swapAssetsOptions } = useSwapAssets();
-  const { mutate: swap } = useSwap();
+  const { mutate: swap } = useSwap(swapReturned);
+  const { mutate: wrapOrUnwrap } = useWrapOrUnwrap(swapReturned);
   const { address } = useAccount();
 
   const { refetch: refetchQuote } = useQuery({
@@ -235,20 +247,7 @@ function Setup() {
       setQuoteLoading(false);
     };
 
-    const swapReturned = () => {
-      setLoading(false);
-      setFromAmountValue("");
-      setToAmountValue("");
-      setFromAmountValueUsd("");
-      setToAmountValueUsd("");
-      calculateReceiveAmount("", fromAssetValue, toAssetValue);
-      setQuote(null);
-      setQuoteLoading(false);
-    };
-
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.SWAP_RETURNED, swapReturned);
-    stores.emitter.on(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
 
     const interval = setInterval(() => {
       if (!loading && !quoteLoading) updateQuote();
@@ -256,8 +255,6 @@ function Setup() {
 
     return () => {
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(ACTIONS.SWAP_RETURNED, swapReturned);
-      stores.emitter.removeListener(ACTIONS.WRAP_UNWRAP_RETURNED, swapReturned);
       clearInterval(interval);
     };
   }, [
@@ -498,13 +495,10 @@ function Setup() {
     if (!error) {
       setLoading(true);
 
-      stores.dispatcher.dispatch({
-        type: ACTIONS.WRAP_UNWRAP,
-        content: {
-          fromAsset: fromAssetValue,
-          toAsset: toAssetValue,
-          fromAmount: fromAmountValue,
-        },
+      wrapOrUnwrap({
+        fromAsset: fromAssetValue,
+        toAsset: toAssetValue,
+        fromAmount: fromAmountValue,
       });
     }
   };

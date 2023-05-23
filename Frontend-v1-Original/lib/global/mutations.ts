@@ -7,6 +7,7 @@ import {
   ACTIONS,
   CONTRACTS,
   MAX_UINT256,
+  W_NATIVE_ABI,
 } from "../../stores/constants/constants";
 import stores from "../../stores";
 
@@ -29,6 +30,46 @@ export const writeApprove = async (
     return txHash;
   };
   await writeContractWrapper(txId, write);
+};
+
+export const writeWrapUnwrap = async (
+  walletClient: WalletClient,
+  targetWrapper: `0x${string}`,
+  isWrap: boolean,
+  wrapUnwrapTXID: string,
+  sendFromAmount: string
+) => {
+  const [account] = await walletClient.getAddresses();
+  const wNativeTokenContract = {
+    address: targetWrapper,
+    abi: W_NATIVE_ABI,
+  } as const;
+  const writeWrap = async () => {
+    const { request } = await viemClient.simulateContract({
+      ...wNativeTokenContract,
+      account,
+      functionName: "deposit",
+      args: undefined,
+      value: BigInt(sendFromAmount),
+    });
+    const txHash = await walletClient.writeContract(request);
+    return txHash;
+  };
+  const writeUnwrap = async () => {
+    const { request } = await viemClient.simulateContract({
+      ...wNativeTokenContract,
+      account,
+      functionName: "withdraw",
+      args: [BigInt(sendFromAmount)],
+    });
+    const txHash = await walletClient.writeContract(request);
+    return txHash;
+  };
+  if (isWrap) {
+    await writeContractWrapper(wrapUnwrapTXID, writeWrap);
+  } else {
+    await writeContractWrapper(wrapUnwrapTXID, writeUnwrap);
+  }
 };
 
 const writeContractWrapper = async (
