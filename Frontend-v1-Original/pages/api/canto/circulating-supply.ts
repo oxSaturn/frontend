@@ -9,7 +9,7 @@ const cors = Cors({
   methods: ["GET"],
 });
 
-const dexvaults = http("https://canto.dexvaults.com");
+const veloci = http(process.env.NEXT_PUBLIC_RPC_URL);
 const plexnode = http("https://mainnode.plexnode.org:8545");
 const nodestake = http("https://jsonrpc.canto.nodestake.top");
 const slingshot = http("https://canto.slingshot.finance");
@@ -17,7 +17,7 @@ const neobase = http("https://canto.neobase.one");
 
 const publicClient = createPublicClient({
   chain: canto,
-  transport: fallback([dexvaults, plexnode, nodestake, slingshot, neobase], {
+  transport: fallback([veloci, plexnode, nodestake, slingshot, neobase], {
     rank: {
       interval: 30_000,
     },
