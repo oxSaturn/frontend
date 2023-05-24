@@ -167,9 +167,9 @@ class Store {
           // case ACTIONS.GET_VEST_VOTES:
           //   this.getVestVotes(payload);
           //   break;
-          case ACTIONS.CREATE_BRIBE:
-            this.createBribe(payload);
-            break;
+          // case ACTIONS.CREATE_BRIBE:
+          //   this.createBribe(payload);
+          //   break;
           // case ACTIONS.GET_VEST_BALANCES:
           //   this.getVestBalances(payload);
           //   break;
@@ -5082,127 +5082,127 @@ class Store {
   //   }
   // };
 
-  createBribe = async (payload: {
-    type: string;
-    content: { asset: BaseAsset; amount: string; gauge: Gauge };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // createBribe = async (payload: {
+  //   type: string;
+  //   content: { asset: BaseAsset; amount: string; gauge: Gauge };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { asset, amount, gauge } = payload.content;
+  //     const { asset, amount, gauge } = payload.content;
 
-      if (gauge.gauge.xx_wrapped_bribe_address === ZERO_ADDRESS) {
-        console.warn("gauge does not have a bribe address");
-        return null;
-      }
+  //     if (gauge.gauge.xx_wrapped_bribe_address === ZERO_ADDRESS) {
+  //       console.warn("gauge does not have a bribe address");
+  //       return null;
+  //     }
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let bribeTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let bribeTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Create bribe on ${gauge.token0.symbol}/${gauge.token1.symbol}`,
-        verb: "Bribe Created",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your ${asset.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: bribeTXID,
-            description: `Create bribe`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Create bribe on ${gauge.token0.symbol}/${gauge.token1.symbol}`,
+  //       verb: "Bribe Created",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${asset.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: bribeTXID,
+  //           description: `Create bribe`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getBribeAllowance(asset, gauge, account);
-      if (!allowance) throw new Error("Error getting bribe allowance");
-      if (BigNumber(allowance).lt(amount)) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allow the bribe contract to spend your ${asset.symbol}`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on ${asset.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     const allowance = await this._getBribeAllowance(asset, gauge, account);
+  //     if (!allowance) throw new Error("Error getting bribe allowance");
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allow the bribe contract to spend your ${asset.symbol}`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${asset.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(amount)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          asset.address,
-          gauge.gauge.xx_wrapped_bribe_address
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         asset.address,
+  //         gauge.gauge.xx_wrapped_bribe_address
+  //       );
+  //     }
 
-      const sendAmount = BigNumber(amount)
-        .times(10 ** asset.decimals)
-        .toFixed(0);
+  //     const sendAmount = BigNumber(amount)
+  //       .times(10 ** asset.decimals)
+  //       .toFixed(0);
 
-      // SUBMIT BRIBE TRANSACTION
-      // we bribe xx_wrapped_bribe_address
-      const writeCreateBribe = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: gauge.gauge.xx_wrapped_bribe_address,
-          abi: CONTRACTS.BRIBE_ABI,
-          functionName: "notifyRewardAmount",
-          args: [asset.address, BigInt(sendAmount)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(bribeTXID, writeCreateBribe);
+  //     // SUBMIT BRIBE TRANSACTION
+  //     // we bribe xx_wrapped_bribe_address
+  //     const writeCreateBribe = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: gauge.gauge.xx_wrapped_bribe_address,
+  //         abi: CONTRACTS.BRIBE_ABI,
+  //         functionName: "notifyRewardAmount",
+  //         args: [asset.address, BigInt(sendAmount)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(bribeTXID, writeCreateBribe);
 
-      queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
-      this._getSpecificAssetInfo(account, asset.address);
+  //     queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
+  //     this._getSpecificAssetInfo(account, asset.address);
 
-      // await this.updatePairsCall(account);
-      this.emitter.emit(ACTIONS.BRIBE_CREATED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     // await this.updatePairsCall(account);
+  //     this.emitter.emit(ACTIONS.BRIBE_CREATED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  _getBribeAllowance = async (
-    token: BaseAsset,
-    pair: Gauge,
-    address: `0x${string}`
-  ) => {
-    try {
-      const allowance = await viemClient.readContract({
-        address: token.address,
-        abi: CONTRACTS.ERC20_ABI,
-        functionName: "allowance",
-        // We only bribe x_wrapped_bribe_address
-        args: [address, pair.gauge.xx_wrapped_bribe_address],
-      });
+  // _getBribeAllowance = async (
+  //   token: BaseAsset,
+  //   pair: Gauge,
+  //   address: `0x${string}`
+  // ) => {
+  //   try {
+  //     const allowance = await viemClient.readContract({
+  //       address: token.address,
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       functionName: "allowance",
+  //       // We only bribe x_wrapped_bribe_address
+  //       args: [address, pair.gauge.xx_wrapped_bribe_address],
+  //     });
 
-      return formatUnits(allowance, token.decimals);
-    } catch (ex) {
-      console.error(ex);
-      return null;
-    }
-  };
+  //     return formatUnits(allowance, token.decimals);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     return null;
+  //   }
+  // };
 
   _getBuyAllowanceNOTE = async (
     tokenAddress: `0x${string}`,

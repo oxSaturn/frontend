@@ -17,20 +17,22 @@ import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
+import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { BaseAsset, Gauge } from "../../stores/types/types";
 
 import { useBaseAssetWithInfoNoNative, useGauges } from "./queries";
+import { useCreateBribe } from "./mutations";
 import classes from "./ssBribeCreate.module.css";
 
 export default function BribeCreate() {
   const router = useRouter();
-  const [createLoading, setCreateLoading] = useState(false);
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
   const [asset, setAsset] = useState<BaseAsset | null>(null);
   const [gauge, setGauge] = useState<Gauge | null>(null);
+
+  const { mutate: createBribe, createLoading } = useCreateBribe();
 
   const { data: gaugeOptions } = useGauges();
   useEffect(() => {
@@ -49,27 +51,6 @@ export default function BribeCreate() {
       setAsset(assetOptions[0]);
     }
   }, [assetOptions, asset]);
-
-  useEffect(() => {
-    const createReturned = () => {
-      setCreateLoading(false);
-      setAmount("");
-
-      onBack();
-    };
-
-    const errorReturned = () => {
-      setCreateLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.BRIBE_CREATED, createReturned);
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-
-    return () => {
-      stores.emitter.removeListener(ACTIONS.BRIBE_CREATED, createReturned);
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-    };
-  }, []);
 
   const setAmountPercent = (input: string, percent: number) => {
     setAmountError(false);
@@ -113,14 +94,10 @@ export default function BribeCreate() {
     }
 
     if (!error) {
-      setCreateLoading(true);
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_BRIBE,
-        content: {
-          asset: asset,
-          amount: amount,
-          gauge: gauge,
-        },
+      createBribe({
+        asset,
+        amount,
+        gauge,
       });
     }
   };

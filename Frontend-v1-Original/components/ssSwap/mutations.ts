@@ -202,7 +202,6 @@ export const useSwap = (onSuccess: () => void) => {
     }) => swap(options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO_NO_NATIVE]);
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       onSuccess();
     },
@@ -273,7 +272,6 @@ export const useWrapOrUnwrap = (onSuccess: () => void) => {
     }) => wrapOrUnwrap(options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO_NO_NATIVE]);
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       onSuccess();
     },
