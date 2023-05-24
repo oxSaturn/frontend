@@ -99,16 +99,31 @@ function reducer(state: State, action: ACTION) {
   }
 }
 export default function Votes() {
-  const [state, dispatch] = useReducer(reducer, {
+  // say we visit this page from others
+  // some states could be ready, and events might not be triggered again
+  const initialNFTs = stores.stableSwapStore.getStore("vestNFTs");
+  const votableNFTs = initialNFTs.filter(
+    (nft) => nft.actionedInCurrentEpoch === false
+  );
+  const initialToken =
+    votableNFTs.length > 0
+      ? votableNFTs[0]
+      : initialNFTs.length > 0
+      ? initialNFTs[0]
+      : initialEmptyToken;
+
+  const initialState = {
     showWarning: false,
     isVoting: false,
-    veToken: null,
+    veToken: stores.stableSwapStore.getStore("veToken"),
     search: "",
-    gauges: [],
-    vestNFTs: [],
-    token: initialEmptyToken,
-    votes: [],
-  });
+    gauges: [], // gauges rely on votes to decide, so we set it empty here
+    vestNFTs: initialNFTs,
+    token: initialToken,
+    votes: [], // votes rely on token to fetch, so we set it empty here
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   // set veToken
   useEffect(() => {
@@ -129,29 +144,25 @@ export default function Votes() {
   }, []);
 
   // set gauges
-  // similar to set veToken
+  // gauges rely on votes to decide, the latter rely on token to fetch
+  // and token rely on vestNFTs to decide
+  // when vestNFTs is ready, we can be sure pairs are ready as well.
   useEffect(() => {
-    const pairsReady = () => {
-      const as = stores.stableSwapStore.getStore("pairs");
+    const as = stores.stableSwapStore.getStore("pairs");
 
-      const filteredAssets = as.filter(hasGauge).filter((gauge) => {
-        let sliderValue =
-          state.votes.find((el) => el.address === gauge.address)?.value ?? 0;
-        if (gauge.isAliveGauge === false && sliderValue === 0) {
-          // gauge could be alive with votes in last epoch while killed in current epoch
-          return false;
-        }
-        return true;
-      });
-      dispatch({
-        type: "setGauges",
-        gauges: filteredAssets,
-      });
-    };
-    stores.emitter.on(ACTIONS.UPDATED, pairsReady);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, pairsReady);
-    };
+    const filteredAssets = as.filter(hasGauge).filter((gauge) => {
+      let sliderValue =
+        state.votes.find((el) => el.address === gauge.address)?.value ?? 0;
+      if (gauge.isAliveGauge === false && sliderValue === 0) {
+        // gauge could be alive with votes in last epoch while killed in current epoch
+        return false;
+      }
+      return true;
+    });
+    dispatch({
+      type: "setGauges",
+      gauges: filteredAssets,
+    });
   }, [state.votes]);
 
   // set vestNFTs
