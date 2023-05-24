@@ -1,30 +1,24 @@
-import { useMemo } from "react";
-
 import {
   useBaseAssetWithInfo,
   usePairsWithGauges,
 } from "../../lib/global/queries";
 import { NATIVE_TOKEN } from "../../stores/constants/constants";
-import { hasGauge } from "../../stores/types/types";
+import { BaseAsset, Pair, hasGauge } from "../../stores/types/types";
 
 export const useGauges = () => {
-  const query = usePairsWithGauges();
-  return {
-    ...query,
-    data: useMemo(() => {
-      return query.data?.filter(hasGauge).filter((gauge) => gauge.isAliveGauge);
-    }, [query.data]),
-  };
+  return usePairsWithGauges(getOnlyGauges);
 };
 
 export const useBaseAssetWithInfoNoNative = () => {
-  const query = useBaseAssetWithInfo();
-  return {
-    ...query,
-    data: useMemo(() => {
-      return query.data?.filter((option) => {
-        return option.address !== NATIVE_TOKEN.address;
-      });
-    }, [query.data]),
-  };
+  return useBaseAssetWithInfo(getBaseAssetsWithoutNative);
+};
+
+const getOnlyGauges = (pairsWithGauges: Pair[]) => {
+  return pairsWithGauges.filter(hasGauge).filter((gauge) => gauge.isAliveGauge);
+};
+
+const getBaseAssetsWithoutNative = (baseAssetsWithInfo: BaseAsset[]) => {
+  return baseAssetsWithInfo.filter(
+    (baseAsset) => baseAsset.address !== NATIVE_TOKEN.address
+  );
 };

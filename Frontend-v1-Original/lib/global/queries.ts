@@ -271,11 +271,14 @@ export const getBaseAssetsWithInfo = async (address: Address | undefined) => {
   return baseAssetsWithBalances;
 };
 
-export const useBaseAssetWithInfo = () => {
+export const useBaseAssetWithInfo = <TData = BaseAsset[]>(
+  select?: (_data: BaseAsset[]) => TData
+) => {
   const { address } = useAccount();
   return useQuery({
     queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address],
     queryFn: () => getBaseAssetsWithInfo(address), // enabled only when initialBaseAssets is defined
+    select,
   });
 };
 
@@ -557,12 +560,15 @@ export const getPairsWithGauges = async (
   return ps1;
 };
 
-export const usePairsWithGauges = () => {
+export const usePairsWithGauges = <TData = Pair[]>(
+  select?: (_data: Pair[]) => TData
+) => {
   const { address } = useAccount();
   const { data: pairsWithoutGauges } = usePairsWithoutGauges();
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges,
+    select,
   });
 };
