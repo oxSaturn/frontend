@@ -12,7 +12,6 @@ import {
   parseEther,
   type WalletClient,
   type WriteContractReturnType,
-  isAddress,
   BaseError,
 } from "viem";
 import { canto } from "viem/chains";
@@ -34,7 +33,6 @@ import {
   ZERO_ADDRESS,
   NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
-  W_NATIVE_ABI,
   PAIR_DECIMALS,
   QUERY_KEYS,
 } from "./constants/constants";
@@ -48,7 +46,6 @@ import {
   VestNFT,
   GovToken,
   Votes,
-  QuoteSwapResponse,
   Bribe,
   VeDistReward,
   ITransaction,
@@ -195,19 +192,19 @@ class Store {
             this.claimAllRewards(payload);
             break;
 
-          case ACTIONS.BRIBE_AUTO_BRIBE:
-            this.bribeAutoBribe(payload);
-            break;
+          // case ACTIONS.BRIBE_AUTO_BRIBE:
+          //   this.bribeAutoBribe(payload);
+          //   break;
 
-          case ACTIONS.BUY:
-            this.buy(payload);
-            break;
-          case ACTIONS.CLAIM_EARNED:
-            this.claimEarned(payload);
-            break;
-          case ACTIONS.CLAIM_REF_EARNED:
-            this.claimRefEarned(payload);
-            break;
+          // case ACTIONS.BUY:
+          //   this.buy(payload);
+          //   break;
+          // case ACTIONS.CLAIM_EARNED:
+          //   this.claimEarned(payload);
+          //   break;
+          // case ACTIONS.CLAIM_REF_EARNED:
+          //   this.claimRefEarned(payload);
+          //   break;
 
           default: {
           }
@@ -5670,291 +5667,291 @@ class Store {
     }
   };
 
-  bribeAutoBribe = async (payload: {
-    type: string;
-    content: { address: `0x${string}` };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // bribeAutoBribe = async (payload: {
+  //   type: string;
+  //   content: { address: `0x${string}` };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { address } = payload.content;
+  //     const { address } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let bribeTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let bribeTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Bribe AutoBribe`,
-        verb: "Bribed",
-        transactions: [
-          {
-            uuid: bribeTXID,
-            description: `Bribing AutoBribe`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Bribe AutoBribe`,
+  //       verb: "Bribed",
+  //       transactions: [
+  //         {
+  //           uuid: bribeTXID,
+  //           description: `Bribing AutoBribe`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeBribeAutoBribe = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: address,
-          abi: CONTRACTS.AUTO_BRIBE_ABI,
-          functionName: "bribe",
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(bribeTXID, writeBribeAutoBribe);
+  //     const writeBribeAutoBribe = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: address,
+  //         abi: CONTRACTS.AUTO_BRIBE_ABI,
+  //         functionName: "bribe",
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(bribeTXID, writeBribeAutoBribe);
 
-      queryClient.invalidateQueries(["autoBribes"]);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries(["autoBribes"]);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  buy = async (payload: {
-    type: string;
-    content: {
-      amount: `${number}`;
-      refCode: string;
-      projectAddress: string | string[];
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // buy = async (payload: {
+  //   type: string;
+  //   content: {
+  //     amount: `${number}`;
+  //     refCode: string;
+  //     projectAddress: string | string[];
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { amount, refCode, projectAddress } = payload.content;
+  //     const { amount, refCode, projectAddress } = payload.content;
 
-      const sendAmount = parseEther(amount);
+  //     const sendAmount = parseEther(amount);
 
-      const refCodeToSend = isAddress(refCode) ? refCode : ZERO_ADDRESS;
+  //     const refCodeToSend = isAddress(refCode) ? refCode : ZERO_ADDRESS;
 
-      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
-        console.warn("projectAddress is not a valid address");
-        return null;
-      }
+  //     if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+  //       console.warn("projectAddress is not a valid address");
+  //       return null;
+  //     }
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let buyTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let buyTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Participate in Launchpad`,
-        verb: "Participated",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your NOTE allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: buyTXID,
-            description: `Buy worth of ${amount} NOTE`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Participate in Launchpad`,
+  //       verb: "Participated",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your NOTE allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: buyTXID,
+  //           description: `Buy worth of ${amount} NOTE`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getBuyAllowanceNOTE(
-        "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
-        projectAddress,
-        account
-      );
-      if (!allowance) throw new Error("Error getting bribe allowance");
-      if (BigNumber(allowance).lt(amount)) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allow the bribe contract to spend your $NOTE`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on $NOTE sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     const allowance = await this._getBuyAllowanceNOTE(
+  //       "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+  //       projectAddress,
+  //       account
+  //     );
+  //     if (!allowance) throw new Error("Error getting bribe allowance");
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allow the bribe contract to spend your $NOTE`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on $NOTE sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(amount)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
-          projectAddress
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         "0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503",
+  //         projectAddress
+  //       );
+  //     }
 
-      const writeBuy = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: projectAddress,
-          abi: CONTRACTS.FAIR_AUCTION_ABI,
-          functionName: "buy",
-          args: [sendAmount, refCodeToSend],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(buyTXID, writeBuy);
+  //     const writeBuy = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: projectAddress,
+  //         abi: CONTRACTS.FAIR_AUCTION_ABI,
+  //         functionName: "buy",
+  //         args: [sendAmount, refCodeToSend],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(buyTXID, writeBuy);
 
-      queryClient.invalidateQueries({
-        queryKey: [
-          QUERY_KEYS.LAUNCHPAD_PROJECT,
-          QUERY_KEYS.NOTE_ASSET,
-          QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS,
-        ],
-      });
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [
+  //         QUERY_KEYS.LAUNCHPAD_PROJECT,
+  //         QUERY_KEYS.NOTE_ASSET,
+  //         QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS,
+  //       ],
+  //     });
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimEarned = async (payload: {
-    type: string;
-    content: {
-      projectAddress: string | string[];
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimEarned = async (payload: {
+  //   type: string;
+  //   content: {
+  //     projectAddress: string | string[];
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { projectAddress } = payload.content;
+  //     const { projectAddress } = payload.content;
 
-      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
-        console.warn("projectAddress is not a valid address");
-        return null;
-      }
+  //     if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+  //       console.warn("projectAddress is not a valid address");
+  //       return null;
+  //     }
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim Earned Amount`,
-        verb: "Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim Earned Amount`,
+  //       verb: "Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeClaim = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: projectAddress,
-          abi: CONTRACTS.FAIR_AUCTION_ABI,
-          functionName: "claim",
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(claimTXID, writeClaim);
+  //     const writeClaim = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: projectAddress,
+  //         abi: CONTRACTS.FAIR_AUCTION_ABI,
+  //         functionName: "claim",
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(claimTXID, writeClaim);
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS],
-      });
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS],
+  //     });
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimRefEarned = async (payload: {
-    type: string;
-    content: {
-      projectAddress: string | string[];
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimRefEarned = async (payload: {
+  //   type: string;
+  //   content: {
+  //     projectAddress: string | string[];
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { projectAddress } = payload.content;
+  //     const { projectAddress } = payload.content;
 
-      if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
-        console.warn("projectAddress is not a valid address");
-        return null;
-      }
+  //     if (Array.isArray(projectAddress) || !isAddress(projectAddress)) {
+  //       console.warn("projectAddress is not a valid address");
+  //       return null;
+  //     }
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim Ref Earned Amount`,
-        verb: "Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim Ref Earned Amount`,
+  //       verb: "Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeClaim = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: projectAddress,
-          abi: CONTRACTS.FAIR_AUCTION_ABI,
-          functionName: "claimRefEarnings",
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(claimTXID, writeClaim);
+  //     const writeClaim = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: projectAddress,
+  //         abi: CONTRACTS.FAIR_AUCTION_ABI,
+  //         functionName: "claimRefEarnings",
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(claimTXID, writeClaim);
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS],
-      });
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.USER_CLAIMABLE_AND_CLAIMABLE_REF_EARNINGS],
+  //     });
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   writeApprove = async (
     walletClient: WalletClient,

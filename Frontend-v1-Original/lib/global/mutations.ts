@@ -72,7 +72,7 @@ export const writeWrapUnwrap = async (
   }
 };
 
-const writeContractWrapper = async (
+export const writeContractWrapper = async (
   txId: string,
   write: () => Promise<WriteContractReturnType>
 ) => {

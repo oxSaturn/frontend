@@ -149,9 +149,4 @@ export const WHITELIST_TOKEN = "WHITELIST_TOKEN";
 export const WHITELIST_TOKEN_RETURNED = "WHITELIST_TOKEN_RETURNED";
 
 //AUTO BRIBE
-export const BRIBE_AUTO_BRIBE = "BRIBE_AUTO_BRIBE";
-
-//Launchpad
-export const BUY = "BUY";
-export const CLAIM_EARNED = "CLAIM_EARNED";
-export const CLAIM_REF_EARNED = "CLAIM_REF_EARNED";
+// export const BRIBE_AUTO_BRIBE = "BRIBE_AUTO_BRIBE";
