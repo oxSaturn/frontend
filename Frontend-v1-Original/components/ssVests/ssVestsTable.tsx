@@ -75,7 +75,7 @@ const headCells = [
     id: "Influence",
     numeric: true,
     disablePadding: false,
-    label: "Share of Total Votes",
+    label: "Voting Power",
   },
   {
     id: "",
