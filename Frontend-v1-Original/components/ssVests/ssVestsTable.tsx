@@ -16,9 +16,20 @@ import {
   Grid,
   Tooltip,
   Alert,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { EnhancedEncryptionOutlined, Check, Close } from "@mui/icons-material";
+import {
+  EnhancedEncryptionOutlined,
+  Check,
+  Close,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  RestartAlt,
+  Merge,
+  BatteryCharging90,
+} from "@mui/icons-material";
 import moment from "moment";
 import BigNumber from "bignumber.js";
 import Link from "next/link";
@@ -59,6 +70,12 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Vest Expires",
+  },
+  {
+    id: "Influence",
+    numeric: true,
+    disablePadding: false,
+    label: "Share of Total Votes",
   },
   {
     id: "",
@@ -255,7 +272,10 @@ export default function EnhancedTable({
         elevation={0}
         className="flex w-full flex-col items-end border border-[rgba(104,108,122,0.25)]"
       >
-        <Alert severity="info" className="w-full">
+        <Alert
+          severity="info"
+          className="w-full rounded-br-none rounded-bl-none"
+        >
           You can either vote or reset in the same epoch, but not both. NFTs
           voted in the past will have to be reset first to merge.
         </Alert>
@@ -277,201 +297,16 @@ export default function EnhancedTable({
                   if (!row) {
                     return null;
                   }
-                  const labelId = `enhanced-table-checkbox-${index}`;
-
                   return (
-                    <TableRow
-                      key={labelId}
-                      className="hover:bg-[rgba(104,108,122,0.05)]"
-                    >
-                      <TableCell>
-                        <div className="flex items-center">
-                          <div className="relative flex h-9 w-[70px]">
-                            <img
-                              className="absolute left-0 top-0 rounded-[30px]"
-                              src={govToken?.logoURI || undefined}
-                              width="35"
-                              height="35"
-                              alt=""
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).onerror = null;
-                                (e.target as HTMLImageElement).src =
-                                  "/tokens/unknown-logo.png";
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Typography
-                              variant="h2"
-                              className="text-xs font-extralight"
-                            >
-                              {row.id}
-                            </Typography>
-                            <Typography
-                              variant="h5"
-                              className="text-xs font-extralight"
-                              color="textSecondary"
-                            >
-                              NFT ID
-                            </Typography>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          {row.actionedInCurrentEpoch && !row.reset ? (
-                            <Check className="fill-green-500" />
-                          ) : (
-                            <Close className="fill-red-500" />
-                          )}
-                        </Typography>
-                        {row.actionedInCurrentEpoch &&
-                        !row.reset &&
-                        Number(row.lastVoted) !== 0 ? (
-                          <Typography
-                            variant="h5"
-                            className="text-xs font-extralight"
-                            color="textSecondary"
-                          >
-                            Voted on:{" "}
-                            {new Date(
-                              Number(row.lastVoted) * 1000
-                            ).toLocaleString()}
-                          </Typography>
-                        ) : null}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          {row.reset ? (
-                            <Check className="fill-green-500" />
-                          ) : (
-                            <Close className="fill-red-500" />
-                          )}
-                        </Typography>
-                        {row.reset ? (
-                          <Typography
-                            variant="h5"
-                            className="text-xs font-extralight"
-                            color="textSecondary"
-                          >
-                            Reset on:{" "}
-                            {new Date(
-                              Number(row.lastVoted) * 1000
-                            ).toLocaleString()}
-                          </Typography>
-                        ) : null}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          {formatCurrency(row.lockAmount)}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className="text-xs font-extralight"
-                          color="textSecondary"
-                        >
-                          {govToken?.symbol}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          {formatCurrency(row.lockValue)}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className="text-xs font-extralight"
-                          color="textSecondary"
-                        >
-                          {veToken?.symbol}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography
-                          variant="h2"
-                          className="text-xs font-extralight"
-                        >
-                          {moment.unix(+row.lockEnds).format("YYYY-MM-DD")}
-                        </Typography>
-                        <Typography
-                          variant="h5"
-                          className="text-xs font-extralight"
-                          color="textSecondary"
-                        >
-                          Expires {moment.unix(+row.lockEnds).fromNow()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="flex flex-col space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2"
-                      >
-                        {!row.actionedInCurrentEpoch ? (
-                          <Tooltip
-                            title={
-                              <div>
-                                Reset to transfer, sell or merge NFT.
-                                <br />
-                                Reset disables voting until next epoch.
-                              </div>
-                            }
-                            placement="right"
-                            enterTouchDelay={500}
-                          >
-                            <Button
-                              variant="outlined"
-                              color="primary"
-                              onClick={() => {
-                                onReset(row);
-                              }}
-                            >
-                              Reset
-                            </Button>
-                          </Tooltip>
-                        ) : (
-                          <Button variant="outlined" color="primary" disabled>
-                            Reset
-                          </Button>
-                        )}
-                        {/*
-                        1. last voted is 0, i.e., totally new nft
-                        2. actioned in current epoch, and that action is reset
-                         */}
-                        {Number(row.lastVoted) === 0 ||
-                        (row.actionedInCurrentEpoch && row.reset) ? (
-                          <Link href={`/vest/${row.id}/merge`}>
-                            <Button variant="outlined" color="primary">
-                              Merge
-                            </Button>
-                          </Link>
-                        ) : (
-                          <Tooltip title="">
-                            <Button variant="outlined" color="primary" disabled>
-                              Merge
-                            </Button>
-                          </Tooltip>
-                        )}
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          onClick={() => {
-                            onView(row);
-                          }}
-                        >
-                          Manage
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <MyTableRow
+                      key={row.id}
+                      row={row}
+                      index={index}
+                      govToken={govToken}
+                      veToken={veToken}
+                      onReset={onReset}
+                      onView={onView}
+                    />
                   );
                 })}
             </TableBody>
@@ -488,6 +323,225 @@ export default function EnhancedTable({
         />
       </Paper>
     </div>
+  );
+}
+
+function MyTableRow(props: {
+  row: VestNFT;
+  index: number;
+  govToken: GovToken | null;
+  veToken: VeToken | null;
+  onReset: any;
+  onView: any;
+}) {
+  const { row, index, govToken, veToken, onReset, onView } = props;
+  const influence =
+    row.influence * 100 > 0.001
+      ? `${(row.influence * 100).toFixed(3)}%`
+      : "<0.001%";
+  const labelId = `enhanced-table-checkbox-${index}`;
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <TableRow key={labelId} className="hover:bg-[rgba(104,108,122,0.05)]">
+      <TableCell>
+        <div className="flex items-center">
+          <div className="relative flex h-9 w-[70px]">
+            <img
+              className="absolute left-0 top-0 rounded-[30px]"
+              src={govToken?.logoURI || undefined}
+              width="35"
+              height="35"
+              alt=""
+              onError={(e) => {
+                (e.target as HTMLImageElement).onerror = null;
+                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+              }}
+            />
+          </div>
+          <div>
+            <Typography variant="h2" className="text-xs font-extralight">
+              {row.id}
+            </Typography>
+            <Typography
+              variant="h5"
+              className="text-xs font-extralight"
+              color="textSecondary"
+            >
+              NFT ID
+            </Typography>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell>
+        <Typography variant="h2" className="text-xs font-extralight">
+          {row.actionedInCurrentEpoch && !row.reset ? (
+            <Check className="fill-green-500" />
+          ) : (
+            <Close className="fill-red-500" />
+          )}
+        </Typography>
+        {row.actionedInCurrentEpoch &&
+        !row.reset &&
+        Number(row.lastVoted) !== 0 ? (
+          <Typography
+            variant="h5"
+            className="text-xs font-extralight"
+            color="textSecondary"
+          >
+            Voted on: {new Date(Number(row.lastVoted) * 1000).toLocaleString()}
+          </Typography>
+        ) : null}
+        {/* show last voted so users can tell to reset or not */}
+        {!row.actionedInCurrentEpoch && Number(row.lastVoted) !== 0 ? (
+          <Typography
+            variant="h5"
+            className="text-xs font-extralight"
+            color="textSecondary"
+          >
+            Last Voted:{" "}
+            {new Date(Number(row.lastVoted) * 1000).toLocaleString()}
+          </Typography>
+        ) : null}
+      </TableCell>
+      <TableCell>
+        <Typography variant="h2" className="text-xs font-extralight">
+          {row.reset ? (
+            <Check className="fill-green-500" />
+          ) : (
+            <Close className="fill-red-500" />
+          )}
+        </Typography>
+        {row.reset ? (
+          <Typography
+            variant="h5"
+            className="text-xs font-extralight"
+            color="textSecondary"
+          >
+            Reset on: {new Date(Number(row.lastVoted) * 1000).toLocaleString()}
+          </Typography>
+        ) : null}
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h2" className="text-xs font-extralight">
+          {formatCurrency(row.lockAmount)}
+        </Typography>
+        <Typography
+          variant="h5"
+          className="text-xs font-extralight"
+          color="textSecondary"
+        >
+          {govToken?.symbol}
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h2" className="text-xs font-extralight">
+          {formatCurrency(row.lockValue)}
+        </Typography>
+        <Typography
+          variant="h5"
+          className="text-xs font-extralight"
+          color="textSecondary"
+        >
+          {veToken?.symbol}
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h2" className="text-xs font-extralight">
+          {moment.unix(+row.lockEnds).format("YYYY-MM-DD")}
+        </Typography>
+        <Typography
+          variant="h5"
+          className="text-xs font-extralight"
+          color="textSecondary"
+        >
+          Expires {moment.unix(+row.lockEnds).fromNow()}
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Tooltip title={`${(row.influence * 100).toFixed(7)}%`}>
+          <Typography variant="h2" className="text-xs font-extralight">
+            {influence}
+          </Typography>
+        </Tooltip>
+      </TableCell>
+      <TableCell
+        align="right"
+        className="flex flex-col space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2"
+      >
+        <Button
+          variant="outlined"
+          color="primary"
+          endIcon={open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          onClick={handleClick}
+        >
+          Menu
+        </Button>
+        <Menu
+          sx={{
+            "& .MuiPaper-root": {
+              minWidth: "150px",
+            },
+          }}
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          elevation={0}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <MenuItem
+            disableRipple
+            disabled={row.actionedInCurrentEpoch}
+            onClick={() => {
+              handleClose();
+              onReset(row);
+            }}
+          >
+            <RestartAlt className="mr-2" /> <span>Reset</span>
+          </MenuItem>
+          {/*
+      1. last voted is 0, i.e., totally new nft
+      2. actioned in current epoch, and that action is reset
+       */}
+          <MenuItem
+            disableRipple
+            disabled={
+              !(
+                Number(row.lastVoted) === 0 ||
+                (row.actionedInCurrentEpoch && row.reset)
+              )
+            }
+          >
+            <Link
+              href={`/vest/${row.id}/merge`}
+              className="flex items-center space-x-2"
+            >
+              <>
+                <Merge className="mr-2" /> <span>Merge</span>
+              </>
+            </Link>
+          </MenuItem>
+          <MenuItem disableRipple onClick={() => onView(row)}>
+            <BatteryCharging90 className="mr-2" /> Extend
+          </MenuItem>
+        </Menu>
+      </TableCell>
+    </TableRow>
   );
 }
 

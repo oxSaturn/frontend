@@ -30,6 +30,7 @@ const initialEmptyToken: VestNFT = {
   actionedInCurrentEpoch: false,
   reset: false,
   lastVoted: BigInt(0),
+  influence: 0,
 };
 
 export default function Rewards() {
