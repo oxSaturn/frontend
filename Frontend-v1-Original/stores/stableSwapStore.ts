@@ -76,6 +76,7 @@ class Store {
       xBribes: Gauge[];
       xxBribes: Gauge[];
       rewards: Gauge[];
+      BLOTR_rewards: Gauge[];
       veDist: VeDistReward[];
     };
     updateDate: number;
@@ -102,6 +103,7 @@ class Store {
         xBribes: [],
         xxBribes: [],
         rewards: [],
+        BLOTR_rewards: [],
         veDist: [],
       },
       updateDate: 0,
@@ -230,6 +232,9 @@ class Store {
 
           case ACTIONS.CLAIM_REWARD:
             this.claimRewards(payload);
+            break;
+          case ACTIONS.CLAIM_BLOTR_REWARD:
+            this.claimBlotrRewards(payload);
             break;
           case ACTIONS.CLAIM_VE_DIST:
             this.claimVeDist(payload);
@@ -5197,6 +5202,7 @@ class Store {
       const x_filteredPairs = structuredClone(gauges);
       const xx_filteredPairs = structuredClone(gauges);
       const filteredPairs2 = structuredClone(gauges);
+      const filteredPairs3 = structuredClone(gauges);
 
       let veDistReward: VeDistReward[] = [];
       let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
@@ -5357,13 +5363,29 @@ class Store {
         } as const;
       });
 
+      const BLOTR_rewardsCalls = filteredPairs3.map((pair) => {
+        return {
+          address: pair.gauge.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "earned",
+          args: ["0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE", account],
+        } as const;
+      });
+
       const rewardsEarnedCallResult = await viemClient.multicall({
         allowFailure: false,
         multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: rewardsCalls,
       });
 
+      const BLOTR_rewardsEarnedCallResult = await viemClient.multicall({
+        allowFailure: false,
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+        contracts: BLOTR_rewardsCalls,
+      });
+
       const rewardsEarned = [...filteredPairs2];
+      const BLOTR_rewardsEarned = [...filteredPairs3];
 
       for (let i = 0; i < rewardsEarned.length; i++) {
         rewardsEarned[i].gauge.rewardsEarned = formatEther(
@@ -5371,7 +5393,14 @@ class Store {
         );
       }
 
+      for (let i = 0; i < BLOTR_rewardsEarned.length; i++) {
+        BLOTR_rewardsEarned[i].gauge.BLOTR_rewardsEarned = formatEther(
+          BLOTR_rewardsEarnedCallResult[i]
+        );
+      }
+
       const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
+      const filteredBlotrRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
       for (let j = 0; j < rewardsEarned.length; j++) {
         let pair = Object.assign({}, rewardsEarned[j]);
         if (
@@ -5383,11 +5412,23 @@ class Store {
           filteredRewards.push(pair);
         }
       }
+      for (let j = 0; j < BLOTR_rewardsEarned.length; j++) {
+        let pair = Object.assign({}, BLOTR_rewardsEarned[j]);
+        if (
+          pair.gauge &&
+          pair.gauge.BLOTR_rewardsEarned &&
+          parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
+        ) {
+          pair.rewardType = "BLOTR_Reward";
+          filteredBlotrRewards.push(pair);
+        }
+      }
 
       const rewards: Store["store"]["rewards"] = {
         xBribes: x_filteredBribes,
         xxBribes: xx_filteredBribes,
         rewards: filteredRewards,
+        BLOTR_rewards: filteredBlotrRewards,
         veDist: veDistReward,
       };
 
@@ -5761,6 +5802,65 @@ class Store {
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
           args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeGetReward);
+
+      this.getRewardBalances({
+        type: "internal reward balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+      this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimBlotrRewards = async (payload: {
+    type: string;
+    content: { pair: Gauge; tokenID: string };
+  }) => {
+    try {
+      const account = getAccount().address;
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = await getWalletClient({ chainId: canto.id });
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { pair, tokenID } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+        verb: "Rewards Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming your rewards`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const writeGetReward = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: pair.gauge?.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "getReward",
+          args: [account, ["0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE"]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
