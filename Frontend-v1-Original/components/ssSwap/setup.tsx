@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
 import {
@@ -6,91 +6,77 @@ import {
   Typography,
   InputAdornment,
   Button,
-  MenuItem,
-  IconButton,
-  Dialog,
   CircularProgress,
 } from "@mui/material";
 import {
-  Search,
   ArrowDownward,
   UpdateOutlined,
-  DeleteOutline,
   SettingsOutlined,
   CloseOutlined,
 } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
-import { isAddress } from "viem";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
 import {
-  ACTIONS,
-  ETHERSCAN_URL,
   NATIVE_TOKEN,
   QUERY_KEYS,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
-import type {
-  BaseAsset,
-  Path,
-  QuoteSwapResponse,
-  FireBirdTokens,
-} from "../../stores/types/types";
+import type { BaseAsset } from "../../stores/types/types";
 import { useTokenPrices } from "../header/queries";
 
 import { quoteSwap, useSwapAssets } from "./queries";
 import { useSwap, useWrapOrUnwrap } from "./mutations";
+import { AssetSelect } from "./select";
+import { RoutesDialog } from "./routes";
+import { usePriceDiff } from "./lib/usePriceDiff";
+import { useIsWrapUnwrap } from "./lib/useIsWrapUnwrap";
 
 function Setup() {
-  const [, updateState] = React.useState<{}>();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(false);
-
-  const [loading, setLoading] = useState(false);
-  const [quoteLoading, setQuoteLoading] = useState(false);
-  const [, setApprovalLoading] = useState(false);
 
   const [fromAmountValue, setFromAmountValue] = useState("");
   const [fromAmountValueUsd, setFromAmountValueUsd] = useState("");
   const [fromAmountError, setFromAmountError] = useState<false | string>(false);
   const [fromAssetValue, setFromAssetValue] = useState<BaseAsset | null>(null);
   const [fromAssetError, setFromAssetError] = useState<false | string>(false);
-  const [fromAssetOptions, setFromAssetOptions] = useState<BaseAsset[]>([]);
 
   const [toAmountValue, setToAmountValue] = useState("");
   const [toAmountValueUsd, setToAmountValueUsd] = useState("");
   const [toAmountError] = useState<string | false>(false);
   const [toAssetValue, setToAssetValue] = useState<BaseAsset | null>(null);
-  const [toAssetError, setToAssetError] = useState<string | false>(false);
-  const [toAssetOptions, setToAssetOptions] = useState<BaseAsset[]>([]);
 
   const [slippage, setSlippage] = useState("2");
-  const [slippageError] = useState(false);
 
-  const [quoteError, setQuoteError] = useState<string | null | false>(null);
-  const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
+  const { isWrapUnwrap, isWrap } = useIsWrapUnwrap({
+    fromAssetValue,
+    toAssetValue,
+  });
 
   const swapReturned = () => {
-    setLoading(false);
     setFromAmountValue("");
     setToAmountValue("");
     setFromAmountValueUsd("");
     setToAmountValueUsd("");
     calculateReceiveAmount("", fromAssetValue, toAssetValue);
-    setQuote(null);
-    setQuoteLoading(false);
+    removeQuote();
   };
 
   const { data: tokenPrices } = useTokenPrices();
   const { data: swapAssetsOptions } = useSwapAssets();
-  const { mutate: swap } = useSwap(swapReturned);
-  const { mutate: wrapOrUnwrap } = useWrapOrUnwrap(swapReturned);
+  const { mutate: swap, isLoading: loadingSwap } = useSwap(swapReturned);
+  const { mutate: wrapOrUnwrap, isLoading: loadingWrapOrUnwrap } =
+    useWrapOrUnwrap(swapReturned);
+  const loading = loadingSwap || loadingWrapOrUnwrap;
   const { address } = useAccount();
 
-  const { refetch: refetchQuote } = useQuery({
+  const {
+    refetch: refetchQuote,
+    isFetching: quoteLoading,
+    data: quote,
+    remove: removeQuote,
+  } = useQuery({
     queryKey: [
       QUERY_KEYS.QUOTE_SWAP,
       address,
@@ -106,21 +92,19 @@ function Setup() {
         fromAmount: fromAmountValue,
         slippage,
       }),
+    enabled:
+      !!fromAssetValue &&
+      !!toAssetValue &&
+      fromAmountValue !== "" &&
+      !isWrapUnwrap,
     onError: () => {
-      setQuote(null);
-      setQuoteLoading(false);
       setToAmountValue("");
       setToAmountValueUsd("");
     },
     onSuccess: (firebirdQuote) => {
       if (!fromAssetValue || !toAssetValue) {
-        setQuoteLoading(false);
-        setQuote(null);
         setToAmountValue("");
         setToAmountValueUsd("");
-        setQuoteError(
-          "Insufficient liquidity or no route available to complete swap"
-        );
         return;
       }
       if (
@@ -141,14 +125,9 @@ function Setup() {
             "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
             toAssetValue.address === NATIVE_TOKEN.address))
       ) {
-        setQuoteLoading(false);
         if (BigNumber(firebirdQuote.maxReturn.totalTo).eq(0)) {
-          setQuote(null);
           setToAmountValue("");
           setToAmountValueUsd("");
-          setQuoteError(
-            "Insufficient liquidity or no route available to complete swap"
-          );
           return;
         }
 
@@ -167,18 +146,13 @@ function Setup() {
           .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
           .toFixed(2);
         setToAmountValueUsd(toUsdValue);
-        setQuote(firebirdQuote);
       }
     },
     refetchOnWindowFocus: true,
+    refetchInterval: 10000,
   });
 
   useEffect(() => {
-    if (swapAssetsOptions) {
-      setToAssetOptions(swapAssetsOptions);
-      setFromAssetOptions(swapAssetsOptions);
-    }
-
     if (
       swapAssetsOptions &&
       swapAssetsOptions.length > 0 &&
@@ -196,75 +170,7 @@ function Setup() {
     }
   }, [fromAssetValue, swapAssetsOptions, toAssetValue]);
 
-  const isWrapUnwrap =
-    (fromAssetValue?.symbol === "WCANTO" && toAssetValue?.symbol === "CANTO") ||
-    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "WCANTO") ||
-    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "CANTOE") ||
-    (fromAssetValue?.symbol === "CANTOE" && toAssetValue?.symbol === "CANTO")
-      ? true
-      : false;
-  const isWrap = fromAssetValue?.symbol === "CANTO";
-
-  const usdDiff = useMemo(() => {
-    if (
-      fromAmountValueUsd &&
-      fromAmountValueUsd === "" &&
-      toAmountValueUsd &&
-      toAmountValueUsd === ""
-    )
-      return "";
-    if (
-      parseFloat(fromAmountValueUsd) === 0 ||
-      parseFloat(toAmountValueUsd) === 0
-    )
-      return "";
-    if (parseFloat(fromAmountValueUsd) === parseFloat(toAmountValueUsd)) return;
-    if (parseFloat(fromAmountValueUsd) === parseFloat(toAmountValueUsd)) return;
-    fromAmountValueUsd &&
-      fromAmountValueUsd !== "" &&
-      toAmountValueUsd &&
-      toAmountValueUsd !== "";
-
-    const increase =
-      ((parseFloat(toAmountValueUsd) - parseFloat(fromAmountValueUsd)) /
-        parseFloat(fromAmountValueUsd)) *
-      100;
-    const decrease =
-      ((parseFloat(fromAmountValueUsd) - parseFloat(toAmountValueUsd)) /
-        parseFloat(fromAmountValueUsd)) *
-      100;
-    const diff =
-      parseFloat(fromAmountValueUsd) > parseFloat(toAmountValueUsd)
-        ? -1 * decrease
-        : increase;
-    return diff.toFixed(2);
-  }, [fromAmountValueUsd, toAmountValueUsd]);
-
-  useEffect(() => {
-    const errorReturned = () => {
-      setLoading(false);
-      setApprovalLoading(false);
-      setQuoteLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-
-    const interval = setInterval(() => {
-      if (!loading && !quoteLoading) updateQuote();
-    }, 10000);
-
-    return () => {
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      clearInterval(interval);
-    };
-  }, [
-    fromAmountValue,
-    fromAssetValue,
-    toAssetValue,
-    slippage,
-    loading,
-    quoteLoading,
-  ]);
+  const usdDiff = usePriceDiff({ fromAmountValueUsd, toAmountValueUsd });
 
   const onAssetSelect = (type: string, value: BaseAsset) => {
     if (type === "From") {
@@ -316,8 +222,6 @@ function Setup() {
         calculateReceiveAmount(fromAmountValue, fromAssetValue, value);
       }
     }
-
-    forceUpdate();
   };
 
   const fromAmountChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -325,7 +229,6 @@ function Setup() {
     setFromAmountValue(event.target.value);
     if (event.target.value == "") {
       setToAmountValue("");
-      setQuote(null);
       setFromAmountValueUsd("");
       setToAmountValueUsd("");
     } else {
@@ -365,9 +268,6 @@ function Setup() {
       parseFloat(amount) !== 0 &&
       from !== null
     ) {
-      setQuoteLoading(true);
-      setQuoteError(false);
-
       const isWrapUnwrap =
         (from?.symbol === "WCANTO" && to?.symbol === "CANTO") ||
         (from?.symbol === "CANTO" && to?.symbol === "WCANTO") ||
@@ -377,8 +277,6 @@ function Setup() {
           : false;
 
       if (isWrapUnwrap) {
-        setQuoteLoading(false);
-        setQuote(null);
         setToAmountValue(amount);
         return;
       }
@@ -387,25 +285,13 @@ function Setup() {
     }
   };
 
-  const updateQuote = () => {
-    if (fromAmountValue === "") {
-      setToAmountValue("");
-      setQuote(null);
-      setFromAmountValueUsd("");
-      setToAmountValueUsd("");
-    }
-    calculateReceiveAmount(fromAmountValue, fromAssetValue, toAssetValue);
-  };
-
   const closeSettings = () => {
     setSettingsOpen(false);
-    updateQuote();
   };
 
   const onSwap = () => {
     setFromAmountError(false);
     setFromAssetError(false);
-    setToAssetError(false);
 
     let error = false;
 
@@ -443,7 +329,6 @@ function Setup() {
     }
 
     if (!error) {
-      setLoading(true);
       swap({
         quote,
         fromAsset: fromAssetValue,
@@ -455,7 +340,6 @@ function Setup() {
   const onWrapUnwrap = () => {
     setFromAmountError(false);
     setFromAssetError(false);
-    setToAssetError(false);
 
     let error = false;
 
@@ -493,8 +377,6 @@ function Setup() {
     }
 
     if (!error) {
-      setLoading(true);
-
       wrapOrUnwrap({
         fromAsset: fromAssetValue,
         toAsset: toAssetValue,
@@ -554,16 +436,6 @@ function Setup() {
   };
 
   const renderSwapInformation = () => {
-    if (quoteError) {
-      return (
-        <div className="flex min-h-full items-center justify-center">
-          <Typography className="min-w-full rounded-[10px] border border-cantoGreen bg-[rgb(23,52,72)] p-6 text-xs font-extralight">
-            {quoteError}
-          </Typography>
-        </div>
-      );
-    }
-
     if (quoteLoading) {
       return (
         <div className="flex min-h-full items-center justify-center text-cantoGreen">
@@ -664,116 +536,6 @@ function Setup() {
     );
   };
 
-  const renderSmallInput = (
-    type: string,
-    amountValue: string,
-    amountError: boolean,
-    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
-  ) => {
-    return (
-      <div className="mb-1">
-        <label htmlFor="slippage">Slippage</label>
-        <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-primaryBg">
-          <TextField
-            id="slippage"
-            placeholder="0.00"
-            fullWidth
-            error={!!amountError}
-            helperText={amountError}
-            value={amountValue}
-            onChange={amountChanged}
-            disabled={loading}
-            autoComplete="off"
-            InputProps={{
-              endAdornment: <InputAdornment position="end">%</InputAdornment>,
-            }}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const renderMassiveInput = (
-    type: string,
-    amountValue: string,
-    amountValueUsd: string,
-    diffUsd: string | undefined,
-    amountError: string | false,
-    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
-    assetValue: BaseAsset | null,
-    assetError: string | false,
-    assetOptions: BaseAsset[],
-    onAssetSelect: (_type: string, _value: BaseAsset) => void
-  ) => {
-    return (
-      <div className="relative mb-1">
-        <div
-          className="absolute top-2 right-2 z-[1] cursor-pointer"
-          onClick={() => {
-            if (type === "From") {
-              setBalance100();
-            }
-          }}
-        >
-          <Typography className="text-xs font-thin text-secondaryGray" noWrap>
-            Balance:
-            {assetValue && assetValue.balance
-              ? " " + formatCurrency(assetValue.balance)
-              : ""}
-          </Typography>
-        </div>
-        {assetValue &&
-        assetValue.balance &&
-        amountValueUsd &&
-        amountValueUsd !== "" ? (
-          <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-            <Typography className="text-xs font-thin text-secondaryGray" noWrap>
-              {"~$" +
-                formatCurrency(amountValueUsd) +
-                (type === "To" && diffUsd && diffUsd !== ""
-                  ? ` (${diffUsd}%)`
-                  : "")}
-            </Typography>
-          </div>
-        ) : null}
-        <div
-          className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
-            (amountError || assetError) && "border border-red-500"
-          }`}
-        >
-          <div className="h-full min-h-[128px] w-32">
-            <AssetSelect
-              type={type}
-              value={assetValue}
-              assetOptions={assetOptions}
-              onSelect={onAssetSelect}
-            />
-          </div>
-          <div className="h-full flex-[1] flex-grow-[0.98]">
-            <TextField
-              placeholder="0.00"
-              fullWidth
-              error={!!amountError}
-              helperText={amountError}
-              value={amountValue}
-              onChange={amountChanged}
-              autoComplete="off"
-              disabled={loading || type === "To"}
-              InputProps={{
-                style: {
-                  fontSize: "46px !important",
-                },
-              }}
-            />
-            <Typography color="textSecondary" className="text-xs">
-              {assetValue?.symbol}
-            </Typography>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       <div className="relative flex w-full flex-col">
@@ -790,33 +552,34 @@ function Setup() {
           >
             <CloseOutlined />
           </div>
-          {renderSmallInput(
-            "slippage",
-            slippage,
-            slippageError,
-            onSlippageChanged
-          )}
+          <SmallInput
+            amountValue={slippage}
+            amountChanged={onSlippageChanged}
+            loading={loading}
+          />
         </div>
         <div className="mb-4 flex items-center justify-end space-x-2">
-          <button onClick={updateQuote}>
+          <button onClick={() => refetchQuote()}>
             <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
           </button>
           <button onClick={() => setSettingsOpen(true)}>
             <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
           </button>
         </div>
-        {renderMassiveInput(
-          "From",
-          fromAmountValue,
-          fromAmountValueUsd,
-          usdDiff,
-          fromAmountError,
-          fromAmountChanged,
-          fromAssetValue,
-          fromAssetError,
-          fromAssetOptions,
-          onAssetSelect
-        )}
+        <MassiveInput
+          type="From"
+          amountValue={fromAmountValue}
+          amountValueUsd={fromAmountValueUsd}
+          diffUsd={usdDiff}
+          amountError={fromAmountError}
+          amountChanged={fromAmountChanged}
+          assetValue={fromAssetValue}
+          assetError={fromAssetError}
+          assetOptions={swapAssetsOptions}
+          onAssetSelect={onAssetSelect}
+          loading={loading}
+          setBalance100={setBalance100}
+        />
         <div className="flex h-0 w-full items-center justify-center">
           <div className="z-[1] h-9 rounded-lg bg-[#161b2c]">
             <ArrowDownward
@@ -825,18 +588,20 @@ function Setup() {
             />
           </div>
         </div>
-        {renderMassiveInput(
-          "To",
-          toAmountValue,
-          toAmountValueUsd,
-          usdDiff,
-          toAmountError,
-          toAmountChanged,
-          toAssetValue,
-          toAssetError,
-          toAssetOptions,
-          onAssetSelect
-        )}
+        <MassiveInput
+          type="To"
+          amountValue={toAmountValue}
+          amountValueUsd={toAmountValueUsd}
+          diffUsd={usdDiff}
+          amountError={toAmountError}
+          amountChanged={toAmountChanged}
+          assetValue={toAssetValue}
+          assetError={false}
+          assetOptions={swapAssetsOptions}
+          onAssetSelect={onAssetSelect}
+          loading={loading}
+          setBalance100={setBalance100}
+        />
         <div className="flex min-h-[176px] flex-col items-center justify-center">
           {renderSwapInformation()}
         </div>
@@ -894,404 +659,130 @@ function Setup() {
   );
 }
 
-function AssetSelect({
+const SmallInput = ({
+  amountValue,
+  amountChanged,
+  loading,
+}: {
+  amountValue: string;
+  amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void;
+  loading: boolean;
+}) => {
+  return (
+    <div className="mb-1">
+      <label htmlFor="slippage">Slippage</label>
+      <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-primaryBg">
+        <TextField
+          id="slippage"
+          placeholder="0.00"
+          fullWidth
+          value={amountValue}
+          onChange={amountChanged}
+          disabled={loading}
+          autoComplete="off"
+          InputProps={{
+            endAdornment: <InputAdornment position="end">%</InputAdornment>,
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const MassiveInput = ({
   type,
-  value,
+  amountValue,
+  amountValueUsd,
+  diffUsd,
+  amountError,
+  amountChanged,
+  assetValue,
+  assetError,
   assetOptions,
-  onSelect,
+  onAssetSelect,
+  loading,
+  setBalance100,
 }: {
   type: string;
-  value: BaseAsset | null;
-  assetOptions: BaseAsset[];
-  onSelect: (_type: string, _asset: BaseAsset) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [filteredAssetOptions, setFilteredAssetOptions] = useState<BaseAsset[]>(
-    []
-  );
-
-  const [manageLocal, setManageLocal] = useState(false);
-
-  const openSearch = () => {
-    setSearch("");
-    setOpen(true);
-  };
-
-  useEffect(() => {
-    async function sync() {
-      let ao = assetOptions.filter((asset) => {
-        if (search && search !== "") {
-          return (
-            asset.address.toLowerCase().includes(search.toLowerCase()) ||
-            asset.symbol.toLowerCase().includes(search.toLowerCase()) ||
-            asset.name.toLowerCase().includes(search.toLowerCase())
-          );
-        } else {
-          return true;
-        }
-      });
-
-      setFilteredAssetOptions(ao);
-
-      //no options in our default list and its an address we search for the address
-      if (
-        ao.length === 0 &&
-        search &&
-        search.length === 42 &&
-        isAddress(search)
-      ) {
-        const baseAsset = await stores.stableSwapStore.getBaseAsset(
-          search,
-          true,
-          true
-        );
-        if (baseAsset) {
-          stores.emitter.emit(ACTIONS.WARNING, {
-            warning: "Token is not whitelisted",
-          });
-        }
-      }
-    }
-    sync();
-    return () => {};
-  }, [assetOptions, search]);
-
-  const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-  };
-
-  const onLocalSelect = (type: string, asset: BaseAsset) => {
-    setSearch("");
-    setManageLocal(false);
-    setOpen(false);
-    onSelect(type, asset);
-  };
-
-  const onClose = () => {
-    setManageLocal(false);
-    setSearch("");
-    setOpen(false);
-  };
-
-  const toggleLocal = () => {
-    setManageLocal(!manageLocal);
-  };
-
-  const deleteOption = (token: BaseAsset) => {
-    stores.stableSwapStore.removeBaseAsset(token);
-  };
-
-  const viewOption = (token: BaseAsset) => {
-    window.open(`${ETHERSCAN_URL}token/${token.address}`, "_blank");
-  };
-
-  const renderManageOption = (type: string, asset: BaseAsset, idx: number) => {
-    return (
-      <MenuItem
-        defaultValue={asset.address}
-        key={asset.address + "_" + idx}
-        className="flex items-center justify-between px-0"
-      >
-        <div className="relative mr-3 w-14">
-          <img
-            className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
-            alt=""
-            src={asset ? `${asset.logoURI}` : ""}
-            height="60px"
-            onError={(e) => {
-              (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-            }}
-          />
-        </div>
-
-        <div>
-          <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
-          <Typography variant="subtitle1" color="textSecondary">
-            {asset ? asset.name : ""}
-          </Typography>
-        </div>
-        <div className="flex flex-[1] justify-end">
-          <IconButton
-            onClick={() => {
-              deleteOption(asset);
-            }}
-          >
-            <DeleteOutline />
-          </IconButton>
-          <IconButton
-            onClick={() => {
-              viewOption(asset);
-            }}
-          >
-            ↗
-          </IconButton>
-        </div>
-      </MenuItem>
-    );
-  };
-
-  const renderAssetOption = (type: string, asset: BaseAsset, idx: number) => {
-    return (
-      <MenuItem
-        defaultValue={asset.address}
-        key={asset.address + "_" + idx}
-        className="flex items-center justify-between px-0"
-        onClick={() => {
-          onLocalSelect(type, asset);
-        }}
-      >
-        <div className="relative mr-3 w-14">
-          <img
-            className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
-            alt=""
-            src={asset ? `${asset.logoURI}` : ""}
-            height="60px"
-            onError={(e) => {
-              (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-            }}
-          />
-        </div>
-        <div>
-          <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
-          <Typography variant="subtitle1" color="textSecondary">
-            {asset ? asset.name : ""}
-          </Typography>
-        </div>
-        <div className="ml-12 flex flex-[1] flex-col items-end">
-          <Typography variant="h5">
-            {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
-          </Typography>
-          <Typography variant="subtitle1" color="textSecondary">
-            Balance
-          </Typography>
-        </div>
-      </MenuItem>
-    );
-  };
-
-  const renderManageLocal = () => {
-    return (
-      <>
-        <div className="h-[600px] overflow-y-scroll p-6">
-          <TextField
-            autoFocus
-            variant="outlined"
-            fullWidth
-            placeholder="CANTO, NOTE, 0x..."
-            value={search}
-            onChange={onSearchChanged}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <div className="mt-3 flex w-full min-w-[390px] flex-col">
-            {filteredAssetOptions
-              ? filteredAssetOptions
-                  .filter((option) => {
-                    return option.local === true;
-                  })
-                  .map((asset, idx) => {
-                    return renderManageOption(type, asset, idx);
-                  })
-              : []}
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-center p-[6px]">
-          <Button onClick={toggleLocal}>Back to Assets</Button>
-        </div>
-      </>
-    );
-  };
-
-  const renderOptions = () => {
-    return (
-      <>
-        <div className="h-[600px] overflow-y-scroll p-6">
-          <TextField
-            autoFocus
-            variant="outlined"
-            fullWidth
-            placeholder="CANTO, NOTE, 0x..."
-            value={search}
-            onChange={onSearchChanged}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <div className="mt-3 flex w-full min-w-[390px] flex-col">
-            {filteredAssetOptions
-              ? filteredAssetOptions
-                  .sort((a, b) => {
-                    if (BigNumber(a.balance || 0).lt(b.balance || 0)) return 1;
-                    if (BigNumber(a.balance || 0).gt(b.balance || 0)) return -1;
-                    if (a.symbol.toLowerCase() < b.symbol.toLowerCase())
-                      return -1;
-                    if (a.symbol.toLowerCase() > b.symbol.toLowerCase())
-                      return 1;
-                    return 0;
-                  })
-                  .map((asset, idx) => {
-                    return renderAssetOption(type, asset, idx);
-                  })
-              : []}
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-center p-[6px]">
-          <Button onClick={toggleLocal}>Manage Local Assets</Button>
-        </div>
-      </>
-    );
-  };
-
+  amountValue: string;
+  amountValueUsd: string;
+  diffUsd: string | undefined;
+  amountError: string | false;
+  amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void;
+  assetValue: BaseAsset | null;
+  assetError: string | false;
+  assetOptions: BaseAsset[] | undefined;
+  onAssetSelect: (_type: string, _value: BaseAsset) => void;
+  loading: boolean;
+  setBalance100: () => void;
+}) => {
   return (
-    <>
+    <div className="relative mb-1">
       <div
-        className="min-h-[100px] p-3"
+        className="absolute top-2 right-2 z-[1] cursor-pointer"
         onClick={() => {
-          openSearch();
+          if (type === "From") {
+            setBalance100();
+          }
         }}
       >
-        <div className="relative w-full cursor-pointer">
-          <img
-            className="h-full w-full rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
-            alt=""
-            src={value ? `${value.logoURI}` : ""}
-            height="100px"
-            onError={(e) => {
-              (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+        <Typography className="text-xs font-thin text-secondaryGray" noWrap>
+          Balance:
+          {assetValue && assetValue.balance
+            ? " " + formatCurrency(assetValue.balance)
+            : ""}
+        </Typography>
+      </div>
+      {assetValue &&
+      assetValue.balance &&
+      amountValueUsd &&
+      amountValueUsd !== "" ? (
+        <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
+          <Typography className="text-xs font-thin text-secondaryGray" noWrap>
+            {"~$" +
+              formatCurrency(amountValueUsd) +
+              (type === "To" && diffUsd && diffUsd !== ""
+                ? ` (${diffUsd}%)`
+                : "")}
+          </Typography>
+        </div>
+      ) : null}
+      <div
+        className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
+          (amountError || assetError) && "border border-red-500"
+        }`}
+      >
+        <div className="h-full min-h-[128px] w-32">
+          <AssetSelect
+            type={type}
+            value={assetValue}
+            assetOptions={assetOptions}
+            onSelect={onAssetSelect}
+          />
+        </div>
+        <div className="h-full flex-[1] flex-grow-[0.98]">
+          <TextField
+            placeholder="0.00"
+            fullWidth
+            error={!!amountError}
+            helperText={amountError}
+            value={amountValue}
+            onChange={amountChanged}
+            autoComplete="off"
+            disabled={loading || type === "To"}
+            InputProps={{
+              style: {
+                fontSize: "46px !important",
+              },
             }}
           />
+          <Typography color="textSecondary" className="text-xs">
+            {assetValue?.symbol}
+          </Typography>
         </div>
       </div>
-      <Dialog
-        onClose={onClose}
-        aria-labelledby="asset-select-dialog-title"
-        open={open}
-      >
-        {!manageLocal && renderOptions()}
-        {manageLocal && renderManageLocal()}
-      </Dialog>
-    </>
+    </div>
   );
-}
-
-function RoutesDialog({
-  onClose,
-  open,
-  paths,
-  tokens,
-  fromAssetValue,
-  toAssetValue,
-  fromAmountValue,
-  toAmountValue,
-}: {
-  onClose: () => void;
-  open: boolean;
-  paths: Path[] | undefined;
-  tokens: FireBirdTokens | undefined;
-  fromAssetValue: BaseAsset | null;
-  toAssetValue: BaseAsset | null;
-  fromAmountValue: string;
-  toAmountValue: string;
-}) {
-  const handleClose = () => {
-    onClose();
-  };
-
-  return (
-    <Dialog
-      onClose={handleClose}
-      open={open}
-      aria-labelledby="routes-presentation"
-    >
-      {paths && fromAssetValue && toAssetValue ? (
-        <div className="relative flex w-full min-w-[576px] flex-col justify-between p-6">
-          <div className="text-center">Routes</div>
-          <div className="flex w-full items-center justify-between">
-            <div>
-              <img
-                className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
-                alt=""
-                src={fromAssetValue ? `${fromAssetValue.logoURI}` : ""}
-                height="40px"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-              <span className="ml-1 align-middle text-sm">
-                {formatCurrency(fromAmountValue)} {fromAssetValue.symbol}
-              </span>
-            </div>
-            <div>
-              <span className="mr-1 align-middle text-sm">
-                {formatCurrency(toAmountValue)} {toAssetValue.symbol}
-              </span>
-              <img
-                className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
-                alt=""
-                src={toAssetValue ? `${toAssetValue.logoURI}` : ""}
-                height="40px"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).src =
-                    "/tokens/unknown-logo.png";
-                }}
-              />
-            </div>
-          </div>
-          <div className="px-6">
-            {paths.map((path, idx) => (
-              <div
-                key={path.amountFrom + idx}
-                className="relative flex border-cantoGreen py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-cantoGreen after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
-              >
-                <div className="relative flex flex-grow">
-                  <div className="flex flex-grow justify-between gap-4">
-                    <div>
-                      {BigNumber(path.amountFrom)
-                        .div(10 ** fromAssetValue.decimals)
-                        .div(fromAmountValue)
-                        .multipliedBy(100)
-                        .toFixed()}
-                      %
-                    </div>
-                    {path.swaps.map((swap, idx) => {
-                      if (idx === path.swaps.length - 1) return null;
-                      return (
-                        tokens && (
-                          <div key={swap.to + idx}>
-                            {tokens[swap.to].symbol}
-                          </div>
-                        )
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        "No routes"
-      )}
-    </Dialog>
-  );
-}
+};
 
 export default Setup;

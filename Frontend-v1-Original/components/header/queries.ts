@@ -5,13 +5,14 @@ import viemClient from "../../stores/connectors/viem";
 import { usePairsData } from "../../lib/global/queries";
 import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
 import { PairsCallResponse } from "../../stores/types/types";
+import { getHexQueryKey } from "../../utils/utils";
 
 const WEEK = 604800;
 
 export const useTokenPrices = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: [QUERY_KEYS.TOKEN_PRICES, pairsData],
+    queryKey: [QUERY_KEYS.TOKEN_PRICES, getHexQueryKey(pairsData)],
     queryFn: () => getTokenPrices(pairsData),
     enabled: !!pairsData,
   });
@@ -20,7 +21,7 @@ export const useTokenPrices = () => {
 export const useTvl = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: [QUERY_KEYS.TVL, pairsData],
+    queryKey: [QUERY_KEYS.TVL, getHexQueryKey(pairsData)],
     queryFn: () => getTvl(pairsData),
     enabled: !!pairsData,
   });
@@ -29,7 +30,7 @@ export const useTvl = () => {
 export const useTbv = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: [QUERY_KEYS.TBV, pairsData],
+    queryKey: [QUERY_KEYS.TBV, getHexQueryKey(pairsData)],
     queryFn: () => getTbv(pairsData),
     enabled: !!pairsData,
   });
@@ -46,7 +47,11 @@ export const useMarketCap = () => {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: tokenPrices } = useTokenPrices();
   return useQuery({
-    queryKey: [QUERY_KEYS.MARKET_CAP, circulatingSupply, tokenPrices],
+    queryKey: [
+      QUERY_KEYS.MARKET_CAP,
+      circulatingSupply,
+      getHexQueryKey(tokenPrices),
+    ],
     queryFn: () => getMarketCap(circulatingSupply, tokenPrices),
     enabled: !!circulatingSupply && !!tokenPrices,
   });

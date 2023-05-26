@@ -4,6 +4,7 @@ import { Address } from "wagmi";
 import { NATIVE_TOKEN, QUERY_KEYS } from "../../stores/constants/constants";
 import { BaseAsset, Pair, QuoteSwapResponse } from "../../stores/types/types";
 import { useBaseAssetWithInfo, usePairs } from "../../lib/global/queries";
+import { getHexQueryKey } from "../../utils/utils";
 
 const getSwapAssets = (
   baseAssets: BaseAsset[] | undefined,
@@ -27,7 +28,11 @@ export const useSwapAssets = () => {
   const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
   const { data: pairs } = usePairs();
   return useQuery({
-    queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssetsWithInfo, pairs],
+    queryKey: [
+      QUERY_KEYS.SWAP_ASSETS,
+      getHexQueryKey(baseAssetsWithInfo),
+      getHexQueryKey(pairs),
+    ],
     queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
     enabled: !!baseAssetsWithInfo && !!pairs,
   });
