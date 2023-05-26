@@ -38,7 +38,7 @@ const getFirebirdSwapAllowance = async (
 };
 
 const swap = async (options: {
-  quote: QuoteSwapResponse | undefined;
+  quote: QuoteSwapResponse | null;
   fromAsset: BaseAsset | null;
   toAsset: BaseAsset | null;
 }) => {
@@ -196,7 +196,7 @@ export const useSwap = (onSuccess: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (options: {
-      quote: QuoteSwapResponse | undefined;
+      quote: QuoteSwapResponse | null;
       fromAsset: BaseAsset | null;
       toAsset: BaseAsset | null;
     }) => swap(options),

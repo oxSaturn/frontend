@@ -1,6 +1,5 @@
 import BigNumber from "bignumber.js";
 import { v4 as uuidv4 } from "uuid";
-import { stringToHex, keccak256 } from "viem";
 
 export function formatCurrency(amount: any, decimals = 2) {
   if (!isNaN(amount)) {
@@ -39,8 +38,4 @@ export function formatAddress(address: `0x${string}`, length = "short") {
 
 export function getTXUUID() {
   return uuidv4();
-}
-
-export function getHexQueryKey(queryKey: any) {
-  return keccak256(stringToHex(JSON.stringify(queryKey)));
 }
