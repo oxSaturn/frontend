@@ -24,6 +24,7 @@ import {
   PairsCallResponse,
   hasGauge,
 } from "../../stores/types/types";
+import { getHexQueryKey } from "../../utils/utils";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
@@ -135,7 +136,7 @@ export const getPairs = (pairsData: PairsCallResponse | undefined) => {
 export const usePairs = () => {
   const { data: pairsData } = usePairsData();
   return useQuery({
-    queryKey: [QUERY_KEYS.PAIRS, pairsData],
+    queryKey: [QUERY_KEYS.PAIRS, getHexQueryKey(pairsData)],
     queryFn: () => getPairs(pairsData),
     enabled: !!pairsData,
   });
@@ -434,8 +435,8 @@ export const usePairsWithoutGauges = () => {
     queryKey: [
       QUERY_KEYS.PAIRS_WITHOUT_GAUGES,
       address,
-      pairs,
-      baseAssetsWithInfo,
+      getHexQueryKey(pairs),
+      getHexQueryKey(baseAssetsWithInfo),
     ],
     queryFn: () => getPairsWithoutGauges(address!, pairs!, baseAssetsWithInfo!),
     enabled: !!address && !!pairs && !!baseAssetsWithInfo,
@@ -566,7 +567,11 @@ export const usePairsWithGauges = <TData = Pair[]>(
   const { address } = useAccount();
   const { data: pairsWithoutGauges } = usePairsWithoutGauges();
   return useQuery({
-    queryKey: [QUERY_KEYS.PAIRS_WITH_GAUGES, address, pairsWithoutGauges],
+    queryKey: [
+      QUERY_KEYS.PAIRS_WITH_GAUGES,
+      address,
+      getHexQueryKey(pairsWithoutGauges),
+    ],
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges,
     select,
