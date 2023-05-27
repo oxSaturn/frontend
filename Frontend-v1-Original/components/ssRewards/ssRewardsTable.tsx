@@ -691,7 +691,7 @@ export default function EnhancedTable({
                                   className={`min-w-[40px] text-xs font-extralight`}
                                   color="textSecondary"
                                 >
-                                  BLOTR
+                                  oBLOTR
                                 </Typography>
                               </div>
                             </>
