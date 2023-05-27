@@ -5368,7 +5368,7 @@ class Store {
           address: pair.gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "earned",
-          args: ["0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE", account],
+          args: ["0x9f9A1Aa08910867F38359F4287865c4A1162C202", account],
         } as const;
       });
 
@@ -5860,7 +5860,7 @@ class Store {
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
-          args: [account, ["0xFf0BAF077e8035A3dA0dD2abeCECFbd98d8E63bE"]],
+          args: [account, ["0x9f9A1Aa08910867F38359F4287865c4A1162C202"]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
