@@ -689,6 +689,7 @@ class Store {
           local: false,
         },
         apr: 0,
+        oblotr_apr: 0,
         total_supply: 0,
         token0_address: token0,
         token1_address: token1,

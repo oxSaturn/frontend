@@ -58,6 +58,7 @@ type BribeEarned = { earned: string };
 interface Pair {
   tvl: number;
   apr: number;
+  oblotr_apr: number;
   address: `0x${string}`;
   symbol: string;
   decimals: number;
