@@ -187,7 +187,7 @@ export default function EnhancedTable({
         type: ACTIONS.CLAIM_REWARD,
         content: { pair: reward, tokenID },
       });
-    } else if (reward.rewardType === "BLOTR_Reward") {
+    } else if (reward.rewardType === "oBLOTR_Reward") {
       stores.dispatcher.dispatch({
         type: ACTIONS.CLAIM_BLOTR_REWARD,
         content: { pair: reward, tokenID },
@@ -239,7 +239,7 @@ export default function EnhancedTable({
                             "XBribe",
                             "XXBribe",
                             "Reward",
-                            "BLOTR_Reward",
+                            "oBLOTR_Reward",
                           ].includes(row.rewardType ?? "") && (
                             <div className="flex items-center">
                               <div className="relative flex h-9 w-[70px]">
@@ -496,7 +496,7 @@ export default function EnhancedTable({
                               </>
                             )}
                           {row &&
-                            row.rewardType === "BLOTR_Reward" &&
+                            row.rewardType === "oBLOTR_Reward" &&
                             row.gauge &&
                             row.gauge.balance &&
                             row.gauge.totalSupply && (
@@ -675,7 +675,7 @@ export default function EnhancedTable({
                               </div>
                             </>
                           )}
-                          {row && row.rewardType === "BLOTR_Reward" && (
+                          {row && row.rewardType === "oBLOTR_Reward" && (
                             <>
                               <div className="flex items-center justify-end">
                                 <Typography

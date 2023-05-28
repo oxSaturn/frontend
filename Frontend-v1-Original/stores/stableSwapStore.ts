@@ -5419,7 +5419,7 @@ class Store {
           pair.gauge.BLOTR_rewardsEarned &&
           parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
         ) {
-          pair.rewardType = "BLOTR_Reward";
+          pair.rewardType = "oBLOTR_Reward";
           filteredBlotrRewards.push(pair);
         }
       }
