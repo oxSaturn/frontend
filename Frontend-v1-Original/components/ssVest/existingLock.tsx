@@ -39,6 +39,7 @@ export default function ExistingLock({
         actionedInCurrentEpoch: nft.actionedInCurrentEpoch,
         reset: nft.reset,
         lastVoted: nft.lastVoted,
+        influence: nft.influence,
       };
 
       setFutureNFT(tmpNFT);
@@ -53,6 +54,7 @@ export default function ExistingLock({
       actionedInCurrentEpoch: nft.actionedInCurrentEpoch,
       reset: nft.reset,
       lastVoted: nft.lastVoted,
+      influence: nft.influence,
     };
 
     const now = moment();
@@ -77,6 +79,7 @@ export default function ExistingLock({
       actionedInCurrentEpoch: nft.actionedInCurrentEpoch,
       reset: nft.reset,
       lastVoted: nft.lastVoted,
+      influence: nft.influence,
     };
 
     const now = moment();

@@ -42,6 +42,7 @@ interface VestNFT {
   actionedInCurrentEpoch: boolean;
   reset: boolean;
   lastVoted: bigint;
+  influence: number;
 }
 
 interface Bribe {
