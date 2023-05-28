@@ -28,7 +28,7 @@ import {
   KeyboardArrowUp,
   RestartAlt,
   Merge,
-  BatteryCharging90,
+  TrendingUp,
 } from "@mui/icons-material";
 import moment from "moment";
 import BigNumber from "bignumber.js";
@@ -537,7 +537,7 @@ function MyTableRow(props: {
             </Link>
           </MenuItem>
           <MenuItem disableRipple onClick={() => onView(row)}>
-            <BatteryCharging90 className="mr-2" /> Extend
+            <TrendingUp className="mr-2" /> Manage
           </MenuItem>
         </Menu>
       </TableCell>
