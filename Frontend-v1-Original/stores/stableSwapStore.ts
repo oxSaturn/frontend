@@ -61,6 +61,8 @@ import stores from ".";
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
 const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
+
+const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -5368,7 +5370,7 @@ class Store {
           address: pair.gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "earned",
-          args: ["0x9f9A1Aa08910867F38359F4287865c4A1162C202", account],
+          args: [CANTO_OPTION_TOKEN, account],
         } as const;
       });
 
@@ -5609,6 +5611,10 @@ class Store {
         return pair.rewardType === "Reward";
       });
 
+      let oBlotrRewardPairs = (pairs as Gauge[]).filter((pair) => {
+        return pair.rewardType === "oBLOTR_Reward";
+      });
+
       let distribution = (pairs as VeDistReward[]).filter((pair) => {
         return pair.rewardType === "Distribution";
       });
@@ -5633,7 +5639,8 @@ class Store {
       if (
         xBribePairs.length == 0 &&
         xxBribePairs.length == 0 &&
-        rewardPairs.length == 0
+        rewardPairs.length == 0 &&
+        oBlotrRewardPairs.length == 0
       ) {
         this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
         this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
@@ -5673,6 +5680,18 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming reward for ${rewardPairs[i].symbol}`,
+            status: TransactionStatus.WAITING,
+          });
+        }
+      }
+      if (oBlotrRewardPairs.length > 0) {
+        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+          const newClaimTX = this.getTXUUID();
+
+          rewardClaimTXIDs.push(newClaimTX);
+          sendOBJ.transactions.push({
+            uuid: newClaimTX,
+            description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
             status: TransactionStatus.WAITING,
           });
         }
@@ -5718,6 +5737,23 @@ class Store {
             const { request } = await viemClient.simulateContract({
               account,
               address: rewardPairs[i].gauge.address,
+              abi: CONTRACTS.GAUGE_ABI,
+              functionName: "getReward",
+              args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+            });
+            const txHash = await walletClient.writeContract(request);
+            return txHash;
+          };
+          await this._writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
+        }
+      }
+
+      if (oBlotrRewardPairs.length > 0) {
+        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+          const writeGetReward = async () => {
+            const { request } = await viemClient.simulateContract({
+              account,
+              address: oBlotrRewardPairs[i].gauge.address,
               abi: CONTRACTS.GAUGE_ABI,
               functionName: "getReward",
               args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
@@ -5860,7 +5896,7 @@ class Store {
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
-          args: [account, ["0x9f9A1Aa08910867F38359F4287865c4A1162C202"]],
+          args: [account, [CANTO_OPTION_TOKEN]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
