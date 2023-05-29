@@ -26,7 +26,7 @@ export const lockOptions: {
   "1 year": 365,
   "2 years": 730,
   "3 years": 1095,
-  "4 years": 1461,
+  "4 years": 1460,
 };
 export default function LockDuration({
   nft,

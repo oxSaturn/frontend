@@ -61,6 +61,8 @@ import stores from ".";
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
 const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
+
+const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -76,6 +78,7 @@ class Store {
       xBribes: Gauge[];
       xxBribes: Gauge[];
       rewards: Gauge[];
+      BLOTR_rewards: Gauge[];
       veDist: VeDistReward[];
     };
     updateDate: number;
@@ -102,6 +105,7 @@ class Store {
         xBribes: [],
         xxBribes: [],
         rewards: [],
+        BLOTR_rewards: [],
         veDist: [],
       },
       updateDate: 0,
@@ -231,6 +235,9 @@ class Store {
           case ACTIONS.CLAIM_REWARD:
             this.claimRewards(payload);
             break;
+          case ACTIONS.CLAIM_BLOTR_REWARD:
+            this.claimBlotrRewards(payload);
+            break;
           case ACTIONS.CLAIM_VE_DIST:
             this.claimVeDist(payload);
             break;
@@ -314,7 +321,7 @@ class Store {
             functionName: "tokenOfOwnerByIndex",
             args: [address, BigInt(idx)],
           });
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
+          const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -334,6 +341,10 @@ class Store {
                   functionName: "voted",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "totalSupply",
+                },
               ],
             });
 
@@ -348,6 +359,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         })
       );
@@ -404,7 +418,7 @@ class Store {
         args: [account, BigInt(id)],
       });
 
-      const [[lockedAmount, lockedEnd], lockValue, voted] =
+      const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
         await viemClient.multicall({
           allowFailure: false,
           multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -424,6 +438,10 @@ class Store {
               functionName: "voted",
               args: [tokenIndex],
             },
+            {
+              ...vestingContract,
+              functionName: "totalSupply",
+            },
           ],
         });
 
@@ -440,6 +458,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         }
 
@@ -668,6 +689,7 @@ class Store {
           local: false,
         },
         apr: 0,
+        oblotr_apr: 0,
         total_supply: 0,
         token0_address: token0,
         token1_address: token1,
@@ -1652,7 +1674,7 @@ class Store {
             functionName: "tokenOfOwnerByIndex",
             args: [address, BigInt(idx)],
           });
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
+          const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -1672,6 +1694,10 @@ class Store {
                   functionName: "voted",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "totalSupply",
+                },
               ],
             });
 
@@ -1687,6 +1713,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         })
       );
@@ -4134,7 +4163,7 @@ class Store {
             args: [account, BigInt(idx)] as const,
           });
 
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
+          const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
             await viemClient.multicall({
               allowFailure: false,
               multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -4154,6 +4183,10 @@ class Store {
                   functionName: "voted",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "totalSupply",
+                },
               ],
             });
 
@@ -4169,6 +4202,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         })
       );
@@ -5197,6 +5233,7 @@ class Store {
       const x_filteredPairs = structuredClone(gauges);
       const xx_filteredPairs = structuredClone(gauges);
       const filteredPairs2 = structuredClone(gauges);
+      const filteredPairs3 = structuredClone(gauges);
 
       let veDistReward: VeDistReward[] = [];
       let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
@@ -5357,13 +5394,29 @@ class Store {
         } as const;
       });
 
+      const BLOTR_rewardsCalls = filteredPairs3.map((pair) => {
+        return {
+          address: pair.gauge.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "earned",
+          args: [CANTO_OPTION_TOKEN, account],
+        } as const;
+      });
+
       const rewardsEarnedCallResult = await viemClient.multicall({
         allowFailure: false,
         multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: rewardsCalls,
       });
 
+      const BLOTR_rewardsEarnedCallResult = await viemClient.multicall({
+        allowFailure: false,
+        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+        contracts: BLOTR_rewardsCalls,
+      });
+
       const rewardsEarned = [...filteredPairs2];
+      const BLOTR_rewardsEarned = [...filteredPairs3];
 
       for (let i = 0; i < rewardsEarned.length; i++) {
         rewardsEarned[i].gauge.rewardsEarned = formatEther(
@@ -5371,7 +5424,14 @@ class Store {
         );
       }
 
+      for (let i = 0; i < BLOTR_rewardsEarned.length; i++) {
+        BLOTR_rewardsEarned[i].gauge.BLOTR_rewardsEarned = formatEther(
+          BLOTR_rewardsEarnedCallResult[i]
+        );
+      }
+
       const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
+      const filteredBlotrRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
       for (let j = 0; j < rewardsEarned.length; j++) {
         let pair = Object.assign({}, rewardsEarned[j]);
         if (
@@ -5383,11 +5443,23 @@ class Store {
           filteredRewards.push(pair);
         }
       }
+      for (let j = 0; j < BLOTR_rewardsEarned.length; j++) {
+        let pair = Object.assign({}, BLOTR_rewardsEarned[j]);
+        if (
+          pair.gauge &&
+          pair.gauge.BLOTR_rewardsEarned &&
+          parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
+        ) {
+          pair.rewardType = "oBLOTR_Reward";
+          filteredBlotrRewards.push(pair);
+        }
+      }
 
       const rewards: Store["store"]["rewards"] = {
         xBribes: x_filteredBribes,
         xxBribes: xx_filteredBribes,
         rewards: filteredRewards,
+        BLOTR_rewards: filteredBlotrRewards,
         veDist: veDistReward,
       };
 
@@ -5555,6 +5627,7 @@ class Store {
       let claim01TXID = this.getTXUUID();
       let claim0TXID = this.getTXUUID();
       let rewardClaimTXIDs: string[] = [];
+      let oblotr_rewardClaimTXIDs: string[] = [];
       let distributionClaimTXIDs: string[] = [];
 
       let xBribePairs = (pairs as Gauge[]).filter((pair) => {
@@ -5566,6 +5639,10 @@ class Store {
 
       let rewardPairs = (pairs as Gauge[]).filter((pair) => {
         return pair.rewardType === "Reward";
+      });
+
+      let oBlotrRewardPairs = (pairs as Gauge[]).filter((pair) => {
+        return pair.rewardType === "oBLOTR_Reward";
       });
 
       let distribution = (pairs as VeDistReward[]).filter((pair) => {
@@ -5592,7 +5669,8 @@ class Store {
       if (
         xBribePairs.length == 0 &&
         xxBribePairs.length == 0 &&
-        rewardPairs.length == 0
+        rewardPairs.length == 0 &&
+        oBlotrRewardPairs.length == 0
       ) {
         this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
         this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
@@ -5632,6 +5710,18 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming reward for ${rewardPairs[i].symbol}`,
+            status: TransactionStatus.WAITING,
+          });
+        }
+      }
+      if (oBlotrRewardPairs.length > 0) {
+        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+          const newClaimTX = this.getTXUUID();
+
+          oblotr_rewardClaimTXIDs.push(newClaimTX);
+          sendOBJ.transactions.push({
+            uuid: newClaimTX,
+            description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
             status: TransactionStatus.WAITING,
           });
         }
@@ -5685,6 +5775,26 @@ class Store {
             return txHash;
           };
           await this._writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
+        }
+      }
+
+      if (oBlotrRewardPairs.length > 0) {
+        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+          const writeGetReward = async () => {
+            const { request } = await viemClient.simulateContract({
+              account,
+              address: oBlotrRewardPairs[i].gauge.address,
+              abi: CONTRACTS.GAUGE_ABI,
+              functionName: "getReward",
+              args: [account, [CANTO_OPTION_TOKEN]],
+            });
+            const txHash = await walletClient.writeContract(request);
+            return txHash;
+          };
+          await this._writeContractWrapper(
+            oblotr_rewardClaimTXIDs[i],
+            writeGetReward
+          );
         }
       }
 
@@ -5761,6 +5871,65 @@ class Store {
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
           args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeGetReward);
+
+      this.getRewardBalances({
+        type: "internal reward balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+      this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimBlotrRewards = async (payload: {
+    type: string;
+    content: { pair: Gauge; tokenID: string };
+  }) => {
+    try {
+      const account = getAccount().address;
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = await getWalletClient({ chainId: canto.id });
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { pair, tokenID } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+        verb: "Rewards Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming your rewards`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const writeGetReward = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: pair.gauge?.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "getReward",
+          args: [account, [CANTO_OPTION_TOKEN]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
