@@ -250,6 +250,10 @@ export default function EnhancedTable({
     router.push(`/vest/${nft.id}`);
   };
 
+  const onMerge = (nft: VestNFT) => {
+    router.push(`/vest/${nft.id}/merge`);
+  };
+
   const onReset = (nft: {
     lockAmount: string;
     lockValue: string;
@@ -306,6 +310,7 @@ export default function EnhancedTable({
                       veToken={veToken}
                       onReset={onReset}
                       onView={onView}
+                      onMerge={onMerge}
                     />
                   );
                 })}
@@ -333,8 +338,9 @@ function MyTableRow(props: {
   veToken: VeToken | null;
   onReset: any;
   onView: any;
+  onMerge: any;
 }) {
-  const { row, index, govToken, veToken, onReset, onView } = props;
+  const { row, index, govToken, veToken, onMerge, onReset, onView } = props;
   const influence =
     row.influence * 100 > 0.001
       ? `${(row.influence * 100).toFixed(3)}%`
@@ -526,15 +532,11 @@ function MyTableRow(props: {
                 (row.actionedInCurrentEpoch && row.reset)
               )
             }
+            onClick={() => {
+              onMerge(row);
+            }}
           >
-            <Link
-              href={`/vest/${row.id}/merge`}
-              className="flex items-center space-x-2"
-            >
-              <>
-                <Merge className="mr-2" /> <span>Merge</span>
-              </>
-            </Link>
+            <Merge className="mr-2" /> <span>Merge</span>
           </MenuItem>
           <MenuItem disableRipple onClick={() => onView(row)}>
             <TrendingUp className="mr-2" /> Manage
