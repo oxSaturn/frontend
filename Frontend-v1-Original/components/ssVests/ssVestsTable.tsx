@@ -329,8 +329,8 @@ export default function EnhancedTable({
 function MyTableRow(props: {
   row: VestNFT;
   index: number;
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
   onReset: any;
   onView: any;
 }) {
