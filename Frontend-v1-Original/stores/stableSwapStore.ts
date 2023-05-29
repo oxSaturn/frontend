@@ -5627,6 +5627,7 @@ class Store {
       let claim01TXID = this.getTXUUID();
       let claim0TXID = this.getTXUUID();
       let rewardClaimTXIDs: string[] = [];
+      let oblotr_rewardClaimTXIDs: string[] = [];
       let distributionClaimTXIDs: string[] = [];
 
       let xBribePairs = (pairs as Gauge[]).filter((pair) => {
@@ -5717,7 +5718,7 @@ class Store {
         for (let i = 0; i < oBlotrRewardPairs.length; i++) {
           const newClaimTX = this.getTXUUID();
 
-          rewardClaimTXIDs.push(newClaimTX);
+          oblotr_rewardClaimTXIDs.push(newClaimTX);
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
@@ -5785,12 +5786,15 @@ class Store {
               address: oBlotrRewardPairs[i].gauge.address,
               abi: CONTRACTS.GAUGE_ABI,
               functionName: "getReward",
-              args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+              args: [account, [CANTO_OPTION_TOKEN]],
             });
             const txHash = await walletClient.writeContract(request);
             return txHash;
           };
-          await this._writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
+          await this._writeContractWrapper(
+            oblotr_rewardClaimTXIDs[i],
+            writeGetReward
+          );
         }
       }
 
