@@ -30,6 +30,8 @@ import {
 import { useGovToken, useVeToken, usePairs } from "../../lib/global/queries";
 import { useVestNfts } from "../ssVests/queries";
 
+const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
+
 export const getRewardBalances = async (
   address: Address | undefined,
   tokenID: string | undefined,
@@ -62,6 +64,7 @@ export const getRewardBalances = async (
   const x_filteredPairs = structuredClone(gauges);
   const xx_filteredPairs = structuredClone(gauges);
   const filteredPairs2 = structuredClone(gauges);
+  const filteredPairs3 = structuredClone(gauges);
 
   let veDistReward: VeDistReward[] = [];
   let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
@@ -222,13 +225,30 @@ export const getRewardBalances = async (
     } as const;
   });
 
+  const oBlotrRewardsCalls = filteredPairs2.map((pair) => {
+    return {
+      address: pair.gauge.address,
+      abi: CONTRACTS.GAUGE_ABI,
+      functionName: "earned",
+      args: [CANTO_OPTION_TOKEN, address],
+    } as const;
+  });
+
   const rewardsEarnedCallResult = await viemClient.multicall({
     allowFailure: false,
     multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
     contracts: rewardsCalls,
   });
 
+  const oBlotrRewardsEarnedCallResult = await viemClient.multicall({
+    allowFailure: false,
+    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+    contracts: oBlotrRewardsCalls,
+  });
+
   const rewardsEarned = [...filteredPairs2];
+
+  const oBlotrRewardsEarned = [...filteredPairs3];
 
   for (let i = 0; i < rewardsEarned.length; i++) {
     rewardsEarned[i].gauge.rewardsEarned = formatEther(
@@ -236,7 +256,15 @@ export const getRewardBalances = async (
     );
   }
 
+  for (let i = 0; i < oBlotrRewardsEarned.length; i++) {
+    oBlotrRewardsEarned[i].gauge.BLOTR_rewardsEarned = formatEther(
+      oBlotrRewardsEarnedCallResult[i]
+    );
+  }
+
   const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
+  const oBlotrFilteredRewards: Gauge[] = []; // Pair with rewardType set to "oBLOTR_Reward"
+
   for (let j = 0; j < rewardsEarned.length; j++) {
     let pair = Object.assign({}, rewardsEarned[j]);
     if (
@@ -249,15 +277,29 @@ export const getRewardBalances = async (
     }
   }
 
+  for (let j = 0; j < oBlotrRewardsEarned.length; j++) {
+    let pair = Object.assign({}, oBlotrRewardsEarned[j]);
+    if (
+      pair.gauge &&
+      pair.gauge.BLOTR_rewardsEarned &&
+      parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
+    ) {
+      pair.rewardType = "oBLOTR_Reward";
+      oBlotrFilteredRewards.push(pair);
+    }
+  }
+
   const rewards: {
     xBribes: Gauge[];
     xxBribes: Gauge[];
     rewards: Gauge[];
+    oBlotrRewards: Gauge[];
     veDist: VeDistReward[];
   } = {
     xBribes: x_filteredBribes,
     xxBribes: xx_filteredBribes,
     rewards: filteredRewards,
+    oBlotrRewards: oBlotrFilteredRewards,
     veDist: veDistReward,
   };
 
@@ -273,6 +315,7 @@ export const useRewards = (
               xBribes: Gauge[];
               xxBribes: Gauge[];
               rewards: Gauge[];
+              oBlotrRewards: Gauge[];
               veDist: VeDistReward[];
             }
           | undefined

@@ -68,7 +68,7 @@ const getVestNFTs = async (
         functionName: "tokenOfOwnerByIndex",
         args: [address, BigInt(idx)],
       });
-      const [[lockedAmount, lockedEnd], lockValue, voted] =
+      const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
         await viemClient.multicall({
           allowFailure: false,
           multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
@@ -88,6 +88,10 @@ const getVestNFTs = async (
               functionName: "voted",
               args: [tokenIndex],
             },
+            {
+              ...vestingContract,
+              functionName: "totalSupply",
+            },
           ],
         });
 
@@ -104,6 +108,9 @@ const getVestNFTs = async (
         actionedInCurrentEpoch,
         reset: actionedInCurrentEpoch && !voted,
         lastVoted,
+        influence:
+          Number(formatUnits(lockValue, veToken.decimals)) /
+          Number(formatUnits(totalSupply, veToken.decimals)),
       };
     })
   );

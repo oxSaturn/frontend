@@ -286,6 +286,7 @@ export default function Lock({
       actionedInCurrentEpoch: false,
       reset: false,
       lastVoted: BigInt(0),
+      influence: 0,
     };
 
     return (

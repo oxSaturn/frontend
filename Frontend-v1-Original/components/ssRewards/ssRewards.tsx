@@ -28,6 +28,7 @@ const initialEmptyToken: VestNFT = {
   actionedInCurrentEpoch: false,
   reset: false,
   lastVoted: BigInt(0),
+  influence: 0,
 };
 
 export default function Rewards() {
@@ -53,15 +54,18 @@ export default function Rewards() {
         data.xBribes &&
         data.xxBribes &&
         data.rewards &&
+        data.oBlotrRewards &&
         data.veDist &&
         data.xBribes.length >= 0 &&
         data.xxBribes.length >= 0 &&
-        data.rewards.length >= 0
+        data.rewards.length >= 0 &&
+        data.oBlotrRewards.length >= 0
       ) {
         setRewards([
           ...data.xxBribes,
           ...data.xBribes,
           ...data.rewards,
+          ...data.oBlotrRewards,
           ...data.veDist,
         ]);
       }

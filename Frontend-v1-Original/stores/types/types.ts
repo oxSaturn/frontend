@@ -42,6 +42,7 @@ interface VestNFT {
   actionedInCurrentEpoch: boolean;
   reset: boolean;
   lastVoted: bigint;
+  influence: number;
 }
 
 interface Bribe {
@@ -57,6 +58,7 @@ type BribeEarned = { earned: string };
 interface Pair {
   tvl: number;
   apr: number;
+  oblotr_apr: number;
   address: `0x${string}`;
   symbol: string;
   decimals: number;
@@ -101,6 +103,7 @@ interface Pair {
     weight?: string;
     weightPercent?: string;
     rewardsEarned?: string;
+    BLOTR_rewardsEarned?: string;
     x_bribesEarned?: Bribe[];
     xx_bribesEarned?: Bribe[];
     bribesEarnedValue?: BribeEarned[];

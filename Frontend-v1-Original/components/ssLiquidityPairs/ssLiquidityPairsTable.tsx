@@ -38,6 +38,7 @@ import {
   KeyboardArrowUp,
   KeyboardArrowDown,
   OpenInNewOutlined,
+  LocalFireDepartmentOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -1004,37 +1005,31 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             {formatTVL(row.tvl)}
           </Typography>
         </TableCell>
-        {row && (row.apr !== undefined || row.apr !== null) && (
-          <TableCell align="right">
-            <Grid container spacing={0}>
-              <Grid item lg={10}>
-                <Typography variant="h2" className="text-xs font-extralight">
-                  {row.apr.toFixed(2)}%
-                </Typography>
-              </Grid>
-              {row && row.isAliveGauge === false && (
-                <Grid item lg={2}>
-                  <Tooltip title="Gauge has been killed">
-                    <WarningOutlined className="ml-2 text-base text-yellow-300" />
-                  </Tooltip>
-                </Grid>
-              )}
+        <TableCell align="right">
+          <Grid container spacing={0}>
+            <Grid item lg={10}>
+              <Typography variant="h2" className="text-xs font-extralight">
+                {row.apr.toFixed(2)}%
+              </Typography>
             </Grid>
-          </TableCell>
-        )}
-        {!(row && (row.apr !== undefined || row.apr !== null)) && (
-          <div className="flex items-center justify-end max-md:block">
-            <Skeleton
-              variant="rectangular"
-              width={120}
-              height={16}
-              style={{
-                marginTop: "1px",
-                marginBottom: "1px",
-              }}
-            />
-          </div>
-        )}
+            {row.isAliveGauge === false && (
+              <Grid item lg={2}>
+                <Tooltip title="Gauge has been killed">
+                  <WarningOutlined className="ml-2 text-base text-yellow-300" />
+                </Tooltip>
+              </Grid>
+            )}
+            {row.oblotr_apr > 0 && (
+              <Grid item lg={2}>
+                <Tooltip
+                  title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}
+                >
+                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+                </Tooltip>
+              </Grid>
+            )}
+          </Grid>
+        </TableCell>
         <TableCell align="right">
           <Button
             variant="outlined"
@@ -1170,10 +1165,12 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       return 0;
 
     case "apr":
-      if (BigNumber(b?.apr).lt(a?.apr)) {
+      const bApr = b.apr + b.oblotr_apr;
+      const aApr = a.apr + a.oblotr_apr;
+      if (BigNumber(bApr).lt(aApr)) {
         return -1;
       }
-      if (BigNumber(b?.apr).gt(a?.apr)) {
+      if (BigNumber(bApr).gt(aApr)) {
         return 1;
       }
       return 0;
