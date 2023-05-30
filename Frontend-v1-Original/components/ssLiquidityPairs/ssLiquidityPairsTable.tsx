@@ -17,8 +17,6 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Popper,
-  Fade,
   Grid,
   Switch,
   Collapse,
@@ -31,7 +29,6 @@ import {
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 import {
-  FilterList,
   Search,
   AddCircleOutline,
   WarningOutlined,
@@ -154,19 +151,16 @@ function EnhancedTableHead(props: {
 
 const getLocalToggles = () => {
   let localToggles = {
-    toggleActive: false,
+    toggleMyDeposits: false,
     toggleActiveGauge: true,
     toggleVariable: true,
     toggleStable: true,
+    toggleBoosted: false,
   };
-  // get locally saved toggles
-  try {
-    const localToggleString = localStorage.getItem("solidly-pairsToggle-v1");
-    if (localToggleString && localToggleString.length > 0) {
-      localToggles = JSON.parse(localToggleString);
-    }
-  } catch (ex) {
-    console.log(ex);
+
+  const localToggleString = localStorage.getItem("pairsToggle-v1");
+  if (localToggleString && localToggleString.length > 0) {
+    localToggles = JSON.parse(localToggleString);
   }
 
   return localToggles;
@@ -174,10 +168,11 @@ const getLocalToggles = () => {
 
 interface PairsTableToolbarProps {
   setSearch: (_search: string) => void;
-  setToggleActive: (_toggleActive: boolean) => void;
+  setToggleMyDeposits: (_toggleMyDeposits: boolean) => void;
   setToggleActiveGauge: (_toggleActiveGauge: boolean) => void;
   setToggleStable: (_toggleStable: boolean) => void;
   setToggleVariable: (_toggleVariable: boolean) => void;
+  setToggleBoosted: (_toggleBoosted: boolean) => void;
 }
 
 const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
@@ -186,13 +181,18 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
   const localToggles = getLocalToggles();
 
   const [search, setSearch] = useState("");
-  const [toggleActive, setToggleActive] = useState(localToggles.toggleActive);
+  const [toggleMyDeposits, setToggleMyDeposits] = useState(
+    localToggles.toggleMyDeposits
+  );
   const [toggleActiveGauge, setToggleActiveGauge] = useState(
     localToggles.toggleActiveGauge
   );
   const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
   const [toggleVariable, setToggleVariable] = useState(
     localToggles.toggleVariable
+  );
+  const [toggleBoosted, setToggleBoosted] = useState(
+    localToggles.toggleBoosted
   );
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,10 +204,10 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
     const localToggles = getLocalToggles();
 
     switch (event.target.name) {
-      case "toggleActive":
-        setToggleActive(event.target.checked);
-        props.setToggleActive(event.target.checked);
-        localToggles.toggleActive = event.target.checked;
+      case "toggleMyDeposits":
+        setToggleMyDeposits(event.target.checked);
+        props.setToggleMyDeposits(event.target.checked);
+        localToggles.toggleMyDeposits = event.target.checked;
         break;
       case "toggleActiveGauge":
         setToggleActiveGauge(event.target.checked);
@@ -224,15 +224,17 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
         props.setToggleVariable(event.target.checked);
         localToggles.toggleVariable = event.target.checked;
         break;
+      case "toggleBoosted":
+        setToggleBoosted(event.target.checked);
+        props.setToggleBoosted(event.target.checked);
+        localToggles.toggleBoosted = event.target.checked;
+        break;
       default:
     }
 
     // set locally saved toggles
     try {
-      localStorage.setItem(
-        "solidly-pairsToggle-v1",
-        JSON.stringify(localToggles)
-      );
+      localStorage.setItem("pairsToggle-v1", JSON.stringify(localToggles));
     } catch (ex) {
       console.log(ex);
     }
@@ -242,33 +244,20 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
     router.push("/liquidity/create");
   };
 
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? "transitions-popper" : undefined;
-
   return (
     <Toolbar className="my-6 mx-0 p-0">
-      <Grid container spacing={2}>
-        <Grid item lg={2} md={2} sm={12} xs={12}>
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<AddCircleOutline />}
-            size="large"
-            className="w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
-            onClick={onCreate}
-          >
-            <Typography className="text-base font-bold">
-              Add Liquidity
-            </Typography>
-          </Button>
-        </Grid>
-        <Grid item lg={9} md={9} sm={10} xs={10}>
+      <div className="flex w-full flex-col items-center justify-between gap-2 lg:flex-row lg:gap-0">
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AddCircleOutline />}
+          size="large"
+          className="flex w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
+          onClick={onCreate}
+        >
+          <Typography className="text-base font-bold">Add Liquidity</Typography>
+        </Button>
+        <div className="w-full lg:w-auto lg:flex-grow-[0.6]">
           <TextField
             className="flex w-full flex-[1]"
             variant="outlined"
@@ -284,104 +273,65 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
               ),
             }}
           />
-        </Grid>
-        <Grid item lg={1} md={true} sm={2} xs={2}>
-          <Tooltip placement="top" title="Filter list">
-            <IconButton
-              onClick={handleClick}
-              className="h-[94.5%] w-full rounded-lg border border-[rgba(126,153,176,0.3)] bg-primaryBg text-cantoGreen"
-              aria-label="filter list"
-            >
-              <FilterList />
-            </IconButton>
-          </Tooltip>
-        </Grid>
-      </Grid>
-
-      <Popper
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        transition
-        placement="bottom-end"
-      >
-        {({ TransitionProps }) => (
-          <Fade {...TransitionProps} timeout={350}>
-            <div className="mt-4 min-w-[300px] rounded-lg border border-[rgba(126,153,176,0.2)] bg-deepBlue p-5 shadow-[0_10px_20px_0_rgba(0,0,0,0.2)]">
-              <Typography
-                className="mb-2 border-b border-b-[rgba(126,153,176,0.2)] pb-5"
-                variant="h5"
-              >
-                List Filters
-              </Typography>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    My Deposits
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleActive}
-                    name={"toggleActive"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    Show Active Gauges
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleActiveGauge}
-                    name={"toggleActiveGauge"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    Show Stable Pools
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleStable}
-                    name={"toggleStable"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    Show Volatile Pools
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleVariable}
-                    name={"toggleVariable"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-            </div>
-          </Fade>
-        )}
-      </Popper>
+        </div>
+        <div className="flex flex-col xs:flex-row">
+          <div className="flex items-center">
+            <Typography className="text-sm text-orange-600" variant="body1">
+              Boosted
+            </Typography>
+            <Switch
+              color="primary"
+              checked={toggleBoosted}
+              name={"toggleBoosted"}
+              onChange={onToggle}
+            />
+          </div>
+          <div className="flex items-center">
+            <Typography className="text-sm" variant="body1">
+              My Deposits
+            </Typography>
+            <Switch
+              color="primary"
+              checked={toggleMyDeposits}
+              name={"toggleMyDeposits"}
+              onChange={onToggle}
+            />
+          </div>
+          <div className="flex items-center">
+            <Typography className="text-sm" variant="body1">
+              With Gauges
+            </Typography>
+            <Switch
+              color="primary"
+              checked={toggleActiveGauge}
+              name={"toggleActiveGauge"}
+              onChange={onToggle}
+            />
+          </div>
+          <div className="flex items-center">
+            <Typography className="text-sm" variant="body1">
+              Stable
+            </Typography>
+            <Switch
+              color="primary"
+              checked={toggleStable}
+              name={"toggleStable"}
+              onChange={onToggle}
+            />
+          </div>
+          <div className="flex items-center">
+            <Typography className="text-sm" variant="body1">
+              Volatile
+            </Typography>
+            <Switch
+              color="primary"
+              checked={toggleVariable}
+              name={"toggleVariable"}
+              onChange={onToggle}
+            />
+          </div>
+        </div>
+      </div>
     </Toolbar>
   );
 };
@@ -401,13 +351,18 @@ export default function EnhancedTable({
   const localToggles = getLocalToggles();
 
   const [search, setSearch] = useState("");
-  const [toggleActive, setToggleActive] = useState(localToggles.toggleActive);
+  const [toggleMyDeposits, setToggleMyDeposits] = useState(
+    localToggles.toggleMyDeposits
+  );
   const [toggleActiveGauge, setToggleActiveGauge] = useState(
     localToggles.toggleActiveGauge
   );
   const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
   const [toggleVariable, setToggleVariable] = useState(
     localToggles.toggleVariable
+  );
+  const [toggleBoosted, setToggleBoosted] = useState(
+    localToggles.toggleBoosted
   );
 
   const handleRequestSort = (
@@ -487,7 +442,7 @@ export default function EnhancedTable({
           if (toggleActiveGauge === true && !pair.gauge) {
             return false;
           }
-          if (toggleActive === true) {
+          if (toggleMyDeposits === true) {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
               (!pair.balance || !BigNumber(pair.balance).gt(0))
@@ -495,15 +450,20 @@ export default function EnhancedTable({
               return false;
             }
           }
-
+          if (toggleBoosted === true) {
+            if (!pair.oblotr_apr) {
+              return false;
+            }
+          }
           return true;
         }),
     [
       pairs,
       toggleActiveGauge,
-      toggleActive,
+      toggleMyDeposits,
       toggleStable,
       toggleVariable,
+      toggleBoosted,
       search,
     ]
   );
@@ -566,10 +526,11 @@ export default function EnhancedTable({
     <div className="w-full">
       <EnhancedTableToolbar
         setSearch={setSearch}
-        setToggleActive={setToggleActive}
+        setToggleMyDeposits={setToggleMyDeposits}
         setToggleActiveGauge={setToggleActiveGauge}
         setToggleStable={setToggleStable}
         setToggleVariable={setToggleVariable}
+        setToggleBoosted={setToggleBoosted}
       />
       <Paper
         elevation={0}
@@ -1009,7 +970,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           <Grid container spacing={0}>
             <Grid item lg={10}>
               <Typography variant="h2" className="text-xs font-extralight">
-                {row.apr.toFixed(2)}%
+                {(row.apr + row.oblotr_apr).toFixed(2)}%
               </Typography>
             </Grid>
             {row.isAliveGauge === false && (
