@@ -81,7 +81,7 @@ export const useVeToken = () => {
   });
 };
 
-const getLocalAssets = () => {
+export const getLocalAssets = () => {
   let localBaseAssets: BaseAsset[] = [];
   const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
@@ -92,7 +92,14 @@ const getLocalAssets = () => {
   return localBaseAssets;
 };
 
-const getInitBaseAssets = () => {
+const useLocalAssets = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.LOCAL_ASSETS],
+    queryFn: getLocalAssets,
+  });
+};
+
+const getInitBaseAssets = (localBaseAssets: BaseAsset[] | undefined) => {
   const baseAssets: BaseAsset[] = tokenlist.map((asset) => {
     return {
       ...asset,
@@ -106,9 +113,7 @@ const getInitBaseAssets = () => {
   if (!set.has(NATIVE_TOKEN.address))
     baseAssets.unshift(NATIVE_TOKEN as BaseAsset);
 
-  const localBaseAssets = getLocalAssets();
-
-  return [...baseAssets, ...localBaseAssets];
+  return localBaseAssets ? [...baseAssets, ...localBaseAssets] : baseAssets;
 };
 
 const getPairsData = async () => {
@@ -173,8 +178,11 @@ export const useGovToken = () => {
   });
 };
 
-export const getBaseAssetsWithInfo = async (address: Address | undefined) => {
-  const baseAssets = getInitBaseAssets();
+export const getBaseAssetsWithInfo = async (
+  address: Address | undefined,
+  localAssets: BaseAsset[] | undefined
+) => {
+  const baseAssets = getInitBaseAssets(localAssets);
 
   if (!baseAssets) {
     console.warn("baseAssets not found");
@@ -276,9 +284,10 @@ export const useBaseAssetWithInfo = <TData = BaseAsset[]>(
   select?: (_data: BaseAsset[]) => TData
 ) => {
   const { address } = useAccount();
+  const { data: localAssets } = useLocalAssets();
   return useQuery({
-    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address],
-    queryFn: () => getBaseAssetsWithInfo(address), // enabled only when initialBaseAssets is defined
+    queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, localAssets],
+    queryFn: () => getBaseAssetsWithInfo(address, localAssets),
     select,
   });
 };
@@ -286,7 +295,6 @@ export const useBaseAssetWithInfo = <TData = BaseAsset[]>(
 const getExactBaseAsset = async (
   address: `0x${string}`,
   baseAssets: BaseAsset[],
-  save?: boolean,
   getBalance?: boolean
 ) => {
   const theBaseAsset = baseAssets.filter((as) => {
@@ -342,19 +350,6 @@ const getExactBaseAsset = async (
       });
       newBaseAsset.balance = formatUnits(balanceOf, newBaseAsset.decimals);
     }
-    // TODO feel like its not the way
-  }
-
-  //only save when a user adds it. don't for when we lookup a pair and find he asset.
-  if (save) {
-    let localBaseAssets = getLocalAssets();
-    localBaseAssets = [...localBaseAssets, newBaseAsset];
-    localStorage.setItem("stableSwap-assets", JSON.stringify(localBaseAssets));
-
-    const storeBaseAssets = [...baseAssets, newBaseAsset];
-
-    // TODO set query data of base assets to storeBaseAssets?
-    // TODO if save invalidate swapAssets?
   }
 
   return newBaseAsset;
@@ -398,13 +393,11 @@ const getPairsWithoutGauges = async (
       const token0 = await getExactBaseAsset(
         pair.token0.address,
         baseAssets,
-        false,
         true
       );
       const token1 = await getExactBaseAsset(
         pair.token1.address,
         baseAssets,
-        false,
         true
       );
 

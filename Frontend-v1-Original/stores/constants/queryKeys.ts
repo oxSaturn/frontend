@@ -2,6 +2,7 @@
 export const GOV_TOKEN_BASE = "govTokenBase";
 export const VE_TOKEN = "veToken";
 export const BASE_ASSETS = "baseAssets";
+export const LOCAL_ASSETS = "localAssets";
 export const PAIRS_DATA = "pairsData";
 export const PAIRS = "pairs";
 export const TOKEN_PRICES = "tokenPrices";

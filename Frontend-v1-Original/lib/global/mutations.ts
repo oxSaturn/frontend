@@ -1,4 +1,5 @@
 import { type WalletClient } from "wagmi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BaseError, type WriteContractReturnType } from "viem";
 
 import viemClient from "../../stores/connectors/viem";
@@ -7,9 +8,50 @@ import {
   ACTIONS,
   CONTRACTS,
   MAX_UINT256,
+  QUERY_KEYS,
   W_NATIVE_ABI,
 } from "../../stores/constants/constants";
 import stores from "../../stores";
+import { BaseAsset } from "../../stores/types/types";
+
+import { getLocalAssets } from "./queries";
+
+const addLocalAsset = async (newBaseAsset: BaseAsset) => {
+  const localBaseAssets = getLocalAssets();
+  const newLocalBaseAssets = [...localBaseAssets, newBaseAsset];
+  localStorage.setItem("stableSwap-assets", JSON.stringify(newLocalBaseAssets));
+
+  return newLocalBaseAssets;
+};
+
+const removeBaseAsset = async (asset: BaseAsset) => {
+  const localBaseAssets = getLocalAssets();
+  const newLocalBaseAssets = localBaseAssets.filter(
+    (localAsset) => localAsset.address !== asset.address
+  );
+  localStorage.setItem("stableSwap-assets", JSON.stringify(newLocalBaseAssets));
+  return newLocalBaseAssets;
+};
+
+export const useAddLocalAsset = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newBaseAsset: BaseAsset) => addLocalAsset(newBaseAsset),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.LOCAL_ASSETS]);
+    },
+  });
+};
+
+export const useRemoveLocalAsset = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newBaseAsset: BaseAsset) => removeBaseAsset(newBaseAsset),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.LOCAL_ASSETS]);
+    },
+  });
+};
 
 export const writeApprove = async (
   walletClient: WalletClient,

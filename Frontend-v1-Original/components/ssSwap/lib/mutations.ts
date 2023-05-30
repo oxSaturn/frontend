@@ -4,23 +4,23 @@ import { formatUnits } from "viem";
 import BigNumber from "bignumber.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import viemClient from "../../stores/connectors/viem";
-import stores from "../../stores";
+import viemClient from "../../../stores/connectors/viem";
+import stores from "../../../stores";
 import {
   BaseAsset,
   ITransaction,
   QuoteSwapResponse,
   TransactionStatus,
-} from "../../stores/types/types";
-import { formatCurrency, getTXUUID } from "../../utils/utils";
+} from "../../../stores/types/types";
+import { formatCurrency, getTXUUID } from "../../../utils/utils";
 import {
   ACTIONS,
   CONTRACTS,
   MAX_UINT256,
   NATIVE_TOKEN,
   QUERY_KEYS,
-} from "../../stores/constants/constants";
-import { writeApprove, writeWrapUnwrap } from "../../lib/global/mutations";
+} from "../../../stores/constants/constants";
+import { writeApprove, writeWrapUnwrap } from "../../../lib/global/mutations";
 
 const getFirebirdSwapAllowance = async (
   token: BaseAsset,
@@ -202,7 +202,6 @@ export const useSwap = (onSuccess: () => void) => {
     }) => swap(options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       onSuccess();
     },
   });
@@ -272,7 +271,6 @@ export const useWrapOrUnwrap = (onSuccess: () => void) => {
     }) => wrapOrUnwrap(options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       onSuccess();
     },
   });

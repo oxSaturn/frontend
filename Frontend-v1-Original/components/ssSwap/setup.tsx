@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import {
   TextField,
   Typography,
@@ -19,14 +18,13 @@ import BigNumber from "bignumber.js";
 import { formatCurrency } from "../../utils/utils";
 import {
   NATIVE_TOKEN,
-  QUERY_KEYS,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
 import type { BaseAsset } from "../../stores/types/types";
 import { useTokenPrices } from "../header/queries";
 
-import { quoteSwap, useSwapAssets } from "./queries";
-import { useSwap, useWrapOrUnwrap } from "./mutations";
+import { useSwapAssets, useQuote } from "./lib/queries";
+import { useSwap, useWrapOrUnwrap } from "./lib/mutations";
 import { AssetSelect } from "./select";
 import { RoutesDialog } from "./routes";
 import { usePriceDiff } from "./lib/usePriceDiff";
@@ -65,91 +63,26 @@ function Setup() {
 
   const { data: tokenPrices } = useTokenPrices();
   const { data: swapAssetsOptions } = useSwapAssets();
+
   const { mutate: swap, isLoading: loadingSwap } = useSwap(swapReturned);
   const { mutate: wrapOrUnwrap, isLoading: loadingWrapOrUnwrap } =
     useWrapOrUnwrap(swapReturned);
-  const loading = loadingSwap || loadingWrapOrUnwrap;
-  const { address } = useAccount();
+
+  const loadingTrade = loadingSwap || loadingWrapOrUnwrap;
 
   const {
     refetch: refetchQuote,
     isFetching: quoteLoading,
     data: quote,
     remove: removeQuote,
-  } = useQuery({
-    queryKey: [
-      QUERY_KEYS.QUOTE_SWAP,
-      address,
-      fromAssetValue,
-      toAssetValue,
-      fromAmountValue,
-      slippage,
-    ],
-    queryFn: () =>
-      quoteSwap(address, {
-        fromAsset: fromAssetValue,
-        toAsset: toAssetValue,
-        fromAmount: fromAmountValue,
-        slippage,
-      }),
-    enabled:
-      !!fromAssetValue &&
-      !!toAssetValue &&
-      fromAmountValue !== "" &&
-      !isWrapUnwrap,
-    onError: () => {
-      setToAmountValue("");
-      setToAmountValueUsd("");
-    },
-    onSuccess: (firebirdQuote) => {
-      if (!fromAssetValue || !toAssetValue) {
-        setToAmountValue("");
-        setToAmountValueUsd("");
-        return;
-      }
-      if (
-        firebirdQuote.encodedData &&
-        firebirdQuote.maxReturn &&
-        firebirdQuote.maxReturn.totalFrom ===
-          BigNumber(fromAmountValue)
-            .multipliedBy(10 ** fromAssetValue.decimals)
-            .toFixed(0) &&
-        (firebirdQuote.maxReturn.from.toLowerCase() ===
-          fromAssetValue.address.toLowerCase() ||
-          (firebirdQuote.maxReturn.from ===
-            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
-            fromAssetValue.address === NATIVE_TOKEN.address)) &&
-        (firebirdQuote.maxReturn.to.toLowerCase() ===
-          toAssetValue.address.toLowerCase() ||
-          (firebirdQuote.maxReturn.to ===
-            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
-            toAssetValue.address === NATIVE_TOKEN.address))
-      ) {
-        if (BigNumber(firebirdQuote.maxReturn.totalTo).eq(0)) {
-          setToAmountValue("");
-          setToAmountValueUsd("");
-          return;
-        }
-
-        setToAmountValue(
-          BigNumber(firebirdQuote.maxReturn.totalTo)
-            .div(10 ** toAssetValue.decimals)
-            .toFixed(toAssetValue.decimals, BigNumber.ROUND_DOWN)
-        );
-        const toAddressLookUp =
-          firebirdQuote.maxReturn.to ===
-          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-            ? W_NATIVE_ADDRESS.toLowerCase()
-            : firebirdQuote.maxReturn.to.toLowerCase();
-        const toUsdValue = BigNumber(firebirdQuote.maxReturn.totalTo)
-          .div(10 ** toAssetValue.decimals)
-          .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
-          .toFixed(2);
-        setToAmountValueUsd(toUsdValue);
-      }
-    },
-    refetchOnWindowFocus: true,
-    refetchInterval: 10000,
+  } = useQuote({
+    fromAssetValue,
+    toAssetValue,
+    fromAmountValue,
+    slippage,
+    setToAmountValue,
+    setToAmountValueUsd,
+    loadingTrade,
   });
 
   useEffect(() => {
@@ -248,8 +181,6 @@ function Setup() {
     }
   };
 
-  const toAmountChanged = () => {};
-
   const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value == "" || !isNaN(+event.target.value)) {
       setSlippage(event.target.value);
@@ -301,7 +232,7 @@ function Setup() {
     } else {
       if (
         !fromAssetValue?.balance ||
-        isNaN(+fromAssetValue?.balance) || // TODO probably dont neet it
+        isNaN(+fromAssetValue?.balance) ||
         BigNumber(fromAssetValue?.balance).lte(0)
       ) {
         setFromAmountError("Invalid balance");
@@ -349,7 +280,7 @@ function Setup() {
     } else {
       if (
         !fromAssetValue?.balance ||
-        isNaN(+fromAssetValue?.balance) || // TODO probably dont neet it
+        isNaN(+fromAssetValue?.balance) ||
         BigNumber(fromAssetValue?.balance).lte(0)
       ) {
         setFromAmountError("Invalid balance");
@@ -555,7 +486,7 @@ function Setup() {
           <SmallInput
             amountValue={slippage}
             amountChanged={onSlippageChanged}
-            loading={loading}
+            loading={loadingTrade}
           />
         </div>
         <div className="mb-4 flex items-center justify-end space-x-2">
@@ -577,7 +508,7 @@ function Setup() {
           assetError={fromAssetError}
           assetOptions={swapAssetsOptions}
           onAssetSelect={onAssetSelect}
-          loading={loading}
+          loading={loadingTrade}
           setBalance100={setBalance100}
         />
         <div className="flex h-0 w-full items-center justify-center">
@@ -594,12 +525,11 @@ function Setup() {
           amountValueUsd={toAmountValueUsd}
           diffUsd={usdDiff}
           amountError={toAmountError}
-          amountChanged={toAmountChanged}
           assetValue={toAssetValue}
           assetError={false}
           assetOptions={swapAssetsOptions}
           onAssetSelect={onAssetSelect}
-          loading={loading}
+          loading={loadingTrade}
           setBalance100={setBalance100}
         />
         <div className="flex min-h-[176px] flex-col items-center justify-center">
@@ -611,11 +541,11 @@ function Setup() {
             size="large"
             color="primary"
             className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-            disabled={loading || quoteLoading || (!quote && !isWrapUnwrap)}
+            disabled={loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)}
             onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
           >
             <Typography className="font-bold capitalize">
-              {loading
+              {loadingTrade
                 ? `Loading`
                 : isWrapUnwrap
                 ? isWrap
@@ -623,7 +553,7 @@ function Setup() {
                   : "Unwrap"
                 : `Swap`}
             </Typography>
-            {loading && (
+            {loadingTrade && (
               <CircularProgress size={10} className="ml-2 fill-white" />
             )}
           </Button>
@@ -708,14 +638,24 @@ const MassiveInput = ({
   amountValueUsd: string;
   diffUsd: string | undefined;
   amountError: string | false;
-  amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void;
   assetValue: BaseAsset | null;
   assetError: string | false;
   assetOptions: BaseAsset[] | undefined;
   onAssetSelect: (_type: string, _value: BaseAsset) => void;
   loading: boolean;
   setBalance100: () => void;
+  amountChanged?: (_event: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
+  const { address } = useAccount();
+  const { data: balanceInfo } = useBalance({
+    address,
+    token:
+      assetValue?.address === NATIVE_TOKEN.address
+        ? undefined
+        : assetValue?.address,
+    watch: true,
+    enabled: !!assetValue,
+  });
   return (
     <div className="relative mb-1">
       <div
@@ -728,15 +668,12 @@ const MassiveInput = ({
       >
         <Typography className="text-xs font-thin text-secondaryGray" noWrap>
           Balance:
-          {assetValue && assetValue.balance
-            ? " " + formatCurrency(assetValue.balance)
+          {assetValue && balanceInfo
+            ? " " + formatCurrency(balanceInfo.formatted)
             : ""}
         </Typography>
       </div>
-      {assetValue &&
-      assetValue.balance &&
-      amountValueUsd &&
-      amountValueUsd !== "" ? (
+      {assetValue && balanceInfo && amountValueUsd && amountValueUsd !== "" ? (
         <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
           <Typography className="text-xs font-thin text-secondaryGray" noWrap>
             {"~$" +
