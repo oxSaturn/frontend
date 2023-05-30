@@ -17,7 +17,6 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Grid,
   Switch,
   Collapse,
   List,
@@ -965,29 +964,21 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           </Typography>
         </TableCell>
         <TableCell align="right">
-          <Grid container spacing={0}>
-            <Grid item lg={10}>
-              <Typography variant="h2" className="text-xs font-extralight">
-                {(row.apr + row.oblotr_apr).toFixed(2)}%
-              </Typography>
-            </Grid>
+          <div className="flex items-center justify-end gap-1">
             {row.isAliveGauge === false && (
-              <Grid item lg={2}>
-                <Tooltip title="Gauge has been killed">
-                  <WarningOutlined className="ml-2 text-base text-yellow-300" />
-                </Tooltip>
-              </Grid>
+              <Tooltip title="Gauge has been killed">
+                <WarningOutlined className="ml-2 text-base text-yellow-300" />
+              </Tooltip>
             )}
             {row.oblotr_apr > 0 && (
-              <Grid item lg={2}>
-                <Tooltip
-                  title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}
-                >
-                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
-                </Tooltip>
-              </Grid>
+              <Tooltip title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}>
+                <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+              </Tooltip>
             )}
-          </Grid>
+            <Typography variant="h2" className="text-xs font-extralight">
+              {(row.apr + row.oblotr_apr).toFixed(2)}%
+            </Typography>
+          </div>
         </TableCell>
         <TableCell align="right">
           <Button
