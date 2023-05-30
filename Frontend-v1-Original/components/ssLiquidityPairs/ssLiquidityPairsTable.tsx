@@ -152,7 +152,6 @@ function EnhancedTableHead(props: {
 const getLocalToggles = () => {
   let localToggles = {
     toggleMyDeposits: false,
-    toggleActiveGauge: true,
     toggleVariable: true,
     toggleStable: true,
     toggleBoosted: false,
@@ -173,7 +172,6 @@ interface PairsTableProps {
 interface PairsTableToolbarProps {
   setSearch: (_search: string) => void;
   setToggleMyDeposits: (_toggleMyDeposits: boolean) => void;
-  setToggleActiveGauge: (_toggleActiveGauge: boolean) => void;
   setToggleStable: (_toggleStable: boolean) => void;
   setToggleVariable: (_toggleVariable: boolean) => void;
   setToggleBoosted: (_toggleBoosted: boolean) => void;
@@ -187,9 +185,6 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
   const [search, setSearch] = useState("");
   const [toggleMyDeposits, setToggleMyDeposits] = useState(
     localToggles.toggleMyDeposits
-  );
-  const [toggleActiveGauge, setToggleActiveGauge] = useState(
-    localToggles.toggleActiveGauge
   );
   const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
   const [toggleVariable, setToggleVariable] = useState(
@@ -212,11 +207,6 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
         setToggleMyDeposits(event.target.checked);
         props.setToggleMyDeposits(event.target.checked);
         localToggles.toggleMyDeposits = event.target.checked;
-        break;
-      case "toggleActiveGauge":
-        setToggleActiveGauge(event.target.checked);
-        props.setToggleActiveGauge(event.target.checked);
-        localToggles.toggleActiveGauge = event.target.checked;
         break;
       case "toggleStable":
         setToggleStable(event.target.checked);
@@ -278,60 +268,76 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
             }}
           />
         </div>
-        <div className="flex flex-col xs:flex-row">
-          <div className="flex items-center">
-            <Typography className="text-sm text-orange-600" variant="body1">
-              Boosted
-            </Typography>
+        <div className="flex flex-col gap-2 xs:flex-row">
+          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
+            <div className="text-sm uppercase text-orange-600">Boosted</div>
             <Switch
               color="primary"
               checked={toggleBoosted}
               name={"toggleBoosted"}
               onChange={onToggle}
+              sx={{
+                "& .MuiSwitch-track": {
+                  bgcolor: "orange",
+                },
+                "& .Mui-checked": {
+                  color: "rgb(234 88 12)",
+                },
+                "& .Mui-checked+.MuiSwitch-track": {
+                  bgcolor: "rgb(234 88 12)",
+                },
+              }}
             />
           </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              My Deposits
-            </Typography>
+          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
+            <div className="text-sm uppercase">Deposited</div>
             <Switch
               color="primary"
               checked={toggleMyDeposits}
               name={"toggleMyDeposits"}
               onChange={onToggle}
+              sx={{
+                "& .Mui-checked": {
+                  color: "#0b8566",
+                },
+                "& .Mui-checked+.MuiSwitch-track": {
+                  bgcolor: "#0b8566",
+                },
+              }}
             />
           </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              With Gauges
-            </Typography>
-            <Switch
-              color="primary"
-              checked={toggleActiveGauge}
-              name={"toggleActiveGauge"}
-              onChange={onToggle}
-            />
-          </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              Stable
-            </Typography>
+          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
+            <div className="text-sm uppercase">Stable</div>
             <Switch
               color="primary"
               checked={toggleStable}
               name={"toggleStable"}
               onChange={onToggle}
+              sx={{
+                "& .Mui-checked": {
+                  color: "#0b8566",
+                },
+                "& .Mui-checked+.MuiSwitch-track": {
+                  bgcolor: "#0b8566",
+                },
+              }}
             />
           </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              Volatile
-            </Typography>
+          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
+            <div className="text-sm uppercase">Volatile</div>
             <Switch
               color="primary"
               checked={toggleVariable}
               name={"toggleVariable"}
               onChange={onToggle}
+              sx={{
+                "& .Mui-checked": {
+                  color: "#0b8566",
+                },
+                "& .Mui-checked+.MuiSwitch-track": {
+                  bgcolor: "#0b8566",
+                },
+              }}
             />
           </div>
         </div>
@@ -353,9 +359,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const [search, setSearch] = useState("");
   const [toggleMyDeposits, setToggleMyDeposits] = useState(
     localToggles.toggleMyDeposits
-  );
-  const [toggleActiveGauge, setToggleActiveGauge] = useState(
-    localToggles.toggleActiveGauge
   );
   const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
   const [toggleVariable, setToggleVariable] = useState(
@@ -439,9 +442,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           if (toggleVariable !== true && pair.stable === false) {
             return false;
           }
-          if (toggleActiveGauge === true && !pair.gauge) {
-            return false;
-          }
           if (toggleMyDeposits === true) {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
@@ -459,7 +459,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
         }),
     [
       pairs,
-      toggleActiveGauge,
       toggleMyDeposits,
       toggleStable,
       toggleVariable,
@@ -527,7 +526,6 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
       <EnhancedTableToolbar
         setSearch={setSearch}
         setToggleMyDeposits={setToggleMyDeposits}
-        setToggleActiveGauge={setToggleActiveGauge}
         setToggleStable={setToggleStable}
         setToggleVariable={setToggleVariable}
         setToggleBoosted={setToggleBoosted}
