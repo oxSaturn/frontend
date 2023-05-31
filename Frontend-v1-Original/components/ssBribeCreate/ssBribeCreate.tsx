@@ -16,9 +16,9 @@ import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { BaseAsset, Gauge } from "../../stores/types/types";
+import { useRemoveLocalAsset } from "../../lib/global/mutations";
 
 import { useBaseAssetWithInfoNoNative, useGauges } from "./queries";
 import { useCreateBribe } from "./mutations";
@@ -435,6 +435,8 @@ function AssetSelect({
   const [search, setSearch] = useState("");
   const [manageLocal, setManageLocal] = useState(false);
 
+  const { mutate: deleteOption } = useRemoveLocalAsset();
+
   const openSearch = () => {
     setOpen(true);
     setSearch("");
@@ -473,10 +475,6 @@ function AssetSelect({
 
   const toggleLocal = () => {
     setManageLocal(!manageLocal);
-  };
-
-  const deleteOption = (token: BaseAsset) => {
-    stores.stableSwapStore.removeBaseAsset(token);
   };
 
   const viewOption = (token: BaseAsset) => {

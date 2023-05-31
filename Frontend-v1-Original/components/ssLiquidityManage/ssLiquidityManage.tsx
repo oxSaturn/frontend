@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -34,6 +34,10 @@ import {
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
 import { useBaseAssetWithInfo } from "../../lib/global/queries";
+import {
+  useAddLocalAsset,
+  useRemoveLocalAsset,
+} from "../../lib/global/mutations";
 
 import { usePairsWithGaugesOnlyWithBalance } from "./queries";
 
@@ -1868,11 +1872,11 @@ function AssetSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filteredAssetOptions, setFilteredAssetOptions] = useState<BaseAsset[]>(
-    []
-  );
 
   const [manageLocal, setManageLocal] = useState(false);
+
+  const { mutate: deleteOption } = useRemoveLocalAsset();
+  const { mutate: addOption } = useAddLocalAsset();
 
   const openSearch = () => {
     if (disabled) {
@@ -1882,46 +1886,41 @@ function AssetSelect({
     setOpen(true);
   };
 
-  // TODO this useEffect needs to be refactored.
-  useEffect(() => {
-    const filter = async () => {
-      let ao = (assetOptions as BaseAsset[])
-        .filter((asset) => {
-          if (search && search !== "") {
-            return (
-              asset.address.toLowerCase().includes(search.toLowerCase()) ||
-              asset.symbol.toLowerCase().includes(search.toLowerCase()) ||
-              asset.name.toLowerCase().includes(search.toLowerCase())
-            );
-          } else {
-            return true;
-          }
-        })
-        .sort((a, b) => {
-          if (a.balance && b.balance && BigNumber(a.balance).lt(b.balance))
-            return 1;
-          if (a.balance && b.balance && BigNumber(a.balance).gt(b.balance))
-            return -1;
-          if (a.symbol < b.symbol) return -1;
-          if (a.symbol > b.symbol) return 1;
-          return 0;
-        });
-
-      setFilteredAssetOptions(ao);
-
-      //no options in our default list and its an address we search for the address
-      if (
-        ao.length === 0 &&
-        search &&
-        search.length === 42 &&
-        isAddress(search)
-      ) {
-        await stores.stableSwapStore.getBaseAsset(search, true, true);
-      }
-    };
-    filter();
-    return () => {};
+  const filteredAssetOptions = useMemo(() => {
+    return (assetOptions as BaseAsset[])
+      .filter((asset) => {
+        if (search && search !== "") {
+          return (
+            asset.address.toLowerCase().includes(search.toLowerCase()) ||
+            asset.symbol.toLowerCase().includes(search.toLowerCase()) ||
+            asset.name.toLowerCase().includes(search.toLowerCase())
+          );
+        } else {
+          return true;
+        }
+      })
+      .sort((a, b) => {
+        if (a.balance && b.balance && BigNumber(a.balance).lt(b.balance))
+          return 1;
+        if (a.balance && b.balance && BigNumber(a.balance).gt(b.balance))
+          return -1;
+        if (a.symbol < b.symbol) return -1;
+        if (a.symbol > b.symbol) return 1;
+        return 0;
+      });
   }, [assetOptions, search]);
+
+  useEffect(() => {
+    if (
+      filteredAssetOptions &&
+      filteredAssetOptions.length === 0 &&
+      search &&
+      search.length === 42 &&
+      isAddress(search)
+    ) {
+      addOption(search);
+    }
+  }, [assetOptions, search, addOption, filteredAssetOptions]);
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
@@ -1942,10 +1941,6 @@ function AssetSelect({
 
   const toggleLocal = () => {
     setManageLocal(!manageLocal);
-  };
-
-  const deleteOption = (token: BaseAsset) => {
-    stores.stableSwapStore.removeBaseAsset(token);
   };
 
   const viewOption = (token: BaseAsset) => {
