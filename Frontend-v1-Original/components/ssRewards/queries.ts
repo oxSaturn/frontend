@@ -29,6 +29,7 @@ import {
 } from "../../stores/types/types";
 import { useGovToken, useVeToken, usePairs } from "../../lib/global/queries";
 import { useVestNfts } from "../ssVests/queries";
+import { getHexQueryKey } from "../../utils/utils";
 
 const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
 
@@ -336,7 +337,7 @@ export const useRewards = (
       govToken,
       veToken,
       serialised_vestNFTs,
-      pairs,
+      getHexQueryKey(pairs),
     ],
     queryFn: () =>
       getRewardBalances(

@@ -1309,46 +1309,46 @@ class Store {
     return null;
   };
 
-  removeBaseAsset = (asset: BaseAsset) => {
-    try {
-      let localBaseAssets: BaseAsset[] = [];
-      const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
+  // removeBaseAsset = (asset: BaseAsset) => {
+  //   try {
+  //     let localBaseAssets: BaseAsset[] = [];
+  //     const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
-      if (localBaseAssetsString && localBaseAssetsString !== "") {
-        localBaseAssets = JSON.parse(localBaseAssetsString);
+  //     if (localBaseAssetsString && localBaseAssetsString !== "") {
+  //       localBaseAssets = JSON.parse(localBaseAssetsString);
 
-        localBaseAssets = localBaseAssets.filter((obj) => {
-          return obj.address.toLowerCase() !== asset.address.toLowerCase();
-        });
+  //       localBaseAssets = localBaseAssets.filter((obj) => {
+  //         return obj.address.toLowerCase() !== asset.address.toLowerCase();
+  //       });
 
-        localStorage.setItem(
-          "stableSwap-assets",
-          JSON.stringify(localBaseAssets)
-        );
+  //       localStorage.setItem(
+  //         "stableSwap-assets",
+  //         JSON.stringify(localBaseAssets)
+  //       );
 
-        let baseAssets = queryClient.getQueryData<BaseAsset[]>([
-          QUERY_KEYS.BASE_ASSET_INFO,
-        ]);
-        baseAssets = baseAssets?.filter((obj) => {
-          return (
-            obj.address.toLowerCase() !== asset.address.toLowerCase() &&
-            asset.local === true
-          );
-        });
+  //       let baseAssets = queryClient.getQueryData<BaseAsset[]>([
+  //         QUERY_KEYS.BASE_ASSET_INFO,
+  //       ]);
+  //       baseAssets = baseAssets?.filter((obj) => {
+  //         return (
+  //           obj.address.toLowerCase() !== asset.address.toLowerCase() &&
+  //           asset.local === true
+  //         );
+  //       });
 
-        // this.setStore({ baseAssets: baseAssets });
-        queryClient.setQueryData<BaseAsset[]>(
-          [QUERY_KEYS.BASE_ASSET_INFO],
-          baseAssets
-        );
-        queryClient.invalidateQueries([QUERY_KEYS.SWAP_ASSETS]);
-        this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, baseAssets);
-      }
-    } catch (ex) {
-      console.log(ex);
-      return null;
-    }
-  };
+  //       // this.setStore({ baseAssets: baseAssets });
+  //       queryClient.setQueryData<BaseAsset[]>(
+  //         [QUERY_KEYS.BASE_ASSET_INFO],
+  //         baseAssets
+  //       );
+  //       queryClient.invalidateQueries([QUERY_KEYS.SWAP_ASSETS]);
+  //       this.emitter.emit(ACTIONS.BASE_ASSETS_UPDATED, baseAssets);
+  //     }
+  //   } catch (ex) {
+  //     console.log(ex);
+  //     return null;
+  //   }
+  // };
 
   getLocalAssets = () => {
     try {

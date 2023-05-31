@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { isAddress } from "viem";
 import {
   Button,
@@ -13,9 +13,12 @@ import { DeleteOutline, Search } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { BaseAsset } from "../../stores/types/types";
-import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
+import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
+import {
+  useAddLocalAsset,
+  useRemoveLocalAsset,
+} from "../../lib/global/mutations";
 
 export function AssetSelect({
   type,
@@ -30,55 +33,42 @@ export function AssetSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filteredAssetOptions, setFilteredAssetOptions] =
-    useState<BaseAsset[]>();
 
   const [manageLocal, setManageLocal] = useState(false);
+
+  const { mutate: deleteOption } = useRemoveLocalAsset();
+  const { mutate: addOption } = useAddLocalAsset();
 
   const openSearch = () => {
     setSearch("");
     setOpen(true);
   };
 
-  useEffect(() => {
-    async function sync() {
-      let ao = assetOptions?.filter((asset) => {
-        if (search && search !== "") {
-          return (
-            asset.address.toLowerCase().includes(search.toLowerCase()) ||
-            asset.symbol.toLowerCase().includes(search.toLowerCase()) ||
-            asset.name.toLowerCase().includes(search.toLowerCase())
-          );
-        } else {
-          return true;
-        }
-      });
-
-      setFilteredAssetOptions(ao);
-
-      //no options in our default list and its an address we search for the address
-      if (
-        ao &&
-        ao.length === 0 &&
-        search &&
-        search.length === 42 &&
-        isAddress(search)
-      ) {
-        const baseAsset = await stores.stableSwapStore.getBaseAsset(
-          search,
-          true,
-          true
+  const filteredAssetOptions = useMemo(() => {
+    return assetOptions?.filter((asset) => {
+      if (search && search !== "") {
+        return (
+          asset.address.toLowerCase().includes(search.toLowerCase()) ||
+          asset.symbol.toLowerCase().includes(search.toLowerCase()) ||
+          asset.name.toLowerCase().includes(search.toLowerCase())
         );
-        if (baseAsset) {
-          stores.emitter.emit(ACTIONS.WARNING, {
-            warning: "Token is not whitelisted",
-          });
-        }
+      } else {
+        return true;
       }
-    }
-    sync();
-    return () => {};
+    });
   }, [assetOptions, search]);
+
+  useEffect(() => {
+    if (
+      filteredAssetOptions &&
+      filteredAssetOptions.length === 0 &&
+      search &&
+      search.length === 42 &&
+      isAddress(search)
+    ) {
+      addOption(search);
+    }
+  }, [assetOptions, search, addOption, filteredAssetOptions]);
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
@@ -99,10 +89,6 @@ export function AssetSelect({
 
   const toggleLocal = () => {
     setManageLocal(!manageLocal);
-  };
-
-  const deleteOption = (token: BaseAsset) => {
-    stores.stableSwapStore.removeBaseAsset(token);
   };
 
   const viewOption = (token: BaseAsset) => {

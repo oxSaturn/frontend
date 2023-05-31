@@ -24,6 +24,46 @@ const addLocalAsset = async (newBaseAsset: BaseAsset) => {
   return newLocalBaseAssets;
 };
 
+const addBaseAsset = async (address: `0x${string}`) => {
+  const baseAssetContract = {
+    abi: CONTRACTS.ERC20_ABI,
+    address,
+  } as const;
+
+  const [symbol, decimals, name] = await viemClient.multicall({
+    allowFailure: false,
+    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+    contracts: [
+      {
+        ...baseAssetContract,
+        functionName: "symbol",
+      },
+      {
+        ...baseAssetContract,
+        functionName: "decimals",
+      },
+      {
+        ...baseAssetContract,
+        functionName: "name",
+      },
+    ],
+  });
+
+  const newBaseAsset: BaseAsset = {
+    address,
+    symbol: symbol,
+    name: name,
+    decimals: parseInt(decimals.toString()),
+    balance: null,
+    local: true,
+    logoURI: "",
+  };
+
+  addLocalAsset(newBaseAsset);
+
+  return newBaseAsset;
+};
+
 const removeBaseAsset = async (asset: BaseAsset) => {
   const localBaseAssets = getLocalAssets();
   const newLocalBaseAssets = localBaseAssets.filter(
@@ -36,9 +76,12 @@ const removeBaseAsset = async (asset: BaseAsset) => {
 export const useAddLocalAsset = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (newBaseAsset: BaseAsset) => addLocalAsset(newBaseAsset),
+    mutationFn: (assetAddress: `0x${string}`) => addBaseAsset(assetAddress),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.LOCAL_ASSETS]);
+      stores.emitter.emit(ACTIONS.WARNING, {
+        warning: "Token is not whitelisted",
+      });
     },
   });
 };

@@ -128,7 +128,7 @@ export const usePairsData = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.PAIRS_DATA],
     queryFn: () => getPairsData(),
-    refetchInterval: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60 * 15,
     refetchOnMount: false,
   });
 };
@@ -419,7 +419,7 @@ const getPairsWithoutGauges = async (
 
   return ps;
 };
-// TODO maybe set query data instead of triple hook?
+
 export const usePairsWithoutGauges = () => {
   const { address } = useAccount();
   const { data: pairs } = usePairs();

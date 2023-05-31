@@ -5,12 +5,9 @@ import BigNumber from "bignumber.js";
 
 import viemClient from "../../stores/connectors/viem";
 import { Pair, Vote, Votes, hasGauge } from "../../stores/types/types";
-import {
-  getPairsWithGauges,
-  usePairs,
-  usePairsWithoutGauges,
-} from "../../lib/global/queries";
+import { usePairs, usePairsWithGauges } from "../../lib/global/queries";
 import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
+import { getHexQueryKey } from "../../utils/utils";
 
 interface VotesStore {
   votes: Votes | undefined;
@@ -26,7 +23,7 @@ export const useVestVotes = (tokenID: string | undefined) => {
   const { address } = useAccount();
   const { data: pairs } = usePairs();
   return useQuery({
-    queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, pairs],
+    queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, getHexQueryKey(pairs)],
     queryFn: () => getVestVotes(address, tokenID, pairs),
     enabled: !!address && !!tokenID && !!pairs,
     refetchOnMount: false,
@@ -108,27 +105,23 @@ const getVestVotes = async (
   return votes;
 };
 
+const getPairsWithGaugesAndVotes = (
+  pairsWithGauges: Pair[],
+  votes: Votes | undefined
+) => {
+  const gauges = pairsWithGauges?.filter(hasGauge).filter((gauge) => {
+    let sliderValue =
+      votes?.find((el) => el.address === gauge.address)?.value ?? 0;
+    if (gauge.isAliveGauge === false && sliderValue === 0) {
+      return false;
+    }
+    return true;
+  });
+  return gauges;
+};
+
 export const useGaugesWithGaugesAndVotes = (votes: Votes | undefined) => {
-  const { address } = useAccount();
-  const { data: pairsWithoutGauges } = usePairsWithoutGauges();
-  return useQuery({
-    queryKey: [
-      QUERY_KEYS.PAIRS_WITH_GAUGES_AND_VOTES,
-      address,
-      pairsWithoutGauges,
-    ],
-    queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
-    enabled: !!address && !!pairsWithoutGauges && !!votes,
-    select: (pairsWithGauges) => {
-      const gauges = pairsWithGauges?.filter(hasGauge).filter((gauge) => {
-        let sliderValue =
-          votes?.find((el) => el.address === gauge.address)?.value ?? 0;
-        if (gauge.isAliveGauge === false && sliderValue === 0) {
-          return false;
-        }
-        return true;
-      });
-      return gauges;
-    },
+  return usePairsWithGauges((pairsWithGauges) => {
+    return getPairsWithGaugesAndVotes(pairsWithGauges, votes);
   });
 };
