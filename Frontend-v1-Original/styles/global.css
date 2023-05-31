@@ -1,4 +1,3 @@
-@import "Inter.css";
 @import "Sono.css";
 @import "Monument.css";
 @import "Druk.css";
@@ -8,9 +7,6 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family: "Inter", system-ui, sans-serif;
-  }
   body {
     color: rgba(255, 255, 255, 0.87);
   }
