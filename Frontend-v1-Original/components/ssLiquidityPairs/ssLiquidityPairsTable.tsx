@@ -169,15 +169,15 @@ interface PairsTableProps {
 interface PairsTableToolbarProps {
   search: string;
   setSearch: (_search: string) => void;
-  localStateFilter: string;
-  setLocalStateFilter: (_locatState: string) => void;
+  filter: string;
+  handleFilterChange: (_locatState: string) => void;
 }
 
 const EnhancedTableToolbar = ({
   search,
   setSearch,
-  localStateFilter,
-  setLocalStateFilter,
+  filter,
+  handleFilterChange,
 }: PairsTableToolbarProps) => {
   const router = useRouter();
 
@@ -186,7 +186,7 @@ const EnhancedTableToolbar = ({
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalStateFilter(event.target.value);
+    handleFilterChange(event.target.value);
     setLocalState(event.target.value);
   };
 
@@ -231,7 +231,7 @@ const EnhancedTableToolbar = ({
               id="all"
               name="filter"
               value="all"
-              checked={localStateFilter === "all"}
+              checked={filter === "all"}
               onChange={onChange}
               className="peer hidden"
             />
@@ -248,7 +248,7 @@ const EnhancedTableToolbar = ({
               id="boosted"
               name="filter"
               value="boosted"
-              checked={localStateFilter === "boosted"}
+              checked={filter === "boosted"}
               onChange={onChange}
               className="peer hidden"
             />
@@ -265,7 +265,7 @@ const EnhancedTableToolbar = ({
               id="myDeposits"
               name="filter"
               value="myDeposits"
-              checked={localStateFilter === "myDeposits"}
+              checked={filter === "myDeposits"}
               onChange={onChange}
               className="peer hidden"
             />
@@ -282,7 +282,7 @@ const EnhancedTableToolbar = ({
               id="stable"
               name="filter"
               value="stable"
-              checked={localStateFilter === "stable"}
+              checked={filter === "stable"}
               onChange={onChange}
               className="peer hidden"
             />
@@ -299,7 +299,7 @@ const EnhancedTableToolbar = ({
               id="volatile"
               name="filter"
               value="volatile"
-              checked={localStateFilter === "volatile"}
+              checked={filter === "volatile"}
               onChange={onChange}
               className="peer hidden"
             />
@@ -327,7 +327,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const localState = getLocalState();
 
   const [search, setSearch] = useState("");
-  const [localStateFilter, setLocalStateFilter] = useState(localState);
+  const [filter, setFilter] = useState(localState);
 
   const handleRequestSort = (
     _e: React.MouseEvent<unknown>,
@@ -350,6 +350,11 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
     newPage: number
   ) => {
     setPage(newPage);
+  };
+
+  const handleFilterChange = (newStateFilter: string) => {
+    setPage(0);
+    setFilter(newStateFilter);
   };
 
   const handleChangeRowsPerPage = (
@@ -397,10 +402,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           return false;
         })
         .filter((pair) => {
-          if (localStateFilter === "all") {
+          if (filter === "all") {
             return true;
           }
-          if (localStateFilter === "myDeposits") {
+          if (filter === "myDeposits") {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
               (!pair.balance || !BigNumber(pair.balance).gt(0))
@@ -408,24 +413,24 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
               return false;
             }
           }
-          if (localStateFilter === "stable") {
+          if (filter === "stable") {
             if (pair.stable !== true) {
               return false;
             }
           }
-          if (localStateFilter === "volatile") {
+          if (filter === "volatile") {
             if (pair.stable !== false) {
               return false;
             }
           }
-          if (localStateFilter === "boosted") {
+          if (filter === "boosted") {
             if (!pair.oblotr_apr) {
               return false;
             }
           }
           return true;
         }),
-    [pairs, localStateFilter, search]
+    [pairs, filter, search]
   );
 
   const sortedPairs = useMemo(
@@ -487,8 +492,8 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
       <EnhancedTableToolbar
         search={search}
         setSearch={setSearch}
-        localStateFilter={localStateFilter}
-        setLocalStateFilter={setLocalStateFilter}
+        filter={filter}
+        handleFilterChange={handleFilterChange}
       />
       <Paper
         elevation={0}
