@@ -224,92 +224,28 @@ const EnhancedTableToolbar = ({
             }}
           />
         </div>
-        <ul className="flex flex-col gap-2 xs:flex-row">
-          <li>
-            <input
-              type="radio"
-              id="all"
-              name="filter"
-              value="all"
-              checked={filter === "all"}
-              onChange={onChange}
-              className="peer hidden"
-            />
-            <label
-              htmlFor="all"
-              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
-            >
-              <div className="uppercase">All</div>
-            </label>
-          </li>
-          <li>
-            <input
-              type="radio"
-              id="boosted"
-              name="filter"
-              value="boosted"
-              checked={filter === "boosted"}
-              onChange={onChange}
-              className="peer hidden"
-            />
-            <label
-              htmlFor="boosted"
-              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
-            >
-              <div className="uppercase">Boosted</div>
-            </label>
-          </li>
-          <li>
-            <input
-              type="radio"
-              id="myDeposits"
-              name="filter"
-              value="myDeposits"
-              checked={filter === "myDeposits"}
-              onChange={onChange}
-              className="peer hidden"
-            />
-            <label
-              htmlFor="myDeposits"
-              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
-            >
-              <div className="uppercase">Deposited</div>
-            </label>
-          </li>
-          <li>
-            <input
-              type="radio"
-              id="stable"
-              name="filter"
-              value="stable"
-              checked={filter === "stable"}
-              onChange={onChange}
-              className="peer hidden"
-            />
-            <label
-              htmlFor="stable"
-              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
-            >
-              <div className="uppercase">Stable</div>
-            </label>
-          </li>
-          <li>
-            <input
-              type="radio"
-              id="volatile"
-              name="filter"
-              value="volatile"
-              checked={filter === "volatile"}
-              onChange={onChange}
-              className="peer hidden"
-            />
-            <label
-              htmlFor="volatile"
-              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
-            >
-              <div className="uppercase">Volatile</div>
-            </label>
-          </li>
+        <ul className="flex flex-wrap gap-2 xs:flex-nowrap">
+          {["all", "boosted", "deposited", "stable", "volatile"].map(
+            (filterOption) => (
+              <li key={filterOption}>
+                <input
+                  type="radio"
+                  id={filterOption}
+                  name="filter"
+                  value={filterOption}
+                  checked={filter === filterOption}
+                  onChange={onChange}
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={filterOption}
+                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+                >
+                  <div className="uppercase">{filterOption}</div>
+                </label>
+              </li>
+            )
+          )}
         </ul>
       </div>
     </Toolbar>
@@ -405,7 +341,7 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           if (filter === "all") {
             return true;
           }
-          if (filter === "myDeposits") {
+          if (filter === "deposited") {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
               (!pair.balance || !BigNumber(pair.balance).gt(0))
