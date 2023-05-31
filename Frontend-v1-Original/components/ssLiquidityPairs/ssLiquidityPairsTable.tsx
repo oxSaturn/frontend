@@ -17,8 +17,6 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Grid,
-  Switch,
   Collapse,
   List,
   ListItem,
@@ -149,21 +147,19 @@ function EnhancedTableHead(props: {
   );
 }
 
-const getLocalToggles = () => {
-  let localToggles = {
-    toggleMyDeposits: false,
-    toggleActiveGauge: true,
-    toggleVariable: true,
-    toggleStable: true,
-    toggleBoosted: false,
-  };
+const getLocalState = () => {
+  let localState = "all";
 
-  const localToggleString = localStorage.getItem("pairsToggle-v1");
-  if (localToggleString && localToggleString.length > 0) {
-    localToggles = JSON.parse(localToggleString);
+  const localToggleString = localStorage.getItem("pairsState-v1");
+  if (localToggleString) {
+    localState = localToggleString;
   }
 
-  return localToggles;
+  return localState;
+};
+
+const setLocalState = (state: string) => {
+  localStorage.setItem("pairsState-v1", state);
 };
 
 interface PairsTableProps {
@@ -171,77 +167,27 @@ interface PairsTableProps {
 }
 
 interface PairsTableToolbarProps {
+  search: string;
   setSearch: (_search: string) => void;
-  setToggleMyDeposits: (_toggleMyDeposits: boolean) => void;
-  setToggleActiveGauge: (_toggleActiveGauge: boolean) => void;
-  setToggleStable: (_toggleStable: boolean) => void;
-  setToggleVariable: (_toggleVariable: boolean) => void;
-  setToggleBoosted: (_toggleBoosted: boolean) => void;
+  filter: string;
+  handleFilterChange: (_locatState: string) => void;
 }
 
-const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
+const EnhancedTableToolbar = ({
+  search,
+  setSearch,
+  filter,
+  handleFilterChange,
+}: PairsTableToolbarProps) => {
   const router = useRouter();
-
-  const localToggles = getLocalToggles();
-
-  const [search, setSearch] = useState("");
-  const [toggleMyDeposits, setToggleMyDeposits] = useState(
-    localToggles.toggleMyDeposits
-  );
-  const [toggleActiveGauge, setToggleActiveGauge] = useState(
-    localToggles.toggleActiveGauge
-  );
-  const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
-  const [toggleVariable, setToggleVariable] = useState(
-    localToggles.toggleVariable
-  );
-  const [toggleBoosted, setToggleBoosted] = useState(
-    localToggles.toggleBoosted
-  );
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
-    props.setSearch(event.target.value);
   };
 
-  const onToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const localToggles = getLocalToggles();
-
-    switch (event.target.name) {
-      case "toggleMyDeposits":
-        setToggleMyDeposits(event.target.checked);
-        props.setToggleMyDeposits(event.target.checked);
-        localToggles.toggleMyDeposits = event.target.checked;
-        break;
-      case "toggleActiveGauge":
-        setToggleActiveGauge(event.target.checked);
-        props.setToggleActiveGauge(event.target.checked);
-        localToggles.toggleActiveGauge = event.target.checked;
-        break;
-      case "toggleStable":
-        setToggleStable(event.target.checked);
-        props.setToggleStable(event.target.checked);
-        localToggles.toggleStable = event.target.checked;
-        break;
-      case "toggleVariable":
-        setToggleVariable(event.target.checked);
-        props.setToggleVariable(event.target.checked);
-        localToggles.toggleVariable = event.target.checked;
-        break;
-      case "toggleBoosted":
-        setToggleBoosted(event.target.checked);
-        props.setToggleBoosted(event.target.checked);
-        localToggles.toggleBoosted = event.target.checked;
-        break;
-      default:
-    }
-
-    // set locally saved toggles
-    try {
-      localStorage.setItem("pairsToggle-v1", JSON.stringify(localToggles));
-    } catch (ex) {
-      console.log(ex);
-    }
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleFilterChange(event.target.value);
+    setLocalState(event.target.value);
   };
 
   const onCreate = () => {
@@ -278,63 +224,29 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
             }}
           />
         </div>
-        <div className="flex flex-col xs:flex-row">
-          <div className="flex items-center">
-            <Typography className="text-sm text-orange-600" variant="body1">
-              Boosted
-            </Typography>
-            <Switch
-              color="primary"
-              checked={toggleBoosted}
-              name={"toggleBoosted"}
-              onChange={onToggle}
-            />
-          </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              My Deposits
-            </Typography>
-            <Switch
-              color="primary"
-              checked={toggleMyDeposits}
-              name={"toggleMyDeposits"}
-              onChange={onToggle}
-            />
-          </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              With Gauges
-            </Typography>
-            <Switch
-              color="primary"
-              checked={toggleActiveGauge}
-              name={"toggleActiveGauge"}
-              onChange={onToggle}
-            />
-          </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              Stable
-            </Typography>
-            <Switch
-              color="primary"
-              checked={toggleStable}
-              name={"toggleStable"}
-              onChange={onToggle}
-            />
-          </div>
-          <div className="flex items-center">
-            <Typography className="text-sm" variant="body1">
-              Volatile
-            </Typography>
-            <Switch
-              color="primary"
-              checked={toggleVariable}
-              name={"toggleVariable"}
-              onChange={onToggle}
-            />
-          </div>
-        </div>
+        <ul className="flex flex-wrap gap-2 xs:flex-nowrap">
+          {["all", "boosted", "deposited", "stable", "volatile"].map(
+            (filterOption) => (
+              <li key={filterOption}>
+                <input
+                  type="radio"
+                  id={filterOption}
+                  name="filter"
+                  value={filterOption}
+                  checked={filter === filterOption}
+                  onChange={onChange}
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={filterOption}
+                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+                >
+                  <div className="uppercase">{filterOption}</div>
+                </label>
+              </li>
+            )
+          )}
+        </ul>
       </div>
     </Toolbar>
   );
@@ -348,22 +260,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
-  const localToggles = getLocalToggles();
+  const localState = getLocalState();
 
   const [search, setSearch] = useState("");
-  const [toggleMyDeposits, setToggleMyDeposits] = useState(
-    localToggles.toggleMyDeposits
-  );
-  const [toggleActiveGauge, setToggleActiveGauge] = useState(
-    localToggles.toggleActiveGauge
-  );
-  const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
-  const [toggleVariable, setToggleVariable] = useState(
-    localToggles.toggleVariable
-  );
-  const [toggleBoosted, setToggleBoosted] = useState(
-    localToggles.toggleBoosted
-  );
+  const [filter, setFilter] = useState(localState);
 
   const handleRequestSort = (
     _e: React.MouseEvent<unknown>,
@@ -386,6 +286,11 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
     newPage: number
   ) => {
     setPage(newPage);
+  };
+
+  const handleFilterChange = (newStateFilter: string) => {
+    setPage(0);
+    setFilter(newStateFilter);
   };
 
   const handleChangeRowsPerPage = (
@@ -433,16 +338,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           return false;
         })
         .filter((pair) => {
-          if (toggleStable !== true && pair.stable === true) {
-            return false;
+          if (filter === "all") {
+            return true;
           }
-          if (toggleVariable !== true && pair.stable === false) {
-            return false;
-          }
-          if (toggleActiveGauge === true && !pair.gauge) {
-            return false;
-          }
-          if (toggleMyDeposits === true) {
+          if (filter === "deposited") {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
               (!pair.balance || !BigNumber(pair.balance).gt(0))
@@ -450,22 +349,24 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
               return false;
             }
           }
-          if (toggleBoosted === true) {
+          if (filter === "stable") {
+            if (pair.stable !== true) {
+              return false;
+            }
+          }
+          if (filter === "volatile") {
+            if (pair.stable !== false) {
+              return false;
+            }
+          }
+          if (filter === "boosted") {
             if (!pair.oblotr_apr) {
               return false;
             }
           }
           return true;
         }),
-    [
-      pairs,
-      toggleActiveGauge,
-      toggleMyDeposits,
-      toggleStable,
-      toggleVariable,
-      toggleBoosted,
-      search,
-    ]
+    [pairs, filter, search]
   );
 
   const sortedPairs = useMemo(
@@ -525,12 +426,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   return (
     <div className="w-full">
       <EnhancedTableToolbar
+        search={search}
         setSearch={setSearch}
-        setToggleMyDeposits={setToggleMyDeposits}
-        setToggleActiveGauge={setToggleActiveGauge}
-        setToggleStable={setToggleStable}
-        setToggleVariable={setToggleVariable}
-        setToggleBoosted={setToggleBoosted}
+        filter={filter}
+        handleFilterChange={handleFilterChange}
       />
       <Paper
         elevation={0}
@@ -967,29 +866,21 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           </Typography>
         </TableCell>
         <TableCell align="right">
-          <Grid container spacing={0}>
-            <Grid item lg={10}>
-              <Typography variant="h2" className="text-xs font-extralight">
-                {(row.apr + row.oblotr_apr).toFixed(2)}%
-              </Typography>
-            </Grid>
+          <div className="flex items-center justify-end gap-1">
             {row.isAliveGauge === false && (
-              <Grid item lg={2}>
-                <Tooltip title="Gauge has been killed">
-                  <WarningOutlined className="ml-2 text-base text-yellow-300" />
-                </Tooltip>
-              </Grid>
+              <Tooltip title="Gauge has been killed">
+                <WarningOutlined className="ml-2 text-base text-yellow-300" />
+              </Tooltip>
             )}
             {row.oblotr_apr > 0 && (
-              <Grid item lg={2}>
-                <Tooltip
-                  title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}
-                >
-                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
-                </Tooltip>
-              </Grid>
+              <Tooltip title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}>
+                <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+              </Tooltip>
             )}
-          </Grid>
+            <Typography variant="h2" className="text-xs font-extralight">
+              {(row.apr + row.oblotr_apr).toFixed(2)}%
+            </Typography>
+          </div>
         </TableCell>
         <TableCell align="right">
           <Button
