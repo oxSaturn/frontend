@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAccount, useBalance } from "wagmi";
 import {
   TextField,
@@ -46,6 +46,17 @@ function Setup() {
   const [toAssetValue, setToAssetValue] = useState<BaseAsset | null>(null);
 
   const [slippage, setSlippage] = useState("2");
+
+  const { address } = useAccount();
+  const { data: balanceFrom } = useBalance({
+    address,
+    token:
+      fromAssetValue?.address === NATIVE_TOKEN.address
+        ? undefined
+        : fromAssetValue?.address,
+    watch: true,
+    enabled: !!fromAssetValue,
+  });
 
   const { isWrapUnwrap, isWrap } = useIsWrapUnwrap({
     fromAssetValue,
@@ -220,45 +231,41 @@ function Setup() {
     setSettingsOpen(false);
   };
 
-  const onSwap = () => {
+  const prepareTradeCheck = useCallback(() => {
     setFromAmountError(false);
     setFromAssetError(false);
 
     let error = false;
 
-    if (!fromAmountValue || fromAmountValue === "" || isNaN(+fromAmountValue)) {
+    if (!fromAmountValue || isNaN(+fromAmountValue)) {
       setFromAmountError("From amount is required");
       error = true;
     } else {
       if (
-        !fromAssetValue?.balance ||
-        isNaN(+fromAssetValue?.balance) ||
-        BigNumber(fromAssetValue?.balance).lte(0)
-      ) {
-        setFromAmountError("Invalid balance");
-        error = true;
-      } else if (BigNumber(fromAmountValue).lt(0)) {
-        setFromAmountError("Invalid amount");
-        error = true;
-      } else if (
         fromAssetValue &&
-        BigNumber(fromAmountValue).gt(fromAssetValue.balance)
+        balanceFrom &&
+        BigNumber(fromAmountValue).gt(balanceFrom.formatted)
       ) {
         setFromAmountError(`Greater than your available balance`);
         error = true;
       }
     }
 
-    if (!fromAssetValue || fromAssetValue === null) {
+    if (!fromAssetValue) {
       setFromAssetError("From asset is required");
       error = true;
     }
 
-    if (!toAssetValue || toAssetValue === null) {
+    if (!toAssetValue) {
       setFromAssetError("To asset is required");
       error = true;
     }
 
+    return error;
+  }, [balanceFrom, fromAmountValue, fromAssetValue, toAssetValue]);
+
+  const onSwap = () => {
+    const error = prepareTradeCheck();
     if (!error) {
       swap({
         quote,
@@ -269,44 +276,7 @@ function Setup() {
   };
 
   const onWrapUnwrap = () => {
-    setFromAmountError(false);
-    setFromAssetError(false);
-
-    let error = false;
-
-    if (!fromAmountValue || fromAmountValue === "" || isNaN(+fromAmountValue)) {
-      setFromAmountError("From amount is required");
-      error = true;
-    } else {
-      if (
-        !fromAssetValue?.balance ||
-        isNaN(+fromAssetValue?.balance) ||
-        BigNumber(fromAssetValue?.balance).lte(0)
-      ) {
-        setFromAmountError("Invalid balance");
-        error = true;
-      } else if (BigNumber(fromAmountValue).lt(0)) {
-        setFromAmountError("Invalid amount");
-        error = true;
-      } else if (
-        fromAssetValue &&
-        BigNumber(fromAmountValue).gt(fromAssetValue.balance)
-      ) {
-        setFromAmountError(`Greater than your available balance`);
-        error = true;
-      }
-    }
-
-    if (!fromAssetValue || fromAssetValue === null) {
-      setFromAssetError("From asset is required");
-      error = true;
-    }
-
-    if (!toAssetValue || toAssetValue === null) {
-      setFromAssetError("To asset is required");
-      error = true;
-    }
-
+    const error = prepareTradeCheck();
     if (!error) {
       wrapOrUnwrap({
         fromAsset: fromAssetValue,
@@ -668,8 +638,8 @@ const MassiveInput = ({
       >
         <Typography className="text-xs font-thin text-secondaryGray" noWrap>
           Balance:
-          {assetValue && balanceInfo
-            ? " " + formatCurrency(balanceInfo.formatted)
+          {assetValue && (balanceInfo || assetValue.balance)
+            ? " " + formatCurrency(balanceInfo?.formatted ?? assetValue.balance)
             : ""}
         </Typography>
       </div>
