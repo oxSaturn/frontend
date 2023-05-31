@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Skeleton from "@mui/lab/Skeleton";
 import {
   Paper,
   Button,
@@ -18,6 +17,7 @@ import {
   Alert,
   Menu,
   MenuItem,
+  Skeleton,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import {
