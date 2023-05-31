@@ -81,9 +81,9 @@ class Store {
           // case ACTIONS.GET_BALANCES:
           //   this.getBalances();
           //   break;
-          case ACTIONS.SEARCH_ASSET:
-            this.searchBaseAsset(payload);
-            break;
+          // case ACTIONS.SEARCH_ASSET:
+          //   this.searchBaseAsset(payload);
+          //   break;
 
           // case ACTIONS.UPDATED:
           //   break;
@@ -2029,87 +2029,87 @@ class Store {
   //   }
   // };
 
-  searchBaseAsset = async (payload: {
-    type: string;
-    content: { address: `0x${string}` };
-  }) => {
-    try {
-      let localBaseAssets: BaseAsset[] = [];
-      const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
+  // searchBaseAsset = async (payload: {
+  //   type: string;
+  //   content: { address: `0x${string}` };
+  // }) => {
+  //   try {
+  //     let localBaseAssets: BaseAsset[] = [];
+  //     const localBaseAssetsString = localStorage.getItem("stableSwap-assets");
 
-      if (localBaseAssetsString && localBaseAssetsString !== "") {
-        localBaseAssets = JSON.parse(localBaseAssetsString);
-      }
+  //     if (localBaseAssetsString && localBaseAssetsString !== "") {
+  //       localBaseAssets = JSON.parse(localBaseAssetsString);
+  //     }
 
-      const theBaseAsset = localBaseAssets.filter((as) => {
-        return (
-          as.address.toLowerCase() === payload.content.address.toLowerCase()
-        );
-      });
-      if (theBaseAsset.length > 0) {
-        this.emitter.emit(ACTIONS.ASSET_SEARCHED, theBaseAsset);
-        return;
-      }
+  //     const theBaseAsset = localBaseAssets.filter((as) => {
+  //       return (
+  //         as.address.toLowerCase() === payload.content.address.toLowerCase()
+  //       );
+  //     });
+  //     if (theBaseAsset.length > 0) {
+  //       this.emitter.emit(ACTIONS.ASSET_SEARCHED, theBaseAsset);
+  //       return;
+  //     }
 
-      const baseAssetContract = {
-        abi: CONTRACTS.ERC20_ABI,
-        address: payload.content.address,
-      } as const;
+  //     const baseAssetContract = {
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       address: payload.content.address,
+  //     } as const;
 
-      const [symbol, decimals, name] = await viemClient.multicall({
-        allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-        contracts: [
-          {
-            ...baseAssetContract,
-            functionName: "symbol",
-          },
-          {
-            ...baseAssetContract,
-            functionName: "decimals",
-          },
-          {
-            ...baseAssetContract,
-            functionName: "name",
-          },
-        ],
-      });
+  //     const [symbol, decimals, name] = await viemClient.multicall({
+  //       allowFailure: false,
+  //       multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //       contracts: [
+  //         {
+  //           ...baseAssetContract,
+  //           functionName: "symbol",
+  //         },
+  //         {
+  //           ...baseAssetContract,
+  //           functionName: "decimals",
+  //         },
+  //         {
+  //           ...baseAssetContract,
+  //           functionName: "name",
+  //         },
+  //       ],
+  //     });
 
-      const newBaseAsset: BaseAsset = {
-        address: payload.content.address,
-        symbol: symbol,
-        name: name,
-        decimals: parseInt(decimals.toString()),
-        balance: null,
-        local: true,
-        logoURI: "",
-      };
+  //     const newBaseAsset: BaseAsset = {
+  //       address: payload.content.address,
+  //       symbol: symbol,
+  //       name: name,
+  //       decimals: parseInt(decimals.toString()),
+  //       balance: null,
+  //       local: true,
+  //       logoURI: "",
+  //     };
 
-      localBaseAssets = [...localBaseAssets, newBaseAsset];
-      localStorage.setItem(
-        "stableSwap-assets",
-        JSON.stringify(localBaseAssets)
-      );
+  //     localBaseAssets = [...localBaseAssets, newBaseAsset];
+  //     localStorage.setItem(
+  //       "stableSwap-assets",
+  //       JSON.stringify(localBaseAssets)
+  //     );
 
-      const baseAssets = queryClient.getQueryData<BaseAsset[]>([
-        QUERY_KEYS.BASE_ASSETS,
-      ]);
-      const storeBaseAssets = baseAssets
-        ? [...baseAssets, ...localBaseAssets]
-        : [...localBaseAssets];
+  //     const baseAssets = queryClient.getQueryData<BaseAsset[]>([
+  //       QUERY_KEYS.BASE_ASSETS,
+  //     ]);
+  //     const storeBaseAssets = baseAssets
+  //       ? [...baseAssets, ...localBaseAssets]
+  //       : [...localBaseAssets];
 
-      // this.setStore({ baseAssets: storeBaseAssets });
-      queryClient.setQueryData<BaseAsset[]>(
-        [QUERY_KEYS.BASE_ASSETS],
-        storeBaseAssets
-      );
+  //     // this.setStore({ baseAssets: storeBaseAssets });
+  //     queryClient.setQueryData<BaseAsset[]>(
+  //       [QUERY_KEYS.BASE_ASSETS],
+  //       storeBaseAssets
+  //     );
 
-      this.emitter.emit(ACTIONS.ASSET_SEARCHED, newBaseAsset);
-    } catch (ex) {
-      console.log(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.ASSET_SEARCHED, newBaseAsset);
+  //   } catch (ex) {
+  //     console.log(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   createPairStake = async (payload: {
     type: string;
