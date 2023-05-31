@@ -17,7 +17,6 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Switch,
   Collapse,
   List,
   ListItem,
@@ -148,20 +147,19 @@ function EnhancedTableHead(props: {
   );
 }
 
-const getLocalToggles = () => {
-  let localToggles = {
-    toggleMyDeposits: false,
-    toggleVariable: true,
-    toggleStable: true,
-    toggleBoosted: false,
-  };
+const getLocalState = () => {
+  let localState = "all";
 
-  const localToggleString = localStorage.getItem("pairsToggle-v1");
-  if (localToggleString && localToggleString.length > 0) {
-    localToggles = JSON.parse(localToggleString);
+  const localToggleString = localStorage.getItem("pairsState-v1");
+  if (localToggleString) {
+    localState = localToggleString;
   }
 
-  return localToggles;
+  return localState;
+};
+
+const setLocalState = (state: string) => {
+  localStorage.setItem("pairsState-v1", state);
 };
 
 interface PairsTableProps {
@@ -169,68 +167,27 @@ interface PairsTableProps {
 }
 
 interface PairsTableToolbarProps {
+  search: string;
   setSearch: (_search: string) => void;
-  setToggleMyDeposits: (_toggleMyDeposits: boolean) => void;
-  setToggleStable: (_toggleStable: boolean) => void;
-  setToggleVariable: (_toggleVariable: boolean) => void;
-  setToggleBoosted: (_toggleBoosted: boolean) => void;
+  localStateFilter: string;
+  setLocalStateFilter: (_locatState: string) => void;
 }
 
-const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
+const EnhancedTableToolbar = ({
+  search,
+  setSearch,
+  localStateFilter,
+  setLocalStateFilter,
+}: PairsTableToolbarProps) => {
   const router = useRouter();
-
-  const localToggles = getLocalToggles();
-
-  const [search, setSearch] = useState("");
-  const [toggleMyDeposits, setToggleMyDeposits] = useState(
-    localToggles.toggleMyDeposits
-  );
-  const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
-  const [toggleVariable, setToggleVariable] = useState(
-    localToggles.toggleVariable
-  );
-  const [toggleBoosted, setToggleBoosted] = useState(
-    localToggles.toggleBoosted
-  );
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
-    props.setSearch(event.target.value);
   };
 
-  const onToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const localToggles = getLocalToggles();
-
-    switch (event.target.name) {
-      case "toggleMyDeposits":
-        setToggleMyDeposits(event.target.checked);
-        props.setToggleMyDeposits(event.target.checked);
-        localToggles.toggleMyDeposits = event.target.checked;
-        break;
-      case "toggleStable":
-        setToggleStable(event.target.checked);
-        props.setToggleStable(event.target.checked);
-        localToggles.toggleStable = event.target.checked;
-        break;
-      case "toggleVariable":
-        setToggleVariable(event.target.checked);
-        props.setToggleVariable(event.target.checked);
-        localToggles.toggleVariable = event.target.checked;
-        break;
-      case "toggleBoosted":
-        setToggleBoosted(event.target.checked);
-        props.setToggleBoosted(event.target.checked);
-        localToggles.toggleBoosted = event.target.checked;
-        break;
-      default:
-    }
-
-    // set locally saved toggles
-    try {
-      localStorage.setItem("pairsToggle-v1", JSON.stringify(localToggles));
-    } catch (ex) {
-      console.log(ex);
-    }
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalStateFilter(event.target.value);
+    setLocalState(event.target.value);
   };
 
   const onCreate = () => {
@@ -267,79 +224,93 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
             }}
           />
         </div>
-        <div className="flex flex-col gap-2 xs:flex-row">
-          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
-            <div className="text-sm uppercase text-orange-600">Boosted</div>
-            <Switch
-              color="primary"
-              checked={toggleBoosted}
-              name={"toggleBoosted"}
-              onChange={onToggle}
-              sx={{
-                "& .MuiSwitch-track": {
-                  bgcolor: "orange",
-                },
-                "& .Mui-checked": {
-                  color: "rgb(234 88 12)",
-                },
-                "& .Mui-checked+.MuiSwitch-track": {
-                  bgcolor: "rgb(234 88 12)",
-                },
-              }}
+        <ul className="flex flex-col gap-2 xs:flex-row">
+          <li>
+            <input
+              type="radio"
+              id="all"
+              name="filter"
+              value="all"
+              checked={localStateFilter === "all"}
+              onChange={onChange}
+              className="peer hidden"
             />
-          </div>
-          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
-            <div className="text-sm uppercase">Deposited</div>
-            <Switch
-              color="primary"
-              checked={toggleMyDeposits}
-              name={"toggleMyDeposits"}
-              onChange={onToggle}
-              sx={{
-                "& .Mui-checked": {
-                  color: "#0b8566",
-                },
-                "& .Mui-checked+.MuiSwitch-track": {
-                  bgcolor: "#0b8566",
-                },
-              }}
+            <label
+              htmlFor="all"
+              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+            >
+              <div className="uppercase">All</div>
+            </label>
+          </li>
+          <li>
+            <input
+              type="radio"
+              id="boosted"
+              name="filter"
+              value="boosted"
+              checked={localStateFilter === "boosted"}
+              onChange={onChange}
+              className="peer hidden"
             />
-          </div>
-          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
-            <div className="text-sm uppercase">Stable</div>
-            <Switch
-              color="primary"
-              checked={toggleStable}
-              name={"toggleStable"}
-              onChange={onToggle}
-              sx={{
-                "& .Mui-checked": {
-                  color: "#0b8566",
-                },
-                "& .Mui-checked+.MuiSwitch-track": {
-                  bgcolor: "#0b8566",
-                },
-              }}
+            <label
+              htmlFor="boosted"
+              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+            >
+              <div className="uppercase">Boosted</div>
+            </label>
+          </li>
+          <li>
+            <input
+              type="radio"
+              id="myDeposits"
+              name="filter"
+              value="myDeposits"
+              checked={localStateFilter === "myDeposits"}
+              onChange={onChange}
+              className="peer hidden"
             />
-          </div>
-          <div className="flex min-h-[56px] items-center rounded-lg border border-[rgba(255,255,255,0.23)] px-1">
-            <div className="text-sm uppercase">Volatile</div>
-            <Switch
-              color="primary"
-              checked={toggleVariable}
-              name={"toggleVariable"}
-              onChange={onToggle}
-              sx={{
-                "& .Mui-checked": {
-                  color: "#0b8566",
-                },
-                "& .Mui-checked+.MuiSwitch-track": {
-                  bgcolor: "#0b8566",
-                },
-              }}
+            <label
+              htmlFor="myDeposits"
+              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+            >
+              <div className="uppercase">Deposited</div>
+            </label>
+          </li>
+          <li>
+            <input
+              type="radio"
+              id="stable"
+              name="filter"
+              value="stable"
+              checked={localStateFilter === "stable"}
+              onChange={onChange}
+              className="peer hidden"
             />
-          </div>
-        </div>
+            <label
+              htmlFor="stable"
+              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+            >
+              <div className="uppercase">Stable</div>
+            </label>
+          </li>
+          <li>
+            <input
+              type="radio"
+              id="volatile"
+              name="filter"
+              value="volatile"
+              checked={localStateFilter === "volatile"}
+              onChange={onChange}
+              className="peer hidden"
+            />
+            <label
+              htmlFor="volatile"
+              className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+            >
+              <div className="uppercase">Volatile</div>
+            </label>
+          </li>
+        </ul>
       </div>
     </Toolbar>
   );
@@ -353,19 +324,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
-  const localToggles = getLocalToggles();
+  const localState = getLocalState();
 
   const [search, setSearch] = useState("");
-  const [toggleMyDeposits, setToggleMyDeposits] = useState(
-    localToggles.toggleMyDeposits
-  );
-  const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
-  const [toggleVariable, setToggleVariable] = useState(
-    localToggles.toggleVariable
-  );
-  const [toggleBoosted, setToggleBoosted] = useState(
-    localToggles.toggleBoosted
-  );
+  const [localStateFilter, setLocalStateFilter] = useState(localState);
 
   const handleRequestSort = (
     _e: React.MouseEvent<unknown>,
@@ -435,13 +397,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           return false;
         })
         .filter((pair) => {
-          if (toggleStable !== true && pair.stable === true) {
-            return false;
+          if (localStateFilter === "all") {
+            return true;
           }
-          if (toggleVariable !== true && pair.stable === false) {
-            return false;
-          }
-          if (toggleMyDeposits === true) {
+          if (localStateFilter === "myDeposits") {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
               (!pair.balance || !BigNumber(pair.balance).gt(0))
@@ -449,21 +408,24 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
               return false;
             }
           }
-          if (toggleBoosted === true) {
+          if (localStateFilter === "stable") {
+            if (pair.stable !== true) {
+              return false;
+            }
+          }
+          if (localStateFilter === "volatile") {
+            if (pair.stable !== false) {
+              return false;
+            }
+          }
+          if (localStateFilter === "boosted") {
             if (!pair.oblotr_apr) {
               return false;
             }
           }
           return true;
         }),
-    [
-      pairs,
-      toggleMyDeposits,
-      toggleStable,
-      toggleVariable,
-      toggleBoosted,
-      search,
-    ]
+    [pairs, localStateFilter, search]
   );
 
   const sortedPairs = useMemo(
@@ -523,11 +485,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   return (
     <div className="w-full">
       <EnhancedTableToolbar
+        search={search}
         setSearch={setSearch}
-        setToggleMyDeposits={setToggleMyDeposits}
-        setToggleStable={setToggleStable}
-        setToggleVariable={setToggleVariable}
-        setToggleBoosted={setToggleBoosted}
+        localStateFilter={localStateFilter}
+        setLocalStateFilter={setLocalStateFilter}
       />
       <Paper
         elevation={0}
