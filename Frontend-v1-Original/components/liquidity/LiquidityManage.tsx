@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -10,8 +16,6 @@ import {
   CircularProgress,
   Tooltip,
   IconButton,
-  FormControlLabel,
-  Switch,
   MenuItem,
   Dialog,
 } from "@mui/material";
@@ -26,11 +30,7 @@ import BigNumber from "bignumber.js";
 import { isAddress } from "viem";
 
 import stores from "../../stores";
-import {
-  ACTIONS,
-  ETHERSCAN_URL,
-  W_NATIVE_ADDRESS,
-} from "../../stores/constants/constants";
+import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
 import { useBaseAssetWithInfo } from "../../lib/global/queries";
@@ -38,26 +38,29 @@ import {
   useAddLocalAsset,
   useRemoveLocalAsset,
 } from "../../lib/global/mutations";
+import { SmallInput } from "../common/smallInput";
 
-import { usePairsWithGaugesOnlyWithBalance } from "./queries";
+import {
+  useGetPair,
+  usePairsWithGaugesOnlyWithBalance,
+  useQuoteAddLiquidity,
+  useQuoteRemoveLiquidity,
+} from "./lib/queries";
+import { useAmounts } from "./lib/useAmounts";
 
 export default function LiquidityManage() {
   const router = useRouter();
   const amount0Ref = useRef<HTMLInputElement>(null);
   const amount1Ref = useRef<HTMLInputElement>(null);
 
-  const [pairReadOnly, setPairReadOnly] = useState(false);
-
-  const [pair, setPair] = useState<Pair | null>(null);
-
   const [depositLoading, setDepositLoading] = useState(false);
   const [stakeLoading, setStakeLoading] = useState(false);
   const [depositStakeLoading, setDepositStakeLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
 
-  const [amount0, setAmount0] = useState("");
+  const { amount0, amount1, setAmount0, setAmount1, setActiveInput } =
+    useAmounts();
   const [amount0Error, setAmount0Error] = useState<string | false>(false);
-  const [amount1, setAmount1] = useState("");
   const [amount1Error, setAmount1Error] = useState<string | false>(false);
 
   const [stable, setStable] = useState(false);
@@ -71,93 +74,43 @@ export default function LiquidityManage() {
     string | false
   >(false);
 
-  const [withdrawAmount0, setWithdrawAmount0] = useState("");
-  const [withdrawAmount1, setWithdrawAmount1] = useState("");
-
-  // const [withdrawAmount0Percent, setWithdrawAmount0Percent] = useState("");
-  // const [withdrawAmount1Percent, setWithdrawAmount1Percent] = useState("");
-
   const [activeTab, setActiveTab] = useState("deposit");
-  const [quote, setQuote] = useState<string | null>(null);
-  const [withdrawQuote, setWithdrawQuote] = useState<{
-    amount0: string;
-    amount1: string;
-  } | null>(null);
-
-  const [priorityAsset, setPriorityAsset] = useState<0 | 1>(0);
-  const [advanced, setAdvanced] = useState(true);
 
   const [slippage, setSlippage] = useState("2");
-  const [slippageError] = useState(false); //TODO setSlippageError if any?
 
   const { data: withdrawAssetOptions } = usePairsWithGaugesOnlyWithBalance();
 
   const { data: assetOptions } = useBaseAssetWithInfo();
 
+  const { data: pair, isFetching: isLoadingPair } = useGetPair(
+    router.query.address
+  );
+
+  const { data: quote, remove: removeQuote } = useQuoteAddLiquidity(
+    router.query.address
+  );
+
+  const { data: withdrawQuote, remove: removeWithdrawQuote } =
+    useQuoteRemoveLiquidity(withdrawAmount, router.query.address);
+
   useEffect(() => {
-    const syncUI = async () => {
-      if (
-        router.query.address &&
-        router.query.address !== "create" &&
-        !Array.isArray(router.query.address) &&
-        isAddress(router.query.address)
-      ) {
-        setPairReadOnly(true);
-
-        const pp = await stores.stableSwapStore.getPairByAddress(
-          router.query.address
-        );
-        setPair(pp);
-
-        if (pp && isBaseAsset(pp.token0) && isBaseAsset(pp.token1)) {
-          setWithdrawAsset(pp);
-          setAsset0(pp.token0);
-          setAsset1(pp.token1);
-          setStable(pp.isStable);
-        }
-
-        if (pp && pp.balance && BigNumber(pp.balance).gt(0)) {
-          setAdvanced(true);
-        }
-      } else {
-        let aa0 = asset0;
-        let aa1 = asset1;
-        if (assetOptions && assetOptions.length > 0 && asset0 == null) {
-          setAsset0(assetOptions[0]);
-          aa0 = assetOptions[0];
-        }
-        if (assetOptions && assetOptions.length > 0 && asset1 == null) {
-          setAsset1(assetOptions[1]);
-          aa1 = assetOptions[1];
-        }
-        if (
-          withdrawAssetOptions &&
-          withdrawAssetOptions.length > 0 &&
-          withdrawAsset == null
-        ) {
-          setWithdrawAsset(withdrawAssetOptions[1]);
-        }
-
-        if (aa0 && aa1) {
-          const p = await stores.stableSwapStore.getPair(
-            aa0.address,
-            aa1.address,
-            stable
-          );
-          setPair(p);
-        }
+    if (
+      router.query.address &&
+      !Array.isArray(router.query.address) &&
+      isAddress(router.query.address)
+    ) {
+      if (pair && isBaseAsset(pair.token0) && isBaseAsset(pair.token1)) {
+        setWithdrawAsset(pair);
+        setAsset0(pair.token0);
+        setAsset1(pair.token1);
+        setStable(pair.stable);
       }
-    };
-    syncUI();
-  }, [
-    asset0,
-    asset1,
-    assetOptions,
-    router.query.address,
-    stable,
-    withdrawAsset,
-    withdrawAssetOptions,
-  ]);
+    }
+  }, [router.query.address, pair]);
+
+  const onBack = useCallback(() => {
+    router.push("/liquidity");
+  }, [router]);
 
   useEffect(() => {
     const depositReturned = () => {
@@ -168,11 +121,9 @@ export default function LiquidityManage() {
 
       setAmount0("");
       setAmount1("");
-      setQuote(null);
+      removeQuote();
       setWithdrawAmount("");
-      setWithdrawAmount0("");
-      setWithdrawAmount1("");
-      setWithdrawQuote(null);
+      removeWithdrawQuote();
 
       onBack();
     };
@@ -188,49 +139,12 @@ export default function LiquidityManage() {
       setCreateLoading(false);
     };
 
-    const quoteAddReturned = (res: {
-      inputs: {
-        token0: BaseAsset;
-        token1: BaseAsset;
-        amount0: string;
-        amount1: string;
-      };
-      output: string;
-    }) => {
-      setQuote(res.output);
-    };
-
-    const quoteRemoveReturned = (res: {
-      inputs: {
-        token0: BaseAsset;
-        token1: BaseAsset;
-        withdrawAmount: string;
-      };
-      output: {
-        amount0: string;
-        amount1: string;
-      };
-    }) => {
-      if (!res) {
-        return;
-      }
-      setWithdrawQuote(res.output);
-      setWithdrawAmount0(res.output.amount0);
-      setWithdrawAmount1(res.output.amount1);
-    };
-
     stores.emitter.on(ACTIONS.LIQUIDITY_ADDED, depositReturned);
     stores.emitter.on(ACTIONS.ADD_LIQUIDITY_AND_STAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
     stores.emitter.on(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_STAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_UNSTAKED, depositReturned);
-    stores.emitter.on(ACTIONS.PAIR_CREATED, depositReturned);
-    stores.emitter.on(ACTIONS.QUOTE_ADD_LIQUIDITY_RETURNED, quoteAddReturned);
-    stores.emitter.on(
-      ACTIONS.QUOTE_REMOVE_LIQUIDITY_RETURNED,
-      quoteRemoveReturned
-    );
     stores.emitter.on(ACTIONS.CREATE_GAUGE_RETURNED, createGaugeReturned);
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
 
@@ -250,138 +164,13 @@ export default function LiquidityManage() {
         ACTIONS.LIQUIDITY_UNSTAKED,
         depositReturned
       );
-      stores.emitter.removeListener(ACTIONS.PAIR_CREATED, depositReturned);
-      stores.emitter.removeListener(
-        ACTIONS.QUOTE_ADD_LIQUIDITY_RETURNED,
-        quoteAddReturned
-      );
-      stores.emitter.removeListener(
-        ACTIONS.QUOTE_REMOVE_LIQUIDITY_RETURNED,
-        quoteRemoveReturned
-      );
       stores.emitter.removeListener(
         ACTIONS.CREATE_GAUGE_RETURNED,
         createGaugeReturned
       );
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
     };
-  }, []);
-
-  const onBack = () => {
-    router.push("/liquidity");
-  };
-
-  const callQuoteAddLiquidity = (
-    amountA: string,
-    amountB: string,
-    inputIndex: 0 | 1,
-    stable: boolean,
-    pp: Pair | null,
-    assetA: BaseAsset | null,
-    assetB: BaseAsset | null
-  ) => {
-    if (!pp) {
-      return null;
-    }
-    if (!assetA || !assetB) {
-      return null;
-    }
-
-    let invert = false;
-
-    let addy0 = assetA.address;
-    let addy1 = assetB.address;
-    // @ts-expect-error workaround for CANTO
-    if (assetA.address === "CANTO") {
-      // @ts-expect-error workaround for CANTO
-      addy0 = W_NATIVE_ADDRESS;
-    }
-    // @ts-expect-error workaround for CANTO
-    if (assetB.address === "CANTO") {
-      // @ts-expect-error workaround for CANTO
-      addy1 = W_NATIVE_ADDRESS;
-    }
-
-    if (
-      addy1.toLowerCase() === pp.token0.address.toLowerCase() &&
-      addy0.toLowerCase() === pp.token1.address.toLowerCase()
-    ) {
-      invert = true;
-    }
-
-    if (inputIndex === 0) {
-      if (amountA === "") {
-        setAmount1("");
-      } else {
-        if (invert) {
-          amountB = BigNumber(amountA)
-            .times(pp.reserve0)
-            .div(pp.reserve1)
-            .toFixed(pp.token0.decimals > 6 ? 6 : pp.token0.decimals);
-        } else {
-          amountB = BigNumber(amountA)
-            .times(pp.reserve1)
-            .div(pp.reserve0)
-            .toFixed(pp.token1.decimals > 6 ? 6 : pp.token1.decimals);
-        }
-        setAmount1(amountB);
-      }
-    }
-    if (inputIndex === 1) {
-      if (amountB === "") {
-        setAmount0("");
-      } else {
-        if (invert) {
-          amountA = BigNumber(amountB)
-            .times(pp.reserve1)
-            .div(pp.reserve0)
-            .toFixed(pp.token1.decimals > 6 ? 6 : pp.token1.decimals);
-        } else {
-          amountA = BigNumber(amountB)
-            .times(pp.reserve0)
-            .div(pp.reserve1)
-            .toFixed(pp.token0.decimals > 6 ? 6 : pp.token0.decimals);
-        }
-        setAmount0(amountA);
-      }
-    }
-
-    if (
-      BigNumber(amountA).lte(0) ||
-      BigNumber(amountB).lte(0) ||
-      isNaN(+amountA) ||
-      isNaN(+amountB)
-    ) {
-      return null;
-    }
-
-    stores.dispatcher.dispatch({
-      type: ACTIONS.QUOTE_ADD_LIQUIDITY,
-      content: {
-        pair: pp,
-        token0: pp.token0,
-        token1: pp.token1,
-        amount0: amountA,
-        amount1: amountB,
-        stable: stable,
-      },
-    });
-  };
-
-  const callQuoteRemoveLiquidity = (p: Pair | null, amount: string) => {
-    if (!p) {
-      return;
-    }
-    stores.dispatcher.dispatch({
-      type: ACTIONS.QUOTE_REMOVE_LIQUIDITY,
-      content: {
-        pair: p,
-        token0: p.token0,
-        token1: p.token1,
-        withdrawAmount: amount,
-      },
-    });
-  };
+  }, [onBack, removeQuote, removeWithdrawQuote, setAmount0, setAmount1]);
 
   const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value == "" || !isNaN(+event.target.value)) {
@@ -404,7 +193,6 @@ export default function LiquidityManage() {
         .toFixed(asset0.decimals);
       setAmount0(am);
       if (!!amount0Ref.current) amount0Ref.current.focus();
-      callQuoteAddLiquidity(am, amount1, 0, stable, pair, asset0, asset1);
     } else if (input === "amount1") {
       let am = BigNumber(asset1.balance)
         .times(percent)
@@ -412,7 +200,6 @@ export default function LiquidityManage() {
         .toFixed(asset1.decimals);
       setAmount1(am);
       if (!!amount1Ref.current) amount1Ref.current.focus();
-      callQuoteAddLiquidity(amount0, am, 1, stable, pair, asset0, asset1);
     } else if (input === "withdraw") {
       let am = "";
       if (pair && pair.gauge && pair.gauge.balance) {
@@ -421,13 +208,6 @@ export default function LiquidityManage() {
       } else if (pair.balance) {
         am = BigNumber(pair.balance).times(percent).div(100).toFixed(18);
         setWithdrawAmount(am);
-      }
-
-      if (am === "") {
-        setWithdrawAmount0("");
-        setWithdrawAmount1("");
-      } else if (am !== "" && !isNaN(+am)) {
-        calcRemove(pair, am);
       }
     }
   };
@@ -581,152 +361,6 @@ export default function LiquidityManage() {
     }
   };
 
-  const onCreateAndStake = () => {
-    setAmount0Error(false);
-    setAmount1Error(false);
-
-    let error = false;
-
-    if (!amount0 || amount0 === "" || isNaN(+amount0)) {
-      setAmount0Error("Amount 0 is required");
-      error = true;
-    } else {
-      if (
-        !asset0?.balance ||
-        isNaN(+asset0?.balance) ||
-        BigNumber(asset0?.balance).lte(0)
-      ) {
-        setAmount0Error("Invalid balance");
-        error = true;
-      } else if (BigNumber(amount0).lte(0)) {
-        setAmount0Error("Invalid amount");
-        error = true;
-      } else if (asset0 && BigNumber(amount0).gt(asset0.balance)) {
-        setAmount0Error(`Greater than your available balance`);
-        error = true;
-      }
-    }
-
-    if (!amount1 || amount1 === "" || isNaN(+amount1)) {
-      setAmount1Error("Amount 0 is required");
-      error = true;
-    } else {
-      if (
-        !asset1?.balance ||
-        isNaN(+asset1?.balance) ||
-        BigNumber(asset1?.balance).lte(0)
-      ) {
-        setAmount1Error("Invalid balance");
-        error = true;
-      } else if (BigNumber(amount1).lte(0)) {
-        setAmount1Error("Invalid amount");
-        error = true;
-      } else if (asset1 && BigNumber(amount1).gt(asset1.balance)) {
-        setAmount1Error(`Greater than your available balance`);
-        error = true;
-      }
-    }
-
-    if (!asset0 || asset0 === null) {
-      setAmount0Error("Asset is required");
-      error = true;
-    }
-
-    if (!asset1 || asset1 === null) {
-      setAmount1Error("Asset is required");
-      error = true;
-    }
-
-    if (!error) {
-      setCreateLoading(true);
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_PAIR_AND_STAKE,
-        content: {
-          token0: asset0,
-          token1: asset1,
-          amount0: amount0,
-          amount1: amount1,
-          isStable: stable,
-          token: "0",
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
-      });
-    }
-  };
-
-  const onCreateAndDeposit = () => {
-    setAmount0Error(false);
-    setAmount1Error(false);
-
-    let error = false;
-
-    if (!amount0 || amount0 === "" || isNaN(+amount0)) {
-      setAmount0Error("Amount 0 is required");
-      error = true;
-    } else {
-      if (
-        !asset0?.balance ||
-        isNaN(+asset0?.balance) ||
-        BigNumber(asset0?.balance).lte(0)
-      ) {
-        setAmount0Error("Invalid balance");
-        error = true;
-      } else if (BigNumber(amount0).lte(0)) {
-        setAmount0Error("Invalid amount");
-        error = true;
-      } else if (asset0 && BigNumber(amount0).gt(asset0.balance)) {
-        setAmount0Error(`Greater than your available balance`);
-        error = true;
-      }
-    }
-
-    if (!amount1 || amount1 === "" || isNaN(+amount1)) {
-      setAmount1Error("Amount 0 is required");
-      error = true;
-    } else {
-      if (
-        !asset1?.balance ||
-        isNaN(+asset1?.balance) ||
-        BigNumber(asset1?.balance).lte(0)
-      ) {
-        setAmount1Error("Invalid balance");
-        error = true;
-      } else if (BigNumber(amount1).lte(0)) {
-        setAmount1Error("Invalid amount");
-        error = true;
-      } else if (asset1 && BigNumber(amount1).gt(asset1.balance)) {
-        setAmount1Error(`Greater than your available balance`);
-        error = true;
-      }
-    }
-
-    if (!asset0 || asset0 === null) {
-      setAmount0Error("Asset is required");
-      error = true;
-    }
-
-    if (!asset1 || asset1 === null) {
-      setAmount1Error("Asset is required");
-      error = true;
-    }
-
-    if (!error) {
-      setDepositLoading(true);
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_PAIR_AND_DEPOSIT,
-        content: {
-          token0: asset0,
-          token1: asset1,
-          amount0: amount0,
-          amount1: amount1,
-          isStable: stable,
-          token: "0",
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
-      });
-    }
-  };
-
   const onWithdraw = () => {
     setWithdrawAmountError(false);
 
@@ -806,8 +440,8 @@ export default function LiquidityManage() {
           token0: pair.token0,
           token1: pair.token1,
           amount: withdrawAmount,
-          amount0: withdrawAmount0,
-          amount1: withdrawAmount1,
+          amount0: withdrawQuote?.amount0,
+          amount1: withdrawQuote?.amount1,
           quote: withdrawQuote,
           slippage: slippage && slippage != "" ? slippage : "2",
         },
@@ -825,8 +459,8 @@ export default function LiquidityManage() {
         token0: pair.token0,
         token1: pair.token1,
         amount: withdrawAmount,
-        amount0: withdrawAmount0,
-        amount1: withdrawAmount1,
+        amount0: withdrawQuote?.amount0,
+        amount1: withdrawQuote?.amount1,
         quote: withdrawQuote,
         slippage: slippage && slippage != "" ? slippage : "2",
       },
@@ -856,108 +490,33 @@ export default function LiquidityManage() {
   const amount0Changed = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount0Error(false);
     setAmount0(event.target.value);
-    callQuoteAddLiquidity(
-      event.target.value,
-      amount1,
-      priorityAsset,
-      stable,
-      pair,
-      asset0,
-      asset1
-    );
   };
 
   const amount1Changed = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount1Error(false);
     setAmount1(event.target.value);
-    callQuoteAddLiquidity(
-      amount0,
-      event.target.value,
-      priorityAsset,
-      stable,
-      pair,
-      asset0,
-      asset1
-    );
   };
 
   const amount0Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
-    setPriorityAsset(0);
-    callQuoteAddLiquidity(amount0, amount1, 0, stable, pair, asset0, asset1);
+    setActiveInput("0");
   };
 
   const amount1Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
-    setPriorityAsset(1);
-    callQuoteAddLiquidity(amount0, amount1, 1, stable, pair, asset0, asset1);
+    setActiveInput("1");
   };
 
   const onAssetSelect = async (type: string, value: Pair | BaseAsset) => {
     if (type === "amount0" && isBaseAsset(value)) {
       setAsset0(value);
-      if (!asset1?.address) return;
-      const p = await stores.stableSwapStore.getPair(
-        value.address,
-        asset1.address,
-        stable
-      );
-      setPair(p);
-      callQuoteAddLiquidity(
-        amount0,
-        amount1,
-        priorityAsset,
-        stable,
-        p,
-        value,
-        asset1
-      );
     } else if (type === "amount1" && isBaseAsset(value)) {
       setAsset1(value);
-      if (!asset0?.address) return;
-      const p = await stores.stableSwapStore.getPair(
-        asset0.address,
-        value.address,
-        stable
-      );
-      setPair(p);
-      callQuoteAddLiquidity(
-        amount0,
-        amount1,
-        priorityAsset,
-        stable,
-        p,
-        asset0,
-        value
-      );
     } else if (type === "withdraw" && !isBaseAsset(value)) {
       setWithdrawAsset(value);
-      const p = await stores.stableSwapStore.getPair(
-        value.token0.address,
-        value.token1.address,
-        value.isStable
-      );
-      setPair(p);
-      calcRemove(p, withdrawAmount);
     }
   };
 
   const setStab = async (val: boolean) => {
     setStable(val);
-    if (!asset0?.address || !asset1?.address) return;
-    const p = await stores.stableSwapStore.getPair(
-      asset0.address,
-      asset1.address,
-      val
-    );
-    setPair(p);
-    callQuoteAddLiquidity(
-      amount0,
-      amount1,
-      priorityAsset,
-      val,
-      p,
-      asset0,
-      asset1
-    );
   };
 
   const withdrawAmountChanged = (
@@ -966,23 +525,12 @@ export default function LiquidityManage() {
     setWithdrawAmountError(false);
     setWithdrawAmount(event.target.value);
     if (event.target.value === "") {
-      setWithdrawAmount0("");
-      setWithdrawAmount1("");
-    } else if (event.target.value !== "" && !isNaN(+event.target.value)) {
-      calcRemove(pair, event.target.value);
+      removeQuote();
     }
-  };
-
-  const calcRemove = (pair: Pair | null, amount: string) => {
-    if (!(amount && amount != "" && parseFloat(amount) > 0)) {
-      return;
-    }
-
-    callQuoteRemoveLiquidity(pair, amount);
   };
 
   const renderMediumInput = (
-    value: string,
+    value: string | undefined,
     logo: string | null | undefined,
     symbol: string | undefined
   ) => {
@@ -1100,7 +648,7 @@ export default function LiquidityManage() {
               value={assetValue}
               assetOptions={assetOptions}
               onSelect={onAssetSelect}
-              disabled={pairReadOnly}
+              disabled={true}
             />
           </div>
           <div className="h-full flex-[1] flex-grow-[0.98]">
@@ -1176,7 +724,16 @@ export default function LiquidityManage() {
               <Typography className="text-xs text-secondaryGray">{`${pair?.token1?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
-              {renderSmallInput(slippage, slippageError, onSlippageChanged)}
+              <SmallInput
+                amountValue={slippage}
+                amountChanged={onSlippageChanged}
+                loading={
+                  stakeLoading ||
+                  createLoading ||
+                  depositLoading ||
+                  depositStakeLoading
+                }
+              />
             </div>
           </div>
           <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -1221,7 +778,16 @@ export default function LiquidityManage() {
             <Typography className="text-xs text-secondaryGray">{`${pair?.token1?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
-            {renderSmallInput(slippage, slippageError, onSlippageChanged)}
+            <SmallInput
+              amountValue={slippage}
+              amountChanged={onSlippageChanged}
+              loading={
+                stakeLoading ||
+                createLoading ||
+                depositLoading ||
+                depositStakeLoading
+              }
+            />
           </div>
         </div>
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -1245,43 +811,6 @@ export default function LiquidityManage() {
           <Typography className="border border-cantoGreen bg-[#0e110c] p-6 text-sm font-extralight">
             We are very sad to see you are no longer going with the FLOW
           </Typography>
-        </div>
-      </div>
-    );
-  };
-
-  const renderSmallInput = (
-    amountValue: string,
-    amountError: boolean,
-    amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void
-  ) => {
-    return (
-      <div className="relative mb-1">
-        <div className="absolute top-1">
-          <div className="pl-3">
-            <Typography className="text-xs font-thin text-secondaryGray" noWrap>
-              Slippage
-            </Typography>
-          </div>
-        </div>
-        <div className="flex min-h-[50px] w-full max-w-[112px] flex-wrap items-center rounded-[10px] bg-primaryBg">
-          <TextField
-            placeholder="0.00"
-            fullWidth
-            error={amountError}
-            helperText={amountError}
-            value={amountValue}
-            onChange={amountChanged}
-            disabled={
-              depositLoading ||
-              stakeLoading ||
-              depositStakeLoading ||
-              createLoading
-            }
-            InputProps={{
-              endAdornment: <InputAdornment position="end">%</InputAdornment>,
-            }}
-          />
         </div>
       </div>
     );
@@ -1318,10 +847,6 @@ export default function LiquidityManage() {
         </div>
       </div>
     );
-  };
-
-  const toggleAdvanced = () => {
-    setAdvanced(!advanced);
   };
 
   return (
@@ -1367,6 +892,9 @@ export default function LiquidityManage() {
           <Typography className="text-lg font-bold">
             Manage Liquidity Pair
           </Typography>
+          {isLoadingPair && (
+            <CircularProgress size={10} className="ml-2 fill-white" />
+          )}
         </div>
         <div className="w-full py-6 px-0">
           <div className="py-0 px-6">
@@ -1423,12 +951,12 @@ export default function LiquidityManage() {
                 </div>
                 <div className="grid grid-cols-[repeat(2,1fr)] gap-1">
                   {renderMediumInput(
-                    withdrawAmount0,
+                    withdrawQuote?.amount0,
                     pair?.token0?.logoURI,
                     pair?.token0?.symbol
                   )}
                   {renderMediumInput(
-                    withdrawAmount1,
+                    withdrawQuote?.amount1,
                     pair?.token1?.logoURI,
                     pair?.token1?.symbol
                   )}
@@ -1437,115 +965,8 @@ export default function LiquidityManage() {
               </>
             )}
           </div>
-          <div className="flex justify-end py-0 px-8">
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={advanced}
-                  onChange={toggleAdvanced}
-                  color={"primary"}
-                />
-              }
-              className="[&>span]:text-[13px]"
-              label="Advanced"
-              labelPlacement="start"
-            />
-          </div>
           {activeTab === "deposit" && (
             <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0 px-6">
-              {pair === null &&
-                asset0 &&
-                asset0.isWhitelisted === true &&
-                asset1 &&
-                asset1.isWhitelisted === true && (
-                  <>
-                    <Button
-                      variant="contained"
-                      size="large"
-                      className={
-                        createLoading || depositLoading
-                          ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                      }
-                      color="primary"
-                      disabled={createLoading || depositLoading}
-                      onClick={onCreateAndStake}
-                    >
-                      <Typography className="font-bold capitalize">
-                        {createLoading ? `Creating` : `Create Pair & Stake`}
-                      </Typography>
-                      {createLoading && (
-                        <CircularProgress
-                          size={10}
-                          className="ml-2 fill-white"
-                        />
-                      )}
-                    </Button>
-                    {advanced && (
-                      <>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          className={
-                            createLoading || depositLoading
-                              ? "min-w-[auto]"
-                              : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                          }
-                          color="primary"
-                          disabled={createLoading || depositLoading}
-                          onClick={onCreateAndDeposit}
-                        >
-                          <Typography className="font-bold capitalize">
-                            {depositLoading
-                              ? `Depositing`
-                              : `Create Pair & Deposit`}
-                          </Typography>
-                          {depositLoading && (
-                            <CircularProgress
-                              size={10}
-                              className="ml-2 fill-white"
-                            />
-                          )}
-                        </Button>
-                      </>
-                    )}
-                  </>
-                )}
-              {pair === null &&
-                !(
-                  asset0 &&
-                  asset0.isWhitelisted === true &&
-                  asset1 &&
-                  asset1.isWhitelisted === true
-                ) && (
-                  <>
-                    <Button
-                      variant="contained"
-                      size="large"
-                      className={
-                        createLoading || depositLoading
-                          ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                      }
-                      color="primary"
-                      disabled={createLoading || depositLoading}
-                      onClick={onCreateAndDeposit}
-                    >
-                      <Typography className="font-bold capitalize">
-                        {depositLoading
-                          ? `Depositing`
-                          : `Create Pair & Deposit`}
-                      </Typography>
-                      {depositLoading && (
-                        <CircularProgress
-                          size={10}
-                          className="ml-2 fill-white"
-                        />
-                      )}
-                    </Button>
-                  </>
-                )}
               {
                 // There is no Gauge on the pair yet. Can only deposit
                 pair && !(pair && pair.gauge && pair.gauge.address) && (
@@ -1652,74 +1073,71 @@ export default function LiquidityManage() {
                         />
                       )}
                     </Button>
-                    {advanced && (
-                      <>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          className={
-                            (amount0 === "" && amount1 === "") ||
-                            depositLoading ||
-                            stakeLoading ||
-                            depositStakeLoading
-                              ? "min-w-[auto]"
-                              : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                          }
-                          color="primary"
-                          disabled={
-                            (amount0 === "" && amount1 === "") ||
-                            depositLoading ||
-                            stakeLoading ||
-                            depositStakeLoading
-                          }
-                          onClick={onDeposit}
-                        >
-                          <Typography className="font-bold capitalize">
-                            {depositLoading ? `Depositing` : `Deposit LP`}
-                          </Typography>
-                          {depositLoading && (
-                            <CircularProgress
-                              size={10}
-                              className="ml-2 fill-white"
-                            />
-                          )}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          className={
-                            (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                            depositLoading ||
-                            stakeLoading ||
-                            depositStakeLoading
-                              ? "min-w-[auto]"
-                              : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                          }
-                          color="primary"
-                          disabled={
-                            (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                            depositLoading ||
-                            stakeLoading ||
-                            depositStakeLoading
-                          }
-                          onClick={onStake}
-                        >
-                          <Typography className="font-bold capitalize">
-                            {pair.balance && BigNumber(pair.balance).gt(0)
-                              ? stakeLoading
-                                ? `Staking`
-                                : `Stake ${formatCurrency(pair.balance)} LP`
-                              : `Nothing Unstaked`}
-                          </Typography>
-                          {stakeLoading && (
-                            <CircularProgress
-                              size={10}
-                              className="ml-2 fill-white"
-                            />
-                          )}
-                        </Button>
-                      </>
-                    )}
+
+                    <Button
+                      variant="contained"
+                      size="large"
+                      className={
+                        (amount0 === "" && amount1 === "") ||
+                        depositLoading ||
+                        stakeLoading ||
+                        depositStakeLoading
+                          ? "min-w-[auto]"
+                          : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                      }
+                      color="primary"
+                      disabled={
+                        (amount0 === "" && amount1 === "") ||
+                        depositLoading ||
+                        stakeLoading ||
+                        depositStakeLoading
+                      }
+                      onClick={onDeposit}
+                    >
+                      <Typography className="font-bold capitalize">
+                        {depositLoading ? `Depositing` : `Deposit LP`}
+                      </Typography>
+                      {depositLoading && (
+                        <CircularProgress
+                          size={10}
+                          className="ml-2 fill-white"
+                        />
+                      )}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      className={
+                        (pair.balance && BigNumber(pair.balance).eq(0)) ||
+                        depositLoading ||
+                        stakeLoading ||
+                        depositStakeLoading
+                          ? "min-w-[auto]"
+                          : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                      }
+                      color="primary"
+                      disabled={
+                        (pair.balance && BigNumber(pair.balance).eq(0)) ||
+                        depositLoading ||
+                        stakeLoading ||
+                        depositStakeLoading
+                      }
+                      onClick={onStake}
+                    >
+                      <Typography className="font-bold capitalize">
+                        {pair.balance && BigNumber(pair.balance).gt(0)
+                          ? stakeLoading
+                            ? `Staking`
+                            : `Stake ${formatCurrency(pair.balance)} LP`
+                          : `Nothing Unstaked`}
+                      </Typography>
+                      {stakeLoading && (
+                        <CircularProgress
+                          size={10}
+                          className="ml-2 fill-white"
+                        />
+                      )}
+                    </Button>
                   </>
                 )
               }
@@ -1779,74 +1197,65 @@ export default function LiquidityManage() {
                       <CircularProgress size={10} className="ml-2 fill-white" />
                     )}
                   </Button>
-                  {advanced && (
-                    <>
-                      <Button
-                        variant="contained"
-                        size="large"
-                        className={
-                          withdrawAmount === "" ||
-                          depositLoading ||
-                          stakeLoading ||
-                          depositStakeLoading
-                            ? "min-w-[auto]"
-                            : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                        }
-                        color="primary"
-                        disabled={
-                          withdrawAmount === "" ||
-                          depositLoading ||
-                          stakeLoading ||
-                          depositStakeLoading
-                        }
-                        onClick={onUnstake}
-                      >
-                        <Typography className="font-bold capitalize">
-                          {stakeLoading ? `Unstaking` : `Unstake LP`}
-                        </Typography>
-                        {stakeLoading && (
-                          <CircularProgress
-                            size={10}
-                            className="ml-2 fill-white"
-                          />
-                        )}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="large"
-                        className={
-                          (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                          depositLoading ||
-                          stakeLoading ||
-                          depositStakeLoading
-                            ? "min-w-[auto]"
-                            : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-                        }
-                        color="primary"
-                        disabled={
-                          (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                          depositLoading ||
-                          stakeLoading ||
-                          depositStakeLoading
-                        }
-                        onClick={onWithdraw}
-                      >
-                        <Typography className="font-bold capitalize">
-                          {pair.balance && BigNumber(pair.balance).gt(0)
-                            ? depositLoading
-                              ? `Withdrawing`
-                              : `Withdraw ${formatCurrency(pair.balance)} LP`
-                            : `Nothing Unstaked`}
-                        </Typography>
-                        {depositLoading && (
-                          <CircularProgress
-                            size={10}
-                            className="ml-2 fill-white"
-                          />
-                        )}
-                      </Button>
-                    </>
-                  )}
+
+                  <Button
+                    variant="contained"
+                    size="large"
+                    className={
+                      withdrawAmount === "" ||
+                      depositLoading ||
+                      stakeLoading ||
+                      depositStakeLoading
+                        ? "min-w-[auto]"
+                        : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                    }
+                    color="primary"
+                    disabled={
+                      withdrawAmount === "" ||
+                      depositLoading ||
+                      stakeLoading ||
+                      depositStakeLoading
+                    }
+                    onClick={onUnstake}
+                  >
+                    <Typography className="font-bold capitalize">
+                      {stakeLoading ? `Unstaking` : `Unstake LP`}
+                    </Typography>
+                    {stakeLoading && (
+                      <CircularProgress size={10} className="ml-2 fill-white" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    className={
+                      (pair.balance && BigNumber(pair.balance).eq(0)) ||
+                      depositLoading ||
+                      stakeLoading ||
+                      depositStakeLoading
+                        ? "min-w-[auto]"
+                        : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                    }
+                    color="primary"
+                    disabled={
+                      (pair.balance && BigNumber(pair.balance).eq(0)) ||
+                      depositLoading ||
+                      stakeLoading ||
+                      depositStakeLoading
+                    }
+                    onClick={onWithdraw}
+                  >
+                    <Typography className="font-bold capitalize">
+                      {pair.balance && BigNumber(pair.balance).gt(0)
+                        ? depositLoading
+                          ? `Withdrawing`
+                          : `Withdraw ${formatCurrency(pair.balance)} LP`
+                        : `Nothing Unstaked`}
+                    </Typography>
+                    {depositLoading && (
+                      <CircularProgress size={10} className="ml-2 fill-white" />
+                    )}
+                  </Button>
                 </>
               )}
             </div>
@@ -1887,8 +1296,8 @@ function AssetSelect({
   };
 
   const filteredAssetOptions = useMemo(() => {
-    return (assetOptions as BaseAsset[])
-      .filter((asset) => {
+    return (assetOptions as BaseAsset[] | undefined)
+      ?.filter((asset) => {
         if (search && search !== "") {
           return (
             asset.address.toLowerCase().includes(search.toLowerCase()) ||

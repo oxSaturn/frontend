@@ -1,4 +1,4 @@
-import LiquidityCreate from "../../../components/ssLiquidityManage/ssLiquidityManage";
+import LiquidityCreate from "../../../components/liquidity/LiquidityCreate";
 
 function Pair() {
   return (

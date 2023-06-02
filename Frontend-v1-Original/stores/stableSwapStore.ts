@@ -7,9 +7,7 @@ import BigNumber from "bignumber.js";
 import {
   getContract,
   formatUnits,
-  parseUnits,
   formatEther,
-  parseEther,
   type WalletClient,
   type WriteContractReturnType,
   BaseError,
@@ -32,7 +30,6 @@ import {
   MAX_UINT256,
   ZERO_ADDRESS,
   NATIVE_TOKEN,
-  W_NATIVE_ADDRESS,
   PAIR_DECIMALS,
   QUERY_KEYS,
 } from "./constants/constants";
@@ -89,12 +86,12 @@ class Store {
           //   break;
 
           // LIQUIDITY
-          case ACTIONS.CREATE_PAIR_AND_STAKE:
-            this.createPairStake(payload);
-            break;
-          case ACTIONS.CREATE_PAIR_AND_DEPOSIT:
-            this.createPairDeposit(payload);
-            break;
+          // case ACTIONS.CREATE_PAIR_AND_STAKE:
+          //   this.createPairStake(payload);
+          //   break;
+          // case ACTIONS.CREATE_PAIR_AND_DEPOSIT:
+          //   this.createPairDeposit(payload);
+          //   break;
           case ACTIONS.ADD_LIQUIDITY:
             this.addLiquidity(payload);
             break;
@@ -104,9 +101,9 @@ class Store {
           case ACTIONS.ADD_LIQUIDITY_AND_STAKE:
             this.addLiquidityAndStake(payload);
             break;
-          case ACTIONS.QUOTE_ADD_LIQUIDITY:
-            this.quoteAddLiquidity(payload);
-            break;
+          // case ACTIONS.QUOTE_ADD_LIQUIDITY:
+          //   this.quoteAddLiquidity(payload);
+          //   break;
           case ACTIONS.GET_LIQUIDITY_BALANCES:
             this.getLiquidityBalances(payload);
             break;
@@ -116,9 +113,9 @@ class Store {
           case ACTIONS.UNSTAKE_AND_REMOVE_LIQUIDITY:
             this.unstakeAndRemoveLiquidity(payload);
             break;
-          case ACTIONS.QUOTE_REMOVE_LIQUIDITY:
-            this.quoteRemoveLiquidity(payload);
-            break;
+          // case ACTIONS.QUOTE_REMOVE_LIQUIDITY:
+          //   this.quoteRemoveLiquidity(payload);
+          //   break;
           case ACTIONS.UNSTAKE_LIQUIDITY:
             this.unstakeLiquidity(payload);
             break;
@@ -888,426 +885,426 @@ class Store {
     }
   };
 
-  getPair = async (
-    addressA: `0x${string}`,
-    addressB: `0x${string}`,
-    stab: boolean
-  ) => {
-    if (addressA === NATIVE_TOKEN.symbol) {
-      addressA = W_NATIVE_ADDRESS as `0x${string}`;
-    }
-    if (addressB === NATIVE_TOKEN.symbol) {
-      addressB = W_NATIVE_ADDRESS as `0x${string}`;
-    }
+  // getPair = async (
+  //   addressA: `0x${string}`,
+  //   addressB: `0x${string}`,
+  //   stab: boolean
+  // ) => {
+  //   if (addressA === NATIVE_TOKEN.symbol) {
+  //     addressA = W_NATIVE_ADDRESS as `0x${string}`;
+  //   }
+  //   if (addressB === NATIVE_TOKEN.symbol) {
+  //     addressB = W_NATIVE_ADDRESS as `0x${string}`;
+  //   }
 
-    const { address: account } = getAccount();
-    if (!account) {
-      console.warn("account not found");
-      return null;
-    }
+  //   const { address: account } = getAccount();
+  //   if (!account) {
+  //     console.warn("account not found");
+  //     return null;
+  //   }
 
-    const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
-    let thePair: any = pairs?.filter((pair) => {
-      return (
-        (pair.token0.address.toLowerCase() == addressA.toLowerCase() &&
-          pair.token1.address.toLowerCase() == addressB.toLowerCase() &&
-          pair.stable == stab) ||
-        (pair.token0.address.toLowerCase() == addressB.toLowerCase() &&
-          pair.token1.address.toLowerCase() == addressA.toLowerCase() &&
-          pair.stable == stab)
-      );
-    });
-    if (thePair.length > 0) {
-      const pc = {
-        abi: CONTRACTS.PAIR_ABI,
-        address: thePair[0].address,
-      } as const;
+  //   const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+  //   let thePair: any = pairs?.filter((pair) => {
+  //     return (
+  //       (pair.token0.address.toLowerCase() == addressA.toLowerCase() &&
+  //         pair.token1.address.toLowerCase() == addressB.toLowerCase() &&
+  //         pair.stable == stab) ||
+  //       (pair.token0.address.toLowerCase() == addressB.toLowerCase() &&
+  //         pair.token1.address.toLowerCase() == addressA.toLowerCase() &&
+  //         pair.stable == stab)
+  //     );
+  //   });
+  //   if (thePair && thePair.length > 0) {
+  //     const pc = {
+  //       abi: CONTRACTS.PAIR_ABI,
+  //       address: thePair[0].address,
+  //     } as const;
 
-      const [totalSupply, reserve0, reserve1, balanceOf] =
-        await viemClient.multicall({
-          allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-          contracts: [
-            {
-              ...pc,
-              functionName: "totalSupply",
-            },
-            {
-              ...pc,
-              functionName: "reserve0",
-            },
-            {
-              ...pc,
-              functionName: "reserve1",
-            },
-            {
-              ...pc,
-              functionName: "balanceOf",
-              args: [account],
-            },
-          ],
-        });
+  //     const [totalSupply, reserve0, reserve1, balanceOf] =
+  //       await viemClient.multicall({
+  //         allowFailure: false,
+  //         multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //         contracts: [
+  //           {
+  //             ...pc,
+  //             functionName: "totalSupply",
+  //           },
+  //           {
+  //             ...pc,
+  //             functionName: "reserve0",
+  //           },
+  //           {
+  //             ...pc,
+  //             functionName: "reserve1",
+  //           },
+  //           {
+  //             ...pc,
+  //             functionName: "balanceOf",
+  //             args: [account],
+  //           },
+  //         ],
+  //       });
 
-      const returnPair = thePair[0];
-      returnPair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
-      returnPair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
-      returnPair.reserve0 = formatUnits(reserve0, returnPair.token0.decimals);
-      returnPair.reserve1 = formatUnits(reserve1, returnPair.token1.decimals);
+  //     const returnPair = thePair[0];
+  //     returnPair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
+  //     returnPair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
+  //     returnPair.reserve0 = formatUnits(reserve0, returnPair.token0.decimals);
+  //     returnPair.reserve1 = formatUnits(reserve1, returnPair.token1.decimals);
 
-      return returnPair;
-    }
+  //     return returnPair;
+  //   }
 
-    const factoryContract = getContract({
-      abi: CONTRACTS.FACTORY_ABI,
-      address: CONTRACTS.FACTORY_ADDRESS,
-      publicClient: viemClient,
-    });
-    const pairAddress = await factoryContract.read.getPair([
-      addressA,
-      addressB,
-      stab,
-    ]);
+  //   const factoryContract = getContract({
+  //     abi: CONTRACTS.FACTORY_ABI,
+  //     address: CONTRACTS.FACTORY_ADDRESS,
+  //     publicClient: viemClient,
+  //   });
+  //   const pairAddress = await factoryContract.read.getPair([
+  //     addressA,
+  //     addressB,
+  //     stab,
+  //   ]);
 
-    if (pairAddress && pairAddress != ZERO_ADDRESS) {
-      const pairContract = {
-        abi: CONTRACTS.PAIR_ABI,
-        address: pairAddress,
-      } as const;
-      const gaugesContract = {
-        abi: CONTRACTS.VOTER_ABI,
-        address: CONTRACTS.VOTER_ADDRESS,
-      } as const;
+  //   if (pairAddress && pairAddress != ZERO_ADDRESS) {
+  //     const pairContract = {
+  //       abi: CONTRACTS.PAIR_ABI,
+  //       address: pairAddress,
+  //     } as const;
+  //     const gaugesContract = {
+  //       abi: CONTRACTS.VOTER_ABI,
+  //       address: CONTRACTS.VOTER_ADDRESS,
+  //     } as const;
 
-      const totalWeight = await viemClient.readContract({
-        ...gaugesContract,
-        functionName: "totalWeight",
-      });
+  //     const totalWeight = await viemClient.readContract({
+  //       ...gaugesContract,
+  //       functionName: "totalWeight",
+  //     });
 
-      const [
-        token0,
-        token1,
-        totalSupply,
-        symbol,
-        reserve0,
-        reserve1,
-        decimals,
-        balanceOf,
-        stable,
-        gaugeAddress,
-        gaugeWeight,
-      ] = await viemClient.multicall({
-        allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-        contracts: [
-          {
-            ...pairContract,
-            functionName: "token0",
-          },
-          {
-            ...pairContract,
-            functionName: "token1",
-          },
-          {
-            ...pairContract,
-            functionName: "totalSupply",
-          },
-          {
-            ...pairContract,
-            functionName: "symbol",
-          },
-          {
-            ...pairContract,
-            functionName: "reserve0",
-          },
-          {
-            ...pairContract,
-            functionName: "reserve1",
-          },
-          {
-            ...pairContract,
-            functionName: "decimals",
-          },
-          {
-            ...pairContract,
-            functionName: "balanceOf",
-            args: [account],
-          },
-          {
-            ...pairContract,
-            functionName: "stable",
-          },
-          {
-            ...gaugesContract,
-            functionName: "gauges",
-            args: [pairAddress],
-          },
-          {
-            ...gaugesContract,
-            functionName: "weights",
-            args: [pairAddress],
-          },
-        ],
-      });
+  //     const [
+  //       token0,
+  //       token1,
+  //       totalSupply,
+  //       symbol,
+  //       reserve0,
+  //       reserve1,
+  //       decimals,
+  //       balanceOf,
+  //       stable,
+  //       gaugeAddress,
+  //       gaugeWeight,
+  //     ] = await viemClient.multicall({
+  //       allowFailure: false,
+  //       multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //       contracts: [
+  //         {
+  //           ...pairContract,
+  //           functionName: "token0",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "token1",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "totalSupply",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "symbol",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "reserve0",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "reserve1",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "decimals",
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "balanceOf",
+  //           args: [account],
+  //         },
+  //         {
+  //           ...pairContract,
+  //           functionName: "stable",
+  //         },
+  //         {
+  //           ...gaugesContract,
+  //           functionName: "gauges",
+  //           args: [pairAddress],
+  //         },
+  //         {
+  //           ...gaugesContract,
+  //           functionName: "weights",
+  //           args: [pairAddress],
+  //         },
+  //       ],
+  //     });
 
-      const token0Contract = {
-        abi: CONTRACTS.ERC20_ABI,
-        address: token0,
-      } as const;
+  //     const token0Contract = {
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       address: token0,
+  //     } as const;
 
-      const token1Contract = {
-        abi: CONTRACTS.ERC20_ABI,
-        address: token1,
-      } as const;
+  //     const token1Contract = {
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       address: token1,
+  //     } as const;
 
-      const [
-        token0Symbol,
-        token0Decimals,
-        token0Balance,
-        token1Symbol,
-        token1Decimals,
-        token1Balance,
-      ] = await viemClient.multicall({
-        allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-        contracts: [
-          {
-            ...token0Contract,
-            functionName: "symbol",
-          },
-          {
-            ...token0Contract,
-            functionName: "decimals",
-          },
-          {
-            ...token0Contract,
-            functionName: "balanceOf",
-            args: [account],
-          },
-          {
-            ...token1Contract,
-            functionName: "symbol",
-          },
-          {
-            ...token1Contract,
-            functionName: "decimals",
-          },
-          {
-            ...token1Contract,
-            functionName: "balanceOf",
-            args: [account],
-          },
-        ],
-      });
+  //     const [
+  //       token0Symbol,
+  //       token0Decimals,
+  //       token0Balance,
+  //       token1Symbol,
+  //       token1Decimals,
+  //       token1Balance,
+  //     ] = await viemClient.multicall({
+  //       allowFailure: false,
+  //       multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //       contracts: [
+  //         {
+  //           ...token0Contract,
+  //           functionName: "symbol",
+  //         },
+  //         {
+  //           ...token0Contract,
+  //           functionName: "decimals",
+  //         },
+  //         {
+  //           ...token0Contract,
+  //           functionName: "balanceOf",
+  //           args: [account],
+  //         },
+  //         {
+  //           ...token1Contract,
+  //           functionName: "symbol",
+  //         },
+  //         {
+  //           ...token1Contract,
+  //           functionName: "decimals",
+  //         },
+  //         {
+  //           ...token1Contract,
+  //           functionName: "balanceOf",
+  //           args: [account],
+  //         },
+  //       ],
+  //     });
 
-      thePair = {
-        address: pairAddress,
-        symbol: symbol,
-        decimals: decimals,
-        stable,
-        token0: {
-          address: token0,
-          symbol: token0Symbol,
-          balance: formatUnits(
-            token0Balance,
-            parseInt(token0Decimals.toString())
-          ),
-          decimals: parseInt(token0Decimals.toString()),
-        },
-        token1: {
-          address: token1,
-          symbol: token1Symbol,
-          balance: formatUnits(
-            token1Balance,
-            parseInt(token1Decimals.toString())
-          ),
-          decimals: parseInt(token1Decimals.toString()),
-        },
-        balance: formatUnits(balanceOf, decimals),
-        totalSupply: formatUnits(totalSupply, decimals),
-        reserve0: formatUnits(reserve0, parseInt(token0Decimals.toString())),
-        reserve1: formatUnits(reserve1, parseInt(token1Decimals.toString())),
-        tvl: 0,
-      };
+  //     thePair = {
+  //       address: pairAddress,
+  //       symbol: symbol,
+  //       decimals: decimals,
+  //       stable,
+  //       token0: {
+  //         address: token0,
+  //         symbol: token0Symbol,
+  //         balance: formatUnits(
+  //           token0Balance,
+  //           parseInt(token0Decimals.toString())
+  //         ),
+  //         decimals: parseInt(token0Decimals.toString()),
+  //       },
+  //       token1: {
+  //         address: token1,
+  //         symbol: token1Symbol,
+  //         balance: formatUnits(
+  //           token1Balance,
+  //           parseInt(token1Decimals.toString())
+  //         ),
+  //         decimals: parseInt(token1Decimals.toString()),
+  //       },
+  //       balance: formatUnits(balanceOf, decimals),
+  //       totalSupply: formatUnits(totalSupply, decimals),
+  //       reserve0: formatUnits(reserve0, parseInt(token0Decimals.toString())),
+  //       reserve1: formatUnits(reserve1, parseInt(token1Decimals.toString())),
+  //       tvl: 0,
+  //     };
 
-      if (gaugeAddress !== ZERO_ADDRESS) {
-        const gaugeContract = {
-          abi: CONTRACTS.GAUGE_ABI,
-          address: gaugeAddress,
-        } as const;
-        //wrapped bribe address is coming from api. if the api doesnt work this will break
-        const bribeContract = {
-          abi: CONTRACTS.BRIBE_ABI,
-          address: thePair.gauge.wrapped_bribe_address,
-        } as const;
-        const bribeContractInstance = getContract({
-          ...bribeContract,
-          publicClient: viemClient,
-        });
-        const x_bribeContract = {
-          abi: CONTRACTS.BRIBE_ABI,
-          address: thePair.gauge.x_wrapped_bribe_address,
-        } as const;
-        const x_bribeContractInstance = getContract({
-          ...x_bribeContract,
-          publicClient: viemClient,
-        });
-        const xx_bribeContract = {
-          abi: CONTRACTS.BRIBE_ABI,
-          address: thePair.gauge.xx_wrapped_bribe_address,
-        } as const;
-        const xx_bribeContractInstance = getContract({
-          ...xx_bribeContract,
-          publicClient: viemClient,
-        });
+  //     if (gaugeAddress !== ZERO_ADDRESS) {
+  //       const gaugeContract = {
+  //         abi: CONTRACTS.GAUGE_ABI,
+  //         address: gaugeAddress,
+  //       } as const;
+  //       //wrapped bribe address is coming from api. if the api doesnt work this will break
+  //       const bribeContract = {
+  //         abi: CONTRACTS.BRIBE_ABI,
+  //         address: thePair.gauge.wrapped_bribe_address,
+  //       } as const;
+  //       const bribeContractInstance = getContract({
+  //         ...bribeContract,
+  //         publicClient: viemClient,
+  //       });
+  //       const x_bribeContract = {
+  //         abi: CONTRACTS.BRIBE_ABI,
+  //         address: thePair.gauge.x_wrapped_bribe_address,
+  //       } as const;
+  //       const x_bribeContractInstance = getContract({
+  //         ...x_bribeContract,
+  //         publicClient: viemClient,
+  //       });
+  //       const xx_bribeContract = {
+  //         abi: CONTRACTS.BRIBE_ABI,
+  //         address: thePair.gauge.xx_wrapped_bribe_address,
+  //       } as const;
+  //       const xx_bribeContractInstance = getContract({
+  //         ...xx_bribeContract,
+  //         publicClient: viemClient,
+  //       });
 
-        const [totalSupply, gaugeBalance, bribeAddress] =
-          await viemClient.multicall({
-            allowFailure: false,
-            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-            contracts: [
-              {
-                ...gaugeContract,
-                functionName: "totalSupply",
-              },
-              {
-                ...gaugeContract,
-                functionName: "balanceOf",
-                args: [account],
-              },
-              {
-                ...gaugesContract,
-                functionName: "external_bribes",
-                args: [gaugeAddress],
-              },
-            ],
-          });
+  //       const [totalSupply, gaugeBalance, bribeAddress] =
+  //         await viemClient.multicall({
+  //           allowFailure: false,
+  //           multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //           contracts: [
+  //             {
+  //               ...gaugeContract,
+  //               functionName: "totalSupply",
+  //             },
+  //             {
+  //               ...gaugeContract,
+  //               functionName: "balanceOf",
+  //               args: [account],
+  //             },
+  //             {
+  //               ...gaugesContract,
+  //               functionName: "external_bribes",
+  //               args: [gaugeAddress],
+  //             },
+  //           ],
+  //         });
 
-        const tokensLength =
-          await bribeContractInstance.read.rewardsListLength();
-        const x_tokensLength =
-          await x_bribeContractInstance.read.rewardsListLength();
-        const xx_tokensLength =
-          await xx_bribeContractInstance.read.rewardsListLength();
+  //       const tokensLength =
+  //         await bribeContractInstance.read.rewardsListLength();
+  //       const x_tokensLength =
+  //         await x_bribeContractInstance.read.rewardsListLength();
+  //       const xx_tokensLength =
+  //         await xx_bribeContractInstance.read.rewardsListLength();
 
-        const arry = Array.from(
-          { length: parseInt(tokensLength.toString()) },
-          (v, i) => i
-        );
-        const x_arry = Array.from(
-          { length: parseInt(x_tokensLength.toString()) },
-          (v, i) => i
-        );
-        const xx_arry = Array.from(
-          { length: parseInt(xx_tokensLength.toString()) },
-          (v, i) => i
-        );
+  //       const arry = Array.from(
+  //         { length: parseInt(tokensLength.toString()) },
+  //         (v, i) => i
+  //       );
+  //       const x_arry = Array.from(
+  //         { length: parseInt(x_tokensLength.toString()) },
+  //         (v, i) => i
+  //       );
+  //       const xx_arry = Array.from(
+  //         { length: parseInt(xx_tokensLength.toString()) },
+  //         (v, i) => i
+  //       );
 
-        const bribes = await Promise.all(
-          arry.map(async (idx) => {
-            const tokenAddress = await bribeContractInstance.read.rewards([
-              BigInt(idx),
-            ]);
+  //       const bribes = await Promise.all(
+  //         arry.map(async (idx) => {
+  //           const tokenAddress = await bribeContractInstance.read.rewards([
+  //             BigInt(idx),
+  //           ]);
 
-            const token = await this.getBaseAsset(tokenAddress);
-            if (!token) {
-              return null;
-            }
+  //           const token = await this.getBaseAsset(tokenAddress);
+  //           if (!token) {
+  //             return null;
+  //           }
 
-            const rewardRate = await viemClient.readContract({
-              ...gaugeContract,
-              functionName: "rewardRate",
-              args: [tokenAddress],
-            });
+  //           const rewardRate = await viemClient.readContract({
+  //             ...gaugeContract,
+  //             functionName: "rewardRate",
+  //             args: [tokenAddress],
+  //           });
 
-            return {
-              token: token,
-              rewardAmount: formatUnits(
-                rewardRate * BigInt(604800),
-                token.decimals
-              ),
-            };
-          })
-        );
-        const x_bribes = await Promise.all(
-          x_arry.map(async (idx) => {
-            const tokenAddress = await x_bribeContractInstance.read.rewards([
-              BigInt(idx),
-            ]);
+  //           return {
+  //             token: token,
+  //             rewardAmount: formatUnits(
+  //               rewardRate * BigInt(604800),
+  //               token.decimals
+  //             ),
+  //           };
+  //         })
+  //       );
+  //       const x_bribes = await Promise.all(
+  //         x_arry.map(async (idx) => {
+  //           const tokenAddress = await x_bribeContractInstance.read.rewards([
+  //             BigInt(idx),
+  //           ]);
 
-            const token = await this.getBaseAsset(tokenAddress);
-            if (!token) {
-              return null;
-            }
+  //           const token = await this.getBaseAsset(tokenAddress);
+  //           if (!token) {
+  //             return null;
+  //           }
 
-            const rewardRate = await viemClient.readContract({
-              ...gaugeContract,
-              functionName: "rewardRate",
-              args: [tokenAddress],
-            });
+  //           const rewardRate = await viemClient.readContract({
+  //             ...gaugeContract,
+  //             functionName: "rewardRate",
+  //             args: [tokenAddress],
+  //           });
 
-            return {
-              token: token,
-              rewardAmount: formatUnits(
-                rewardRate * BigInt(604800),
-                token.decimals
-              ),
-            };
-          })
-        );
-        const xx_bribes = await Promise.all(
-          xx_arry.map(async (idx) => {
-            const tokenAddress = await xx_bribeContractInstance.read.rewards([
-              BigInt(idx),
-            ]);
+  //           return {
+  //             token: token,
+  //             rewardAmount: formatUnits(
+  //               rewardRate * BigInt(604800),
+  //               token.decimals
+  //             ),
+  //           };
+  //         })
+  //       );
+  //       const xx_bribes = await Promise.all(
+  //         xx_arry.map(async (idx) => {
+  //           const tokenAddress = await xx_bribeContractInstance.read.rewards([
+  //             BigInt(idx),
+  //           ]);
 
-            const token = await this.getBaseAsset(tokenAddress);
-            if (!token) {
-              return null;
-            }
+  //           const token = await this.getBaseAsset(tokenAddress);
+  //           if (!token) {
+  //             return null;
+  //           }
 
-            const rewardRate = await viemClient.readContract({
-              ...gaugeContract,
-              functionName: "rewardRate",
-              args: [tokenAddress],
-            });
+  //           const rewardRate = await viemClient.readContract({
+  //             ...gaugeContract,
+  //             functionName: "rewardRate",
+  //             args: [tokenAddress],
+  //           });
 
-            return {
-              token: token,
-              rewardAmount: formatUnits(
-                rewardRate * BigInt(604800),
-                token.decimals
-              ),
-            };
-          })
-        );
+  //           return {
+  //             token: token,
+  //             rewardAmount: formatUnits(
+  //               rewardRate * BigInt(604800),
+  //               token.decimals
+  //             ),
+  //           };
+  //         })
+  //       );
 
-        const weightPercent = (
-          (Number(gaugeWeight) * 100) /
-          Number(totalWeight)
-        ).toFixed(2);
+  //       const weightPercent = (
+  //         (Number(gaugeWeight) * 100) /
+  //         Number(totalWeight)
+  //       ).toFixed(2);
 
-        thePair.gauge = {
-          address: gaugeAddress,
-          bribeAddress: bribeAddress,
-          decimals: 18,
-          balance: formatEther(gaugeBalance),
-          totalSupply: formatEther(totalSupply),
-          weight: formatEther(gaugeWeight),
-          weightPercent,
-          bribes: bribes,
-          x_bribes: x_bribes,
-          xx_bribes: xx_bribes,
-        };
-      }
+  //       thePair.gauge = {
+  //         address: gaugeAddress,
+  //         bribeAddress: bribeAddress,
+  //         decimals: 18,
+  //         balance: formatEther(gaugeBalance),
+  //         totalSupply: formatEther(totalSupply),
+  //         weight: formatEther(gaugeWeight),
+  //         weightPercent,
+  //         bribes: bribes,
+  //         x_bribes: x_bribes,
+  //         xx_bribes: xx_bribes,
+  //       };
+  //     }
 
-      pairs?.push(thePair);
-      queryClient.setQueryData<Pair[]>([QUERY_KEYS.PAIRS], pairs);
+  //     pairs?.push(thePair);
+  //     queryClient.setQueryData<Pair[]>([QUERY_KEYS.PAIRS], pairs);
 
-      return thePair;
-    }
+  //     return thePair;
+  //   }
 
-    return null;
-  };
+  //   return null;
+  // };
 
   // removeBaseAsset = (asset: BaseAsset) => {
   //   try {
@@ -2111,510 +2108,510 @@ class Store {
   //   }
   // };
 
-  createPairStake = async (payload: {
-    type: string;
-    content: {
-      token0: BaseAsset;
-      token1: BaseAsset;
-      amount0: string;
-      amount1: string;
-      isStable: boolean;
-      token: any; // any coz we are not using it
-      slippage: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // createPairStake = async (payload: {
+  //   type: string;
+  //   content: {
+  //     token0: BaseAsset;
+  //     token1: BaseAsset;
+  //     amount0: string;
+  //     amount1: string;
+  //     isStable: boolean;
+  //     token: any; // any coz we are not using it
+  //     slippage: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const {
-        token0,
-        token1,
-        amount0,
-        amount1,
-        isStable: stable,
-        slippage,
-      } = payload.content;
+  //     const {
+  //       token0,
+  //       token1,
+  //       amount0,
+  //       amount1,
+  //       isStable: stable,
+  //       slippage,
+  //     } = payload.content;
 
-      let toki0 = token0.address;
-      let toki1 = token1.address;
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        toki0 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        toki1 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
+  //     let toki0 = token0.address;
+  //     let toki1 = token1.address;
+  //     if (token0.address === NATIVE_TOKEN.symbol) {
+  //       toki0 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
+  //     if (token1.address === NATIVE_TOKEN.symbol) {
+  //       toki1 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
 
-      const pairFor = await viemClient.readContract({
-        abi: CONTRACTS.FACTORY_ABI,
-        address: CONTRACTS.FACTORY_ADDRESS,
-        functionName: "getPair",
-        args: [toki0, toki1, stable],
-      });
+  //     const pairFor = await viemClient.readContract({
+  //       abi: CONTRACTS.FACTORY_ABI,
+  //       address: CONTRACTS.FACTORY_ADDRESS,
+  //       functionName: "getPair",
+  //       args: [toki0, toki1, stable],
+  //     });
 
-      if (pairFor && pairFor !== ZERO_ADDRESS) {
-        // await context.updatePairsCall(account);
-        this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
-        return null;
-      }
+  //     if (pairFor && pairFor !== ZERO_ADDRESS) {
+  //       // await context.updatePairsCall(account);
+  //       this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
+  //       return null;
+  //     }
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowance0TXID = this.getTXUUID();
-      let allowance1TXID = this.getTXUUID();
-      let depositTXID = this.getTXUUID();
-      let createGaugeTXID = this.getTXUUID();
-      let stakeAllowanceTXID = this.getTXUUID();
-      let stakeTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowance0TXID = this.getTXUUID();
+  //     let allowance1TXID = this.getTXUUID();
+  //     let depositTXID = this.getTXUUID();
+  //     let createGaugeTXID = this.getTXUUID();
+  //     let stakeAllowanceTXID = this.getTXUUID();
+  //     let stakeTXID = this.getTXUUID();
 
-      //DOD A CHECK FOR IF THE POOL ALREADY EXISTS
+  //     //DOD A CHECK FOR IF THE POOL ALREADY EXISTS
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
-        type: "Liquidity",
-        verb: "Liquidity Pool Created",
-        transactions: [
-          {
-            uuid: allowance0TXID,
-            description: `Checking your ${token0.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: allowance1TXID,
-            description: `Checking your ${token1.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: depositTXID,
-            description: `Create liquidity pool`,
-            status: "WAITING",
-          },
-          {
-            uuid: createGaugeTXID,
-            description: `Create gauge`,
-            status: "WAITING",
-          },
-          {
-            uuid: stakeAllowanceTXID,
-            description: `Checking your pool allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: stakeTXID,
-            description: `Stake LP tokens in the gauge`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
+  //       type: "Liquidity",
+  //       verb: "Liquidity Pool Created",
+  //       transactions: [
+  //         {
+  //           uuid: allowance0TXID,
+  //           description: `Checking your ${token0.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: allowance1TXID,
+  //           description: `Checking your ${token1.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: depositTXID,
+  //           description: `Create liquidity pool`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: createGaugeTXID,
+  //           description: `Create gauge`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: stakeAllowanceTXID,
+  //           description: `Checking your pool allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: stakeTXID,
+  //           description: `Stake LP tokens in the gauge`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      let allowance0: string | null = "0";
-      let allowance1: string | null = "0";
+  //     let allowance0: string | null = "0";
+  //     let allowance1: string | null = "0";
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (token0.address !== NATIVE_TOKEN.symbol) {
-        allowance0 = await this._getDepositAllowance(token0, account);
-        if (!allowance0) throw new Error("Couldnt get allowance");
-        if (BigNumber(allowance0).lt(amount0)) {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance0TXID,
-            description: `Allow the router to spend your ${token0.symbol}`,
-          });
-        } else {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance0TXID,
-            description: `Allowance on ${token0.symbol} sufficient`,
-            status: "DONE",
-          });
-        }
-      } else {
-        allowance0 = MAX_UINT256;
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowance0TXID,
-          description: `Allowance on ${token0.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     if (token0.address !== NATIVE_TOKEN.symbol) {
+  //       allowance0 = await this._getDepositAllowance(token0, account);
+  //       if (!allowance0) throw new Error("Couldnt get allowance");
+  //       if (BigNumber(allowance0).lt(amount0)) {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance0TXID,
+  //           description: `Allow the router to spend your ${token0.symbol}`,
+  //         });
+  //       } else {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance0TXID,
+  //           description: `Allowance on ${token0.symbol} sufficient`,
+  //           status: "DONE",
+  //         });
+  //       }
+  //     } else {
+  //       allowance0 = MAX_UINT256;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowance0TXID,
+  //         description: `Allowance on ${token0.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (token1.address !== NATIVE_TOKEN.symbol) {
-        allowance1 = await this._getDepositAllowance(token1, account);
-        if (!allowance1) throw new Error("Couldnt get allowance");
-        if (BigNumber(allowance1).lt(amount1)) {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance1TXID,
-            description: `Allow the router to spend your ${token1.symbol}`,
-          });
-        } else {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance1TXID,
-            description: `Allowance on ${token1.symbol} sufficient`,
-            status: "DONE",
-          });
-        }
-      } else {
-        allowance1 = MAX_UINT256;
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowance1TXID,
-          description: `Allowance on ${token1.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     if (token1.address !== NATIVE_TOKEN.symbol) {
+  //       allowance1 = await this._getDepositAllowance(token1, account);
+  //       if (!allowance1) throw new Error("Couldnt get allowance");
+  //       if (BigNumber(allowance1).lt(amount1)) {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance1TXID,
+  //           description: `Allow the router to spend your ${token1.symbol}`,
+  //         });
+  //       } else {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance1TXID,
+  //           description: `Allowance on ${token1.symbol} sufficient`,
+  //           status: "DONE",
+  //         });
+  //       }
+  //     } else {
+  //       allowance1 = MAX_UINT256;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowance1TXID,
+  //         description: `Allowance on ${token1.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance0).lt(amount0)) {
-        await this.writeApprove(
-          walletClient,
-          allowance0TXID,
-          token0.address,
-          CONTRACTS.ROUTER_ADDRESS
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance0).lt(amount0)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowance0TXID,
+  //         token0.address,
+  //         CONTRACTS.ROUTER_ADDRESS
+  //       );
+  //     }
 
-      if (BigNumber(allowance1).lt(amount1)) {
-        await this.writeApprove(
-          walletClient,
-          allowance1TXID,
-          token1.address,
-          CONTRACTS.ROUTER_ADDRESS
-        );
-      }
+  //     if (BigNumber(allowance1).lt(amount1)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowance1TXID,
+  //         token1.address,
+  //         CONTRACTS.ROUTER_ADDRESS
+  //       );
+  //     }
 
-      // SUBMIT DEPOSIT TRANSACTION
-      const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const sendAmount0 = BigNumber(amount0)
-        .times(10 ** token0.decimals)
-        .toFixed(0);
-      const sendAmount1 = BigNumber(amount1)
-        .times(10 ** token1.decimals)
-        .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
-      const sendAmount0Min = BigNumber(amount0)
-        .times(sendSlippage)
-        .times(10 ** token0.decimals)
-        .toFixed(0);
-      const sendAmount1Min = BigNumber(amount1)
-        .times(sendSlippage)
-        .times(10 ** token1.decimals)
-        .toFixed(0);
+  //     // SUBMIT DEPOSIT TRANSACTION
+  //     const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  //     const sendAmount0 = BigNumber(amount0)
+  //       .times(10 ** token0.decimals)
+  //       .toFixed(0);
+  //     const sendAmount1 = BigNumber(amount1)
+  //       .times(10 ** token1.decimals)
+  //       .toFixed(0);
+  //     const deadline = "" + moment().add(600, "seconds").unix();
+  //     const sendAmount0Min = BigNumber(amount0)
+  //       .times(sendSlippage)
+  //       .times(10 ** token0.decimals)
+  //       .toFixed(0);
+  //     const sendAmount1Min = BigNumber(amount1)
+  //       .times(sendSlippage)
+  //       .times(10 ** token1.decimals)
+  //       .toFixed(0);
 
-      await this.writeAddLiquidity(
-        walletClient,
-        depositTXID,
-        token0,
-        token1,
-        stable,
-        sendAmount0,
-        sendAmount1,
-        sendAmount0Min,
-        sendAmount1Min,
-        deadline
-      );
+  //     await this.writeAddLiquidity(
+  //       walletClient,
+  //       depositTXID,
+  //       token0,
+  //       token1,
+  //       stable,
+  //       sendAmount0,
+  //       sendAmount1,
+  //       sendAmount0Min,
+  //       sendAmount1Min,
+  //       deadline
+  //     );
 
-      let tok0 = token0.address;
-      let tok1 = token1.address;
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        tok0 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        tok1 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
+  //     let tok0 = token0.address;
+  //     let tok1 = token1.address;
+  //     if (token0.address === NATIVE_TOKEN.symbol) {
+  //       tok0 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
+  //     if (token1.address === NATIVE_TOKEN.symbol) {
+  //       tok1 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
 
-      const _pairFor = await viemClient.readContract({
-        abi: CONTRACTS.FACTORY_ABI,
-        address: CONTRACTS.FACTORY_ADDRESS,
-        functionName: "getPair",
-        args: [tok0, tok1, stable],
-      });
+  //     const _pairFor = await viemClient.readContract({
+  //       abi: CONTRACTS.FACTORY_ABI,
+  //       address: CONTRACTS.FACTORY_ADDRESS,
+  //       functionName: "getPair",
+  //       args: [tok0, tok1, stable],
+  //     });
 
-      // SUBMIT CREATE GAUGE TRANSACTION
-      await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
+  //     // SUBMIT CREATE GAUGE TRANSACTION
+  //     await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
 
-      const gaugeAddress = await viemClient.readContract({
-        abi: CONTRACTS.VOTER_ABI,
-        address: CONTRACTS.VOTER_ADDRESS,
-        functionName: "gauges",
-        args: [_pairFor],
-      });
+  //     const gaugeAddress = await viemClient.readContract({
+  //       abi: CONTRACTS.VOTER_ABI,
+  //       address: CONTRACTS.VOTER_ADDRESS,
+  //       functionName: "gauges",
+  //       args: [_pairFor],
+  //     });
 
-      const balanceOf = await viemClient.readContract({
-        abi: CONTRACTS.PAIR_ABI,
-        address: _pairFor,
-        functionName: "balanceOf",
-        args: [account],
-      });
+  //     const balanceOf = await viemClient.readContract({
+  //       abi: CONTRACTS.PAIR_ABI,
+  //       address: _pairFor,
+  //       functionName: "balanceOf",
+  //       args: [account],
+  //     });
 
-      const pair = (await this.getPairByAddress(_pairFor)) as Gauge | null; // this has to have gauge because it was created moment ago
+  //     const pair = (await this.getPairByAddress(_pairFor)) as Gauge | null; // this has to have gauge because it was created moment ago
 
-      const stakeAllowance = await this._getStakeAllowance(
-        pair,
-        account,
-        _pairFor
-      );
-      if (!stakeAllowance) throw new Error("stakeAllowance is null");
+  //     const stakeAllowance = await this._getStakeAllowance(
+  //       pair,
+  //       account,
+  //       _pairFor
+  //     );
+  //     if (!stakeAllowance) throw new Error("stakeAllowance is null");
 
-      if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: stakeAllowanceTXID,
-          description: `Allow the router to spend your ${
-            pair?.symbol ?? "LP token"
-          }`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: stakeAllowanceTXID,
-          description: `Allowance on ${pair?.symbol ?? "LP token"} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: stakeAllowanceTXID,
+  //         description: `Allow the router to spend your ${
+  //           pair?.symbol ?? "LP token"
+  //         }`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: stakeAllowanceTXID,
+  //         description: `Allowance on ${pair?.symbol ?? "LP token"} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
-        await this.writeApprove(
-          walletClient,
-          stakeAllowanceTXID,
-          _pairFor,
-          gaugeAddress
-        );
-      }
+  //     if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         stakeAllowanceTXID,
+  //         _pairFor,
+  //         gaugeAddress
+  //       );
+  //     }
 
-      await this.writeDeposit(walletClient, stakeTXID, gaugeAddress, balanceOf);
+  //     await this.writeDeposit(walletClient, stakeTXID, gaugeAddress, balanceOf);
 
-      // await context.updatePairsCall(account);
+  //     // await context.updatePairsCall(account);
 
-      this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  createPairDeposit = async (payload: {
-    type: string;
-    content: {
-      token0: BaseAsset;
-      token1: BaseAsset;
-      amount0: string;
-      amount1: string;
-      isStable: boolean;
-      token: any; // any coz we are not using it
-      slippage: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // createPairDeposit = async (payload: {
+  //   type: string;
+  //   content: {
+  //     token0: BaseAsset;
+  //     token1: BaseAsset;
+  //     amount0: string;
+  //     amount1: string;
+  //     isStable: boolean;
+  //     token: any; // any coz we are not using it
+  //     slippage: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const {
-        token0,
-        token1,
-        amount0,
-        amount1,
-        isStable: stable,
-        slippage,
-      } = payload.content;
+  //     const {
+  //       token0,
+  //       token1,
+  //       amount0,
+  //       amount1,
+  //       isStable: stable,
+  //       slippage,
+  //     } = payload.content;
 
-      let toki0 = token0.address;
-      let toki1 = token1.address;
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        toki0 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        toki1 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
+  //     let toki0 = token0.address;
+  //     let toki1 = token1.address;
+  //     if (token0.address === NATIVE_TOKEN.symbol) {
+  //       toki0 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
+  //     if (token1.address === NATIVE_TOKEN.symbol) {
+  //       toki1 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
 
-      const pairFor = await viemClient.readContract({
-        abi: CONTRACTS.FACTORY_ABI,
-        address: CONTRACTS.FACTORY_ADDRESS,
-        functionName: "getPair",
-        args: [toki0, toki1, stable],
-      });
+  //     const pairFor = await viemClient.readContract({
+  //       abi: CONTRACTS.FACTORY_ABI,
+  //       address: CONTRACTS.FACTORY_ADDRESS,
+  //       functionName: "getPair",
+  //       args: [toki0, toki1, stable],
+  //     });
 
-      if (pairFor && pairFor !== ZERO_ADDRESS) {
-        // await context.updatePairsCall(account);
-        this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
-        return null;
-      }
+  //     if (pairFor && pairFor !== ZERO_ADDRESS) {
+  //       // await context.updatePairsCall(account);
+  //       this.emitter.emit(ACTIONS.ERROR, "Pair already exists");
+  //       return null;
+  //     }
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowance0TXID = this.getTXUUID();
-      let allowance1TXID = this.getTXUUID();
-      let depositTXID = this.getTXUUID();
-      let createGaugeTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowance0TXID = this.getTXUUID();
+  //     let allowance1TXID = this.getTXUUID();
+  //     let depositTXID = this.getTXUUID();
+  //     let createGaugeTXID = this.getTXUUID();
 
-      //DOD A CHECK FOR IF THE POOL ALREADY EXISTS
+  //     //DOD A CHECK FOR IF THE POOL ALREADY EXISTS
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
-        type: "Liquidity",
-        verb: "Liquidity Pool Created",
-        transactions: [
-          {
-            uuid: allowance0TXID,
-            description: `Checking your ${token0.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: allowance1TXID,
-            description: `Checking your ${token1.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: depositTXID,
-            description: `Create liquidity pool`,
-            status: "WAITING",
-          },
-          {
-            uuid: createGaugeTXID,
-            description: `Create gauge`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
+  //       type: "Liquidity",
+  //       verb: "Liquidity Pool Created",
+  //       transactions: [
+  //         {
+  //           uuid: allowance0TXID,
+  //           description: `Checking your ${token0.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: allowance1TXID,
+  //           description: `Checking your ${token1.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: depositTXID,
+  //           description: `Create liquidity pool`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: createGaugeTXID,
+  //           description: `Create gauge`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      let allowance0: string | null = "0";
-      let allowance1: string | null = "0";
+  //     let allowance0: string | null = "0";
+  //     let allowance1: string | null = "0";
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      if (token0.address !== NATIVE_TOKEN.symbol) {
-        allowance0 = await this._getDepositAllowance(token0, account);
-        if (!allowance0) throw new Error("Error getting allowance0");
-        if (BigNumber(allowance0).lt(amount0)) {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance0TXID,
-            description: `Allow the router to spend your ${token0.symbol}`,
-          });
-        } else {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance0TXID,
-            description: `Allowance on ${token0.symbol} sufficient`,
-            status: "DONE",
-          });
-        }
-      } else {
-        allowance0 = MAX_UINT256;
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowance0TXID,
-          description: `Allowance on ${token0.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     if (token0.address !== NATIVE_TOKEN.symbol) {
+  //       allowance0 = await this._getDepositAllowance(token0, account);
+  //       if (!allowance0) throw new Error("Error getting allowance0");
+  //       if (BigNumber(allowance0).lt(amount0)) {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance0TXID,
+  //           description: `Allow the router to spend your ${token0.symbol}`,
+  //         });
+  //       } else {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance0TXID,
+  //           description: `Allowance on ${token0.symbol} sufficient`,
+  //           status: "DONE",
+  //         });
+  //       }
+  //     } else {
+  //       allowance0 = MAX_UINT256;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowance0TXID,
+  //         description: `Allowance on ${token0.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (token1.address !== NATIVE_TOKEN.symbol) {
-        allowance1 = await this._getDepositAllowance(token1, account);
-        if (!allowance1) throw new Error("couldnt get allowance");
-        if (BigNumber(allowance1).lt(amount1)) {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance1TXID,
-            description: `Allow the router to spend your ${token1.symbol}`,
-          });
-        } else {
-          this.emitter.emit(ACTIONS.TX_STATUS, {
-            uuid: allowance1TXID,
-            description: `Allowance on ${token1.symbol} sufficient`,
-            status: "DONE",
-          });
-        }
-      } else {
-        allowance1 = MAX_UINT256;
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowance1TXID,
-          description: `Allowance on ${token1.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     if (token1.address !== NATIVE_TOKEN.symbol) {
+  //       allowance1 = await this._getDepositAllowance(token1, account);
+  //       if (!allowance1) throw new Error("couldnt get allowance");
+  //       if (BigNumber(allowance1).lt(amount1)) {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance1TXID,
+  //           description: `Allow the router to spend your ${token1.symbol}`,
+  //         });
+  //       } else {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowance1TXID,
+  //           description: `Allowance on ${token1.symbol} sufficient`,
+  //           status: "DONE",
+  //         });
+  //       }
+  //     } else {
+  //       allowance1 = MAX_UINT256;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowance1TXID,
+  //         description: `Allowance on ${token1.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance0).lt(amount0)) {
-        await this.writeApprove(
-          walletClient,
-          allowance0TXID,
-          token0.address,
-          CONTRACTS.ROUTER_ADDRESS
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance0).lt(amount0)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowance0TXID,
+  //         token0.address,
+  //         CONTRACTS.ROUTER_ADDRESS
+  //       );
+  //     }
 
-      if (BigNumber(allowance1).lt(amount1)) {
-        await this.writeApprove(
-          walletClient,
-          allowance1TXID,
-          token1.address,
-          CONTRACTS.ROUTER_ADDRESS
-        );
-      }
+  //     if (BigNumber(allowance1).lt(amount1)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowance1TXID,
+  //         token1.address,
+  //         CONTRACTS.ROUTER_ADDRESS
+  //       );
+  //     }
 
-      // SUBMIT DEPOSIT TRANSACTION
-      const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const sendAmount0 = BigNumber(amount0)
-        .times(10 ** token0.decimals)
-        .toFixed(0);
-      const sendAmount1 = BigNumber(amount1)
-        .times(10 ** token1.decimals)
-        .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
-      const sendAmount0Min = BigNumber(amount0)
-        .times(sendSlippage)
-        .times(10 ** token0.decimals)
-        .toFixed(0);
-      const sendAmount1Min = BigNumber(amount1)
-        .times(sendSlippage)
-        .times(10 ** token1.decimals)
-        .toFixed(0);
+  //     // SUBMIT DEPOSIT TRANSACTION
+  //     const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  //     const sendAmount0 = BigNumber(amount0)
+  //       .times(10 ** token0.decimals)
+  //       .toFixed(0);
+  //     const sendAmount1 = BigNumber(amount1)
+  //       .times(10 ** token1.decimals)
+  //       .toFixed(0);
+  //     const deadline = "" + moment().add(600, "seconds").unix();
+  //     const sendAmount0Min = BigNumber(amount0)
+  //       .times(sendSlippage)
+  //       .times(10 ** token0.decimals)
+  //       .toFixed(0);
+  //     const sendAmount1Min = BigNumber(amount1)
+  //       .times(sendSlippage)
+  //       .times(10 ** token1.decimals)
+  //       .toFixed(0);
 
-      await this.writeAddLiquidity(
-        walletClient,
-        depositTXID,
-        token0,
-        token1,
-        stable,
-        sendAmount0,
-        sendAmount1,
-        sendAmount0Min,
-        sendAmount1Min,
-        deadline
-      );
+  //     await this.writeAddLiquidity(
+  //       walletClient,
+  //       depositTXID,
+  //       token0,
+  //       token1,
+  //       stable,
+  //       sendAmount0,
+  //       sendAmount1,
+  //       sendAmount0Min,
+  //       sendAmount1Min,
+  //       deadline
+  //     );
 
-      let tok0 = token0.address;
-      let tok1 = token1.address;
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        tok0 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        tok1 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
+  //     let tok0 = token0.address;
+  //     let tok1 = token1.address;
+  //     if (token0.address === NATIVE_TOKEN.symbol) {
+  //       tok0 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
+  //     if (token1.address === NATIVE_TOKEN.symbol) {
+  //       tok1 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
 
-      const _pairFor = await viemClient.readContract({
-        abi: CONTRACTS.FACTORY_ABI,
-        address: CONTRACTS.FACTORY_ADDRESS,
-        functionName: "getPair",
-        args: [tok0, tok1, stable],
-      });
+  //     const _pairFor = await viemClient.readContract({
+  //       abi: CONTRACTS.FACTORY_ABI,
+  //       address: CONTRACTS.FACTORY_ADDRESS,
+  //       functionName: "getPair",
+  //       args: [tok0, tok1, stable],
+  //     });
 
-      // SUBMIT CREATE GAUGE TRANSACTION
-      await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
+  //     // SUBMIT CREATE GAUGE TRANSACTION
+  //     await this.writeCreateGauge(walletClient, createGaugeTXID, _pairFor);
 
-      // await context.updatePairsCall(account);
+  //     // await context.updatePairsCall(account);
 
-      this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.PAIR_CREATED, _pairFor);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   // updatePairsCall = async (address: `0x${string}`) => {
   //   try {
@@ -3195,64 +3192,64 @@ class Store {
     }
   };
 
-  quoteAddLiquidity = async (payload: {
-    type: string;
-    content: {
-      pair: Pair;
-      token0: BaseAsset;
-      token1: BaseAsset;
-      amount0: `${number}` | "";
-      amount1: `${number}` | "";
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // quoteAddLiquidity = async (payload: {
+  //   type: string;
+  //   content: {
+  //     pair: Pair;
+  //     token0: BaseAsset;
+  //     token1: BaseAsset;
+  //     amount0: `${number}` | "";
+  //     amount1: `${number}` | "";
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const { pair, token0, token1, amount0, amount1 } = payload.content;
+  //     const { pair, token0, token1, amount0, amount1 } = payload.content;
 
-      if (!pair || !token0 || !token1 || amount0 == "" || amount1 == "") {
-        return null;
-      }
+  //     if (!pair || !token0 || !token1 || amount0 == "" || amount1 == "") {
+  //       return null;
+  //     }
 
-      const sendAmount0 = parseUnits(amount0, token0.decimals);
-      const sendAmount1 = parseUnits(amount1, token1.decimals);
+  //     const sendAmount0 = parseUnits(amount0, token0.decimals);
+  //     const sendAmount1 = parseUnits(amount1, token1.decimals);
 
-      let addy0 = token0.address;
-      let addy1 = token1.address;
+  //     let addy0 = token0.address;
+  //     let addy1 = token1.address;
 
-      if (token0.address === NATIVE_TOKEN.symbol) {
-        addy0 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
-      if (token1.address === NATIVE_TOKEN.symbol) {
-        addy1 = W_NATIVE_ADDRESS as `0x${string}`;
-      }
+  //     if (token0.address === NATIVE_TOKEN.symbol) {
+  //       addy0 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
+  //     if (token1.address === NATIVE_TOKEN.symbol) {
+  //       addy1 = W_NATIVE_ADDRESS as `0x${string}`;
+  //     }
 
-      const [, liquidity] = await viemClient.readContract({
-        address: CONTRACTS.ROUTER_ADDRESS,
-        abi: CONTRACTS.ROUTER_ABI,
-        functionName: "quoteAddLiquidity",
-        args: [addy0, addy1, pair.stable, sendAmount0, sendAmount1],
-      });
+  //     const [, liquidity] = await viemClient.readContract({
+  //       address: CONTRACTS.ROUTER_ADDRESS,
+  //       abi: CONTRACTS.ROUTER_ABI,
+  //       functionName: "quoteAddLiquidity",
+  //       args: [addy0, addy1, pair.stable, sendAmount0, sendAmount1],
+  //     });
 
-      const returnVal = {
-        inputs: {
-          token0,
-          token1,
-          amount0,
-          amount1,
-        },
-        output: formatUnits(liquidity, PAIR_DECIMALS),
-      };
-      this.emitter.emit(ACTIONS.QUOTE_ADD_LIQUIDITY_RETURNED, returnVal);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     const returnVal = {
+  //       inputs: {
+  //         token0,
+  //         token1,
+  //         amount0,
+  //         amount1,
+  //       },
+  //       output: formatUnits(liquidity, PAIR_DECIMALS),
+  //     };
+  //     this.emitter.emit(ACTIONS.QUOTE_ADD_LIQUIDITY_RETURNED, returnVal);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   getLiquidityBalances = async (payload: {
     type: string;
@@ -3664,58 +3661,58 @@ class Store {
     }
   };
 
-  quoteRemoveLiquidity = async (payload: {
-    type: string;
-    content: {
-      pair: Pair;
-      token0: BaseAsset;
-      token1: BaseAsset;
-      withdrawAmount: `${number}` | "";
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // quoteRemoveLiquidity = async (payload: {
+  //   type: string;
+  //   content: {
+  //     pair: Pair;
+  //     token0: BaseAsset;
+  //     token1: BaseAsset;
+  //     withdrawAmount: `${number}` | "";
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const { pair, token0, token1, withdrawAmount } = payload.content;
+  //     const { pair, token0, token1, withdrawAmount } = payload.content;
 
-      if (!pair || !token0 || !token1 || withdrawAmount == "") {
-        return null;
-      }
+  //     if (!pair || !token0 || !token1 || withdrawAmount == "") {
+  //       return null;
+  //     }
 
-      const routerContract = {
-        abi: CONTRACTS.ROUTER_ABI,
-        address: CONTRACTS.ROUTER_ADDRESS,
-      } as const;
+  //     const routerContract = {
+  //       abi: CONTRACTS.ROUTER_ABI,
+  //       address: CONTRACTS.ROUTER_ADDRESS,
+  //     } as const;
 
-      const sendWithdrawAmount = parseEther(withdrawAmount);
+  //     const sendWithdrawAmount = parseEther(withdrawAmount);
 
-      const [amountA, amountB] = await viemClient.readContract({
-        ...routerContract,
-        functionName: "quoteRemoveLiquidity",
-        args: [token0.address, token1.address, pair.stable, sendWithdrawAmount],
-      });
+  //     const [amountA, amountB] = await viemClient.readContract({
+  //       ...routerContract,
+  //       functionName: "quoteRemoveLiquidity",
+  //       args: [token0.address, token1.address, pair.stable, sendWithdrawAmount],
+  //     });
 
-      const returnVal = {
-        inputs: {
-          token0,
-          token1,
-          withdrawAmount,
-        },
-        output: {
-          amount0: formatUnits(amountA, token0.decimals),
-          amount1: formatUnits(amountB, token1.decimals),
-        },
-      };
-      this.emitter.emit(ACTIONS.QUOTE_REMOVE_LIQUIDITY_RETURNED, returnVal);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     const returnVal = {
+  //       inputs: {
+  //         token0,
+  //         token1,
+  //         withdrawAmount,
+  //       },
+  //       output: {
+  //         amount0: formatUnits(amountA, token0.decimals),
+  //         amount1: formatUnits(amountB, token1.decimals),
+  //       },
+  //     };
+  //     this.emitter.emit(ACTIONS.QUOTE_REMOVE_LIQUIDITY_RETURNED, returnVal);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   createGauge = async (payload: { type: string; content: { pair: Pair } }) => {
     try {

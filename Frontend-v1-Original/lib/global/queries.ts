@@ -30,19 +30,6 @@ const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
 const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
 
-/*
-1. Get gov token base
-2. Get ve token base
-3. Get base assets
-4. Get pairs
-5. Get swap assets
-6. Get active period
-7. Get circulating supply
-8. Get market cap
-9. Get unstoppable domain
-10. Get balances
-*/
-
 const getGovTokenBase = () => {
   return {
     address: CONTRACTS.GOV_TOKEN_ADDRESS,
@@ -293,7 +280,8 @@ export const useBaseAssetWithInfo = <TData = BaseAsset[]>(
 };
 
 const getExactBaseAsset = async (
-  address: `0x${string}`,
+  account: Address | undefined,
+  address: Address,
   baseAssets: BaseAsset[],
   getBalance?: boolean
 ) => {
@@ -342,11 +330,11 @@ const getExactBaseAsset = async (
   };
 
   if (getBalance) {
-    if (address) {
+    if (account) {
       const balanceOf = await viemClient.readContract({
         ...baseAssetContract,
         functionName: "balanceOf",
-        args: [address],
+        args: [account],
       });
       newBaseAsset.balance = formatUnits(balanceOf, newBaseAsset.decimals);
     }
@@ -391,11 +379,13 @@ const getPairsWithoutGauges = async (
   const ps = await Promise.all(
     pairs.map(async (pair, i) => {
       const token0 = await getExactBaseAsset(
+        address,
         pair.token0.address,
         baseAssets,
         true
       );
       const token1 = await getExactBaseAsset(
+        address,
         pair.token1.address,
         baseAssets,
         true

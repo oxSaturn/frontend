@@ -2,7 +2,7 @@ import { useAccount } from "wagmi";
 
 import { Typography, Paper } from "@mui/material";
 
-import SwapComponent from "../../components/ssSwap/ssSwap";
+import SwapComponent from "../../components/swap/swap";
 
 function Swap() {
   const { address } = useAccount();

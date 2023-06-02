@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAccount, useBalance } from "wagmi";
-import {
-  TextField,
-  Typography,
-  InputAdornment,
-  Button,
-  CircularProgress,
-} from "@mui/material";
+import { Typography, Button, CircularProgress, Paper } from "@mui/material";
 import {
   ArrowDownward,
   UpdateOutlined,
@@ -15,6 +9,8 @@ import {
 } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
+import { SmallInput } from "../common/smallInput";
+import { MassiveInput } from "../common/massiveInput";
 import { formatCurrency } from "../../utils/utils";
 import {
   NATIVE_TOKEN,
@@ -25,12 +21,11 @@ import { useTokenPrices } from "../header/queries";
 
 import { useSwapAssets, useQuote } from "./lib/queries";
 import { useSwap, useWrapOrUnwrap } from "./lib/mutations";
-import { AssetSelect } from "./select";
 import { RoutesDialog } from "./routes";
 import { usePriceDiff } from "./lib/usePriceDiff";
 import { useIsWrapUnwrap } from "./lib/useIsWrapUnwrap";
 
-function Setup() {
+function Swap() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(false);
 
@@ -438,258 +433,132 @@ function Setup() {
   };
 
   return (
-    <>
-      <div className="relative flex w-full flex-col">
-        <div
-          className={`${
-            !settingsOpen
-              ? "hidden"
-              : "absolute z-20 flex h-full w-full flex-col gap-4 bg-deepPurple p-4"
-          }`}
-        >
+    <div className="mt-32 flex h-full min-h-[calc(100vh-432px)] w-full flex-col items-center justify-evenly sm:mt-0 lg:flex-row">
+      <Paper
+        elevation={0}
+        className="flex w-full max-w-[485px] flex-col bg-transparent p-3 shadow-glow lg:p-6"
+      >
+        <div className="relative flex w-full flex-col">
           <div
-            onClick={closeSettings}
-            className="w-full cursor-pointer text-end"
+            className={`${
+              !settingsOpen
+                ? "hidden"
+                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-deepPurple p-4"
+            }`}
           >
-            <CloseOutlined />
-          </div>
-          <SmallInput
-            amountValue={slippage}
-            amountChanged={onSlippageChanged}
-            loading={loadingTrade}
-          />
-        </div>
-        <div className="mb-4 flex items-center justify-end space-x-2">
-          <button onClick={() => refetchQuote()}>
-            <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
-          </button>
-          <button onClick={() => setSettingsOpen(true)}>
-            <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
-          </button>
-        </div>
-        <MassiveInput
-          type="From"
-          amountValue={fromAmountValue}
-          amountValueUsd={fromAmountValueUsd}
-          diffUsd={usdDiff}
-          amountError={fromAmountError}
-          amountChanged={fromAmountChanged}
-          assetValue={fromAssetValue}
-          assetError={fromAssetError}
-          assetOptions={swapAssetsOptions}
-          onAssetSelect={onAssetSelect}
-          loading={loadingTrade}
-          setBalance100={setBalance100}
-        />
-        <div className="flex h-0 w-full items-center justify-center">
-          <div className="z-[1] h-9 rounded-lg bg-[#161b2c]">
-            <ArrowDownward
-              className="m-1 cursor-pointer rounded-md p-[6px] text-3xl"
-              onClick={swapAssets}
+            <div
+              onClick={closeSettings}
+              className="w-full cursor-pointer text-end"
+            >
+              <CloseOutlined />
+            </div>
+            <SmallInput
+              amountValue={slippage}
+              amountChanged={onSlippageChanged}
+              loading={loadingTrade}
             />
           </div>
+          <div className="mb-4 flex items-center justify-end space-x-2">
+            <button onClick={() => refetchQuote()}>
+              <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+            </button>
+            <button onClick={() => setSettingsOpen(true)}>
+              <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+            </button>
+          </div>
+          <MassiveInput
+            type="From"
+            amountValue={fromAmountValue}
+            amountValueUsd={fromAmountValueUsd}
+            diffUsd={usdDiff}
+            amountError={fromAmountError}
+            amountChanged={fromAmountChanged}
+            assetValue={fromAssetValue}
+            assetError={fromAssetError}
+            assetOptions={swapAssetsOptions}
+            onAssetSelect={onAssetSelect}
+            loading={loadingTrade}
+            setBalance100={setBalance100}
+          />
+          <div className="flex h-0 w-full items-center justify-center">
+            <div className="z-[1] h-9 rounded-lg bg-[#161b2c]">
+              <ArrowDownward
+                className="m-1 cursor-pointer rounded-md p-[6px] text-3xl"
+                onClick={swapAssets}
+              />
+            </div>
+          </div>
+          <MassiveInput
+            type="To"
+            amountValue={toAmountValue}
+            amountValueUsd={toAmountValueUsd}
+            diffUsd={usdDiff}
+            amountError={toAmountError}
+            assetValue={toAssetValue}
+            assetError={false}
+            assetOptions={swapAssetsOptions}
+            onAssetSelect={onAssetSelect}
+            loading={loadingTrade}
+            setBalance100={setBalance100}
+          />
+          <div className="flex min-h-[176px] flex-col items-center justify-center">
+            {renderSwapInformation()}
+          </div>
+          <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0">
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+              disabled={
+                loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)
+              }
+              onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
+            >
+              <Typography className="font-bold capitalize">
+                {loadingTrade
+                  ? `Loading`
+                  : isWrapUnwrap
+                  ? isWrap
+                    ? "Wrap"
+                    : "Unwrap"
+                  : `Swap`}
+              </Typography>
+              {loadingTrade && (
+                <CircularProgress size={10} className="ml-2 fill-white" />
+              )}
+            </Button>
+          </div>
+          <div className="mt-2 text-end text-xs">
+            <span className="align-middle text-secondaryGray">Powered by </span>
+            <a
+              href="https://firebird.finance/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
+            >
+              <img
+                src="/images/logo-firebird.svg"
+                className="inline"
+                alt="firebird protocol logo"
+              />{" "}
+              <span className="align-middle">Firebird</span>
+            </a>
+          </div>
         </div>
-        <MassiveInput
-          type="To"
-          amountValue={toAmountValue}
-          amountValueUsd={toAmountValueUsd}
-          diffUsd={usdDiff}
-          amountError={toAmountError}
-          assetValue={toAssetValue}
-          assetError={false}
-          assetOptions={swapAssetsOptions}
-          onAssetSelect={onAssetSelect}
-          loading={loadingTrade}
-          setBalance100={setBalance100}
+        <RoutesDialog
+          onClose={() => setRoutesOpen(false)}
+          open={routesOpen}
+          paths={quote?.maxReturn.paths}
+          tokens={quote?.maxReturn.tokens}
+          fromAssetValue={fromAssetValue}
+          fromAmountValue={fromAmountValue}
+          toAssetValue={toAssetValue}
+          toAmountValue={toAmountValue}
         />
-        <div className="flex min-h-[176px] flex-col items-center justify-center">
-          {renderSwapInformation()}
-        </div>
-        <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0">
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
-            disabled={loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)}
-            onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
-          >
-            <Typography className="font-bold capitalize">
-              {loadingTrade
-                ? `Loading`
-                : isWrapUnwrap
-                ? isWrap
-                  ? "Wrap"
-                  : "Unwrap"
-                : `Swap`}
-            </Typography>
-            {loadingTrade && (
-              <CircularProgress size={10} className="ml-2 fill-white" />
-            )}
-          </Button>
-        </div>
-        <div className="mt-2 text-end text-xs">
-          <span className="align-middle text-secondaryGray">Powered by </span>
-          <a
-            href="https://firebird.finance/"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
-          >
-            <img
-              src="/images/logo-firebird.svg"
-              className="inline"
-              alt="firebird protocol logo"
-            />{" "}
-            <span className="align-middle">Firebird</span>
-          </a>
-        </div>
-      </div>
-      <RoutesDialog
-        onClose={() => setRoutesOpen(false)}
-        open={routesOpen}
-        paths={quote?.maxReturn.paths}
-        tokens={quote?.maxReturn.tokens}
-        fromAssetValue={fromAssetValue}
-        fromAmountValue={fromAmountValue}
-        toAssetValue={toAssetValue}
-        toAmountValue={toAmountValue}
-      />
-    </>
+      </Paper>
+    </div>
   );
 }
 
-const SmallInput = ({
-  amountValue,
-  amountChanged,
-  loading,
-}: {
-  amountValue: string;
-  amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void;
-  loading: boolean;
-}) => {
-  return (
-    <div className="mb-1">
-      <label htmlFor="slippage">Slippage</label>
-      <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-primaryBg">
-        <TextField
-          id="slippage"
-          placeholder="0.00"
-          fullWidth
-          value={amountValue}
-          onChange={amountChanged}
-          disabled={loading}
-          autoComplete="off"
-          InputProps={{
-            endAdornment: <InputAdornment position="end">%</InputAdornment>,
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-const MassiveInput = ({
-  type,
-  amountValue,
-  amountValueUsd,
-  diffUsd,
-  amountError,
-  amountChanged,
-  assetValue,
-  assetError,
-  assetOptions,
-  onAssetSelect,
-  loading,
-  setBalance100,
-}: {
-  type: string;
-  amountValue: string;
-  amountValueUsd: string;
-  diffUsd: string | undefined;
-  amountError: string | false;
-  assetValue: BaseAsset | null;
-  assetError: string | false;
-  assetOptions: BaseAsset[] | undefined;
-  onAssetSelect: (_type: string, _value: BaseAsset) => void;
-  loading: boolean;
-  setBalance100: () => void;
-  amountChanged?: (_event: React.ChangeEvent<HTMLInputElement>) => void;
-}) => {
-  const { address } = useAccount();
-  const { data: balanceInfo } = useBalance({
-    address,
-    token:
-      assetValue?.address === NATIVE_TOKEN.address
-        ? undefined
-        : assetValue?.address,
-    watch: true,
-    enabled: !!assetValue,
-  });
-  return (
-    <div className="relative mb-1">
-      <div
-        className="absolute top-2 right-2 z-[1] cursor-pointer"
-        onClick={() => {
-          if (type === "From") {
-            setBalance100();
-          }
-        }}
-      >
-        <Typography className="text-xs font-thin text-secondaryGray" noWrap>
-          Balance:
-          {assetValue && (balanceInfo || assetValue.balance)
-            ? " " + formatCurrency(balanceInfo?.formatted ?? assetValue.balance)
-            : ""}
-        </Typography>
-      </div>
-      {assetValue && balanceInfo && amountValueUsd && amountValueUsd !== "" ? (
-        <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-          <Typography className="text-xs font-thin text-secondaryGray" noWrap>
-            {"~$" +
-              formatCurrency(amountValueUsd) +
-              (type === "To" && diffUsd && diffUsd !== ""
-                ? ` (${diffUsd}%)`
-                : "")}
-          </Typography>
-        </div>
-      ) : null}
-      <div
-        className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
-          (amountError || assetError) && "border border-red-500"
-        }`}
-      >
-        <div className="h-full min-h-[128px] w-32">
-          <AssetSelect
-            type={type}
-            value={assetValue}
-            assetOptions={assetOptions}
-            onSelect={onAssetSelect}
-          />
-        </div>
-        <div className="h-full flex-[1] flex-grow-[0.98]">
-          <TextField
-            placeholder="0.00"
-            fullWidth
-            error={!!amountError}
-            helperText={amountError}
-            value={amountValue}
-            onChange={amountChanged}
-            autoComplete="off"
-            disabled={loading || type === "To"}
-            InputProps={{
-              style: {
-                fontSize: "46px !important",
-              },
-            }}
-          />
-          <Typography color="textSecondary" className="text-xs">
-            {assetValue?.symbol}
-          </Typography>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Setup;
+export default Swap;
