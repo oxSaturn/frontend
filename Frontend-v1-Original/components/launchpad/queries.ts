@@ -122,7 +122,6 @@ const getLaunchpadProject = async (projectAddress: Address | undefined) => {
     maxRaiseAmount, // is this is met, then the auction ends
   ] = await viemClient.multicall({
     allowFailure: false,
-    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
     contracts: [
       {
         ...fairAuctionContract,
@@ -167,7 +166,6 @@ const getLaunchpadProject = async (projectAddress: Address | undefined) => {
 
   const [tokenSymbol, decimals] = await viemClient.multicall({
     allowFailure: false,
-    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
     contracts: [
       {
         ...tokenOfProject,
@@ -260,7 +258,6 @@ const getUserClaimableAndClaimableRefEarnings = async (
   const [claimableEarnings, [, , , , , claimedRefEarnings]] =
     await viemClient.multicall({
       allowFailure: false,
-      multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
       contracts: [
         {
           ...fairAuctionContract,
