@@ -10,8 +10,6 @@ import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
 import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 
-import { CONTRACTS } from "../constants/constants";
-
 // invalid chain id for signer error thrown by chandrastation for eth_getTransactionReceipt method
 // neobase sends back empty data when can't fetch, this breaks the fallback
 const veloci = http(process.env.NEXT_PUBLIC_RPC_URL!);
@@ -103,7 +101,6 @@ export async function multicallChunks<
     chunks.map(async (chunk) => {
       const chunkResult = await client.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: chunk,
       });
       return chunkResult;
