@@ -1,6 +1,6 @@
 import { Typography, CircularProgress } from "@mui/material";
 
-import PairsTable from "./ssLiquidityPairsTable";
+import PairsTable from "./LiquidityPairsTable";
 import { useTablePairs } from "./queries";
 
 export default function LiquidityPairs() {

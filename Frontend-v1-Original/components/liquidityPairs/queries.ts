@@ -31,8 +31,5 @@ export const useTablePairs = () => {
   const isFetching =
     isFetchingWithGauges || isFetchingWithoutGauges || isFetchingInitPairs;
 
-  return {
-    data: pairs,
-    isFetching,
-  };
+  return { data: pairs, isFetching };
 };

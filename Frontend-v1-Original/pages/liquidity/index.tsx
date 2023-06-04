@@ -1,7 +1,7 @@
 import { Paper, Typography } from "@mui/material";
 import { useAccount } from "wagmi";
 
-import LiquidityPairs from "../../components/ssLiquidityPairs/ssLiquidityPairs";
+import LiquidityPairs from "../../components/liquidityPairs/LiquidityPairs";
 
 function Liquidity() {
   const { address } = useAccount();

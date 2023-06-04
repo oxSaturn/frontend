@@ -30,7 +30,7 @@ import { formatCurrency } from "../../utils/utils";
 import { Gauge, Vote, VestNFT, Votes } from "../../stores/types/types";
 
 import tokens from "../../tokens.json";
-import { formatTVL } from "../ssLiquidityPairs/ssLiquidityPairsTable";
+import { formatTVL } from "../liquidityPairs/LiquidityPairsTable";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },

@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { create } from "zustand";
 import BigNumber from "bignumber.js";
 
-import viemClient from "../../stores/connectors/viem";
-import { Pair, Vote, Votes, hasGauge } from "../../stores/types/types";
-import { usePairs, usePairsWithGauges } from "../../lib/global/queries";
-import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
+import viemClient from "../../../stores/connectors/viem";
+import { Pair, Vote, Votes, hasGauge } from "../../../stores/types/types";
+import { usePairs, usePairsWithGauges } from "../../../lib/global/queries";
+import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
 
 interface VotesStore {
   votes: Votes | undefined;

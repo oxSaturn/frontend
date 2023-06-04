@@ -42,7 +42,6 @@ import {
   VeToken,
   VestNFT,
   GovToken,
-  Votes,
   Bribe,
   VeDistReward,
   ITransaction,
@@ -160,9 +159,9 @@ class Store {
             break;
 
           //VOTE
-          case ACTIONS.VOTE:
-            this.vote(payload);
-            break;
+          // case ACTIONS.VOTE:
+          //   this.vote(payload);
+          //   break;
           // case ACTIONS.GET_VEST_VOTES:
           //   this.getVestVotes(payload);
           //   break;
@@ -4983,98 +4982,98 @@ class Store {
     return voted;
   };
 
-  vote = async (payload: {
-    type: string;
-    content: { votes: Votes; tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // vote = async (payload: {
+  //   type: string;
+  //   content: { votes: Votes; tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      // const govToken = this.getStore("govToken");
-      const { tokenID, votes } = payload.content;
+  //     // const govToken = this.getStore("govToken");
+  //     const { tokenID, votes } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      const voteTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     const voteTXID = this.getTXUUID();
 
-      // NOTE understand OR learn why 'await' needed here and all similar places (only one tx makes it done right away)
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Cast vote using token #${tokenID}`,
-        verb: "Votes Cast",
-        transactions: [
-          {
-            uuid: voteTXID,
-            description: `Cast votes`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     // NOTE understand OR learn why 'await' needed here and all similar places (only one tx makes it done right away)
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Cast vote using token #${tokenID}`,
+  //       verb: "Votes Cast",
+  //       transactions: [
+  //         {
+  //           uuid: voteTXID,
+  //           description: `Cast votes`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
-      const deadGauges: string[] = [];
+  //     const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+  //     const deadGauges: string[] = [];
 
-      const onlyVotes = votes.filter((vote) => {
-        return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
-      });
+  //     const onlyVotes = votes.filter((vote) => {
+  //       return BigNumber(vote.value).gt(0) || BigNumber(vote.value).lt(0);
+  //     });
 
-      const votesAddresses = onlyVotes.map((vote) => vote.address);
-      const p = pairs?.filter((pair) => {
-        return votesAddresses.includes(pair.address);
-      });
-      p?.forEach((pair) => {
-        if (pair.isAliveGauge === false) {
-          deadGauges.push(pair.symbol);
-        }
-      });
+  //     const votesAddresses = onlyVotes.map((vote) => vote.address);
+  //     const p = pairs?.filter((pair) => {
+  //       return votesAddresses.includes(pair.address);
+  //     });
+  //     p?.forEach((pair) => {
+  //       if (pair.isAliveGauge === false) {
+  //         deadGauges.push(pair.symbol);
+  //       }
+  //     });
 
-      if (deadGauges.length > 0) {
-        const error_message = `Gauges ${deadGauges.join(
-          ", "
-        )} are dead and cannot be voted on`;
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: voteTXID,
-          description: error_message,
-        });
-        throw new Error(error_message);
-      }
+  //     if (deadGauges.length > 0) {
+  //       const error_message = `Gauges ${deadGauges.join(
+  //         ", "
+  //       )} are dead and cannot be voted on`;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: voteTXID,
+  //         description: error_message,
+  //       });
+  //       throw new Error(error_message);
+  //     }
 
-      const tokens = onlyVotes.map((vote) => {
-        return vote.address;
-      });
+  //     const tokens = onlyVotes.map((vote) => {
+  //       return vote.address;
+  //     });
 
-      const voteCounts = onlyVotes.map((vote) => {
-        return BigInt(BigNumber(vote.value).times(100).toFixed(0));
-      });
+  //     const voteCounts = onlyVotes.map((vote) => {
+  //       return BigInt(BigNumber(vote.value).times(100).toFixed(0));
+  //     });
 
-      const writeVote = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VOTER_ADDRESS,
-          abi: CONTRACTS.VOTER_ABI,
-          functionName: "vote",
-          args: [BigInt(tokenID), tokens, voteCounts],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeVote = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VOTER_ADDRESS,
+  //         abi: CONTRACTS.VOTER_ABI,
+  //         functionName: "vote",
+  //         args: [BigInt(tokenID), tokens, voteCounts],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(voteTXID, writeVote);
+  //     await this._writeContractWrapper(voteTXID, writeVote);
 
-      this.emitter.emit(ACTIONS.VOTE_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.VOTE_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   // getVestVotes = async (payload: {
   //   type: string;

@@ -21,14 +21,16 @@ import { useVeToken } from "../../lib/global/queries";
 import { useVestNfts } from "../ssVests/queries";
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 import { VestNFT } from "../../stores/types/types";
 
 import GaugesTable from "./ssVotesTable";
 
-import { useGaugesWithGaugesAndVotes, useVestVotes, useVotes } from "./queries";
-import classes from "./ssVotes.module.css";
+import {
+  useGaugesWithGaugesAndVotes,
+  useVestVotes,
+  useVotes,
+} from "./lib/queries";
+import { useVote } from "./lib/mutations";
 
 const initialEmptyToken: VestNFT = {
   id: "0",
@@ -50,15 +52,16 @@ MyListSubheader.muiSkipListHighlight = true;
 export default function Votes() {
   const [showWarning, setShowWarning] = useState(false);
 
-  const [voteLoading, setVoteLoading] = useState(false);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [search, setSearch] = useState("");
 
   const { data: veToken } = useVeToken();
-  const { data: vestNFTs } = useVestNfts();
+  const { data: vestNFTs, isFetching: isLoadingVestNfts } = useVestNfts();
   const { votes, setVotes } = useVotes();
   useVestVotes(token.id);
   const { data: gauges } = useGaugesWithGaugesAndVotes(votes);
+
+  const { mutate: vote, isLoading: voteLoading } = useVote();
 
   useEffect(() => {
     if (vestNFTs && vestNFTs.length > 0) {
@@ -74,13 +77,6 @@ export default function Votes() {
   }, [vestNFTs]);
 
   useEffect(() => {
-    const voteReturned = () => {
-      setVoteLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.VOTE_RETURNED, voteReturned);
-    stores.emitter.on(ACTIONS.ERROR, voteReturned);
-
     const localStorageWarningAccepted =
       window.localStorage.getItem("voting.warning");
     if (
@@ -91,18 +87,12 @@ export default function Votes() {
       return;
     }
     setShowWarning(false);
-
-    return () => {
-      stores.emitter.removeListener(ACTIONS.VOTE_RETURNED, voteReturned);
-      stores.emitter.removeListener(ACTIONS.ERROR, voteReturned);
-    };
   }, []);
 
   const onVote = () => {
-    setVoteLoading(true);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.VOTE,
-      content: { votes, tokenID: token.id },
+    vote({
+      votes,
+      tokenID: token.id,
     });
   };
 
@@ -122,10 +112,6 @@ export default function Votes() {
     setSearch(event.target.value);
   };
 
-  // const onBribe = () => {
-  //   router.push("/bribe/create");
-  // };
-
   const renderMediumInput = (
     value: VestNFT,
     options: VestNFT[] | undefined
@@ -137,24 +123,27 @@ export default function Votes() {
       (option) => option.actionedInCurrentEpoch === false
     );
     return (
-      <div className={classes.textField}>
-        <div className={classes.mediumInputContainer}>
+      <div>
+        <div className="flex w-full flex-wrap items-center rounded-lg bg-primaryBg pl-5">
           <Grid container>
             <Grid item lg="auto" md="auto" sm={12} xs={12}>
-              <Typography variant="body2" className={classes.smallText}>
+              <Typography
+                variant="body2"
+                className="mr-4 py-5 px-0 text-secondaryGray"
+              >
                 Please select your veNFT:
               </Typography>
             </Grid>
 
             <Grid item lg={6} md={6} sm={12} xs={12}>
-              <div className={classes.mediumInputAmount}>
+              <div className="flex h-full w-[300px]">
                 <Select
                   fullWidth
                   value={value}
                   onChange={handleChange}
                   // @ts-expect-error This is because of how material-ui works
                   InputProps={{
-                    className: classes.mediumInput,
+                    fontSize: "32px",
                   }}
                   sx={{ "& .MuiSelect-select": { height: "inherit" } }}
                 >
@@ -172,19 +161,16 @@ export default function Votes() {
                           // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
                           value={option as any}
                         >
-                          <div className={classes.menuOption}>
+                          <div className="flex w-[calc(100%-24px)] items-center justify-between">
                             <Typography>Token #{option.id}</Typography>
                             <div>
-                              <Typography
-                                align="right"
-                                className={classes.smallerText}
-                              >
+                              <Typography align="right" className="text-xs">
                                 {formatCurrency(option.lockValue)}
                               </Typography>
                               <Typography
                                 align="right"
                                 color="textSecondary"
-                                className={classes.smallerText}
+                                className="text-xs"
                               >
                                 {veToken?.symbol}
                               </Typography>
@@ -207,19 +193,16 @@ export default function Votes() {
                           // ok at runtime if MenuItem is an immediate child of Select since value is transferred to data-value.
                           value={option as any}
                         >
-                          <div className={classes.menuOption}>
+                          <div className="flex w-[calc(100%-24px)] items-center justify-between">
                             <Typography>Token #{option.id}</Typography>
                             <div>
-                              <Typography
-                                align="right"
-                                className={classes.smallerText}
-                              >
+                              <Typography align="right" className="text-xs">
                                 {formatCurrency(option.lockValue)}
                               </Typography>
                               <Typography
                                 align="right"
                                 color="textSecondary"
-                                className={classes.smallerText}
+                                className="text-xs"
                               >
                                 {veToken?.symbol}
                               </Typography>
@@ -279,41 +262,22 @@ export default function Votes() {
     .toFixed(2);
 
   return (
-    <div className={classes.container}>
-      <div className={classes.descriptionTimerBox}>
-        <div className={classes.descriptionBox}>
-          <Typography variant="h1">Vote</Typography>
-          <Typography variant="body2">
-            Select your veNFT and use 100% of your votes for one or more pools
-            to earn bribes and trading fees (
-            <span className="text-cantoGreen">
-              ${formatCurrency(bribesAccrued)}
-            </span>{" "}
-            in total).
-          </Typography>
-        </div>
+    <div className="m-auto mb-5 flex w-[calc(100%-40px)] max-w-[1400px] flex-col items-end p-0 pt-20 pb-2 xl:mb-14 xl:w-[calc(100%-180px)] xl:pt-0">
+      <div className="flex flex-col gap-1 self-start text-left">
+        <Typography variant="h1">Vote</Typography>
+        <Typography variant="body2">
+          Select your veNFT and use 100% of your votes for one or more pools to
+          earn bribes and trading fees (
+          <span className="text-cantoGreen">
+            ${formatCurrency(bribesAccrued)}
+          </span>{" "}
+          in total).
+        </Typography>
       </div>
-      <div className={classes.topBarContainer}>
+      <div className="flex w-full items-center justify-between py-6 px-0">
         <Grid container spacing={1}>
-          {/* <Grid item lg='auto' sm={12} xs={12}>
-
-              <Button
-                variant="contained"
-                color="secondary"
-                className={classes.button}
-                startIcon={<AddCircleOutlineIcon />}
-                size='large'
-                className={ classes.buttonOverride }
-                color='primary'
-                onClick={ onBribe }
-              >
-                <Typography className={ classes.actionButtonText }>{ `Create Bribe` }</Typography>
-              </Button>
-
-          </Grid> */}
           <Grid item lg={true} md={true} sm={12} xs={12}>
             <TextField
-              className={classes.searchContainer}
               variant="outlined"
               fullWidth
               placeholder="CANTO, NOTE, 0x..."
@@ -329,13 +293,16 @@ export default function Votes() {
             />
           </Grid>
           <Grid item lg="auto" sm={12} xs={12}>
-            <div className={classes.tokenIDContainer}>
+            <div className="rounded-lg border border-[rgba(126,153,176,0.2)]">
               {renderMediumInput(token, vestNFTs)}
             </div>
           </Grid>
         </Grid>
       </div>
-      <Paper elevation={0} className={classes.tableContainer}>
+      <Paper
+        elevation={0}
+        className="flex w-full flex-col items-end border border-[rgba(126,153,176,0.2)]"
+      >
         <GaugesTable
           gauges={filteredGauges}
           setParentSliderValues={setVotes}
@@ -354,14 +321,17 @@ export default function Votes() {
           </Alert>
         </Paper>
       ) : (
-        <Paper elevation={10} className={classes.actionButtons}>
-          <div className={classes.infoSection}>
+        <Paper
+          elevation={10}
+          className="fixed bottom-0 left-0 z-20 flex min-w-full items-center justify-between rounded-none border-t border-t-[rgba(126,153,176,0.2)] bg-[#0e110c] py-2 px-1 md:bottom-8 md:left-[calc(50%-280px)] md:min-w-[560px] md:rounded-lg md:border md:border-[rgba(126,153,176,0.2)] md:px-4"
+        >
+          <div className="flex items-center justify-end py-2 px-6">
             <Typography>Voting Power Used: </Typography>
             <Typography
-              className={`${
+              className={`ml-2 text-xl ${
                 BigNumber(totalVotes ?? 0).gt(100)
-                  ? classes.errorText
-                  : classes.helpText
+                  ? "text-red-500"
+                  : "text-green-500"
               }`}
             >
               {totalVotes} %
@@ -369,18 +339,22 @@ export default function Votes() {
           </div>
           <div>
             <Button
-              className={classes.buttonOverrideFixed}
+              className="bg-primaryBg py-4 font-bold text-cantoGreen hover:bg-green-900"
               variant="contained"
               size="large"
               color="primary"
-              disabled={voteLoading || !BigNumber(totalVotes ?? 0).eq(100)}
+              disabled={
+                voteLoading ||
+                !BigNumber(totalVotes ?? 0).eq(100) ||
+                isLoadingVestNfts
+              }
               onClick={onVote}
             >
-              <Typography className={classes.actionButtonText}>
+              <Typography className="text-base font-bold capitalize">
                 {voteLoading ? `Casting Votes` : `Cast Votes`}
               </Typography>
               {voteLoading && (
-                <CircularProgress size={10} className={classes.loadingCircle} />
+                <CircularProgress size={10} className="ml-2 fill-white" />
               )}
             </Button>
           </div>
