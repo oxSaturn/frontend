@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { type Address, useAccount } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { create } from "zustand";
@@ -5,8 +6,9 @@ import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
 import { Pair, Vote, Votes, hasGauge } from "../../../stores/types/types";
-import { usePairs, usePairsWithGauges } from "../../../lib/global/queries";
+import { usePairs } from "../../../lib/global/queries";
 import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
+import { useDisplayedPairs } from "../../liquidityPairs/queries";
 
 interface VotesStore {
   votes: Votes | undefined;
@@ -105,7 +107,7 @@ const getVestVotes = async (
 };
 
 const getPairsWithGaugesAndVotes = (
-  pairsWithGauges: Pair[],
+  pairsWithGauges: Pair[] | undefined,
   votes: Votes | undefined
 ) => {
   const gauges = pairsWithGauges?.filter(hasGauge).filter((gauge) => {
@@ -120,7 +122,8 @@ const getPairsWithGaugesAndVotes = (
 };
 
 export const useGaugesWithGaugesAndVotes = (votes: Votes | undefined) => {
-  return usePairsWithGauges((pairsWithGauges) => {
-    return getPairsWithGaugesAndVotes(pairsWithGauges, votes);
-  });
+  const { data: pairs } = useDisplayedPairs();
+  return useMemo(() => {
+    return getPairsWithGaugesAndVotes(pairs, votes);
+  }, [pairs, votes]);
 };

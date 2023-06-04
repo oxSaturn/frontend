@@ -1,10 +1,10 @@
 import { Typography, CircularProgress } from "@mui/material";
 
 import PairsTable from "./LiquidityPairsTable";
-import { useTablePairs } from "./queries";
+import { useDisplayedPairs } from "./queries";
 
 export default function LiquidityPairs() {
-  const { data: tablePairs, isFetching } = useTablePairs();
+  const { data: tablePairs, isFetching } = useDisplayedPairs();
   return (
     <div className="m-auto mb-5 flex w-[calc(100%-40px)] max-w-[1400px] flex-col items-end p-0 pt-20 pb-2 xl:mb-14 xl:w-[calc(100%-180px)] xl:pt-0">
       <div className="flex w-full items-stretch justify-between">

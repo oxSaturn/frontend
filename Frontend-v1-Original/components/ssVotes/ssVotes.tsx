@@ -59,7 +59,7 @@ export default function Votes() {
   const { data: vestNFTs, isFetching: isLoadingVestNfts } = useVestNfts();
   const { votes, setVotes } = useVotes();
   useVestVotes(token.id);
-  const { data: gauges } = useGaugesWithGaugesAndVotes(votes);
+  const gauges = useGaugesWithGaugesAndVotes(votes);
 
   const { mutate: vote, isLoading: voteLoading } = useVote();
 

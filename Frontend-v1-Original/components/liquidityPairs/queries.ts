@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { create } from "zustand";
 
 import {
   usePairs,
@@ -7,8 +8,22 @@ import {
 } from "../../lib/global/queries";
 import { Pair } from "../../stores/types/types";
 
-export const useTablePairs = () => {
-  const [pairs, setPairs] = useState<Pair[]>();
+interface UseReactivePairs {
+  pairs: Pair[] | undefined;
+  isFetching: boolean;
+  setPairs: (_pairs: Pair[] | undefined) => void;
+  setIsFetching: (_isFetching: boolean) => void;
+}
+
+const useReactivePairs = create<UseReactivePairs>()((set) => ({
+  pairs: undefined,
+  isFetching: false,
+  setPairs: (pairs) => set({ pairs }),
+  setIsFetching: (isFetching) => set({ isFetching }),
+}));
+
+export const useDisplayedPairs = () => {
+  const { pairs, setPairs, isFetching, setIsFetching } = useReactivePairs();
 
   const { data: initPairs, isFetching: isFetchingInitPairs } = usePairs();
   const { data: pairsWithoutGauges, isFetching: isFetchingWithoutGauges } =
@@ -26,10 +41,24 @@ export const useTablePairs = () => {
     if (initPairs) {
       return setPairs(initPairs);
     }
-  }, [initPairs, pairsWithoutGauges, pairsWithGauges]);
+  }, [initPairs, pairsWithoutGauges, pairsWithGauges, setPairs]);
 
-  const isFetching =
-    isFetchingWithGauges || isFetchingWithoutGauges || isFetchingInitPairs;
+  useEffect(() => {
+    if (
+      isFetchingWithGauges ||
+      isFetchingWithoutGauges ||
+      isFetchingInitPairs
+    ) {
+      setIsFetching(true);
+    } else {
+      setIsFetching(false);
+    }
+  }, [
+    isFetchingInitPairs,
+    isFetchingWithoutGauges,
+    isFetchingWithGauges,
+    setIsFetching,
+  ]);
 
   return { data: pairs, isFetching };
 };
