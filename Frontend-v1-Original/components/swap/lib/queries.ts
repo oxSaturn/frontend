@@ -13,7 +13,6 @@ import {
   QuoteSwapResponse,
 } from "../../../stores/types/types";
 import { useBaseAssetWithInfo, usePairs } from "../../../lib/global/queries";
-import { getHexQueryKey } from "../../../utils/utils";
 import { useTokenPrices } from "../../header/queries";
 
 import { useIsWrapUnwrap } from "./useIsWrapUnwrap";
@@ -40,11 +39,7 @@ export const useSwapAssets = () => {
   const { data: baseAssetsWithInfo } = useBaseAssetWithInfo();
   const { data: pairs } = usePairs();
   return useQuery({
-    queryKey: [
-      QUERY_KEYS.SWAP_ASSETS,
-      getHexQueryKey(baseAssetsWithInfo),
-      getHexQueryKey(pairs),
-    ],
+    queryKey: [QUERY_KEYS.SWAP_ASSETS, baseAssetsWithInfo, pairs],
     queryFn: () => getSwapAssets(baseAssetsWithInfo, pairs),
     enabled: !!baseAssetsWithInfo && !!pairs,
   });
@@ -166,6 +161,7 @@ export function useQuote({
       }
     },
     refetchOnWindowFocus: true,
+    cacheTime: 0,
     refetchInterval: 10000,
   });
 }

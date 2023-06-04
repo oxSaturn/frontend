@@ -7,7 +7,6 @@ import viemClient from "../../stores/connectors/viem";
 import { Pair, Vote, Votes, hasGauge } from "../../stores/types/types";
 import { usePairs, usePairsWithGauges } from "../../lib/global/queries";
 import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
-import { getHexQueryKey } from "../../utils/utils";
 
 interface VotesStore {
   votes: Votes | undefined;
@@ -23,7 +22,7 @@ export const useVestVotes = (tokenID: string | undefined) => {
   const { address } = useAccount();
   const { data: pairs } = usePairs();
   return useQuery({
-    queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, getHexQueryKey(pairs)],
+    queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, pairs],
     queryFn: () => getVestVotes(address, tokenID, pairs),
     enabled: !!address && !!tokenID && !!pairs,
     refetchOnMount: false,
