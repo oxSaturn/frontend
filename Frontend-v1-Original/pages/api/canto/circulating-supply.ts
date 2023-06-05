@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createPublicClient, http, fallback, formatUnits } from "viem";
-import { canto } from "viem/chains";
+import { createPublicClient, http, formatUnits } from "viem";
+import { pulsechain } from "viem/chains";
 import Cors from "cors";
 
 import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
@@ -9,19 +9,11 @@ const cors = Cors({
   methods: ["GET"],
 });
 
-const veloci = http(process.env.NEXT_PUBLIC_RPC_URL);
-const plexnode = http("https://mainnode.plexnode.org:8545");
-const nodestake = http("https://jsonrpc.canto.nodestake.top");
-const slingshot = http("https://canto.slingshot.finance");
-const neobase = http("https://canto.neobase.one");
+const pulsechainRpc = http("https://rpc.pulsechain.com");
 
 const publicClient = createPublicClient({
-  chain: canto,
-  transport: fallback([veloci, plexnode, nodestake, slingshot, neobase], {
-    rank: {
-      interval: 30_000,
-    },
-  }),
+  chain: pulsechain,
+  transport: pulsechainRpc,
 });
 
 function runMiddleware(

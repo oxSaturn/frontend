@@ -6,10 +6,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createPublicClient, http } from "viem";
-import { canto } from "viem/chains";
+import { pulsechain } from "viem/chains";
 const client = createPublicClient({
-  chain: canto,
-  transport: http(),
+  chain: pulsechain,
+  transport: http("https://rpc.pulsechain.com"),
 });
 const pairFactoryAddress = "0xF80909DF0A01ff18e4D37BF682E40519B21Def46";
 const abi = [
@@ -116,7 +116,7 @@ tokens = [...new Set(tokens.map((token) => token.result))];
 async function fetchTokenInfo(token) {
   // we'll fetch api from coingecko
   const json = await fetch(
-    `https://api.coingecko.com/api/v3/coins/canto/contract/${token}`
+    `https://api.coingecko.com/api/v3/coins/pulsechain/contract/${token}`
   ).then((res) => res.json());
   if (json.status?.error_code === 429) {
     // we've exceeded the rate limit, so we'll wait for 61 seconds, note that it's not that acurate in my test

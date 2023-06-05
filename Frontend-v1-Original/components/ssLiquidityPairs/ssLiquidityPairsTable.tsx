@@ -538,7 +538,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 noWrap
               >
                 <a
-                  href={`https://dexscreener.com/canto/${row.address}`}
+                  href={`https://dexscreener.com/pulsechain/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"

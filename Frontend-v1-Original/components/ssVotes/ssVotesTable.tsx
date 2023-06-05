@@ -411,7 +411,7 @@ const VotesRow = memo(function VotesRow({
             <div>
               <Typography variant="h2" className="text-xs font-extralight">
                 <a
-                  href={`https://dexscreener.com/canto/${row.address}`}
+                  href={`https://dexscreener.com/pulsechain/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"

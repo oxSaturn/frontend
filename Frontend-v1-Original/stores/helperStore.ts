@@ -24,7 +24,7 @@ class Helper {
   private defiLlamaBaseUrl = "https://api.llama.fi";
   private defiLlamaTokenUrl = "https://coins.llama.fi/prices/current";
   private debankEndpoint =
-    "https://pro-openapi.debank.com/v1/token?chain=canto";
+    "https://pro-openapi.debank.com/v1/token?chain=pulsechain";
   private dexScrennerEndpoint = "https://api.dexscreener.com/latest/dex/tokens";
   private dexGuruEndpoint =
     "https://api.dev.dex.guru/v1/chain/10/tokens/%/market";
@@ -169,7 +169,7 @@ class Helper {
       return 1.0;
     }
 
-    const chainName = isArbitrum ? "arbitrum" : "canto";
+    const chainName = "pulsechain";
     const chainToken = `${chainName}:${token.address.toLowerCase()}`;
 
     const res = await fetch(`${this.defiLlamaTokenUrl}/${chainToken}`);

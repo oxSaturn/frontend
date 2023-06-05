@@ -15,7 +15,7 @@ import {
   isAddress,
   BaseError,
 } from "viem";
-import { canto } from "viem/chains";
+import { pulsechain } from "viem/chains";
 import { getAccount, getWalletClient } from "@wagmi/core";
 
 import { Dispatcher } from "flux";
@@ -23,8 +23,7 @@ import { Dispatcher } from "flux";
 import { queryClient } from "../pages/_app";
 import { formatCurrency } from "../utils/utils";
 
-import tokenlistArb from "../mainnet-arb-token-list.json";
-import tokenlistCan from "../mainnet-canto-token-list.json";
+import tokenlist from "../mainnet-pulse-token-list.json";
 
 import {
   ACTIONS,
@@ -58,11 +57,7 @@ import {
 
 import stores from ".";
 
-const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
-
-const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
-
-const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
+const PULSE_OPTION_TOKEN = "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621";
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -2138,7 +2133,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -2423,7 +2418,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -2666,7 +2661,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("walletClient not found");
         return null;
@@ -2826,7 +2821,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -2924,7 +2919,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3363,7 +3358,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3482,7 +3477,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3615,7 +3610,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3727,7 +3722,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3802,7 +3797,7 @@ class Store {
     };
   }) => {
     try {
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3894,7 +3889,7 @@ class Store {
             value: BigInt(quote.maxReturn.totalFrom),
             data: quote.encodedData.data,
             gasPrice: BigInt(quote.maxReturn.gasPrice),
-            chain: canto,
+            chain: pulsechain,
           });
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
@@ -3928,7 +3923,7 @@ class Store {
             value: undefined,
             data: quote.encodedData.data,
             gasPrice: BigInt(quote.maxReturn.gasPrice),
-            chain: canto,
+            chain: pulsechain,
           });
           const receipt = await viemClient.waitForTransactionReceipt({
             hash: txHash,
@@ -3971,7 +3966,7 @@ class Store {
     content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
   }) => {
     try {
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3983,7 +3978,7 @@ class Store {
         toAsset: { address: toAddress, symbol: toSymbol },
         fromAmount,
       } = payload.content;
-      const isWrap = fromSymbol === "CANTO";
+      const isWrap = fromSymbol === "pulsechain";
       const action = isWrap ? "Wrap" : "Unwrap";
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
@@ -4213,7 +4208,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4331,7 +4326,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4431,7 +4426,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4488,7 +4483,7 @@ class Store {
         console.warn("account not found");
         return null;
       }
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4622,7 +4617,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4795,7 +4790,7 @@ class Store {
         console.warn("account not found");
         return null;
       }
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4890,7 +4885,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5053,7 +5048,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5383,7 +5378,7 @@ class Store {
           address: pair.gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "earned",
-          args: [CANTO_OPTION_TOKEN, account],
+          args: [PULSE_OPTION_TOKEN, account],
         } as const;
       });
 
@@ -5470,7 +5465,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5533,7 +5528,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5597,7 +5592,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5768,7 +5763,7 @@ class Store {
               address: oBlotrRewardPairs[i].gauge.address,
               abi: CONTRACTS.GAUGE_ABI,
               functionName: "getReward",
-              args: [account, [CANTO_OPTION_TOKEN]],
+              args: [account, [PULSE_OPTION_TOKEN]],
             });
             const txHash = await walletClient.writeContract(request);
             return txHash;
@@ -5823,7 +5818,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5882,7 +5877,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5911,7 +5906,7 @@ class Store {
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
-          args: [account, [CANTO_OPTION_TOKEN]],
+          args: [account, [PULSE_OPTION_TOKEN]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
@@ -5941,7 +5936,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5999,7 +5994,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -6056,7 +6051,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -6163,7 +6158,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -6225,7 +6220,7 @@ class Store {
         return null;
       }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -6565,7 +6560,7 @@ class Store {
       // this happens with slingshot and metamask
       [
         "invalid height",
-        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+        "pulsechain RPC issue. Please try reload page/switch RPC/switch networks back and forth",
       ],
       [
         "attached",
@@ -6595,12 +6590,12 @@ class Store {
       // some wallet some rpc not sure
       [
         "EIP-1559",
-        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+        "pulsechain RPC issue. Please try reload page/switch RPC/switch networks back and forth",
       ],
       // this happens in rubby
       [
         "request failed with status code 502",
-        "Canto RPC issue. Please try reload page/switch RPC/switch networks back and forth",
+        "pulsechain RPC issue. Please try reload page/switch RPC/switch networks back and forth",
       ],
       [
         "Request failed with status code 429",
