@@ -103,9 +103,9 @@ class Store {
           // case ACTIONS.QUOTE_ADD_LIQUIDITY:
           //   this.quoteAddLiquidity(payload);
           //   break;
-          case ACTIONS.GET_LIQUIDITY_BALANCES:
-            this.getLiquidityBalances(payload);
-            break;
+          // case ACTIONS.GET_LIQUIDITY_BALANCES:
+          //   this.getLiquidityBalances(payload);
+          //   break;
           case ACTIONS.REMOVE_LIQUIDITY:
             this.removeLiquidity(payload);
             break;
@@ -420,7 +420,7 @@ class Store {
       });
 
       return newVestNFTs;
-      this.emitter.emit(ACTIONS.UPDATED);
+      // this.emitter.emit(ACTIONS.UPDATED);
       return null;
     } catch (ex) {
       console.log(ex);
@@ -1688,7 +1688,7 @@ class Store {
       );
 
       queryClient.setQueryData<VestNFT[]>([QUERY_KEYS.VEST_NFTS], nfts);
-      this.emitter.emit(ACTIONS.UPDATED);
+      // this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);
@@ -3250,93 +3250,93 @@ class Store {
   //   }
   // };
 
-  getLiquidityBalances = async (payload: {
-    type: string;
-    content: { pair: Pair };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // getLiquidityBalances = async (payload: {
+  //   type: string;
+  //   content: { pair: Pair };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const { pair } = payload.content;
+  //     const { pair } = payload.content;
 
-      if (!pair) {
-        return;
-      }
+  //     if (!pair) {
+  //       return;
+  //     }
 
-      const token0Contract = {
-        abi: CONTRACTS.ERC20_ABI,
-        address: pair.token0.address,
-      } as const;
-      const token1Contract = {
-        abi: CONTRACTS.ERC20_ABI,
-        address: pair.token1.address,
-      } as const;
-      const pairContract = {
-        abi: CONTRACTS.ERC20_ABI,
-        address: pair.address,
-      } as const;
+  //     const token0Contract = {
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       address: pair.token0.address,
+  //     } as const;
+  //     const token1Contract = {
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       address: pair.token1.address,
+  //     } as const;
+  //     const pairContract = {
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       address: pair.address,
+  //     } as const;
 
-      const balanceCalls = [
-        {
-          ...token0Contract,
-          functionName: "balanceOf",
-          args: [account],
-        },
-        {
-          ...token1Contract,
-          functionName: "balanceOf",
-          args: [account],
-        },
-        {
-          ...pairContract,
-          functionName: "balanceOf",
-          args: [account],
-        },
-      ] as const;
+  //     const balanceCalls = [
+  //       {
+  //         ...token0Contract,
+  //         functionName: "balanceOf",
+  //         args: [account],
+  //       },
+  //       {
+  //         ...token1Contract,
+  //         functionName: "balanceOf",
+  //         args: [account],
+  //       },
+  //       {
+  //         ...pairContract,
+  //         functionName: "balanceOf",
+  //         args: [account],
+  //       },
+  //     ] as const;
 
-      const [token0Balance, token1Balance, poolBalance] =
-        await viemClient.multicall({
-          allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
-          contracts: balanceCalls,
-        });
+  //     const [token0Balance, token1Balance, poolBalance] =
+  //       await viemClient.multicall({
+  //         allowFailure: false,
+  //         multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
+  //         contracts: balanceCalls,
+  //       });
 
-      const returnVal: {
-        token0: string;
-        token1: string;
-        pool: string;
-        gauge: string | null;
-      } = {
-        token0: formatUnits(token0Balance, pair.token0.decimals),
-        token1: formatUnits(token1Balance, pair.token1.decimals),
-        pool: formatEther(poolBalance),
-        gauge: null,
-      };
+  //     const returnVal: {
+  //       token0: string;
+  //       token1: string;
+  //       pool: string;
+  //       gauge: string | null;
+  //     } = {
+  //       token0: formatUnits(token0Balance, pair.token0.decimals),
+  //       token1: formatUnits(token1Balance, pair.token1.decimals),
+  //       pool: formatEther(poolBalance),
+  //       gauge: null,
+  //     };
 
-      let gaugeBalance;
-      if (pair.gauge) {
-        gaugeBalance = await viemClient.readContract({
-          address: pair.gauge.address,
-          abi: CONTRACTS.ERC20_ABI,
-          functionName: "balanceOf",
-          args: [account],
-        });
-      }
+  //     let gaugeBalance;
+  //     if (pair.gauge) {
+  //       gaugeBalance = await viemClient.readContract({
+  //         address: pair.gauge.address,
+  //         abi: CONTRACTS.ERC20_ABI,
+  //         functionName: "balanceOf",
+  //         args: [account],
+  //       });
+  //     }
 
-      if (pair.gauge) {
-        returnVal.gauge = gaugeBalance ? formatEther(gaugeBalance) : null;
-      }
+  //     if (pair.gauge) {
+  //       returnVal.gauge = gaugeBalance ? formatEther(gaugeBalance) : null;
+  //     }
 
-      this.emitter.emit(ACTIONS.GET_LIQUIDITY_BALANCES_RETURNED, returnVal);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.GET_LIQUIDITY_BALANCES_RETURNED, returnVal);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   removeLiquidity = async (payload: {
     type: string;
@@ -4064,7 +4064,7 @@ class Store {
       queryClient.setQueryData<BaseAsset[]>([QUERY_KEYS.BASE_ASSET_INFO], ba);
       // this.updateSwapAssets(ba);
       queryClient.invalidateQueries([QUERY_KEYS.SWAP_ASSETS]);
-      this.emitter.emit(ACTIONS.UPDATED);
+      // this.emitter.emit(ACTIONS.UPDATED);
     } catch (ex) {
       console.log(ex);
       return null;
