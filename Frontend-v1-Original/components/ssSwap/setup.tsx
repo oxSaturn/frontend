@@ -27,6 +27,7 @@ import {
   ETHERSCAN_URL,
   NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
+  W_NATIVE_SYMBOL,
 } from "../../stores/constants/constants";
 import type {
   BaseAsset,
@@ -69,13 +70,13 @@ function Setup() {
   const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
 
   const isWrapUnwrap =
-    (fromAssetValue?.symbol === "WCANTO" && toAssetValue?.symbol === "CANTO") ||
-    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "WCANTO") ||
-    (fromAssetValue?.symbol === "CANTO" && toAssetValue?.symbol === "CANTOE") ||
-    (fromAssetValue?.symbol === "CANTOE" && toAssetValue?.symbol === "CANTO")
+    (fromAssetValue?.symbol === W_NATIVE_SYMBOL &&
+      toAssetValue?.symbol === NATIVE_TOKEN.address) ||
+    (fromAssetValue?.symbol === NATIVE_TOKEN.address &&
+      toAssetValue?.symbol === W_NATIVE_SYMBOL)
       ? true
       : false;
-  const isWrap = fromAssetValue?.symbol === "CANTO";
+  const isWrap = fromAssetValue?.symbol === NATIVE_TOKEN.address;
 
   const usdDiff = useMemo(() => {
     if (
@@ -287,8 +288,7 @@ function Setup() {
         (
           parseFloat(fromAmountValue) *
           (tokenPrices?.get(
-            // @ts-expect-error this is a workaround for the CANTO token
-            value.address === "CANTO"
+            value.address === NATIVE_TOKEN.address
               ? W_NATIVE_ADDRESS.toLowerCase()
               : value.address.toLowerCase()
           ) ?? 0)
@@ -321,8 +321,7 @@ function Setup() {
         (
           parseFloat(event.target.value) *
           (tokenPrices?.get(
-            // @ts-expect-error this is a workaround for the CANTO token
-            fromAssetValue?.address === "CANTO"
+            fromAssetValue?.address === NATIVE_TOKEN.address
               ? W_NATIVE_ADDRESS.toLowerCase()
               : fromAssetValue
               ? fromAssetValue?.address.toLowerCase()
@@ -358,10 +357,10 @@ function Setup() {
       setQuoteError(false);
 
       const isWrapUnwrap =
-        (from?.symbol === "WCANTO" && to?.symbol === "CANTO") ||
-        (from?.symbol === "CANTO" && to?.symbol === "WCANTO") ||
-        (from?.symbol === "CANTO" && to?.symbol === "CANTOE") ||
-        (from?.symbol === "CANTOE" && to?.symbol === "CANTO")
+        (from?.symbol === W_NATIVE_SYMBOL &&
+          to?.symbol === NATIVE_TOKEN.address) ||
+        (from?.symbol === NATIVE_TOKEN.address &&
+          to?.symbol === W_NATIVE_SYMBOL)
           ? true
           : false;
 
@@ -515,8 +514,7 @@ function Setup() {
       (
         parseFloat(am) *
         (tokenPrices?.get(
-          // @ts-expect-error this is a workaround for the CANTO token
-          fromAssetValue?.address === "CANTO"
+          fromAssetValue?.address === NATIVE_TOKEN.address
             ? W_NATIVE_ADDRESS.toLowerCase()
             : fromAssetValue
             ? fromAssetValue.address.toLowerCase()
@@ -545,8 +543,7 @@ function Setup() {
       (
         parseFloat(fromAmountValue) *
         (tokenPrices?.get(
-          // @ts-expect-error this is a workaround for the CANTO token
-          ta.address === "CANTO"
+          ta.address === NATIVE_TOKEN.address
             ? W_NATIVE_ADDRESS.toLowerCase()
             : ta.address.toLowerCase()
         ) ?? 0)
@@ -1086,7 +1083,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="CANTO, NOTE, 0x..."
+            placeholder="PLS, HEX, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -1125,7 +1122,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="CANTO, NOTE, 0x..."
+            placeholder="PLS, HEX, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{

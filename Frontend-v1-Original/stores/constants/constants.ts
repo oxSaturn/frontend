@@ -17,6 +17,7 @@ const config = {
       chainId: 7700,
     },
     wNativeAddress: contracts.WETH_ADDRESS,
+    wNativeSymbol: contracts.WETH_SYMBOL,
     wNativeABI: contracts.WETH_ABI,
   },
 };
@@ -31,6 +32,7 @@ export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export const NATIVE_TOKEN = config[pulsechain.id].nativeETH;
 export const W_NATIVE_ADDRESS = config[pulsechain.id].wNativeAddress;
+export const W_NATIVE_SYMBOL = config[pulsechain.id].wNativeSymbol;
 export const W_NATIVE_ABI = config[pulsechain.id].wNativeABI;
 
 export const PAIR_DECIMALS = 18;
