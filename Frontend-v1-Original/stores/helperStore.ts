@@ -10,7 +10,6 @@ import {
 
 import stores from ".";
 
-const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;
 
 // # See: https://docs.1inch.io/docs/aggregation-protocol/api/swagger
@@ -200,6 +199,7 @@ class Helper {
         token.address,
         CONTRACTS.STABLE_TOKEN_ADDRESS,
       ]);
+      // @ts-expect-error three arguments passed to router so it returns readonly [bigint, boolean]
       const amountOut = formatUnits(amountOutFromContract[0], 6);
       return parseFloat(amountOut);
     } catch (ex) {

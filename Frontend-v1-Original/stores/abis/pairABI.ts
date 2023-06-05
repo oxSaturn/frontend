@@ -1,12 +1,6 @@
 export const pairABI = [
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -91,7 +85,7 @@ export const pairABI = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount0",
+        name: "amount",
         type: "uint256",
       },
       {
@@ -216,7 +210,7 @@ export const pairABI = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount0",
+        name: "amount",
         type: "uint256",
       },
       {
@@ -1065,19 +1059,6 @@ export const pairABI = [
       },
     ],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

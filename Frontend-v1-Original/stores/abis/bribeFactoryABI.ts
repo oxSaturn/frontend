@@ -1,54 +1,34 @@
 export const bribeFactoryABI = [
   {
-    type: "constructor",
-    stateMutability: "nonpayable",
     inputs: [
-      { type: "address", name: "_voter", internalType: "address" },
-      { type: "uint256", name: "_csrNftId", internalType: "uint256" },
+      {
+        internalType: "address[]",
+        name: "allowedRewards",
+        type: "address[]",
+      },
     ],
-  },
-  {
-    type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "address", name: "", internalType: "address" }],
-    name: "TURNSTILE",
-    inputs: [],
-  },
-  {
-    type: "function",
+    name: "createExternalBribe",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "nonpayable",
-    outputs: [{ type: "address", name: "", internalType: "address" }],
-    name: "createBribe",
-    inputs: [
-      { type: "address", name: "existing_bribe", internalType: "address" },
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "last_external_bribe",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-  },
-  {
-    type: "function",
     stateMutability: "view",
-    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
-    name: "csrNftId",
-    inputs: [],
-  },
-  {
     type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "address", name: "", internalType: "address" }],
-    name: "last_bribe",
-    inputs: [],
-  },
-  {
-    type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "address", name: "", internalType: "address" }],
-    name: "oldBribeToNew",
-    inputs: [{ type: "address", name: "", internalType: "address" }],
-  },
-  {
-    type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "address", name: "", internalType: "address" }],
-    name: "voter",
-    inputs: [],
   },
 ] as const;

@@ -11,7 +11,6 @@ import { tokenABI } from "./tokenABI";
 import { veDistABI } from "./veDistABI";
 import { minterABI } from "./minterABI";
 import { wethABI } from "./wethABI";
-import { flowConvertorABI } from "./flowConvertorABI";
 import { autoBribeABI } from "./autoBribeABI";
 import { fairAuctionABI } from "./fairAuctionABI";
 
@@ -29,7 +28,6 @@ export default {
   tokenABI,
   minterABI,
   wethABI,
-  flowConvertorABI,
   autoBribeABI,
   fairAuctionABI,
 };

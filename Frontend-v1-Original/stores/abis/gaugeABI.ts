@@ -22,6 +22,16 @@ export const gaugeABI = [
         type: "address",
       },
       {
+        internalType: "address",
+        name: "_oFlow",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_gaugeFactory",
+        type: "address",
+      },
+      {
         internalType: "bool",
         name: "_forPair",
         type: "bool",
@@ -30,11 +40,6 @@ export const gaugeABI = [
         internalType: "address[]",
         name: "_allowedRewardTokens",
         type: "address[]",
-      },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
       },
     ],
     stateMutability: "nonpayable",
@@ -113,6 +118,19 @@ export const gaugeABI = [
       },
     ],
     name: "NotifyReward",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_oFlow",
+        type: "address",
+      },
+    ],
+    name: "OFlowSet",
     type: "event",
   },
   {
@@ -383,6 +401,32 @@ export const gaugeABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "flow",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "gaugeFactory",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -623,6 +667,19 @@ export const gaugeABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "oFlow",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -779,6 +836,19 @@ export const gaugeABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_oFlow",
+        type: "address",
+      },
+    ],
+    name: "setOFlow",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "stake",
     outputs: [
@@ -878,19 +948,6 @@ export const gaugeABI = [
         internalType: "uint256",
         name: "",
         type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",

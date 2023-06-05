@@ -16,11 +16,6 @@ export const veTokenABI = [
         name: "_owner",
         type: "address",
       },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -539,6 +534,19 @@ export const veTokenABI = [
       },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "currentTokenId",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1201,6 +1209,24 @@ export const veTokenABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "amounts",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "split",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "supply",
     outputs: [
@@ -1386,19 +1412,6 @@ export const veTokenABI = [
     name: "transferFrom",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

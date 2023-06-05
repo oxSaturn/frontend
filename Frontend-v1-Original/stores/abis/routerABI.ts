@@ -11,11 +11,6 @@ export const routerABI = [
         name: "_weth",
         type: "address",
       },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -241,6 +236,40 @@ export const routerABI = [
         internalType: "bool",
         name: "stable",
         type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amountIn",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "tokenIn",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenOut",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "stable",
+        type: "bool",
+      },
+    ],
+    name: "getAmountOut",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -962,19 +991,6 @@ export const routerABI = [
       },
     ],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

@@ -56,13 +56,6 @@ function Header() {
           </a>
           <Navigation />
           <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
-            {process.env.NEXT_PUBLIC_CHAINID === "740" && (
-              <div>
-                <Typography className="rounded-xl border border-cantoGreen bg-[#0e110c] p-4 text-sm">
-                  Testnet
-                </Typography>
-              </div>
-            )}
             {transactionQueueLength > 0 && (
               <IconButton
                 className="flex min-h-[40px] items-center rounded-3xl border-none bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"

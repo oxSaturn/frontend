@@ -6,11 +6,6 @@ export const veDistABI = [
         name: "_voting_escrow",
         type: "address",
       },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -273,19 +268,6 @@ export const veDistABI = [
         internalType: "uint256",
         name: "",
         type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",

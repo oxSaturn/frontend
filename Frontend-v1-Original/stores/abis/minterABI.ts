@@ -16,14 +16,28 @@ export const minterABI = [
         name: "__rewards_distributor",
         type: "address",
       },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "setter",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "emission",
+        type: "uint256",
+      },
+    ],
+    name: "EmissionSet",
+    type: "event",
   },
   {
     anonymous: false,
@@ -55,6 +69,19 @@ export const minterABI = [
     ],
     name: "Mint",
     type: "event",
+  },
+  {
+    inputs: [],
+    name: "EMISSION",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
@@ -250,6 +277,19 @@ export const minterABI = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "_emission",
+        type: "uint256",
+      },
+    ],
+    name: "setEmission",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_team",
         type: "address",
@@ -301,19 +341,6 @@ export const minterABI = [
         internalType: "uint256",
         name: "",
         type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",

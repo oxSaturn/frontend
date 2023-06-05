@@ -1,34 +1,156 @@
 export const bribeABI = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "_voter",
+        type: "address",
+      },
+      {
+        internalType: "address[]",
+        name: "_allowedRewardTokens",
+        type: "address[]",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "constructor",
   },
   {
-    inputs: [],
-    name: "DURATION",
-    outputs: [
+    anonymous: false,
+    inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "reward",
+        type: "address",
+      },
+      {
+        indexed: false,
         internalType: "uint256",
-        name: "",
+        name: "amount",
         type: "uint256",
       },
     ],
-    stateMutability: "view",
-    type: "function",
+    name: "ClaimRewards",
+    type: "event",
   },
   {
-    inputs: [],
-    name: "PRECISION",
-    outputs: [
+    anonymous: false,
+    inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: false,
         internalType: "uint256",
-        name: "",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
         type: "uint256",
       },
     ],
-    stateMutability: "view",
-    type: "function",
+    name: "Deposit",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "reward",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "originalEpoch",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "updatedEpoch",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "HandleLeftOverRewards",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "reward",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "epoch",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "NotifyReward",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Withdraw",
+    type: "event",
   },
   {
     inputs: [
@@ -152,16 +274,22 @@ export const bribeABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "factory",
-    outputs: [
+    inputs: [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256",
       },
     ],
-    stateMutability: "view",
+    name: "getEpochStart",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "pure",
     type: "function",
   },
   {
@@ -179,35 +307,6 @@ export const bribeABI = [
     ],
     name: "getPriorBalanceIndex",
     outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-    ],
-    name: "getPriorRewardPerToken",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
       {
         internalType: "uint256",
         name: "",
@@ -268,6 +367,24 @@ export const bribeABI = [
       },
     ],
     name: "getRewardForOwner",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "epochTimestamp",
+        type: "uint256",
+      },
+      {
+        internalType: "address[]",
+        name: "tokens",
+        type: "address[]",
+      },
+    ],
+    name: "handleLeftOverRewards",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -338,11 +455,11 @@ export const bribeABI = [
     inputs: [
       {
         internalType: "address",
-        name: "",
+        name: "token",
         type: "address",
       },
     ],
-    name: "lastUpdateTime",
+    name: "left",
     outputs: [
       {
         internalType: "uint256",
@@ -399,111 +516,6 @@ export const bribeABI = [
       },
     ],
     name: "periodFinish",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-    ],
-    name: "rewardPerToken",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "rewardPerTokenCheckpoints",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "rewardPerToken",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "rewardPerTokenNumCheckpoints",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "rewardPerTokenStored",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    name: "rewardRate",
     outputs: [
       {
         internalType: "uint256",
@@ -584,16 +596,26 @@ export const bribeABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "totalSupply",
-    outputs: [
+    inputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "i",
         type: "uint256",
       },
+      {
+        internalType: "address",
+        name: "oldToken",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "newToken",
+        type: "address",
+      },
     ],
-    stateMutability: "view",
+    name: "swapOutRewardToken",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -609,12 +631,38 @@ export const bribeABI = [
         type: "uint256",
       },
     ],
-    name: "userRewardPerTokenStored",
+    name: "tokenRewardsPerEpoch",
     outputs: [
       {
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "voter",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",

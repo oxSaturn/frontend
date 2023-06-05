@@ -83,19 +83,16 @@ export default function Rewards() {
     if (rew) {
       if (
         rew &&
-        rew.xBribes &&
-        rew.xxBribes &&
+        rew.bribes &&
         rew.rewards &&
         rew.BLOTR_rewards &&
         rew.veDist &&
-        rew.xBribes.length >= 0 &&
-        rew.xxBribes.length >= 0 &&
+        rew.bribes.length >= 0 &&
         rew.rewards.length >= 0 &&
         rew.BLOTR_rewards.length >= 0
       ) {
         setRewards([
-          ...rew.xxBribes,
-          ...rew.xBribes,
+          ...rew.bribes,
           ...rew.rewards,
           ...rew.BLOTR_rewards,
           ...rew.veDist,
@@ -106,19 +103,16 @@ export default function Rewards() {
 
       if (
         re &&
-        re.xBribes &&
-        re.xxBribes &&
+        re.bribes &&
         re.rewards &&
         re.BLOTR_rewards &&
         re.veDist &&
-        re.xBribes.length >= 0 &&
-        re.xxBribes.length >= 0 &&
+        re.bribes.length >= 0 &&
         re.rewards.length >= 0 &&
         re.BLOTR_rewards.length >= 0
       ) {
         setRewards([
-          ...re.xxBribes,
-          ...re.xBribes,
+          ...re.bribes,
           ...re.rewards,
           ...re.BLOTR_rewards,
           ...re.veDist,

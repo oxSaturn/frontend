@@ -1,12 +1,6 @@
 export const factoryABI = [
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -224,19 +218,6 @@ export const factoryABI = [
   },
   {
     inputs: [],
-    name: "csrNftId",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "deployer",
     outputs: [
       {
@@ -251,9 +232,28 @@ export const factoryABI = [
   {
     inputs: [
       {
-        internalType: "bool",
-        name: "_stable",
-        type: "bool",
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "feesOverrides",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_pair",
+        type: "address",
       },
     ],
     name: "getFee",
@@ -405,6 +405,24 @@ export const factoryABI = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_pair",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_fee",
+        type: "uint256",
+      },
+    ],
+    name: "setFeesOverrides",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bool",
         name: "_state",
         type: "bool",
@@ -478,19 +496,6 @@ export const factoryABI = [
     name: "transferOwnership",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

@@ -87,15 +87,10 @@ interface Pair {
     address: `0x${string}`;
     total_supply: number;
     bribe_address: `0x${string}`;
-    wrapped_bribe_address: `0x${string}`;
-    x_wrapped_bribe_address: `0x${string}`;
-    xx_wrapped_bribe_address: `0x${string}`;
     reward: number;
     bribeAddress: `0x${string}`;
     totalSupply: number | string; //gets reassigned to string in frontend store
     bribes: Bribe[];
-    x_bribes: Bribe[];
-    xx_bribes: Bribe[];
     // following gets assigned in frontend store
     balance?: string;
     reserve0?: string;
@@ -104,9 +99,7 @@ interface Pair {
     weightPercent?: string;
     rewardsEarned?: string;
     BLOTR_rewardsEarned?: string;
-    x_bribesEarned?: Bribe[];
-    xx_bribesEarned?: Bribe[];
-    bribesEarnedValue?: BribeEarned[];
+    bribesEarned?: Bribe[];
   };
   gaugebribes?: Bribe[];
 }

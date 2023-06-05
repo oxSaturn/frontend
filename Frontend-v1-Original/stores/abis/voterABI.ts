@@ -21,16 +21,6 @@ export const voterABI = [
         name: "_bribes",
         type: "address",
       },
-      {
-        internalType: "address",
-        name: "_wrappedExternalBribeFactory",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_csrNftId",
-        type: "uint256",
-      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -77,6 +67,44 @@ export const voterABI = [
       },
     ],
     name: "Attach",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "blacklister",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+    ],
+    name: "Blacklisted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "setter",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newBribeFatory",
+        type: "address",
+      },
+    ],
+    name: "BribeFactorySet",
     type: "event",
   },
   {
@@ -166,6 +194,106 @@ export const voterABI = [
       {
         indexed: true,
         internalType: "address",
+        name: "setter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "gauge",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "externalBribe",
+        type: "address",
+      },
+    ],
+    name: "ExternalBribeSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "setter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "pairFactory",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "gaugeFactory",
+        type: "address",
+      },
+    ],
+    name: "FactoryAdded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "setter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "pos",
+        type: "uint256",
+      },
+    ],
+    name: "FactoryRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "setter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "pairFactory",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "gaugeFactory",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "pos",
+        type: "uint256",
+      },
+    ],
+    name: "FactoryReplaced",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "gauge",
         type: "address",
       },
@@ -179,12 +307,6 @@ export const voterABI = [
         indexed: true,
         internalType: "address",
         name: "external_bribe",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "wxbribe",
         type: "address",
       },
       {
@@ -207,7 +329,7 @@ export const voterABI = [
         type: "address",
       },
     ],
-    name: "GaugeKilled",
+    name: "GaugeKilledTotally",
     type: "event",
   },
   {
@@ -220,7 +342,20 @@ export const voterABI = [
         type: "address",
       },
     ],
-    name: "GaugeRevived",
+    name: "GaugePaused",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "gauge",
+        type: "address",
+      },
+    ],
+    name: "GaugeRestarted",
     type: "event",
   },
   {
@@ -325,6 +460,32 @@ export const voterABI = [
   },
   {
     inputs: [],
+    name: "_factories",
+    outputs: [
+      {
+        internalType: "address[]",
+        name: "",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "_gaugeFactories",
+    outputs: [
+      {
+        internalType: "address[]",
+        name: "",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "_ve",
     outputs: [
       {
@@ -334,6 +495,24 @@ export const voterABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_pairFactory",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_gaugeFactory",
+        type: "address",
+      },
+    ],
+    name: "addFactory",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -350,6 +529,19 @@ export const voterABI = [
       },
     ],
     name: "attachTokenToGauge",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_token",
+        type: "address",
+      },
+    ],
+    name: "blacklist",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -386,29 +578,6 @@ export const voterABI = [
       },
     ],
     name: "claimBribes",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address[]",
-        name: "_fees",
-        type: "address[]",
-      },
-      {
-        internalType: "address[][]",
-        name: "_tokens",
-        type: "address[][]",
-      },
-      {
-        internalType: "uint256",
-        name: "_tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "claimFees",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -456,6 +625,11 @@ export const voterABI = [
         internalType: "address",
         name: "_pool",
         type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_gaugeType",
+        type: "uint256",
       },
     ],
     name: "createGauge",
@@ -624,8 +798,14 @@ export const voterABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "factory",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "factories",
     outputs: [
       {
         internalType: "address",
@@ -638,12 +818,44 @@ export const voterABI = [
   },
   {
     inputs: [],
-    name: "gaugefactory",
+    name: "factoryLength",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "gaugeFactories",
     outputs: [
       {
         internalType: "address",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "gaugeFactoriesLength",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -726,7 +938,45 @@ export const voterABI = [
         type: "address",
       },
     ],
+    name: "isFactory",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     name: "isGauge",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "isGaugeFactory",
     outputs: [
       {
         internalType: "bool",
@@ -764,7 +1014,7 @@ export const voterABI = [
         type: "address",
       },
     ],
-    name: "killGauge",
+    name: "killGaugeTotally",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -823,6 +1073,19 @@ export const voterABI = [
       },
     ],
     name: "notifyRewardAmount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_gauge",
+        type: "address",
+      },
+    ],
+    name: "pauseGauge",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -906,6 +1169,42 @@ export const voterABI = [
     inputs: [
       {
         internalType: "uint256",
+        name: "_pos",
+        type: "uint256",
+      },
+    ],
+    name: "removeFactory",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_pairFactory",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_gaugeFactory",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_pos",
+        type: "uint256",
+      },
+    ],
+    name: "replaceFactory",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "_tokenId",
         type: "uint256",
       },
@@ -923,7 +1222,20 @@ export const voterABI = [
         type: "address",
       },
     ],
-    name: "reviveGauge",
+    name: "restartGauge",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_bribeFactory",
+        type: "address",
+      },
+    ],
+    name: "setBribeFactory",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -937,6 +1249,24 @@ export const voterABI = [
       },
     ],
     name: "setEmergencyCouncil",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_gauge",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_external",
+        type: "address",
+      },
+    ],
+    name: "setExternalBribeFor",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -962,19 +1292,6 @@ export const voterABI = [
         internalType: "uint256",
         name: "",
         type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "turnstile",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",
@@ -1127,19 +1444,6 @@ export const voterABI = [
     name: "whitelist",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "wrappedExternalBribeFactory",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
 ] as const;
