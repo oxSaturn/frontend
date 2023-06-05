@@ -23,7 +23,6 @@ const getAutoBribes = async () => {
 
     const [bribeName, nextWeekSeconds] = await viemClient.multicall({
       allowFailure: false,
-      multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
       contracts: [
         {
           ...autoBribe,

@@ -60,7 +60,6 @@ export default async function handler(
     flowInTimelockerController,
   ] = await publicClient.multicall({
     allowFailure: false,
-    multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
     contracts: [
       {
         ...flowContract,
