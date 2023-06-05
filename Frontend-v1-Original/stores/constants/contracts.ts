@@ -27,7 +27,7 @@ export const ETH_NAME = "PLS";
 export const ETH_SYMBOL = "PLS";
 export const ETH_DECIMALS = 18;
 export const ETH_LOGO =
-  "https://assets.coingecko.com/coins/images/279/large/ethereum.png";
+  "https://assets.coingecko.com/coins/images/25666/large/11145.png";
 
 // BaseV1Factory checked here: https://ftmscan.com/address/0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28#code
 export const FACTORY_ADDRESS = "0x6B4449C74a9aF269A5f72B88B2B7B8604685D9B9"; // pulse
