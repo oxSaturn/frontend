@@ -14,5 +14,45 @@
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
     "name": "Circle USD Coin",
     "symbol": "USDC"
+  },
+  {
+    "address": "0xefD766cCb38EaF1dfd701853BFCe31359239F305",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/9956/large/4943.png",
+    "name": "Maker DAO DAI",
+    "symbol": "DAI"
+  },
+  {
+    "address": "0x02DcdD04e3F455D838cd1249292C58f3B79e3C3C",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
+    "name": "Wrapped ETH",
+    "symbol": "WETH"
+  },
+  {
+    "address": "0xb17D901469B9208B17d916112988A3FeD19b5cA1",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png",
+    "name": "Wrapped BTC",
+    "symbol": "WBTC"
+  },
+  {
+    "address": "0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
+    "name": "Tether USD",
+    "symbol": "USDT"
+  },
+  {
+    "address": "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/10103/large/HEX-logo.png",
+    "name": "HEX",
+    "symbol": "HEX"
   }
 ]
