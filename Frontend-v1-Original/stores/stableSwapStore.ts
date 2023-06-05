@@ -91,9 +91,9 @@ class Store {
           // case ACTIONS.CREATE_PAIR_AND_DEPOSIT:
           //   this.createPairDeposit(payload);
           //   break;
-          case ACTIONS.ADD_LIQUIDITY:
-            this.addLiquidity(payload);
-            break;
+          // case ACTIONS.ADD_LIQUIDITY:
+          //   this.addLiquidity(payload);
+          //   break;
           case ACTIONS.STAKE_LIQUIDITY:
             this.stakeLiquidity(payload);
             break;
@@ -2787,7 +2787,7 @@ class Store {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       this._getSpecificAssetInfo(account, token0.address);
       this._getSpecificAssetInfo(account, token1.address);
-      this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
+      // this.emitter.emit(ACTIONS.LIQUIDITY_ADDED);
     } catch (ex) {
       console.error(ex);
       this.emitter.emit(ACTIONS.ERROR, ex);

@@ -158,7 +158,7 @@ export function useQuoteAddLiquidity(
         amount1,
       });
     },
-    enabled: !!pair && (amount0 !== "" || amount1 !== "") && !!address,
+    enabled: !!pair && amount0 !== "" && amount1 !== "" && !!address,
   });
 }
 

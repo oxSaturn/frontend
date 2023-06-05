@@ -47,6 +47,7 @@ import {
   useQuoteRemoveLiquidity,
 } from "./lib/queries";
 import { useAmounts } from "./lib/useAmounts";
+import { useAddLiquidity } from "./lib/mutations";
 
 export default function LiquidityManage() {
   const router = useRouter();
@@ -92,6 +93,15 @@ export default function LiquidityManage() {
 
   const { data: withdrawQuote, remove: removeWithdrawQuote } =
     useQuoteRemoveLiquidity(withdrawAmount, router.query.address);
+
+  const { mutate: addLiquidity, isLoading: isAddLiqLoading } = useAddLiquidity(
+    () => {
+      setAmount0("");
+      setAmount1("");
+      removeQuote();
+      onBack();
+    }
+  );
 
   useEffect(() => {
     if (
@@ -139,7 +149,6 @@ export default function LiquidityManage() {
       setCreateLoading(false);
     };
 
-    stores.emitter.on(ACTIONS.LIQUIDITY_ADDED, depositReturned);
     stores.emitter.on(ACTIONS.ADD_LIQUIDITY_AND_STAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
     stores.emitter.on(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED, depositReturned);
@@ -149,7 +158,6 @@ export default function LiquidityManage() {
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
 
     return () => {
-      stores.emitter.removeListener(ACTIONS.LIQUIDITY_ADDED, depositReturned);
       stores.emitter.removeListener(
         ACTIONS.ADD_LIQUIDITY_AND_STAKED,
         depositReturned
@@ -259,19 +267,13 @@ export default function LiquidityManage() {
     }
 
     if (!error) {
-      setDepositLoading(true);
-
-      stores.dispatcher.dispatch({
-        type: ACTIONS.ADD_LIQUIDITY,
-        content: {
-          pair: pair,
-          token0: asset0,
-          token1: asset1,
-          amount0: amount0,
-          amount1: amount1,
-          minLiquidity: quote ? quote : "0",
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
+      addLiquidity({
+        token0: asset0,
+        token1: asset1,
+        amount0: amount0,
+        amount1: amount1,
+        pair: pair,
+        slippage: slippage && slippage != "" ? slippage : "2",
       });
     }
   };
@@ -478,12 +480,12 @@ export default function LiquidityManage() {
   };
 
   const toggleDeposit = () => {
-    if (depositLoading) return;
+    if (depositLoading || isAddLiqLoading) return;
     setActiveTab("deposit");
   };
 
   const toggleWithdraw = () => {
-    if (depositLoading) return;
+    if (depositLoading || isAddLiqLoading) return;
     setActiveTab("withdraw");
   };
 
@@ -731,6 +733,7 @@ export default function LiquidityManage() {
                   stakeLoading ||
                   createLoading ||
                   depositLoading ||
+                  isAddLiqLoading ||
                   depositStakeLoading
                 }
               />
@@ -785,6 +788,7 @@ export default function LiquidityManage() {
                 stakeLoading ||
                 createLoading ||
                 depositLoading ||
+                isAddLiqLoading ||
                 depositStakeLoading
               }
             />
@@ -977,6 +981,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                           ? "min-w-[auto]"
@@ -986,20 +991,24 @@ export default function LiquidityManage() {
                       disabled={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                       }
                       onClick={onDeposit}
                     >
                       <Typography className="font-bold capitalize">
-                        {depositLoading ? `Depositing` : `Deposit`}
+                        {depositLoading || isAddLiqLoading
+                          ? `Depositing`
+                          : `Deposit`}
                       </Typography>
-                      {depositLoading && (
-                        <CircularProgress
-                          size={10}
-                          className="ml-2 fill-white"
-                        />
-                      )}
+                      {depositLoading ||
+                        (isAddLiqLoading && (
+                          <CircularProgress
+                            size={10}
+                            className="ml-2 fill-white"
+                          />
+                        ))}
                     </Button>
                     {isBaseAsset(pair.token0) &&
                       isBaseAsset(pair.token1) &&
@@ -1011,6 +1020,7 @@ export default function LiquidityManage() {
                           className={
                             createLoading ||
                             depositLoading ||
+                            isAddLiqLoading ||
                             stakeLoading ||
                             depositStakeLoading
                               ? "min-w-[auto]"
@@ -1020,6 +1030,7 @@ export default function LiquidityManage() {
                           disabled={
                             createLoading ||
                             depositLoading ||
+                            isAddLiqLoading ||
                             stakeLoading ||
                             depositStakeLoading
                           }
@@ -1049,6 +1060,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                           ? "min-w-[auto]"
@@ -1058,6 +1070,7 @@ export default function LiquidityManage() {
                       disabled={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                       }
@@ -1080,6 +1093,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                           ? "min-w-[auto]"
@@ -1089,20 +1103,24 @@ export default function LiquidityManage() {
                       disabled={
                         (amount0 === "" && amount1 === "") ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                       }
                       onClick={onDeposit}
                     >
                       <Typography className="font-bold capitalize">
-                        {depositLoading ? `Depositing` : `Deposit LP`}
+                        {depositLoading || isAddLiqLoading
+                          ? `Depositing`
+                          : `Deposit LP`}
                       </Typography>
-                      {depositLoading && (
-                        <CircularProgress
-                          size={10}
-                          className="ml-2 fill-white"
-                        />
-                      )}
+                      {depositLoading ||
+                        (isAddLiqLoading && (
+                          <CircularProgress
+                            size={10}
+                            className="ml-2 fill-white"
+                          />
+                        ))}
                     </Button>
                     <Button
                       variant="contained"
@@ -1110,6 +1128,7 @@ export default function LiquidityManage() {
                       className={
                         (pair.balance && BigNumber(pair.balance).eq(0)) ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                           ? "min-w-[auto]"
@@ -1119,6 +1138,7 @@ export default function LiquidityManage() {
                       disabled={
                         (pair.balance && BigNumber(pair.balance).eq(0)) ||
                         depositLoading ||
+                        isAddLiqLoading ||
                         stakeLoading ||
                         depositStakeLoading
                       }

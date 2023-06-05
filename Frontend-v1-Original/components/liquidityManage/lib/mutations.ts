@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAccount, type Address, type WalletClient } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
 import { canto } from "wagmi/chains";
@@ -11,13 +11,14 @@ import {
   writeApprove,
   writeContractWrapper,
 } from "../../../lib/global/mutations";
-import { BaseAsset, Gauge } from "../../../stores/types/types";
+import { BaseAsset, Gauge, Pair } from "../../../stores/types/types";
 import {
   ACTIONS,
   CONTRACTS,
   MAX_UINT256,
   NATIVE_TOKEN,
   PAIR_DECIMALS,
+  QUERY_KEYS,
   W_NATIVE_ADDRESS,
   ZERO_ADDRESS,
 } from "../../../stores/constants/constants";
@@ -27,6 +28,7 @@ import { getTXUUID } from "../../../utils/utils";
 import { getPairByAddress } from "./queries";
 
 export function useCreatePairStake(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
   const { address } = useAccount();
   return useMutation({
     mutationFn: (options: {
@@ -37,11 +39,15 @@ export function useCreatePairStake(onSuccess?: () => void) {
       isStable: boolean;
       slippage: string;
     }) => createPairStake(address, options),
-    onSuccess,
+    onSuccess: () => {
+      onSuccess && onSuccess();
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+    },
   });
 }
 
 export function useCreatePairDeposit(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
   const { address } = useAccount();
   return useMutation({
     mutationFn: (options: {
@@ -52,7 +58,30 @@ export function useCreatePairDeposit(onSuccess?: () => void) {
       isStable: boolean;
       slippage: string;
     }) => createPairDeposit(address, options),
-    onSuccess,
+    onSuccess: () => {
+      onSuccess && onSuccess();
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+    },
+  });
+}
+
+export function useAddLiquidity(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: {
+      token0: BaseAsset | null;
+      token1: BaseAsset | null;
+      amount0: string;
+      amount1: string;
+      pair: Pair | undefined;
+      slippage: string;
+    }) => addLiquidity(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess && onSuccess();
+    },
   });
 }
 
@@ -703,4 +732,164 @@ const writeDeposit = async (
     return txHash;
   };
   await writeContractWrapper(stakeTXID, write);
+};
+
+const addLiquidity = async (
+  account: Address | undefined,
+  options: {
+    token0: BaseAsset | null;
+    token1: BaseAsset | null;
+    amount0: string;
+    amount1: string;
+    pair: Pair | undefined;
+    slippage: string;
+  }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not found");
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("walletClient not found");
+    throw new Error("walletClient not found");
+  }
+
+  const { token0, token1, amount0, amount1, pair, slippage } = options;
+
+  if (!token0 || !token1 || !pair) {
+    console.warn("token0 or token1 or pair not found");
+    throw new Error("token0 or token1 or pair not found");
+  }
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let allowance0TXID = getTXUUID();
+  let allowance1TXID = getTXUUID();
+  let depositTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Add liquidity to ${pair.symbol}`,
+    verb: "Liquidity Added",
+    type: "Liquidity",
+    transactions: [
+      {
+        uuid: allowance0TXID,
+        description: `Checking your ${token0.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: allowance1TXID,
+        description: `Checking your ${token1.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: depositTXID,
+        description: `Deposit tokens in the pool`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  let allowance0: string | null = "0";
+  let allowance1: string | null = "0";
+
+  // CHECK ALLOWANCES AND SET TX DISPLAY
+  if (token0.address !== NATIVE_TOKEN.symbol) {
+    allowance0 = await getDepositAllowance(token0, account);
+    if (!allowance0) throw new Error("Error getting allowance");
+    if (BigNumber(allowance0).lt(amount0)) {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance0TXID,
+        description: `Allow the router to spend your ${token0.symbol}`,
+      });
+    } else {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance0TXID,
+        description: `Allowance on ${token0.symbol} sufficient`,
+        status: "DONE",
+      });
+    }
+  } else {
+    allowance0 = MAX_UINT256;
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowance0TXID,
+      description: `Allowance on ${token0.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  if (token1.address !== NATIVE_TOKEN.symbol) {
+    allowance1 = await getDepositAllowance(token1, account);
+    if (!allowance1) throw new Error("couldnt get allowance");
+    if (BigNumber(allowance1).lt(amount1)) {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance1TXID,
+        description: `Allow the router to spend your ${token1.symbol}`,
+      });
+    } else {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance1TXID,
+        description: `Allowance on ${token1.symbol} sufficient`,
+        status: "DONE",
+      });
+    }
+  } else {
+    allowance1 = MAX_UINT256;
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowance1TXID,
+      description: `Allowance on ${token1.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  if (BigNumber(allowance0).lt(amount0)) {
+    await writeApprove(
+      walletClient,
+      allowance0TXID,
+      token0.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  if (BigNumber(allowance1).lt(amount1)) {
+    await writeApprove(
+      walletClient,
+      allowance1TXID,
+      token1.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  // SUBMIT DEPOSIT TRANSACTION
+  const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  const sendAmount0 = BigNumber(amount0)
+    .times(10 ** token0.decimals)
+    .toFixed(0);
+  const sendAmount1 = BigNumber(amount1)
+    .times(10 ** token1.decimals)
+    .toFixed(0);
+  const deadline = "" + moment().add(600, "seconds").unix();
+  const sendAmount0Min = BigNumber(amount0)
+    .times(sendSlippage)
+    .times(10 ** token0.decimals)
+    .toFixed(0);
+  const sendAmount1Min = BigNumber(amount1)
+    .times(sendSlippage)
+    .times(10 ** token1.decimals)
+    .toFixed(0);
+
+  await writeAddLiquidity(
+    walletClient,
+    depositTXID,
+    token0,
+    token1,
+    pair.stable,
+    sendAmount0,
+    sendAmount1,
+    sendAmount0Min,
+    sendAmount1Min,
+    deadline
+  );
 };
