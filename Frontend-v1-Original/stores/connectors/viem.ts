@@ -1,56 +1,29 @@
 import {
   createPublicClient,
   http,
-  fallback,
   ContractFunctionConfig,
   MulticallParameters,
 } from "viem";
-import { canto } from "viem/chains";
+import { pulsechain } from "wagmi/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
 import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 
-// invalid chain id for signer error thrown by chandrastation for eth_getTransactionReceipt method
-// neobase sends back empty data when can't fetch, this breaks the fallback
-const veloci = http(process.env.NEXT_PUBLIC_RPC_URL!);
-const plexnode = http("https://mainnode.plexnode.org:8545");
-const nodestake = http("https://jsonrpc.canto.nodestake.top");
-const slingshot = http("https://canto.slingshot.finance");
-// const chandrastation = http("https://canto.evm.chandrastation.com/");
-// const neobase = http("https://canto.neobase.one");
+const pulsechainRpc = http("https://rpc.pulsechain.com");
 
 // used in store for reading blockchain
 const client = createPublicClient({
-  chain: canto,
-  transport: fallback([veloci, plexnode, nodestake, slingshot], {
-    rank: {
-      interval: 30_000,
-    },
-  }),
+  chain: pulsechain,
+  transport: pulsechainRpc,
 });
 
 // rainbow kit set up
 const { chains, publicClient } = configureChains(
-  [canto],
+  [pulsechain],
   [
     jsonRpcProvider({
       rpc: () => ({
-        http: process.env.NEXT_PUBLIC_RPC_URL!,
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: () => ({
-        http: "https://mainnode.plexnode.org:8545",
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: () => ({
-        http: "https://jsonrpc.canto.nodestake.top",
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: () => ({
-        http: "https://canto.slingshot.finance",
+        http: "https://rpc.pulsechain.com",
       }),
     }),
   ]
