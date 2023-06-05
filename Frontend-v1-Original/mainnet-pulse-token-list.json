@@ -54,5 +54,21 @@
     "logoURI": "https://assets.coingecko.com/coins/images/10103/large/HEX-logo.png",
     "name": "HEX",
     "symbol": "HEX"
+  },
+  {
+    "address": "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
+    "name": "Velocimeter option FLOW",
+    "symbol": "oFLOW"
+  },
+  {
+    "address": "0x39b9D781dAD0810D07E24426c876217218Ad353D",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
+    "name": "Velocimeter FLOW",
+    "symbol": "FLOW"
   }
 ]
