@@ -4,9 +4,6 @@ import viemClient from "../../stores/connectors/viem";
 import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
 
 const autoBribesAddresses = [
-  "0x1fc94f96fdd3Fc51E39575161BD6ed920c03fFA0",
-  "0x5318FfE879e6027fD009beA6837E21F40EEf3903",
-  "0xb091b7816112d870609Ca1c6E64bD140c189BA34",
   "0x0CD1b0fAB074727D7504c9Dc23f131598cFE5427",
   "0xd855dbbb8ca20b6df9459eea613d7645c8f8ad93",
   "0xb53350884016E9b398F9F43c4B1C62d87D809DA7",
