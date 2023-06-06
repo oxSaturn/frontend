@@ -10,6 +10,8 @@ import {
 } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import * as Toast from "@radix-ui/react-toast";
 
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
@@ -31,6 +33,14 @@ const clientSideEmotionCache = createEmotionCache();
 
 export interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache;
+}
+
+function RadixProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Toast.Provider swipeDirection="right">
+      <Tooltip.Provider delayDuration={200}>{children}</Tooltip.Provider>
+    </Toast.Provider>
+  );
 }
 
 console.log("<<<<<<<<<<<<< flow >>>>>>>>>>>>>");
@@ -71,26 +81,28 @@ export default function MyApp({
           />
         </Head>
         <ThemeProvider theme={themeConfig}>
-          <WagmiConfig config={config}>
-            <RainbowKitProvider
-              chains={chains}
-              theme={rainbowKitDarkTheme({
-                accentColor: "rgb(0, 243, 203)",
-                accentColorForeground: "#222222",
-                borderRadius: "small",
-                fontStack: "rounded",
-                overlayBlur: "small",
-              })}
-            >
-              {accountConfigured ? (
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              ) : (
-                <Configure {...pageProps} />
-              )}
-            </RainbowKitProvider>
-          </WagmiConfig>
+          <RadixProvider>
+            <WagmiConfig config={config}>
+              <RainbowKitProvider
+                chains={chains}
+                theme={rainbowKitDarkTheme({
+                  accentColor: "rgb(0, 243, 203)",
+                  accentColorForeground: "#222222",
+                  borderRadius: "small",
+                  fontStack: "rounded",
+                  overlayBlur: "small",
+                })}
+              >
+                {accountConfigured ? (
+                  <Layout>
+                    <Component {...pageProps} />
+                  </Layout>
+                ) : (
+                  <Configure {...pageProps} />
+                )}
+              </RainbowKitProvider>
+            </WagmiConfig>
+          </RadixProvider>
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
