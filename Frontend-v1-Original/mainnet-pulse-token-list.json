@@ -10,7 +10,7 @@
   {
     "address": "0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07",
     "chainId": 369,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
     "name": "Circle USD Coin",
     "symbol": "USDC"
@@ -42,7 +42,7 @@
   {
     "address": "0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f",
     "chainId": 369,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
     "name": "Tether USD",
     "symbol": "USDT"
