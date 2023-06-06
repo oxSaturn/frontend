@@ -14,6 +14,7 @@ import {
   type WriteContractReturnType,
   isAddress,
   BaseError,
+  Address,
 } from "viem";
 import { pulsechain } from "viem/chains";
 import { getAccount, getWalletClient } from "@wagmi/core";
@@ -46,13 +47,13 @@ import {
   VestNFT,
   GovToken,
   Votes,
-  QuoteSwapResponse,
   Bribe,
   VeDistReward,
   ITransaction,
   Gauge,
   hasGauge,
   TransactionStatus,
+  LegacyQuote,
 } from "./types/types";
 
 import stores from ".";
@@ -1364,7 +1365,7 @@ class Store {
       this.setStore({ govToken: this._getGovTokenBase() });
       this.setStore({ veToken: this._getVeTokenBase() });
       this.setStore({ baseAssets: await this._getBaseAssets() });
-      // this.setStore({ routeAssets: await this._getRouteAssets() }); // We dont need it because we use firebird router
+      this.setStore({ routeAssets: await this._getRouteAssets() }); // We need it because we use firebird router
       this.setStore({ pairs: await this._getPairs() });
       this.setStore({ swapAssets: this._getSwapAssets() });
       this.setStore({ updateDate: await stores.helper.getActivePeriod() });
@@ -3618,6 +3619,36 @@ class Store {
     }
   };
 
+  // quoteSwap = async (payload: {
+  //   type: string;
+  //   content: {
+  //     fromAsset: BaseAsset;
+  //     toAsset: BaseAsset;
+  //     fromAmount: string;
+  //     slippage: number;
+  //   };
+  // }) => {
+  //   const address = getAccount().address;
+  //   if (!address) throw new Error("no address");
+  //   try {
+  //     const res = await fetch("/api/firebird-router", {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         payload,
+  //         address,
+  //       }),
+  //     });
+  //     const resJson = (await res.json()) as QuoteSwapResponse;
+
+  //     const returnValue = resJson;
+
+  //     this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, returnValue);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, null);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
   quoteSwap = async (payload: {
     type: string;
     content: {
@@ -3627,19 +3658,275 @@ class Store {
       slippage: number;
     };
   }) => {
-    const address = getAccount().address;
-    if (!address) throw new Error("no address");
     try {
-      const res = await fetch("/api/firebird-router", {
-        method: "POST",
-        body: JSON.stringify({
-          payload,
-          address,
-        }),
-      });
-      const resJson = (await res.json()) as QuoteSwapResponse;
+      const walletClient = await getWalletClient({ chainId: pulsechain.id });
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
 
-      const returnValue = resJson;
+      // route assets are USDC, WCANTO and FLOW
+      const routeAssets = this.getStore("routeAssets");
+      const { fromAsset, toAsset, fromAmount } = payload.content;
+
+      const routerContract = {
+        abi: CONTRACTS.ROUTER_ABI,
+        address: CONTRACTS.ROUTER_ADDRESS,
+      } as const;
+
+      const sendFromAmount = BigNumber(fromAmount)
+        .times(10 ** fromAsset.decimals)
+        .toFixed();
+
+      if (
+        !fromAsset ||
+        !toAsset ||
+        !fromAmount ||
+        !fromAsset.address ||
+        !toAsset.address ||
+        fromAmount === ""
+      ) {
+        return null;
+      }
+
+      let addy0 = fromAsset.address;
+      let addy1 = toAsset.address;
+
+      if (fromAsset.address === NATIVE_TOKEN.symbol) {
+        // @ts-expect-error W_NATIVE_ADDRESS is of type `0x${string}`
+        addy0 = W_NATIVE_ADDRESS;
+      }
+      if (toAsset.address === NATIVE_TOKEN.symbol) {
+        // @ts-expect-error W_NATIVE_ADDRESS is of type `0x${string}`
+        addy1 = W_NATIVE_ADDRESS;
+      }
+
+      const includesRouteAddress = routeAssets.filter((asset) => {
+        return (
+          asset.address.toLowerCase() == addy0.toLowerCase() ||
+          asset.address.toLowerCase() == addy1.toLowerCase()
+        );
+      });
+
+      let amountOuts: {
+        routes: { from: Address; to: Address; stable: boolean }[];
+        routeAsset: RouteAsset | null;
+        receiveAmounts?: string[];
+        finalValue?: string;
+      }[] = [];
+      // In case router multicall will break make sure you have stable pair with some $$ in it
+      if (includesRouteAddress.length === 0) {
+        amountOuts = routeAssets
+          .map((routeAsset) => {
+            return [
+              {
+                routes: [
+                  {
+                    from: addy0,
+                    to: routeAsset.address,
+                    stable: true,
+                  },
+                  {
+                    from: routeAsset.address,
+                    to: addy1,
+                    stable: true,
+                  },
+                ],
+                routeAsset: routeAsset,
+              },
+              {
+                routes: [
+                  {
+                    from: addy0,
+                    to: routeAsset.address,
+                    stable: false,
+                  },
+                  {
+                    from: routeAsset.address,
+                    to: addy1,
+                    stable: false,
+                  },
+                ],
+                routeAsset: routeAsset,
+              },
+              {
+                routes: [
+                  {
+                    from: addy0,
+                    to: routeAsset.address,
+                    stable: true,
+                  },
+                  {
+                    from: routeAsset.address,
+                    to: addy1,
+                    stable: false,
+                  },
+                ],
+                routeAsset: routeAsset,
+              },
+              {
+                routes: [
+                  {
+                    from: addy0,
+                    to: routeAsset.address,
+                    stable: false,
+                  },
+                  {
+                    from: routeAsset.address,
+                    to: addy1,
+                    stable: true,
+                  },
+                ],
+                routeAsset: routeAsset,
+              },
+            ];
+          })
+          .flat();
+      }
+
+      amountOuts.push({
+        routes: [
+          {
+            from: addy0,
+            to: addy1,
+            stable: true,
+          },
+        ],
+        routeAsset: null,
+      });
+
+      amountOuts.push({
+        routes: [
+          {
+            from: addy0,
+            to: addy1,
+            stable: false,
+          },
+        ],
+        routeAsset: null,
+      });
+
+      const amountsOutCalls = amountOuts.map((route) => {
+        return {
+          ...routerContract,
+          functionName: "getAmountsOut",
+          args: [BigInt(sendFromAmount), route.routes],
+        } as const;
+      });
+
+      const amountsOutResult = await viemClient.multicall({
+        allowFailure: true,
+        contracts: amountsOutCalls,
+      });
+
+      const results = amountsOutResult
+        .filter((result) => result.status === "success")
+        .map((result) => result.result as bigint[]);
+
+      let receiveAmounts: string[][] = [];
+
+      for (const returnValue of results) {
+        if (!returnValue) {
+          receiveAmounts.push([sendFromAmount, "0", "0"]);
+          continue;
+        }
+        const arr = returnValue.map((bigint) => {
+          return bigint.toString();
+        });
+        // const arr = returnValue.map((bigint) => {
+        //   return web3.utils.hexToNumberString(bignumber.hex);
+        // });
+        receiveAmounts.push(arr);
+      }
+
+      for (let i = 0; i < receiveAmounts.length; i++) {
+        amountOuts[i].receiveAmounts = receiveAmounts[i];
+        amountOuts[i].finalValue = BigNumber(
+          receiveAmounts[i][receiveAmounts[i].length - 1]
+        )
+          .div(10 ** toAsset.decimals)
+          .toFixed(toAsset.decimals);
+      }
+
+      // const bestAmountOut = amountOuts
+      //   .filter((ret) => {
+      //     return ret != null;
+      //   })
+      //   .reduce((best, current) => {
+      //     return BigNumber(best.finalValue).gt(current.finalValue)
+      //       ? best
+      //       : current;
+      //   }, 0);
+      const bestAmountOut = amountOuts.reduce((prev, current) => {
+        return BigNumber(prev.finalValue ?? "0").gt(current.finalValue ?? "0")
+          ? prev
+          : current;
+      });
+
+      if (!bestAmountOut) {
+        this.emitter.emit(
+          ACTIONS.ERROR,
+          "No valid route found to complete swap"
+        );
+        return null;
+      }
+
+      let totalRatio = "1";
+
+      for (let i = 0; i < bestAmountOut.routes.length; i++) {
+        if (bestAmountOut.routes[i].stable == true) {
+        } else {
+          // const reserves = await routerContract.methods
+          //   .getReserves(
+          //     bestAmountOut.routes[i].from,
+          //     bestAmountOut.routes[i].to,
+          //     bestAmountOut.routes[i].stable
+          //   )
+          //   .call();
+          const reserves = await viemClient.readContract({
+            ...routerContract,
+            functionName: "getReserves",
+            args: [
+              bestAmountOut.routes[i].from,
+              bestAmountOut.routes[i].to,
+              bestAmountOut.routes[i].stable,
+            ],
+          });
+          let amountIn = "0";
+          let amountOut = "0";
+          if (i == 0) {
+            amountIn = sendFromAmount;
+            amountOut = bestAmountOut.receiveAmounts
+              ? bestAmountOut.receiveAmounts[i + 1]
+              : "0";
+          } else {
+            amountIn = bestAmountOut.receiveAmounts
+              ? bestAmountOut.receiveAmounts[i]
+              : "0";
+            amountOut = bestAmountOut.receiveAmounts
+              ? bestAmountOut.receiveAmounts[i + 1]
+              : "0";
+          }
+
+          const amIn = BigNumber(amountIn).div(reserves[0].toString());
+          const amOut = BigNumber(amountOut).div(reserves[1].toString());
+          const ratio = BigNumber(amOut).div(amIn);
+
+          totalRatio = BigNumber(totalRatio).times(ratio).toFixed(18);
+        }
+      }
+
+      const priceImpact = BigNumber(1).minus(totalRatio).times(100).toFixed(18);
+
+      const returnValue = {
+        inputs: {
+          fromAmount: fromAmount,
+          fromAsset: fromAsset,
+          toAsset: toAsset,
+        },
+        output: bestAmountOut,
+        priceImpact: priceImpact,
+      };
 
       this.emitter.emit(ACTIONS.QUOTE_SWAP_RETURNED, returnValue);
     } catch (ex) {
@@ -3652,9 +3939,11 @@ class Store {
   swap = async (payload: {
     type: string;
     content: {
-      quote: QuoteSwapResponse;
+      quote: LegacyQuote;
       fromAsset: BaseAsset;
       toAsset: BaseAsset;
+      fromAmount: string;
+      slippage: string;
     };
   }) => {
     try {
@@ -3666,11 +3955,8 @@ class Store {
 
       const [account] = await walletClient.getAddresses();
 
-      const { quote, fromAsset, toAsset } = payload.content;
-
-      const fromAmount = BigNumber(quote.maxReturn.totalFrom)
-        .div(10 ** fromAsset.decimals)
-        .toFixed(fromAsset.decimals);
+      const { fromAsset, toAsset, fromAmount, quote, slippage } =
+        payload.content;
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
       let allowanceTXID = this.getTXUUID();
@@ -3700,11 +3986,7 @@ class Store {
 
       // CHECK ALLOWANCES AND SET TX DISPLAY
       if (fromAsset.address !== NATIVE_TOKEN.symbol) {
-        allowance = await this._getFirebirdSwapAllowance(
-          fromAsset,
-          account,
-          quote
-        );
+        allowance = await this._getSwapAllowance(fromAsset, account);
         if (!allowance) throw new Error("Couldn't fetch allowance");
         if (BigNumber(allowance).lt(fromAmount)) {
           this.emitter.emit(ACTIONS.TX_STATUS, {
@@ -3734,81 +4016,81 @@ class Store {
           walletClient,
           allowanceTXID,
           fromAsset.address,
-          quote.encodedData.router
+          CONTRACTS.ROUTER_ADDRESS
         );
       }
 
       // SUBMIT SWAP TRANSACTION
-      if (
-        quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-      ) {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
-          const txHash = await walletClient.sendTransaction({
+      const sendSlippage = BigNumber(100).minus(slippage).div(100);
+      const sendFromAmount = BigNumber(fromAmount)
+        .times(10 ** fromAsset.decimals)
+        .toFixed(0);
+      const sendMinAmountOut = BigNumber(quote.output.finalValue ?? "0")
+        .times(10 ** toAsset.decimals)
+        .times(sendSlippage)
+        .toFixed(0);
+      const deadline = "" + moment().add(600, "seconds").unix();
+
+      if (fromAsset.address === NATIVE_TOKEN.address) {
+        const writeSwapFromEth = async () => {
+          const { request } = await viemClient.simulateContract({
             account,
-            to: quote.encodedData.router,
-            value: BigInt(quote.maxReturn.totalFrom),
-            data: quote.encodedData.data,
-            gasPrice: BigInt(quote.maxReturn.gasPrice),
-            chain: pulsechain,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            abi: CONTRACTS.ROUTER_ABI,
+            functionName: "swapExactETHForTokens",
+            args: [
+              BigInt(sendMinAmountOut),
+              quote.output.routes,
+              account,
+              BigInt(deadline),
+            ],
+            value: BigInt(sendFromAmount),
           });
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
+          const txHash = await walletClient.writeContract(request);
+          return txHash;
+        };
+
+        await this._writeContractWrapper(swapTXID, writeSwapFromEth);
+      } else if (toAsset.address === NATIVE_TOKEN.address) {
+        const writeSwapForEth = async () => {
+          const { request } = await viemClient.simulateContract({
+            account,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            abi: CONTRACTS.ROUTER_ABI,
+            functionName: "swapExactTokensForETH",
+            args: [
+              BigInt(sendFromAmount),
+              BigInt(sendMinAmountOut),
+              quote.output.routes,
+              account,
+              BigInt(deadline),
+            ],
           });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: swapTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: swapTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: swapTXID,
-              error: error,
-            });
-          }
-        }
+          const txHash = await walletClient.writeContract(request);
+          return txHash;
+        };
+
+        await this._writeContractWrapper(swapTXID, writeSwapForEth);
       } else {
-        try {
-          this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
-          const txHash = await walletClient.sendTransaction({
+        const writeSwap = async () => {
+          const { request } = await viemClient.simulateContract({
             account,
-            to: quote.encodedData.router,
-            value: undefined,
-            data: quote.encodedData.data,
-            gasPrice: BigInt(quote.maxReturn.gasPrice),
-            chain: pulsechain,
+            address: CONTRACTS.ROUTER_ADDRESS,
+            abi: CONTRACTS.ROUTER_ABI,
+            functionName: "swapExactTokensForTokens",
+            args: [
+              BigInt(sendFromAmount),
+              BigInt(sendMinAmountOut),
+              quote.output.routes,
+              account,
+              BigInt(deadline),
+            ],
           });
-          const receipt = await viemClient.waitForTransactionReceipt({
-            hash: txHash,
-          });
-          if (receipt.status === "success") {
-            this.emitter.emit(ACTIONS.TX_CONFIRMED, {
-              uuid: swapTXID,
-              txHash: receipt.transactionHash,
-            });
-          }
-        } catch (error) {
-          if (!(error as Error).toString().includes("-32601")) {
-            if ((error as Error).message) {
-              this.emitter.emit(ACTIONS.TX_REJECTED, {
-                uuid: swapTXID,
-                error: this._mapError((error as Error).message),
-              });
-            }
-            this.emitter.emit(ACTIONS.TX_REJECTED, {
-              uuid: swapTXID,
-              error: error,
-            });
-          }
-        }
+          const txHash = await walletClient.writeContract(request);
+          return txHash;
+        };
+
+        await this._writeContractWrapper(swapTXID, writeSwap);
       }
 
       this._getSpecificAssetInfo(account, fromAsset.address);
@@ -3821,6 +4103,178 @@ class Store {
       this.emitter.emit(ACTIONS.ERROR, ex);
     }
   };
+  // swap = async (payload: {
+  //   type: string;
+  //   content: {
+  //     quote: QuoteSwapResponse;
+  //     fromAsset: BaseAsset;
+  //     toAsset: BaseAsset;
+  //   };
+  // }) => {
+  //   try {
+  //     const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
+
+  //     const [account] = await walletClient.getAddresses();
+
+  //     const { quote, fromAsset, toAsset } = payload.content;
+
+  //     const fromAmount = BigNumber(quote.maxReturn.totalFrom)
+  //       .div(10 ** fromAsset.decimals)
+  //       .toFixed(fromAsset.decimals);
+
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let swapTXID = this.getTXUUID();
+
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Swap ${fromAsset.symbol} for ${toAsset.symbol}`,
+  //       type: "Swap",
+  //       verb: "Swap Successful",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${fromAsset.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: swapTXID,
+  //           description: `Swap ${formatCurrency(fromAmount)} ${
+  //             fromAsset.symbol
+  //           } for ${toAsset.symbol}`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
+
+  //     let allowance: string | null = "0";
+
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     if (fromAsset.address !== NATIVE_TOKEN.symbol) {
+  //       allowance = await this._getFirebirdSwapAllowance(
+  //         fromAsset,
+  //         account,
+  //         quote
+  //       );
+  //       if (!allowance) throw new Error("Couldn't fetch allowance");
+  //       if (BigNumber(allowance).lt(fromAmount)) {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowanceTXID,
+  //           description: `Allow the router to spend your ${fromAsset.symbol}`,
+  //         });
+  //       } else {
+  //         this.emitter.emit(ACTIONS.TX_STATUS, {
+  //           uuid: allowanceTXID,
+  //           description: `Allowance on ${fromAsset.symbol} sufficient`,
+  //           status: "DONE",
+  //         });
+  //       }
+  //     } else {
+  //       allowance = MAX_UINT256;
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${fromAsset.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
+
+  //     if (!allowance) throw new Error("Couldn't fetch allowance");
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(fromAmount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         fromAsset.address,
+  //         quote.encodedData.router
+  //       );
+  //     }
+
+  //     // SUBMIT SWAP TRANSACTION
+  //     if (
+  //       quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  //     ) {
+  //       try {
+  //         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+  //         const txHash = await walletClient.sendTransaction({
+  //           account,
+  //           to: quote.encodedData.router,
+  //           value: BigInt(quote.maxReturn.totalFrom),
+  //           data: quote.encodedData.data,
+  //           gasPrice: BigInt(quote.maxReturn.gasPrice),
+  //           chain: pulsechain,
+  //         });
+  //         const receipt = await viemClient.waitForTransactionReceipt({
+  //           hash: txHash,
+  //         });
+  //         if (receipt.status === "success") {
+  //           this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+  //             uuid: swapTXID,
+  //             txHash: receipt.transactionHash,
+  //           });
+  //         }
+  //       } catch (error) {
+  //         if (!(error as Error).toString().includes("-32601")) {
+  //           if ((error as Error).message) {
+  //             this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //               uuid: swapTXID,
+  //               error: this._mapError((error as Error).message),
+  //             });
+  //           }
+  //           this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //             uuid: swapTXID,
+  //             error: error,
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       try {
+  //         this.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+  //         const txHash = await walletClient.sendTransaction({
+  //           account,
+  //           to: quote.encodedData.router,
+  //           value: undefined,
+  //           data: quote.encodedData.data,
+  //           gasPrice: BigInt(quote.maxReturn.gasPrice),
+  //           chain: pulsechain,
+  //         });
+  //         const receipt = await viemClient.waitForTransactionReceipt({
+  //           hash: txHash,
+  //         });
+  //         if (receipt.status === "success") {
+  //           this.emitter.emit(ACTIONS.TX_CONFIRMED, {
+  //             uuid: swapTXID,
+  //             txHash: receipt.transactionHash,
+  //           });
+  //         }
+  //       } catch (error) {
+  //         if (!(error as Error).toString().includes("-32601")) {
+  //           if ((error as Error).message) {
+  //             this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //               uuid: swapTXID,
+  //               error: this._mapError((error as Error).message),
+  //             });
+  //           }
+  //           this.emitter.emit(ACTIONS.TX_REJECTED, {
+  //             uuid: swapTXID,
+  //             error: error,
+  //           });
+  //         }
+  //       }
+  //     }
+
+  //     this._getSpecificAssetInfo(account, fromAsset.address);
+  //     this._getSpecificAssetInfo(account, toAsset.address);
+  //     this._getPairInfo(account);
+
+  //     this.emitter.emit(ACTIONS.SWAP_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   wrapOrUnwrap = async (payload: {
     type: string;
@@ -3928,36 +4382,17 @@ class Store {
     }
   };
 
-  _getFirebirdSwapAllowance = async (
-    token: BaseAsset,
-    address: `0x${string}`,
-    quote: QuoteSwapResponse
-  ) => {
-    try {
-      const allowance = await viemClient.readContract({
-        address: token.address,
-        abi: CONTRACTS.ERC20_ABI,
-        functionName: "allowance",
-        args: [address, quote.encodedData.router],
-      });
-
-      return formatUnits(allowance, token.decimals);
-    } catch (ex) {
-      console.error(ex);
-      return null;
-    }
-  };
-
-  // _getSwapAllowance = async (
+  // _getFirebirdSwapAllowance = async (
   //   token: BaseAsset,
-  //   account: { address: string }
+  //   address: `0x${string}`,
+  //   quote: QuoteSwapResponse
   // ) => {
   //   try {
   //     const allowance = await viemClient.readContract({
-  //       address: token.address ,
+  //       address: token.address,
   //       abi: CONTRACTS.ERC20_ABI,
   //       functionName: "allowance",
-  //       args: [account , CONTRACTS.ROUTER_ADDRESS],
+  //       args: [address, quote.encodedData.router],
   //     });
 
   //     return formatUnits(allowance, token.decimals);
@@ -3966,6 +4401,22 @@ class Store {
   //     return null;
   //   }
   // };
+
+  _getSwapAllowance = async (token: BaseAsset, account: `0x${string}`) => {
+    try {
+      const allowance = await viemClient.readContract({
+        address: token.address,
+        abi: CONTRACTS.ERC20_ABI,
+        functionName: "allowance",
+        args: [account, CONTRACTS.ROUTER_ADDRESS],
+      });
+
+      return formatUnits(allowance, token.decimals);
+    } catch (ex) {
+      console.error(ex);
+      return null;
+    }
+  };
 
   getVestNFTs = async () => {
     try {
