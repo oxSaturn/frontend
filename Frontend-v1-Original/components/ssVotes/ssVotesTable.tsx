@@ -471,37 +471,25 @@ const VotesRow = memo(function VotesRow({
           </Typography>
         </TableCell>
         <TableCell align="right">
-          {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
+          {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which equalss pair.gauge.bribes */}
           {row.gaugebribes ? (
-            row.gaugebribes.map((bribe) => {
-              return bribe.rewardAmount !== undefined ? (
-                <div
-                  className="flex items-center justify-end"
-                  key={bribe.token.symbol}
+            row.gaugebribes.map((bribe) => (
+              <div
+                className="flex items-center justify-end"
+                key={bribe.token.symbol}
+              >
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {formatCurrency(bribe.rewardAmmount)}
+                </Typography>
+                <Typography
+                  variant="h5"
+                  className="text-xs font-extralight"
+                  color="textSecondary"
                 >
-                  <Typography variant="h2" className="text-xs font-extralight">
-                    {formatCurrency(bribe.rewardAmount)}
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    className="text-xs font-extralight"
-                    color="textSecondary"
-                  >
-                    {bribe.token.symbol}
-                  </Typography>
-                </div>
-              ) : (
-                <div className="flex items-center justify-end max-[1000px]:block">
-                  <Skeleton
-                    variant="rectangular"
-                    width={120}
-                    height={16}
-                    style={{ marginTop: "1px", marginBottom: "1px" }}
-                    key={bribe.token.symbol}
-                  />
-                </div>
-              );
-            })
+                  {bribe.token.symbol}
+                </Typography>
+              </div>
+            ))
           ) : (
             <>
               <div className="flex items-center justify-end max-[1000px]:block">
