@@ -14,6 +14,7 @@ import { wethABI } from "./wethABI";
 import { autoBribeABI } from "./autoBribeABI";
 import { fairAuctionABI } from "./fairAuctionABI";
 export { oFlowABI } from "./oFlowABI";
+export { airdropClaimABI } from "./airdropClaimABI";
 
 export default {
   erc20ABI,
