@@ -29,6 +29,7 @@ import stores from "../../stores";
 import {
   ACTIONS,
   ETHERSCAN_URL,
+  NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
@@ -295,13 +296,11 @@ export default function LiquidityManage() {
 
     let addy0 = assetA.address;
     let addy1 = assetB.address;
-    // @ts-expect-error workaround for CANTO
-    if (assetA.address === "CANTO") {
+    if (assetA.address === NATIVE_TOKEN.address) {
       // @ts-expect-error workaround for CANTO
       addy0 = W_NATIVE_ADDRESS;
     }
-    // @ts-expect-error workaround for CANTO
-    if (assetB.address === "CANTO") {
+    if (assetB.address === NATIVE_TOKEN.address) {
       // @ts-expect-error workaround for CANTO
       addy1 = W_NATIVE_ADDRESS;
     }
@@ -2052,7 +2051,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="CANTO, NOTE, 0x..."
+            placeholder="PLS, HEX, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -2091,7 +2090,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="CANTO, NOTE, 0x..."
+            placeholder="PLS, HEX, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{

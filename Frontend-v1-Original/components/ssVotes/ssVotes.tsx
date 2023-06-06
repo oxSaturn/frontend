@@ -418,7 +418,7 @@ export default function Votes() {
               className={classes.searchContainer}
               variant="outlined"
               fullWidth
-              placeholder="CANTO, NOTE, 0x..."
+              placeholder="PLS, HEX, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{

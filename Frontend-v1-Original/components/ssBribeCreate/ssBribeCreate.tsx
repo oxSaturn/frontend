@@ -17,7 +17,11 @@ import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
 import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
+import {
+  ACTIONS,
+  ETHERSCAN_URL,
+  NATIVE_TOKEN,
+} from "../../stores/constants/constants";
 import { BaseAsset, Gauge, hasGauge } from "../../stores/types/types";
 
 import classes from "./ssBribeCreate.module.css";
@@ -36,8 +40,7 @@ export default function BribeCreate() {
   const ssUpdated = async () => {
     const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
     let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
-      // @ts-expect-error this is a workaround for the CANTO token
-      return option.address !== "CANTO";
+      return option.address !== NATIVE_TOKEN.address;
     });
     const storePairs = stores.stableSwapStore.getStore("pairs");
     setAssetOptions(filteredStoreAssetOptions);
@@ -75,8 +78,7 @@ export default function BribeCreate() {
     const assetsUpdated = () => {
       const baseAsset = stores.stableSwapStore.getStore("baseAssets");
       let filteredStoreAssetOptions = baseAsset.filter((option) => {
-        // @ts-expect-error this is a workaround for the CANTO token
-        return option.address !== "CANTO";
+        return option.address !== NATIVE_TOKEN.address;
       });
       setAssetOptions(filteredStoreAssetOptions);
     };
@@ -395,7 +397,7 @@ function GaugeSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="CANTO, NOTE, 0x..."
+            placeholder="PLS, HEX, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -627,7 +629,7 @@ function AssetSelect({
               autoFocus
               variant="outlined"
               fullWidth
-              placeholder="CANTO, NOTE, 0x..."
+              placeholder="PLS, HEX, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{
@@ -666,7 +668,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="CANTO, NOTE, 0x..."
+            placeholder="PLS, HEX, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{

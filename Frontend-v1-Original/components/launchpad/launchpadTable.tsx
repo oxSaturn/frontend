@@ -123,7 +123,7 @@ const EnhancedTableToolbar = (props: LaunchpadToolbarProps) => {
         className="flex w-full flex-[1]"
         variant="outlined"
         fullWidth
-        placeholder="CANTO, NOTE, 0x..."
+        placeholder="PLS, HEX, 0x..."
         value={search}
         onChange={onSearchChanged}
         InputProps={{
