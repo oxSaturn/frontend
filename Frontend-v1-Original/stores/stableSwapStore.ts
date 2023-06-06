@@ -3839,7 +3839,7 @@ class Store {
         toAsset: { address: toAddress, symbol: toSymbol },
         fromAmount,
       } = payload.content;
-      const isWrap = fromSymbol === "pulsechain";
+      const isWrap = fromSymbol === "PLS";
       const action = isWrap ? "Wrap" : "Unwrap";
 
       // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
