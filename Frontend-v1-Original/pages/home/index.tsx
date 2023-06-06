@@ -20,7 +20,7 @@ function Home() {
               variant="h1"
               className="relative bottom-0 mb-5 animate-titleAnim font-['Monument'] text-lg font-thin uppercase tracking-wider text-cantoGreen delay-[0s]"
             >
-              Canto Liquidity Layer
+              Pulse Liquidity Layer
             </Typography>
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -28,19 +28,19 @@ function Home() {
               variant="h1"
               className="relative bottom-0 mb-6 animate-titleAnim text-center font-['Monument'] text-3xl delay-200 sm:text-4xl md:mb-8 md:text-6xl"
             >
-              Low cost stable coin swaps
+              Low cost coin swaps
             </Typography>
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <Grid container spacing={2}>
               <Grid item lg={6} md={6} sm={12} xs={12}>
                 <Button
-                  className="relative bottom-0 min-w-full animate-titleAnim bg-deepBlue pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-secondaryGray delay-[400ms] max-md:float-none max-md:m-0 max-md:w-full"
+                  className="relative bottom-0 min-w-full animate-titleAnim bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-cantoGreen transition-colors delay-[600ms] max-md:float-none max-md:m-0 max-md:w-full"
                   onClick={() =>
-                    scrollTo({ top: 1000, left: 0, behavior: "smooth" })
+                    window.open("http://launch.velocimeter.xyz/", "_blank")
                   }
                 >
-                  Learn More
+                  Launchpad
                 </Button>
               </Grid>
               <Grid item lg={6} md={6} sm={12} xs={12}>
@@ -49,6 +49,16 @@ function Home() {
                   onClick={() => router.push("/swap")}
                 >
                   Enter App
+                </Button>
+              </Grid>
+              <Grid item lg={6} md={6} sm={12} xs={12}>
+                <Button
+                  className="relative bottom-0 min-w-full animate-titleAnim bg-deepBlue pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-secondaryGray delay-[400ms] max-md:float-none max-md:m-0 max-md:w-full"
+                  onClick={() =>
+                    scrollTo({ top: 1000, left: 0, behavior: "smooth" })
+                  }
+                >
+                  Learn More
                 </Button>
               </Grid>
             </Grid>
@@ -75,9 +85,9 @@ function Home() {
               variant="body1"
               className="mb-5 text-sm text-white sm:text-base md:text-lg"
             >
-              Velocimeter officially launched in January 2023 with a collective
+              Velocimeter officially launched in June 2023 with a collective
               goal of fair and balanced access to DeFi. Velocimeter is a
-              decentralized exchange that has launched on the Canto network with
+              decentralized exchange that has launched on the Pulse network with
               low fees, near 0 slippage on correlated assets and a strong focus
               on secondary markets for tokenized locks as NFTs.
             </Typography>
