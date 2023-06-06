@@ -26,6 +26,9 @@ function Navigation() {
 
   useEffect(() => {
     const activePath = router.asPath;
+    if (activePath.includes("claim")) {
+      setActive("claim");
+    }
     if (activePath.includes("home")) {
       setActive("home");
     }
@@ -55,6 +58,7 @@ function Navigation() {
   const renderNavs = () => {
     return (
       <>
+        {/* {renderSubNav("Claim", "claim")} */}
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
         {renderSubNav("Vest", "vest")}

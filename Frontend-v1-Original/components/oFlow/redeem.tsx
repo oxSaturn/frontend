@@ -8,10 +8,7 @@ import {
 } from "wagmi";
 import { pulsechain } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
-import {
-  useConnectModal,
-  useAddRecentTransaction,
-} from "@rainbow-me/rainbowkit";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { InfoOutlined } from "@mui/icons-material";
 
 import * as Toast from "@radix-ui/react-toast";
@@ -53,7 +50,6 @@ export function Redeem() {
   const [toastHash, setToastHash] = useState("");
 
   const { openConnectModal } = useConnectModal();
-  const addRecentTransaction = useAddRecentTransaction();
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
@@ -137,10 +133,6 @@ export function Redeem() {
   } = useWplsApprove({
     ...approveConfig,
     onSuccess(data) {
-      addRecentTransaction({
-        hash: data.hash,
-        description: "Approve WPLS",
-      });
       setToastMessage("Transaction submitted!");
       setToastOpen(true);
       setToastHash(data.hash);
@@ -183,10 +175,6 @@ export function Redeem() {
   } = useOFlowExercise({
     ...exerciseBlotrConfig,
     onSuccess(data) {
-      addRecentTransaction({
-        hash: data.hash,
-        description: "Redeemed FLOW",
-      });
       setToastMessage("Transaction submitted!");
       setToastOpen(true);
       setToastHash(data.hash);
@@ -321,7 +309,7 @@ export function Redeem() {
                 className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
                 onClick={() => switchNetwork?.()}
               >
-                Switch to canto
+                Switch to pulse
               </button>
             ) : (
               <button

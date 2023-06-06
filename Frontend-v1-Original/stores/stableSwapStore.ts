@@ -3101,6 +3101,8 @@ class Store {
         args: [addy0, addy1, pair.stable, sendAmount0, sendAmount1],
       });
 
+      console.log(liquidity);
+
       const returnVal = {
         inputs: {
           token0,
