@@ -162,7 +162,7 @@ export function Claim() {
         <Toast.Action
           className="[grid-area:_action]"
           asChild
-          altText="Look on tuber build with hash"
+          altText="Look on pulsechain explorer"
         >
           <a
             href={`https://scan.pulsechain.com/tx/${toastHash}`}

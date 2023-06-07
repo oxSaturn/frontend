@@ -388,15 +388,15 @@ export function Redeem() {
         <Toast.Action
           className="[grid-area:_action]"
           asChild
-          altText="Look on tuber build with hash"
+          altText="Look on pulsechain explorer"
         >
           <a
-            href={`https://tuber.build/tx/${toastHash}`}
+            href={`https://scan.pulsechain.com/tx/${toastHash}`}
             target="_blank"
             rel="noreferrer noopener"
             className="text-sm text-secondary underline transition-colors hover:text-primary hover:no-underline"
           >
-            Look on tuber.build
+            Look on pulsechain explorer
           </a>
         </Toast.Action>
       </Toast.Root>

@@ -6,7 +6,7 @@ import * as actions from "./actions";
 
 const config = {
   [pulsechain.id]: {
-    scan: "https://tuber.build/",
+    scan: "https://scan.pulsechain.com",
     contracts: contracts,
     nativeETH: {
       address: contracts.ETH_ADDRESS,
