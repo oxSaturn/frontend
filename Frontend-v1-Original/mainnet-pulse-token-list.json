@@ -55,6 +55,14 @@
     "name": "HEX",
     "symbol": "HEX"
   },
+    {
+    "address": "0x57fde0a71132198BBeC939B98976993d8D89D225",
+    "chainId": 369,
+    "decimals": 8,
+    "logoURI": "https://assets.coingecko.com/coins/images/10103/large/HEX-logo.png",
+    "name": "HEX From Ethereum",
+    "symbol": "eHEX"
+  },
   {
     "address": "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621",
     "chainId": 369,
