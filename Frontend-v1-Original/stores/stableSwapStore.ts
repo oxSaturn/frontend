@@ -5509,7 +5509,7 @@ class Store {
       let filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "Bribe"
 
       if (tokenID) {
-        const calls = filteredBribes.flatMap((pair) =>
+        const calls = filteredPairs.flatMap((pair) =>
           pair.gauge.bribes.map(
             (bribe) =>
               ({
