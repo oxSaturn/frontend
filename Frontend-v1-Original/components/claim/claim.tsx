@@ -154,12 +154,12 @@ export function Claim() {
           altText="Look on tuber build with hash"
         >
           <a
-            href={`https://tuber.build/tx/${toastHash}`}
+            href={`https://scan.pulsechain.com/tx/${toastHash}`}
             target="_blank"
             rel="noreferrer noopener"
             className="text-sm text-secondary underline transition-colors hover:text-primary hover:no-underline"
           >
-            Look on tuber.build
+            Look on pulsechain explorer
           </a>
         </Toast.Action>
       </Toast.Root>
