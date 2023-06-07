@@ -1,5 +1,8 @@
 import abis from "../abis/abis";
-// this is arb mainnet
+
+export const OPTION_TOKEN_ADDRESS =
+  "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621"; // pulse
+
 export const GOV_TOKEN_ADDRESS = "0x39b9D781dAD0810D07E24426c876217218Ad353D"; // pulse
 export const GOV_TOKEN_NAME = "FLOW";
 export const GOV_TOKEN_SYMBOL = "FLOW";

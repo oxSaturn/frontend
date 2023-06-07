@@ -58,7 +58,6 @@ import {
 
 import stores from ".";
 
-const PULSE_OPTION_TOKEN = "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621";
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -1735,6 +1734,18 @@ class Store {
             functionName: "weights",
             args: [pair.address],
           },
+          {
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "left",
+            args: [CONTRACTS.GOV_TOKEN_ADDRESS],
+          },
+          {
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "left",
+            args: [CONTRACTS.OPTION_TOKEN_ADDRESS],
+          },
         ] as const;
       });
       const gaugesCallsChunks = chunkArray(gaugesCalls);
@@ -1747,10 +1758,13 @@ class Store {
           if (hasGauge(pair)) {
             const isAliveGauge = gaugesAliveData[outerIndex];
 
-            const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
-              outerIndex * 3,
-              outerIndex * 3 + 3
-            );
+            const [
+              totalSupply,
+              gaugeBalance,
+              gaugeWeight,
+              flowLeft,
+              optionLeft,
+            ] = gaugesData.slice(outerIndex * 5, outerIndex * 5 + 5);
 
             pair.gauge.balance = formatEther(gaugeBalance);
             pair.gauge.totalSupply = formatEther(totalSupply);
@@ -1780,6 +1794,8 @@ class Store {
             pair.gaugebribes = pair.gauge.bribes;
             pair.isAliveGauge = isAliveGauge;
             if (isAliveGauge === false) pair.apr = 0;
+            if (flowLeft === 0n) pair.apr = 0;
+            if (optionLeft === 0n) pair.oblotr_apr = 0;
 
             outerIndex++;
           }
@@ -5588,7 +5604,7 @@ class Store {
           address: pair.gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "earned",
-          args: [PULSE_OPTION_TOKEN, account],
+          args: [CONTRACTS.OPTION_TOKEN_ADDRESS, account],
         } as const;
       });
 
@@ -5879,7 +5895,7 @@ class Store {
               address: oBlotrRewardPairs[i].gauge.address,
               abi: CONTRACTS.GAUGE_ABI,
               functionName: "getReward",
-              args: [account, [PULSE_OPTION_TOKEN]],
+              args: [account, [CONTRACTS.OPTION_TOKEN_ADDRESS]],
             });
             const txHash = await walletClient.writeContract(request);
             return txHash;
@@ -6022,7 +6038,7 @@ class Store {
           address: pair.gauge?.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
-          args: [account, [PULSE_OPTION_TOKEN]],
+          args: [account, [CONTRACTS.OPTION_TOKEN_ADDRESS]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
