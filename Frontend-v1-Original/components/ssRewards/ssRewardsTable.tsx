@@ -568,7 +568,7 @@ export default function EnhancedTable({
                                   className={`min-w-[40px] text-xs font-extralight`}
                                   color="textSecondary"
                                 >
-                                  FLOW
+                                  oFLOW
                                 </Typography>
                               </div>
                             </>
