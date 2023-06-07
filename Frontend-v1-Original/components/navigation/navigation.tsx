@@ -58,7 +58,7 @@ function Navigation() {
   const renderNavs = () => {
     return (
       <>
-        {/* {renderSubNav("Claim", "claim")} */}
+        {renderSubNav("Claim", "claim")}
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
         {renderSubNav("Vest", "vest")}
