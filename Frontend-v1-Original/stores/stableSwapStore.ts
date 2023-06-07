@@ -5637,7 +5637,7 @@ class Store {
           pair.gauge.BLOTR_rewardsEarned &&
           parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
         ) {
-          pair.rewardType = "oBLOTR_Reward";
+          pair.rewardType = "oReward";
           filteredBlotrRewards.push(pair);
         }
       }
@@ -5760,7 +5760,7 @@ class Store {
       });
 
       let oBlotrRewardPairs = (pairs as Gauge[]).filter((pair) => {
-        return pair.rewardType === "oBLOTR_Reward";
+        return pair.rewardType === "oReward";
       });
 
       let distribution = (pairs as VeDistReward[]).filter((pair) => {

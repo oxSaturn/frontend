@@ -182,7 +182,7 @@ export default function EnhancedTable({
         type: ACTIONS.CLAIM_REWARD,
         content: { pair: reward, tokenID },
       });
-    } else if (reward.rewardType === "oBLOTR_Reward") {
+    } else if (reward.rewardType === "oReward") {
       stores.dispatcher.dispatch({
         type: ACTIONS.CLAIM_BLOTR_REWARD,
         content: { pair: reward, tokenID },
@@ -230,7 +230,7 @@ export default function EnhancedTable({
                     >
                       <TableCell>
                         {isGaugeReward(row) &&
-                          ["Bribe", "Reward", "oBLOTR_Reward"].includes(
+                          ["Bribe", "Reward", "oReward"].includes(
                             row.rewardType ?? ""
                           ) && (
                             <div className="flex items-center">
@@ -439,7 +439,7 @@ export default function EnhancedTable({
                               </>
                             )}
                           {row &&
-                            row.rewardType === "oBLOTR_Reward" &&
+                            row.rewardType === "oReward" &&
                             row.gauge &&
                             row.gauge.balance &&
                             row.gauge.totalSupply && (
@@ -573,7 +573,7 @@ export default function EnhancedTable({
                               </div>
                             </>
                           )}
-                          {row && row.rewardType === "oBLOTR_Reward" && (
+                          {row && row.rewardType === "oReward" && (
                             <>
                               <div className="flex items-center justify-end">
                                 <Typography
@@ -589,7 +589,7 @@ export default function EnhancedTable({
                                   className={`min-w-[40px] text-xs font-extralight`}
                                   color="textSecondary"
                                 >
-                                  oBLOTR
+                                  oFLOW
                                 </Typography>
                               </div>
                             </>
