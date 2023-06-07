@@ -85,7 +85,7 @@ export function Claim() {
   const isLoading =
     isLoadingClaimable || isPreparingClaim || isWritingClaim || isWaitingClaim;
   return (
-    <>
+    <div className="flex flex-col">
       <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex items-center justify-between">
           <div>Claimable amount</div>
@@ -108,7 +108,7 @@ export function Claim() {
           {address ? (
             chain?.unsupported ? (
               <button
-                className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+                className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
                 onClick={() => switchNetwork?.()}
               >
                 Switch to pulse
@@ -122,20 +122,31 @@ export function Claim() {
                   (!!claimable && parseFloat(claimable) === 0)
                 }
                 onClick={() => claim?.()}
-                className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+                className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               >
                 {false ? "Loading..." : "Claim"}
               </button>
             )
           ) : (
             <button
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               onClick={() => openConnectModal?.()}
             >
               Connect wallet
             </button>
           )}
         </div>
+      </div>
+      <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+        Launchpad is live!
+        <button
+          className="mb-2 flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+          onClick={() =>
+            window.open("https://launch.velocimeter.xyz/", "_blank")
+          }
+        >
+          Participate
+        </button>
       </div>
       <Toast.Root
         className="prose radix-state-closed:animate-hide radix-state-open:animate-slideIn radix-swipe-end:animate-swipeOut rounded-md bg-[#111] p-4 text-left shadow shadow-secondary radix-swipe-cancel:translate-x-0 radix-swipe-cancel:transition-[transform_200ms_ease-out] radix-swipe-move:translate-x-[var(--radix-toast-swipe-move-x)]"
@@ -164,6 +175,6 @@ export function Claim() {
         </Toast.Action>
       </Toast.Root>
       <Toast.Viewport className="fixed bottom-0 right-0 z-[2147483647] m-0 flex w-[390px] max-w-[100vw] list-none flex-col gap-3 p-6 outline-none" />
-    </>
+    </div>
   );
 }
