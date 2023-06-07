@@ -15,6 +15,7 @@ import { formatCurrency } from "../../utils/utils";
 import {
   useAirdropClaimClaim,
   useAirdropClaimClaimable,
+  useAirdropClaimUserClaimed,
   usePrepareAirdropClaimClaim,
 } from "../oFlow/lib/wagmiGen";
 
@@ -32,13 +33,24 @@ export function Claim() {
 
   const { address } = useAccount();
 
-  const { data: claimable, isFetching: isLoadingClaimable } =
-    useAirdropClaimClaimable({
+  const {
+    data: claimable,
+    isFetching: isLoadingClaimable,
+    refetch: refetchClaimable,
+  } = useAirdropClaimClaimable({
+    chainId: pulsechain.id,
+    args: [address!],
+    enabled: !!address,
+    select: (claimable) => formatEther(claimable),
+  });
+
+  const { data: claimed, refetch: refetchClaimed } = useAirdropClaimUserClaimed(
+    {
       chainId: pulsechain.id,
       args: [address!],
       enabled: !!address,
-      select: (claimable) => formatEther(claimable),
-    });
+    }
+  );
 
   const { config, isFetching: isPreparingClaim } = usePrepareAirdropClaimClaim({
     chainId: pulsechain.id,
@@ -65,6 +77,8 @@ export function Claim() {
       setToastMessage("Transaction confirmed!");
       setToastOpen(true);
       setToastHash(data.transactionHash);
+      refetchClaimable();
+      refetchClaimed();
     },
   });
 
@@ -82,10 +96,13 @@ export function Claim() {
             You are eligible to claim!
           </div>
         )}
-        {claimable && parseFloat(claimable) === 0 && (
+        {claimable && parseFloat(claimable) === 0 && claimed === false && (
           <div className="mt-1 font-medium text-warning">
             You are NOT eligible to claim!
           </div>
+        )}
+        {claimed && (
+          <div className="mt-1 font-medium text-success">You claimed!</div>
         )}
         <div className="my-5 flex flex-col gap-3">
           {address ? (
@@ -98,7 +115,12 @@ export function Claim() {
               </button>
             ) : (
               <button
-                disabled={isLoading || !claim?.()}
+                disabled={
+                  isLoading ||
+                  !claim ||
+                  claimed ||
+                  (!!claimable && parseFloat(claimable) === 0)
+                }
                 onClick={() => claim?.()}
                 className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               >
