@@ -3,7 +3,7 @@ import { createPublicClient, http, formatUnits } from "viem";
 import { pulsechain } from "viem/chains";
 import Cors from "cors";
 
-import { CONTRACTS, NATIVE_TOKEN } from "../../../stores/constants/constants";
+import { CONTRACTS } from "../../../stores/constants/constants";
 
 const cors = Cors({
   methods: ["GET"],
@@ -47,9 +47,9 @@ export default async function handler(
     totalSupply,
     lockedSupply,
     flowInMinter,
-    flowInMsig,
     flowInRewardsDistributor,
-    flowInTimelockerController,
+    flowInAirdropClaim,
+    flowInMintTank,
   ] = await publicClient.multicall({
     allowFailure: false,
     contracts: [
@@ -70,17 +70,17 @@ export default async function handler(
       {
         ...flowContract,
         functionName: "balanceOf",
-        args: [CONTRACTS.MSIG_ADDRESS],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
         args: [CONTRACTS.VE_DIST_ADDRESS],
       },
       {
         ...flowContract,
         functionName: "balanceOf",
-        args: ["0xd0cC9738866cd82B237A14c92ac60577602d6c18"],
+        args: ["0x3339ab188839C31a9763352A5a0B7Fb05876BC44"],
+      },
+      {
+        ...flowContract,
+        functionName: "balanceOf",
+        args: ["0xbB7bbd0496c23B7704213D6dbbe5C39eF8584E45"],
       },
     ],
   });
@@ -89,10 +89,10 @@ export default async function handler(
     totalSupply -
       lockedSupply -
       flowInMinter -
-      flowInMsig -
+      flowInAirdropClaim -
       flowInRewardsDistributor -
-      flowInTimelockerController,
-    NATIVE_TOKEN.decimals
+      flowInMintTank,
+    CONTRACTS.GOV_TOKEN_DECIMALS
   );
 
   res.setHeader("Cache-Control", "max-age=0, s-maxage=900");

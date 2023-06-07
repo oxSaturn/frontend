@@ -87,9 +87,9 @@ class Helper {
       totalSupply,
       lockedSupply,
       flowInMinter,
-      flowInMsig,
       flowInRewardsDistributor,
-      flowInTimelockerController,
+      flowInAirdropClaim,
+      flowInMintTank,
     ] = await viemClient.multicall({
       allowFailure: false,
       contracts: [
@@ -110,17 +110,17 @@ class Helper {
         {
           ...flowContract,
           functionName: "balanceOf",
-          args: [CONTRACTS.MSIG_ADDRESS],
-        },
-        {
-          ...flowContract,
-          functionName: "balanceOf",
           args: [CONTRACTS.VE_DIST_ADDRESS],
         },
         {
           ...flowContract,
           functionName: "balanceOf",
-          args: ["0xd0cC9738866cd82B237A14c92ac60577602d6c18"],
+          args: ["0x3339ab188839C31a9763352A5a0B7Fb05876BC44"],
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
+          args: ["0xbB7bbd0496c23B7704213D6dbbe5C39eF8584E45"],
         },
       ],
     });
@@ -129,9 +129,9 @@ class Helper {
       totalSupply -
         lockedSupply -
         flowInMinter -
-        flowInMsig -
+        flowInAirdropClaim -
         flowInRewardsDistributor -
-        flowInTimelockerController,
+        flowInMintTank,
       CONTRACTS.GOV_TOKEN_DECIMALS
     );
 
