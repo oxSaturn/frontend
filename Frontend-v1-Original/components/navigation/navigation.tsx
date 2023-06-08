@@ -38,7 +38,6 @@ function Navigation() {
   const renderNavs = () => {
     return (
       <>
-        {renderPulseTab()}
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
         {renderSubNav("Vest", "vest")}
@@ -76,19 +75,6 @@ function Navigation() {
         onClick={() => window.open("https://docs.velocimeter.xyz/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Docs</div>
-      </button>
-    );
-  };
-
-  const renderPulseTab = () => {
-    return (
-      <button
-        className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
-        onClick={() => window.open("http://launch.velocimeter.xyz/", "_blank")}
-      >
-        <div className="m-0 pl-0 text-center text-xs xs:text-base">
-          Pulse Launch
-        </div>
       </button>
     );
   };
