@@ -5,6 +5,7 @@ import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
+import { lockOptions } from "./lockDuration";
 
 interface VestingInfoProps {
   veToken: VeToken | null;
@@ -85,18 +86,18 @@ export default function VestingInfo({
       )}
       {showVestingStructure && (
         <div className={classes.seccondSection}>
-          <Typography className={classes.info} color="textSecondary">
-            1 {govToken?.symbol} locked for 4 years = 1.00 {veToken?.symbol}
-          </Typography>
-          <Typography className={classes.info} color="textSecondary">
-            1 {govToken?.symbol} locked for 3 years = 0.75 {veToken?.symbol}
-          </Typography>
-          <Typography className={classes.info} color="textSecondary">
-            1 {govToken?.symbol} locked for 2 years = 0.50 {veToken?.symbol}
-          </Typography>
-          <Typography className={classes.info} color="textSecondary">
-            1 {govToken?.symbol} locked for 1 years = 0.25 {veToken?.symbol}
-          </Typography>
+          {Object.entries(lockOptions)
+            .sort((a, b) => a[1] - b[1])
+            .map(([option], index) => (
+              <Typography
+                key={option}
+                className={classes.info}
+                color="textSecondary"
+              >
+                1 {govToken?.symbol} locked for {option} ={" "}
+                {["0.25", "0.5", "0.75", "1.00"][index]} {veToken?.symbol}
+              </Typography>
+            ))}
         </div>
       )}
     </div>
