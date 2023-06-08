@@ -25,6 +25,19 @@ export const lockOptions: Record<LockOption, number> = {
   "19.5 weeks": Math.ceil(19.5 * 7),
   "26 weeks": Math.ceil(26 * 7),
 };
+
+/**
+ *
+ * @param date
+ * @returns timestamp of the start of the epoch, i.e., thursday 00:00 UTC
+ */
+function roundDownToWeekBoundary(date: moment.Moment) {
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  // convert date to timestamp
+  const timestamp = date.valueOf();
+  return Math.floor(timestamp / WEEK) * WEEK;
+}
+
 export default function LockDuration({
   nft,
   updateLockDuration,
@@ -161,6 +174,9 @@ export default function LockDuration({
     );
   };
 
+  const max = moment().add(lockOptions["26 weeks"], "days");
+  const roundedDownMax = roundDownToWeekBoundary(max);
+  const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
   return (
     <div className={classes.someContainer}>
       <div className={classes.inputsContainer3}>
@@ -195,12 +211,16 @@ export default function LockDuration({
           variant="contained"
           size="large"
           color="primary"
-          disabled={lockLoading}
+          disabled={lockLoading || maxLocked}
           onClick={onLock}
         >
-          <Typography className={classes.actionButtonText}>
-            {lockLoading ? `Increasing Duration` : `Increase Duration`}
-          </Typography>
+          {maxLocked ? (
+            <Typography className="text-gray-600">MAX LOCKED</Typography>
+          ) : (
+            <Typography className={classes.actionButtonText}>
+              {lockLoading ? `Increasing Duration` : `Increase Duration`}
+            </Typography>
+          )}
           {lockLoading && (
             <CircularProgress size={10} className={classes.loadingCircle} />
           )}
