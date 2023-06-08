@@ -18,15 +18,12 @@ import { VestNFT } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 
-export const lockOptions: {
-  [key: string]: number;
-} = {
-  "1 week": 8,
-  "1 month": 30,
-  "1 year": 365,
-  "2 years": 730,
-  "3 years": 1095,
-  "4 years": 1460,
+export type LockOption = "6.5 weeks" | "13 weeks" | "19.5 weeks" | "26 weeks";
+export const lockOptions: Record<LockOption, number> = {
+  "6.5 weeks": Math.ceil(6.5 * 7),
+  "13 weeks": Math.ceil(13 * 7),
+  "19.5 weeks": Math.ceil(19.5 * 7),
+  "26 weeks": Math.ceil(26 * 7),
 };
 export default function LockDuration({
   nft,
@@ -39,7 +36,7 @@ export default function LockDuration({
   const [lockLoading, setLockLoading] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
-    moment().add(8, "days").format("YYYY-MM-DD")
+    moment().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
@@ -150,7 +147,9 @@ export default function LockDuration({
               disabled={lockLoading}
               inputProps={{
                 min: min,
-                max: moment().add(1460, "days").format("YYYY-MM-DD"),
+                max: moment()
+                  .add(lockOptions["26 weeks"], "days")
+                  .format("YYYY-MM-DD"),
               }}
               InputProps={{
                 className: classes.largeInput,
@@ -174,11 +173,12 @@ export default function LockDuration({
             value={selectedValue}
           >
             {Object.keys(lockOptions).map((key) => {
+              const value = lockOptions[key as LockOption];
               return (
                 <FormControlLabel
                   key={key}
                   className={classes.vestPeriodLabel}
-                  value={lockOptions[key]}
+                  value={value}
                   control={<Radio color="primary" />}
                   label={key}
                   labelPlacement="end"

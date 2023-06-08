@@ -25,7 +25,7 @@ import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
-import { lockOptions } from "./lockDuration";
+import { type LockOption, lockOptions } from "./lockDuration";
 
 export default function Lock({
   govToken,
@@ -41,9 +41,11 @@ export default function Lock({
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
-  const [selectedValue, setSelectedValue] = useState<string | null>("8"); // select 1 week by default
+  const [selectedValue, setSelectedValue] = useState<string | null>(
+    lockOptions["6.5 weeks"] + ""
+  );
   const [selectedDate, setSelectedDate] = useState(
-    moment().add(7, "days").format("YYYY-MM-DD")
+    moment().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
 
@@ -172,8 +174,12 @@ export default function Lock({
               onChange={amountChanged}
               disabled={lockLoading}
               inputProps={{
-                min: moment().add(7, "days").format("YYYY-MM-DD"),
-                max: moment().add(1460, "days").format("YYYY-MM-DD"),
+                min: moment()
+                  .add(lockOptions["6.5 weeks"], "days")
+                  .format("YYYY-MM-DD"),
+                max: moment()
+                  .add(lockOptions["26 weeks"], "days")
+                  .format("YYYY-MM-DD"),
               }}
               InputProps={{
                 className: classes.largeInput,
@@ -280,7 +286,7 @@ export default function Lock({
       lockAmount: amount,
       lockValue: BigNumber(amount)
         .times(parseInt(dayToExpire.toString()) + 1)
-        .div(1460)
+        .div(lockOptions["26 weeks"])
         .toFixed(18),
       lockEnds: expiry.unix().toString(),
       actionedInCurrentEpoch: false,
@@ -333,7 +339,7 @@ export default function Lock({
                   <FormControlLabel
                     key={key}
                     className={classes.vestPeriodLabel}
-                    value={lockOptions[key]}
+                    value={lockOptions[key as LockOption]}
                     control={<Radio color="primary" />}
                     label={key}
                     labelPlacement="end"

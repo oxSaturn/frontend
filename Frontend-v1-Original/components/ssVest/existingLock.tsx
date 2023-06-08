@@ -9,7 +9,7 @@ import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 import LockAmount from "./lockAmount";
-import LockDuration from "./lockDuration";
+import LockDuration, { lockOptions } from "./lockDuration";
 import VestingInfo from "./vestingInfo";
 
 export default function ExistingLock({
@@ -64,7 +64,7 @@ export default function ExistingLock({
     tmpNFT.lockAmount = BigNumber(nft.lockAmount).plus(amount).toFixed(18);
     tmpNFT.lockValue = BigNumber(tmpNFT.lockAmount)
       .times(parseInt(dayToExpire.toString()) + 1)
-      .div(1460)
+      .div(lockOptions["26 weeks"])
       .toFixed(18);
 
     setFutureNFT(tmpNFT);
@@ -89,7 +89,7 @@ export default function ExistingLock({
     tmpNFT.lockEnds = expiry.unix().toString();
     tmpNFT.lockValue = BigNumber(tmpNFT.lockAmount)
       .times(parseInt(dayToExpire.toString()))
-      .div(1460)
+      .div(lockOptions["26 weeks"])
       .toFixed(18);
 
     setFutureNFT(tmpNFT);
