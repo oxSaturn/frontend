@@ -10,6 +10,7 @@ import {
   FormControlLabel,
   Tooltip,
   IconButton,
+  Alert,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
@@ -350,6 +351,10 @@ export default function Lock({
           </div>
         </div>
         {renderVestInformation()}
+        <Alert severity="info">
+          All lock will be rounded down to the nearest Thursday at 00:00 UTC, which
+          is the start of the nearest epoch.
+        </Alert>
         <div className={classes.actionsContainer}>
           <Button
             className={classes.buttonOverride}
