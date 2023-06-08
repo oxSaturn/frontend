@@ -137,17 +137,6 @@ export function Claim() {
           )}
         </div>
       </div>
-      <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
-        Launchpad is live!
-        <button
-          className="mb-2 flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
-          onClick={() =>
-            window.open("https://launch.velocimeter.xyz/", "_blank")
-          }
-        >
-          Participate
-        </button>
-      </div>
       <Toast.Root
         className="prose radix-state-closed:animate-hide radix-state-open:animate-slideIn radix-swipe-end:animate-swipeOut rounded-md bg-[#111] p-4 text-left shadow shadow-secondary radix-swipe-cancel:translate-x-0 radix-swipe-cancel:transition-[transform_200ms_ease-out] radix-swipe-move:translate-x-[var(--radix-toast-swipe-move-x)]"
         open={toastOpen}
