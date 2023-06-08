@@ -29,7 +29,12 @@ import {
   W_NATIVE_ADDRESS,
   W_NATIVE_SYMBOL,
 } from "../../stores/constants/constants";
-import type { BaseAsset, LegacyQuote } from "../../stores/types/types";
+import type {
+  BaseAsset,
+  Path,
+  QuoteSwapResponse,
+  FireBirdTokens,
+} from "../../stores/types/types";
 
 function Setup() {
   const [, updateState] = React.useState<{}>();
@@ -60,7 +65,7 @@ function Setup() {
   const [slippageError] = useState(false);
 
   const [quoteError, setQuoteError] = useState<string | null | false>(null);
-  const [quote, setQuote] = useState<LegacyQuote | null>(null);
+  const [quote, setQuote] = useState<QuoteSwapResponse | null>(null);
 
   const [tokenPrices, setTokenPrices] = useState<Map<string, number>>();
 
@@ -115,7 +120,7 @@ function Setup() {
       setQuoteLoading(false);
     };
 
-    const quoteReturned = (val: LegacyQuote) => {
+    const quoteReturned = (val: QuoteSwapResponse) => {
       if (!val || !fromAssetValue || !toAssetValue) {
         setQuoteLoading(false);
         setQuote(null);
@@ -128,14 +133,24 @@ function Setup() {
       }
       if (
         val &&
-        val.inputs &&
-        val.output &&
-        val.inputs.fromAmount === fromAmountValue &&
-        val.inputs.fromAsset.address === fromAssetValue.address &&
-        val.inputs.toAsset.address === toAssetValue.address
+        val.encodedData &&
+        val.maxReturn &&
+        val.maxReturn.totalFrom ===
+          BigNumber(fromAmountValue)
+            .multipliedBy(10 ** fromAssetValue.decimals)
+            .toFixed(0) &&
+        (val.maxReturn.from.toLowerCase() ===
+          fromAssetValue.address.toLowerCase() ||
+          (val.maxReturn.from ===
+            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+            fromAssetValue.address === NATIVE_TOKEN.address)) &&
+        (val.maxReturn.to.toLowerCase() ===
+          toAssetValue.address.toLowerCase() ||
+          (val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" &&
+            toAssetValue.address === NATIVE_TOKEN.address))
       ) {
         setQuoteLoading(false);
-        if (BigNumber(val.output.finalValue ?? "0").eq(0)) {
+        if (BigNumber(val.maxReturn.totalTo).eq(0)) {
           setQuote(null);
           setToAmountValue("");
           setToAmountValueUsd("");
@@ -145,12 +160,17 @@ function Setup() {
           return;
         }
 
-        setToAmountValue(BigNumber(val.output.finalValue ?? "0").toFixed(8));
+        setToAmountValue(
+          BigNumber(val.maxReturn.totalTo)
+            .div(10 ** toAssetValue.decimals)
+            .toFixed(toAssetValue.decimals, BigNumber.ROUND_DOWN)
+        );
         const toAddressLookUp =
-          val.inputs.toAsset.address === NATIVE_TOKEN.address
+          val.maxReturn.to === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
             ? W_NATIVE_ADDRESS.toLowerCase()
-            : val.inputs.toAsset.address.toLowerCase();
-        const toUsdValue = BigNumber(val.output.finalValue ?? "0")
+            : val.maxReturn.to.toLowerCase();
+        const toUsdValue = BigNumber(val.maxReturn.totalTo)
+          .div(10 ** toAssetValue.decimals)
           .multipliedBy(tokenPrices?.get(toAddressLookUp) ?? 0)
           .toFixed(2);
         setToAmountValueUsd(toUsdValue);
@@ -426,10 +446,7 @@ function Setup() {
         content: {
           fromAsset: fromAssetValue,
           toAsset: toAssetValue,
-          fromAmount: fromAmountValue,
-          toAmount: toAmountValue,
-          quote: quote,
-          slippage: slippage,
+          quote,
         },
       });
     }
@@ -592,7 +609,12 @@ function Setup() {
         </div>
       );
     }
-
+    const totalFromInEth = fromAssetValue
+      ? BigNumber(quote.maxReturn.totalFrom).div(10 ** fromAssetValue.decimals)
+      : BigNumber(0);
+    const totalToInEth = toAssetValue
+      ? BigNumber(quote.maxReturn.totalTo).div(10 ** toAssetValue.decimals)
+      : BigNumber(0);
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
@@ -602,9 +624,7 @@ function Setup() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.inputs.fromAmount)
-                  .div(quote.output.finalValue ?? "0")
-                  .toFixed(18)
+                BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-secondaryGray">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
@@ -612,24 +632,12 @@ function Setup() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.output.finalValue ?? "0")
-                  .div(quote.inputs.fromAmount)
-                  .toFixed(18)
+                BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-secondaryGray">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
-        {BigNumber(quote.priceImpact).gt(5) && (
-          <>
-            <Typography
-              className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500"
-              align="center"
-            >
-              Price impact {formatCurrency(quote.priceImpact)}%
-            </Typography>
-          </>
-        )}
         {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
           (parseFloat(fromAmountValueUsd) > 0 &&
             parseFloat(toAmountValueUsd) === 0)) && (
@@ -858,11 +866,28 @@ function Setup() {
             )}
           </Button>
         </div>
+        <div className="mt-2 text-end text-xs">
+          <span className="align-middle text-secondaryGray">Powered by </span>
+          <a
+            href="https://firebird.finance/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
+          >
+            <img
+              src="/images/logo-firebird.svg"
+              className="inline"
+              alt="firebird protocol logo"
+            />{" "}
+            <span className="align-middle">Firebird</span>
+          </a>
+        </div>
       </div>
       <RoutesDialog
         onClose={() => setRoutesOpen(false)}
         open={routesOpen}
-        paths={quote}
+        paths={quote?.maxReturn.paths}
+        tokens={quote?.maxReturn.tokens}
         fromAssetValue={fromAssetValue}
         fromAmountValue={fromAmountValue}
         toAssetValue={toAssetValue}
@@ -1171,6 +1196,7 @@ function RoutesDialog({
   onClose,
   open,
   paths,
+  tokens,
   fromAssetValue,
   toAssetValue,
   fromAmountValue,
@@ -1178,7 +1204,8 @@ function RoutesDialog({
 }: {
   onClose: () => void;
   open: boolean;
-  paths: LegacyQuote | null;
+  paths: Path[] | undefined;
+  tokens: FireBirdTokens | undefined;
   fromAssetValue: BaseAsset | null;
   toAssetValue: BaseAsset | null;
   fromAmountValue: string;
@@ -1214,28 +1241,6 @@ function RoutesDialog({
                 {formatCurrency(fromAmountValue)} {fromAssetValue.symbol}
               </span>
             </div>
-            {`->`}
-            {paths.output.routeAsset && (
-              <>
-                <div>
-                  <span className="mr-1 align-middle text-sm">
-                    {paths.output.routeAsset.symbol}
-                  </span>
-                  <img
-                    className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
-                    alt=""
-                    src={paths.output.routeAsset.logoURI || ""}
-                    height="40px"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).onerror = null;
-                      (e.target as HTMLImageElement).src =
-                        "/tokens/unknown-logo.png";
-                    }}
-                  />
-                </div>
-                {`->`}
-              </>
-            )}
             <div>
               <span className="mr-1 align-middle text-sm">
                 {formatCurrency(toAmountValue)} {toAssetValue.symbol}
@@ -1252,6 +1257,37 @@ function RoutesDialog({
                 }}
               />
             </div>
+          </div>
+          <div className="px-6">
+            {paths.map((path, idx) => (
+              <div
+                key={path.amountFrom + idx}
+                className="relative flex border-cantoGreen py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-cantoGreen after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
+              >
+                <div className="relative flex flex-grow">
+                  <div className="flex flex-grow justify-between gap-4">
+                    <div>
+                      {BigNumber(path.amountFrom)
+                        .div(10 ** fromAssetValue.decimals)
+                        .div(fromAmountValue)
+                        .multipliedBy(100)
+                        .toFixed()}
+                      %
+                    </div>
+                    {path.swaps.map((swap, idx) => {
+                      if (idx === path.swaps.length - 1) return null;
+                      return (
+                        tokens && (
+                          <div key={swap.to + idx}>
+                            {tokens[swap.to].symbol}
+                          </div>
+                        )
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : (

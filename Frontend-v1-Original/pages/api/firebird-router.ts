@@ -1,3 +1,4 @@
+import { pulsechain } from "viem/chains";
 import BigNumber from "bignumber.js";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -28,7 +29,7 @@ export default async function handler(
 
   try {
     const quote = await fetch(
-      `https://router.firebird.finance/aggregator/v1/route?chainId=7700&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${slippage}&receiver=${address}&source=velocimeter&dexes=velocimeterv1,velocimeterv2`,
+      `https://router.firebird.finance/aggregator/v1/route?chainId=${pulsechain.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${slippage}&receiver=${address}&source=velocimeter&dexes=velocimeter`,
       {
         method: "GET",
         headers: {
