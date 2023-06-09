@@ -7,7 +7,12 @@ import {
 import { pulsechain } from "wagmi/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
-import { getDefaultWallets } from "@rainbow-me/rainbowkit";
+import { connectorsForWallets } from "@rainbow-me/rainbowkit";
+import {
+  walletConnectWallet,
+  rabbyWallet,
+  metaMaskWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 
 const pulsechainRpc = http("https://rpc.pulsechain.com");
 
@@ -28,11 +33,25 @@ const { chains, publicClient } = configureChains(
     }),
   ]
 );
-const { connectors } = getDefaultWallets({
-  appName: "Velocimeter DEX",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-  chains,
-});
+// const { connectors } = getDefaultWallets({
+//   appName: "Velocimeter DEX",
+//   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+//   chains,
+// });
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
+const connectors = connectorsForWallets([
+  {
+    groupName: "Recommended",
+    wallets: [
+      rabbyWallet({ chains }),
+      metaMaskWallet({ projectId, chains }),
+      walletConnectWallet({
+        projectId,
+        chains,
+      }),
+    ],
+  },
+]);
 
 // config for wagmi provider
 export const config = createConfig({
