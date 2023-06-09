@@ -18,9 +18,14 @@ import { VestNFT } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 
-export const lockOptions: {
-  [key: string]: number;
-} = {
+export type LockOption =
+  | "1 week"
+  | "1 month"
+  | "1 year"
+  | "2 years"
+  | "3 years"
+  | "4 years";
+export const lockOptions: Record<LockOption, number> = {
   "1 week": 8,
   "1 month": 30,
   "1 year": 365,
@@ -28,6 +33,19 @@ export const lockOptions: {
   "3 years": 1095,
   "4 years": 1460,
 };
+
+/**
+ *
+ * @param date
+ * @returns timestamp of the start of the epoch, i.e., thursday 00:00 UTC
+ */
+function roundDownToWeekBoundary(date: moment.Moment) {
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  // convert date to timestamp
+  const timestamp = date.valueOf();
+  return Math.floor(timestamp / WEEK) * WEEK;
+}
+
 export default function LockDuration({
   nft,
   updateLockDuration,
@@ -162,6 +180,9 @@ export default function LockDuration({
     );
   };
 
+  const max = moment().add(lockOptions["4 years"], "days");
+  const roundedDownMax = roundDownToWeekBoundary(max);
+  const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
   return (
     <div className={classes.someContainer}>
       <div className={classes.inputsContainer3}>
@@ -174,11 +195,12 @@ export default function LockDuration({
             value={selectedValue}
           >
             {Object.keys(lockOptions).map((key) => {
+              const value = lockOptions[key as LockOption];
               return (
                 <FormControlLabel
                   key={key}
                   className={classes.vestPeriodLabel}
-                  value={lockOptions[key]}
+                  value={value}
                   control={<Radio color="primary" />}
                   label={key}
                   labelPlacement="end"
@@ -195,12 +217,16 @@ export default function LockDuration({
           variant="contained"
           size="large"
           color="primary"
-          disabled={lockLoading}
+          disabled={lockLoading || maxLocked}
           onClick={onLock}
         >
-          <Typography className={classes.actionButtonText}>
-            {lockLoading ? `Increasing Duration` : `Increase Duration`}
-          </Typography>
+          {maxLocked ? (
+            <Typography className="text-gray-600">MAX LOCKED</Typography>
+          ) : (
+            <Typography className={classes.actionButtonText}>
+              {lockLoading ? `Increasing Duration` : `Increase Duration`}
+            </Typography>
+          )}
           {lockLoading && (
             <CircularProgress size={10} className={classes.loadingCircle} />
           )}

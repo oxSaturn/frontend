@@ -25,7 +25,7 @@ import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
-import { lockOptions } from "./lockDuration";
+import { type LockOption, lockOptions } from "./lockDuration";
 
 export default function Lock({
   govToken,
@@ -333,7 +333,7 @@ export default function Lock({
                   <FormControlLabel
                     key={key}
                     className={classes.vestPeriodLabel}
-                    value={lockOptions[key]}
+                    value={lockOptions[key as LockOption]}
                     control={<Radio color="primary" />}
                     label={key}
                     labelPlacement="end"
