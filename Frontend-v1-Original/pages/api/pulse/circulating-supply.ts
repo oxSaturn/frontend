@@ -48,6 +48,7 @@ export default async function handler(
     lockedSupply,
     flowInMinter,
     flowInRewardsDistributor,
+    flowInOptionToken1,
     flowInAirdropClaim,
     flowInMintTank,
   ] = await publicClient.multicall({
@@ -75,6 +76,11 @@ export default async function handler(
       {
         ...flowContract,
         functionName: "balanceOf",
+        args: [CONTRACTS.OPTION_TOKEN_ADDRESS],
+      },
+      {
+        ...flowContract,
+        functionName: "balanceOf",
         args: ["0x3339ab188839C31a9763352A5a0B7Fb05876BC44"],
       },
       {
@@ -84,14 +90,58 @@ export default async function handler(
       },
     ],
   });
+  const pairs = await publicClient.readContract({
+    abi: CONTRACTS.FACTORY_ABI,
+    address: CONTRACTS.FACTORY_ADDRESS,
+    functionName: "allPairsLength",
+  });
+  const pairAddressesCall = Array.from({ length: Number(pairs) }, (_, i) => {
+    return {
+      abi: CONTRACTS.FACTORY_ABI,
+      address: CONTRACTS.FACTORY_ADDRESS,
+      functionName: "allPairs",
+      args: [BigInt(i)],
+    } as const;
+  });
+  const pairAddresses = await publicClient.multicall({
+    allowFailure: false,
+    contracts: pairAddressesCall,
+  });
 
+  const gaugesCall = pairAddresses.map(
+    (pairAddress) =>
+      ({
+        abi: CONTRACTS.VOTER_ABI,
+        address: CONTRACTS.VOTER_ADDRESS,
+        functionName: "gauges",
+        args: [pairAddress],
+      } as const)
+  );
+  const gaugeAddresses = await publicClient.multicall({
+    allowFailure: false,
+    contracts: gaugesCall,
+  });
+  const gaugeBalances = await publicClient.multicall({
+    allowFailure: false,
+    contracts: gaugeAddresses.map((gaugeAddress) => ({
+      ...flowContract,
+      functionName: "balanceOf",
+      args: [gaugeAddress],
+    })),
+  });
+  const gaugeBalancesSum = gaugeBalances.reduce(
+    (acc, balance) => acc + balance,
+    0n
+  );
   const circulatingSupply = formatUnits(
     totalSupply -
       lockedSupply -
       flowInMinter -
       flowInAirdropClaim -
       flowInRewardsDistributor -
-      flowInMintTank,
+      flowInMintTank -
+      gaugeBalancesSum -
+      flowInOptionToken1,
     CONTRACTS.GOV_TOKEN_DECIMALS
   );
 

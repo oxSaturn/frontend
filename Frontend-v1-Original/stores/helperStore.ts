@@ -27,11 +27,6 @@ class Helper {
   private dexScrennerEndpoint = "https://api.dexscreener.com/latest/dex/tokens";
   private dexGuruEndpoint =
     "https://api.dev.dex.guru/v1/chain/10/tokens/%/market";
-  // private tokenPricesMap = new Map<string, number>();
-
-  // get getTokenPricesMap() {
-  //   return this.tokenPricesMap;
-  // }
 
   getProtocolDefiLlama = async () => {
     const data = await fetch(`${this.defiLlamaBaseUrl}/protocol/velocimeter`);
@@ -39,18 +34,8 @@ class Helper {
     return json as unknown;
   };
 
-  // getCurrentTvl = async () => {
-  //   const response = await fetch(`${this.defiLlamaBaseUrl}/tvl/velocimeter`);
-  //   const json = await response.json();
-  //   return json as number;
-  // };
-
   getActivePeriod = async () => {
     try {
-      // const minterContract = new web3.eth.Contract(
-      //   CONTRACTS.MINTER_ABI as AbiItem[],
-      //   CONTRACTS.MINTER_ADDRESS
-      // );
       const minterContract = getContract({
         abi: CONTRACTS.MINTER_ABI,
         address: CONTRACTS.MINTER_ADDRESS,
@@ -67,16 +52,6 @@ class Helper {
     }
   };
 
-  // updateTokenPrice = async (token: TokenForPrice) => {
-  //   if (this.tokenPricesMap.has(token.address.toLowerCase())) {
-  //     return this.tokenPricesMap.get(token.address.toLowerCase());
-  //   }
-
-  //   const price = await this._getTokenPrice(token);
-  //   this.tokenPricesMap.set(token.address.toLowerCase(), price);
-  //   return price;
-  // };
-
   getCirculatingSupply = async () => {
     const flowContract = {
       abi: CONTRACTS.GOV_TOKEN_ABI,
@@ -88,6 +63,7 @@ class Helper {
       lockedSupply,
       flowInMinter,
       flowInRewardsDistributor,
+      flowInOptionToken1,
       flowInAirdropClaim,
       flowInMintTank,
     ] = await viemClient.multicall({
@@ -115,6 +91,11 @@ class Helper {
         {
           ...flowContract,
           functionName: "balanceOf",
+          args: [CONTRACTS.OPTION_TOKEN_ADDRESS],
+        },
+        {
+          ...flowContract,
+          functionName: "balanceOf",
           args: ["0x3339ab188839C31a9763352A5a0B7Fb05876BC44"],
         },
         {
@@ -124,17 +105,60 @@ class Helper {
         },
       ],
     });
+    const pairs = await viemClient.readContract({
+      abi: CONTRACTS.FACTORY_ABI,
+      address: CONTRACTS.FACTORY_ADDRESS,
+      functionName: "allPairsLength",
+    });
+    const pairAddressesCall = Array.from({ length: Number(pairs) }, (_, i) => {
+      return {
+        abi: CONTRACTS.FACTORY_ABI,
+        address: CONTRACTS.FACTORY_ADDRESS,
+        functionName: "allPairs",
+        args: [BigInt(i)],
+      } as const;
+    });
+    const pairAddresses = await viemClient.multicall({
+      allowFailure: false,
+      contracts: pairAddressesCall,
+    });
 
+    const gaugesCall = pairAddresses.map(
+      (pairAddress) =>
+        ({
+          abi: CONTRACTS.VOTER_ABI,
+          address: CONTRACTS.VOTER_ADDRESS,
+          functionName: "gauges",
+          args: [pairAddress],
+        } as const)
+    );
+    const gaugeAddresses = await viemClient.multicall({
+      allowFailure: false,
+      contracts: gaugesCall,
+    });
+    const gaugeBalances = await viemClient.multicall({
+      allowFailure: false,
+      contracts: gaugeAddresses.map((gaugeAddress) => ({
+        ...flowContract,
+        functionName: "balanceOf",
+        args: [gaugeAddress],
+      })),
+    });
+    const gaugeBalancesSum = gaugeBalances.reduce(
+      (acc, balance) => acc + balance,
+      0n
+    );
     const circulatingSupply = formatUnits(
       totalSupply -
         lockedSupply -
         flowInMinter -
         flowInAirdropClaim -
         flowInRewardsDistributor -
-        flowInMintTank,
+        flowInMintTank -
+        gaugeBalancesSum -
+        flowInOptionToken1,
       CONTRACTS.GOV_TOKEN_DECIMALS
     );
-
     return parseFloat(circulatingSupply);
   };
 
