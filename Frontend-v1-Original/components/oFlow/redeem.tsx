@@ -90,7 +90,7 @@ export function Redeem() {
 
   const { data: discount } = useOFlowDiscount({
     chainId: pulsechain.id,
-    select: (discount) => discount.toString(),
+    select: (discount) => (100n - discount).toString(),
   });
 
   const { isFetching: isFetchingAmounts } = useAmountToPay();
