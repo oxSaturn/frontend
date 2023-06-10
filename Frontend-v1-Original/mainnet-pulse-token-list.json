@@ -7,6 +7,15 @@
     "name": "Wrapped PLS",
     "symbol": "WPLS"
   },
+    {
+    "address": "0x95B303987A60C71504D99Aa1b13B4DA07b0790ab",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://tokens.app.pulsex.com/images/tokens/0x95B303987A60C71504D99Aa1b13B4DA07b0790ab.png",
+    "name": "PLSX",
+    "symbol": "PLSX"
+  },
+  
   {
     "address": "0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07",
     "chainId": 369,
