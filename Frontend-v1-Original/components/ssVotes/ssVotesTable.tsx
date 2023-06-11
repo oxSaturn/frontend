@@ -345,7 +345,7 @@ const VotesRow = memo(function VotesRow({
   let rewardEstimate: number | undefined;
   const votesCasting = (sliderValue / 100) * parseFloat(token?.lockValue);
   if (votesCasting > 0 && row.gauge.weight) {
-    const divideBy = token?.actionedInCurrentEpoch
+    const divideBy = token?.votedInCurrentEpoch
       ? parseFloat(row.gauge.weight)
       : votesCasting + parseFloat(row.gauge.weight);
 
@@ -728,7 +728,7 @@ function descendingComparator(
       const votesCastingA =
         (sliderValueA ?? 0 / 100) * parseFloat(token?.lockValue ?? "0");
       if (votesCastingA > 0 && a.gauge.weight && sliderValueA) {
-        const divideByA = token?.actionedInCurrentEpoch
+        const divideByA = token?.votedInCurrentEpoch
           ? parseFloat(a.gauge.weight)
           : votesCastingA + parseFloat(a.gauge.weight);
         rewardEstimateA =
@@ -740,7 +740,7 @@ function descendingComparator(
       const votesCastingB =
         (sliderValueB ?? 0 / 100) * parseFloat(token?.lockValue ?? "0");
       if (votesCastingB > 0 && b.gauge.weight && sliderValueB) {
-        const divideByB = token?.actionedInCurrentEpoch
+        const divideByB = token?.votedInCurrentEpoch
           ? parseFloat(b.gauge.weight)
           : votesCastingB + parseFloat(b.gauge.weight);
         rewardEstimateB =
