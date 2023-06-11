@@ -47,7 +47,12 @@ import {
   useQuoteRemoveLiquidity,
 } from "./lib/queries";
 import { useAmounts } from "./lib/useAmounts";
-import { useAddLiquidity } from "./lib/mutations";
+import {
+  useAddLiquidity,
+  useAddLiquidityAndStake,
+  useCreateGauge,
+  useStakeLiquidity,
+} from "./lib/mutations";
 
 export default function LiquidityManage() {
   const router = useRouter();
@@ -57,7 +62,6 @@ export default function LiquidityManage() {
   const [depositLoading, setDepositLoading] = useState(false);
   const [stakeLoading, setStakeLoading] = useState(false);
   const [depositStakeLoading, setDepositStakeLoading] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
 
   const { amount0, amount1, setAmount0, setAmount1, setActiveInput } =
     useAmounts();
@@ -103,6 +107,25 @@ export default function LiquidityManage() {
     }
   );
 
+  const { mutate: stakeLiquidity, isLoading: isStakeLiqLoading } =
+    useStakeLiquidity(() => {
+      setAmount0("");
+      setAmount1("");
+      removeQuote();
+      onBack();
+    });
+
+  const { mutate: addLiquidityAndStake, isLoading: isAddLiqAndStakeLoading } =
+    useAddLiquidityAndStake(() => [
+      setAmount0(""),
+      setAmount1(""),
+      removeQuote(),
+      onBack(),
+    ]);
+
+  const { mutate: createGauge, isLoading: isCreateGaugeLoading } =
+    useCreateGauge();
+
   useEffect(() => {
     if (
       router.query.address &&
@@ -127,7 +150,6 @@ export default function LiquidityManage() {
       setDepositLoading(false);
       setStakeLoading(false);
       setDepositStakeLoading(false);
-      setCreateLoading(false);
 
       setAmount0("");
       setAmount1("");
@@ -138,43 +160,26 @@ export default function LiquidityManage() {
       onBack();
     };
 
-    const createGaugeReturned = () => {
-      setCreateLoading(false);
-    };
-
     const errorReturned = () => {
       setDepositLoading(false);
       setStakeLoading(false);
       setDepositStakeLoading(false);
-      setCreateLoading(false);
     };
 
-    stores.emitter.on(ACTIONS.ADD_LIQUIDITY_AND_STAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
     stores.emitter.on(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED, depositReturned);
-    stores.emitter.on(ACTIONS.LIQUIDITY_STAKED, depositReturned);
     stores.emitter.on(ACTIONS.LIQUIDITY_UNSTAKED, depositReturned);
-    stores.emitter.on(ACTIONS.CREATE_GAUGE_RETURNED, createGaugeReturned);
     stores.emitter.on(ACTIONS.ERROR, errorReturned);
 
     return () => {
-      stores.emitter.removeListener(
-        ACTIONS.ADD_LIQUIDITY_AND_STAKED,
-        depositReturned
-      );
       stores.emitter.removeListener(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
       stores.emitter.removeListener(
         ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED,
         depositReturned
       );
-      stores.emitter.removeListener(ACTIONS.LIQUIDITY_STAKED, depositReturned);
       stores.emitter.removeListener(
         ACTIONS.LIQUIDITY_UNSTAKED,
         depositReturned
-      );
-      stores.emitter.removeListener(
-        ACTIONS.CREATE_GAUGE_RETURNED,
-        createGaugeReturned
       );
       stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
     };
@@ -287,14 +292,7 @@ export default function LiquidityManage() {
     if (!error) {
       setStakeLoading(true);
 
-      stores.dispatcher.dispatch({
-        type: ACTIONS.STAKE_LIQUIDITY,
-        content: {
-          pair: pair,
-          token: "0",
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
-      });
+      stakeLiquidity({ pair });
     }
   };
 
@@ -347,18 +345,14 @@ export default function LiquidityManage() {
     if (!error) {
       setDepositStakeLoading(true);
 
-      stores.dispatcher.dispatch({
-        type: ACTIONS.ADD_LIQUIDITY_AND_STAKE,
-        content: {
-          pair: pair,
-          token0: asset0,
-          token1: asset1,
-          amount0: amount0,
-          amount1: amount1,
-          minLiquidity: quote ? quote : "0",
-          token: "0",
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
+      addLiquidityAndStake({
+        token0: asset0,
+        token1: asset1,
+        amount0: amount0,
+        amount1: amount1,
+        pair: pair,
+        slippage: slippage && slippage != "" ? slippage : "2",
+        minLiquidity: quote ? quote : "0",
       });
     }
   };
@@ -470,13 +464,7 @@ export default function LiquidityManage() {
   };
 
   const onCreateGauge = () => {
-    setCreateLoading(true);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.CREATE_GAUGE,
-      content: {
-        pair: pair,
-      },
-    });
+    createGauge(pair);
   };
 
   const toggleDeposit = () => {
@@ -662,7 +650,7 @@ export default function LiquidityManage() {
               helperText={amountError}
               value={amountValue}
               onChange={amountChanged}
-              disabled={createLoading}
+              disabled={isCreateGaugeLoading}
               onFocus={onFocus ? onFocus : undefined}
               InputProps={{
                 style: {
@@ -731,7 +719,7 @@ export default function LiquidityManage() {
                 amountChanged={onSlippageChanged}
                 loading={
                   stakeLoading ||
-                  createLoading ||
+                  isCreateGaugeLoading ||
                   depositLoading ||
                   isAddLiqLoading ||
                   depositStakeLoading
@@ -786,7 +774,7 @@ export default function LiquidityManage() {
               amountChanged={onSlippageChanged}
               loading={
                 stakeLoading ||
-                createLoading ||
+                isCreateGaugeLoading ||
                 depositLoading ||
                 isAddLiqLoading ||
                 depositStakeLoading
@@ -1018,7 +1006,7 @@ export default function LiquidityManage() {
                           variant="contained"
                           size="large"
                           className={
-                            createLoading ||
+                            isCreateGaugeLoading ||
                             depositLoading ||
                             isAddLiqLoading ||
                             stakeLoading ||
@@ -1028,7 +1016,7 @@ export default function LiquidityManage() {
                           }
                           color="primary"
                           disabled={
-                            createLoading ||
+                            isCreateGaugeLoading ||
                             depositLoading ||
                             isAddLiqLoading ||
                             stakeLoading ||
@@ -1037,9 +1025,9 @@ export default function LiquidityManage() {
                           onClick={onCreateGauge}
                         >
                           <Typography className="font-bold capitalize">
-                            {createLoading ? `Creating` : `Create Gauge`}
+                            {isCreateGaugeLoading ? `Creating` : `Create Gauge`}
                           </Typography>
-                          {createLoading && (
+                          {isCreateGaugeLoading && (
                             <CircularProgress
                               size={10}
                               className="ml-2 fill-white"

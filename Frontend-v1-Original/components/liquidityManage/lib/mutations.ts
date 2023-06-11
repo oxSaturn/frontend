@@ -11,7 +11,7 @@ import {
   writeApprove,
   writeContractWrapper,
 } from "../../../lib/global/mutations";
-import { BaseAsset, Gauge, Pair } from "../../../stores/types/types";
+import { BaseAsset, Gauge, Pair, hasGauge } from "../../../stores/types/types";
 import {
   ACTIONS,
   CONTRACTS,
@@ -82,6 +82,49 @@ export function useAddLiquidity(onSuccess?: () => void) {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess && onSuccess();
     },
+  });
+}
+
+export function useStakeLiquidity(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: { pair: Pair | undefined }) =>
+      stakeLiquidity(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess && onSuccess();
+    },
+  });
+}
+
+export function useAddLiquidityAndStake(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: {
+      token0: BaseAsset | null;
+      token1: BaseAsset | null;
+      amount0: string;
+      amount1: string;
+      minLiquidity: string;
+      pair: Pair | undefined;
+      slippage: string;
+    }) => addLiquidityAndStake(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess && onSuccess();
+    },
+  });
+}
+
+export function useCreateGauge(onSuccess?: () => void) {
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (pair: Pair | undefined) => createGauge(address, pair),
+    onSuccess,
   });
 }
 
@@ -892,4 +935,330 @@ const addLiquidity = async (
     sendAmount1Min,
     deadline
   );
+};
+
+const stakeLiquidity = async (
+  account: Address | undefined,
+  options: { pair: Pair | undefined }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not found");
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    throw new Error("wallet not found");
+  }
+
+  const { pair } = options;
+  if (!pair || (pair && !hasGauge(pair))) {
+    console.warn("pair");
+    throw new Error("pair not found");
+  }
+
+  let stakeAllowanceTXID = getTXUUID();
+  let stakeTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Stake ${pair.symbol} in the gauge`,
+    type: "Liquidity",
+    verb: "Liquidity Staked",
+    transactions: [
+      {
+        uuid: stakeAllowanceTXID,
+        description: `Checking your ${pair.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: stakeTXID,
+        description: `Stake LP tokens in the gauge`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  const stakeAllowance = await getStakeAllowance(pair, account);
+  if (!stakeAllowance) throw new Error("Error getting stake allowance");
+
+  const balanceOf = await viemClient.readContract({
+    abi: CONTRACTS.PAIR_ABI,
+    address: pair.address,
+    functionName: "balanceOf",
+    args: [account],
+  });
+
+  if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: stakeAllowanceTXID,
+      description: `Allow the router to spend your ${pair.symbol}`,
+    });
+  } else {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: stakeAllowanceTXID,
+      description: `Allowance on ${pair.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
+
+  if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
+    await writeApprove(
+      walletClient,
+      stakeAllowanceTXID,
+      pair.address,
+      pair.gauge.address
+    );
+  }
+
+  await writeDeposit(walletClient, stakeTXID, pair.gauge.address, balanceOf);
+};
+
+const addLiquidityAndStake = async (
+  account: Address | undefined,
+  options: {
+    token0: BaseAsset | null;
+    token1: BaseAsset | null;
+    amount0: string;
+    amount1: string;
+    minLiquidity: string;
+    pair: Pair | undefined;
+    slippage: string;
+  }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not found");
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    throw new Error("wallet not found");
+  }
+
+  const { token0, token1, amount0, amount1, minLiquidity, pair, slippage } =
+    options;
+
+  if (!token0 || !token1 || !pair || !hasGauge(pair)) {
+    throw new Error("token or pair not found");
+  }
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let allowance0TXID = getTXUUID();
+  let allowance1TXID = getTXUUID();
+  let stakeAllowanceTXID = getTXUUID();
+  let depositTXID = getTXUUID();
+  let stakeTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Add liquidity to ${pair.symbol}`,
+    type: "Liquidity",
+    verb: "Liquidity Added",
+    transactions: [
+      {
+        uuid: allowance0TXID,
+        description: `Checking your ${token0.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: allowance1TXID,
+        description: `Checking your ${token1.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: stakeAllowanceTXID,
+        description: `Checking your ${pair.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: depositTXID,
+        description: `Deposit tokens in the pool`,
+        status: "WAITING",
+      },
+      {
+        uuid: stakeTXID,
+        description: `Stake LP tokens in the gauge`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  let allowance0: string | null = "0";
+  let allowance1: string | null = "0";
+
+  // CHECK ALLOWANCES AND SET TX DISPLAY
+  if (token0.address !== NATIVE_TOKEN.symbol) {
+    allowance0 = await getDepositAllowance(token0, account);
+    if (!allowance0) throw new Error();
+    if (BigNumber(allowance0).lt(amount0)) {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance0TXID,
+        description: `Allow the router to spend your ${token0.symbol}`,
+      });
+    } else {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance0TXID,
+        description: `Allowance on ${token0.symbol} sufficient`,
+        status: "DONE",
+      });
+    }
+  } else {
+    allowance0 = MAX_UINT256;
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowance0TXID,
+      description: `Allowance on ${token0.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  if (token1.address !== NATIVE_TOKEN.symbol) {
+    allowance1 = await getDepositAllowance(token1, account);
+    if (!allowance1) throw new Error("couldnt get allowance");
+    if (BigNumber(allowance1).lt(amount1)) {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance1TXID,
+        description: `Allow the router to spend your ${token1.symbol}`,
+      });
+    } else {
+      stores.emitter.emit(ACTIONS.TX_STATUS, {
+        uuid: allowance1TXID,
+        description: `Allowance on ${token1.symbol} sufficient`,
+        status: "DONE",
+      });
+    }
+  } else {
+    allowance1 = MAX_UINT256;
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowance1TXID,
+      description: `Allowance on ${token1.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  const stakeAllowance = await getStakeAllowance(pair, account);
+  if (!stakeAllowance) throw new Error("Error getting stake allowance");
+
+  if (BigNumber(stakeAllowance).lt(minLiquidity)) {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: stakeAllowanceTXID,
+      description: `Allow the router to spend your ${pair.symbol}`,
+    });
+  } else {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: stakeAllowanceTXID,
+      description: `Allowance on ${pair.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  if (BigNumber(allowance0).lt(amount0)) {
+    await writeApprove(
+      walletClient,
+      allowance0TXID,
+      token0.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  if (BigNumber(allowance1).lt(amount1)) {
+    await writeApprove(
+      walletClient,
+      allowance1TXID,
+      token1.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
+
+  if (BigNumber(stakeAllowance).lt(minLiquidity)) {
+    await writeApprove(
+      walletClient,
+      stakeAllowanceTXID,
+      pair.address,
+      pair.gauge.address
+    );
+  }
+
+  // SUBMIT DEPOSIT TRANSACTION
+  const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  const sendAmount0 = BigNumber(amount0)
+    .times(10 ** token0.decimals)
+    .toFixed(0);
+  const sendAmount1 = BigNumber(amount1)
+    .times(10 ** token1.decimals)
+    .toFixed(0);
+  const deadline = "" + moment().add(600, "seconds").unix();
+  const sendAmount0Min = BigNumber(amount0)
+    .times(sendSlippage)
+    .times(10 ** token0.decimals)
+    .toFixed(0);
+  const sendAmount1Min = BigNumber(amount1)
+    .times(sendSlippage)
+    .times(10 ** token1.decimals)
+    .toFixed(0);
+
+  await writeAddLiquidity(
+    walletClient,
+    depositTXID,
+    token0,
+    token1,
+    pair.stable,
+    sendAmount0,
+    sendAmount1,
+    sendAmount0Min,
+    sendAmount1Min,
+    deadline
+  );
+
+  const balanceOf = await viemClient.readContract({
+    abi: CONTRACTS.PAIR_ABI,
+    address: pair.address,
+    functionName: "balanceOf",
+    args: [account],
+  });
+
+  await writeDeposit(walletClient, stakeTXID, pair.gauge.address, balanceOf);
+};
+
+const createGauge = async (
+  account: Address | undefined,
+  pair: Pair | undefined
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not found");
+  }
+  if (!pair) {
+    console.warn("pair not found");
+    throw new Error("pair not found");
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    throw new Error("wallet not found");
+  }
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let createGaugeTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Create liquidity gauge for ${pair.token0.symbol}/${pair.token1.symbol}`,
+    type: "Liquidity",
+    verb: "Gauge Created",
+    transactions: [
+      {
+        uuid: createGaugeTXID,
+        description: `Create gauge`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  await writeCreateGauge(walletClient, createGaugeTXID, pair.address);
 };
