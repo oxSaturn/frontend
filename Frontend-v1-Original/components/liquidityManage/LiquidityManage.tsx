@@ -29,10 +29,14 @@ import {
 import BigNumber from "bignumber.js";
 import { isAddress } from "viem";
 
-import stores from "../../stores";
-import { ACTIONS, ETHERSCAN_URL } from "../../stores/constants/constants";
+import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
-import { BaseAsset, isBaseAsset, Pair } from "../../stores/types/types";
+import {
+  BaseAsset,
+  hasGauge,
+  isBaseAsset,
+  Pair,
+} from "../../stores/types/types";
 import { useBaseAssetWithInfo } from "../../lib/global/queries";
 import {
   useAddLocalAsset,
@@ -51,17 +55,16 @@ import {
   useAddLiquidity,
   useAddLiquidityAndStake,
   useCreateGauge,
+  useRemoveLiquidity,
   useStakeLiquidity,
+  useUnstakeAndRemoveLiquidity,
+  useUnstakeLiquidity,
 } from "./lib/mutations";
 
 export default function LiquidityManage() {
   const router = useRouter();
   const amount0Ref = useRef<HTMLInputElement>(null);
   const amount1Ref = useRef<HTMLInputElement>(null);
-
-  const [depositLoading, setDepositLoading] = useState(false);
-  const [stakeLoading, setStakeLoading] = useState(false);
-  const [depositStakeLoading, setDepositStakeLoading] = useState(false);
 
   const { amount0, amount1, setAmount0, setAmount1, setActiveInput } =
     useAmounts();
@@ -98,33 +101,52 @@ export default function LiquidityManage() {
   const { data: withdrawQuote, remove: removeWithdrawQuote } =
     useQuoteRemoveLiquidity(withdrawAmount, router.query.address);
 
-  const { mutate: addLiquidity, isLoading: isAddLiqLoading } = useAddLiquidity(
-    () => {
-      setAmount0("");
-      setAmount1("");
-      removeQuote();
-      onBack();
-    }
-  );
+  const onLoadActionSuccess = useCallback(() => {
+    setAmount0("");
+    setAmount1("");
+    removeQuote();
+    router.push("/liquidity");
+  }, [removeQuote, router, setAmount0, setAmount1]);
+
+  const onUnloadActionSuccess = useCallback(() => {
+    setAmount0("");
+    setAmount1("");
+    setWithdrawAmount("");
+    removeWithdrawQuote();
+    router.push("/liquidity");
+  }, [removeWithdrawQuote, router, setAmount0, setAmount1]);
+
+  const { mutate: addLiquidity, isLoading: isAddLiqLoading } =
+    useAddLiquidity(onLoadActionSuccess);
 
   const { mutate: stakeLiquidity, isLoading: isStakeLiqLoading } =
-    useStakeLiquidity(() => {
-      setAmount0("");
-      setAmount1("");
-      removeQuote();
-      onBack();
-    });
+    useStakeLiquidity(onLoadActionSuccess);
 
   const { mutate: addLiquidityAndStake, isLoading: isAddLiqAndStakeLoading } =
-    useAddLiquidityAndStake(() => [
-      setAmount0(""),
-      setAmount1(""),
-      removeQuote(),
-      onBack(),
-    ]);
+    useAddLiquidityAndStake(onLoadActionSuccess);
+
+  const { mutate: removeLiquidity, isLoading: isRemoveLiqLoading } =
+    useRemoveLiquidity(onUnloadActionSuccess);
+
+  const {
+    mutate: unstakeAndRemoveLiquidity,
+    isLoading: isUnstakeAndRemoveLiqLoading,
+  } = useUnstakeAndRemoveLiquidity(onUnloadActionSuccess);
+
+  const { mutate: unstakeLiquidity, isLoading: isUnstakeLiqLoading } =
+    useUnstakeLiquidity(onUnloadActionSuccess);
 
   const { mutate: createGauge, isLoading: isCreateGaugeLoading } =
     useCreateGauge();
+
+  const loading =
+    isAddLiqLoading ||
+    isStakeLiqLoading ||
+    isAddLiqAndStakeLoading ||
+    isRemoveLiqLoading ||
+    isUnstakeAndRemoveLiqLoading ||
+    isUnstakeLiqLoading ||
+    isCreateGaugeLoading;
 
   useEffect(() => {
     if (
@@ -144,46 +166,6 @@ export default function LiquidityManage() {
   const onBack = useCallback(() => {
     router.push("/liquidity");
   }, [router]);
-
-  useEffect(() => {
-    const depositReturned = () => {
-      setDepositLoading(false);
-      setStakeLoading(false);
-      setDepositStakeLoading(false);
-
-      setAmount0("");
-      setAmount1("");
-      removeQuote();
-      setWithdrawAmount("");
-      removeWithdrawQuote();
-
-      onBack();
-    };
-
-    const errorReturned = () => {
-      setDepositLoading(false);
-      setStakeLoading(false);
-      setDepositStakeLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
-    stores.emitter.on(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED, depositReturned);
-    stores.emitter.on(ACTIONS.LIQUIDITY_UNSTAKED, depositReturned);
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-
-    return () => {
-      stores.emitter.removeListener(ACTIONS.LIQUIDITY_REMOVED, depositReturned);
-      stores.emitter.removeListener(
-        ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED,
-        depositReturned
-      );
-      stores.emitter.removeListener(
-        ACTIONS.LIQUIDITY_UNSTAKED,
-        depositReturned
-      );
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-    };
-  }, [onBack, removeQuote, removeWithdrawQuote, setAmount0, setAmount1]);
 
   const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value == "" || !isNaN(+event.target.value)) {
@@ -290,8 +272,6 @@ export default function LiquidityManage() {
     let error = false;
 
     if (!error) {
-      setStakeLoading(true);
-
       stakeLiquidity({ pair });
     }
   };
@@ -343,8 +323,6 @@ export default function LiquidityManage() {
     }
 
     if (!error) {
-      setDepositStakeLoading(true);
-
       addLiquidityAndStake({
         token0: asset0,
         token1: asset1,
@@ -373,16 +351,11 @@ export default function LiquidityManage() {
     }
 
     if (!error && pair) {
-      setDepositLoading(true);
-      stores.dispatcher.dispatch({
-        type: ACTIONS.REMOVE_LIQUIDITY,
-        content: {
-          pair: pair,
-          token0: pair.token0,
-          token1: pair.token1,
-          quote: withdrawQuote,
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
+      removeLiquidity({
+        pair: pair,
+        token0: pair.token0,
+        token1: pair.token1,
+        slippage: slippage && slippage != "" ? slippage : "2",
       });
     }
   };
@@ -427,39 +400,24 @@ export default function LiquidityManage() {
       error = true;
     }
 
-    if (!error && pair) {
-      setDepositStakeLoading(true);
-      stores.dispatcher.dispatch({
-        type: ACTIONS.UNSTAKE_AND_REMOVE_LIQUIDITY,
-        content: {
-          pair: pair,
-          token0: pair.token0,
-          token1: pair.token1,
-          amount: withdrawAmount,
-          amount0: withdrawQuote?.amount0,
-          amount1: withdrawQuote?.amount1,
-          quote: withdrawQuote,
-          slippage: slippage && slippage != "" ? slippage : "2",
-        },
-      });
-    }
-  };
-
-  const onUnstake = () => {
-    if (!pair) return;
-    setStakeLoading(true);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.UNSTAKE_LIQUIDITY,
-      content: {
+    if (!error && pair && hasGauge(pair)) {
+      unstakeAndRemoveLiquidity({
         pair: pair,
         token0: pair.token0,
         token1: pair.token1,
         amount: withdrawAmount,
         amount0: withdrawQuote?.amount0,
         amount1: withdrawQuote?.amount1,
-        quote: withdrawQuote,
         slippage: slippage && slippage != "" ? slippage : "2",
-      },
+      });
+    }
+  };
+
+  const onUnstake = () => {
+    if (!pair || !hasGauge(pair)) return;
+    unstakeLiquidity({
+      amount: withdrawAmount,
+      pair,
     });
   };
 
@@ -468,12 +426,12 @@ export default function LiquidityManage() {
   };
 
   const toggleDeposit = () => {
-    if (depositLoading || isAddLiqLoading) return;
+    if (loading) return;
     setActiveTab("deposit");
   };
 
   const toggleWithdraw = () => {
-    if (depositLoading || isAddLiqLoading) return;
+    if (loading) return;
     setActiveTab("withdraw");
   };
 
@@ -717,13 +675,7 @@ export default function LiquidityManage() {
               <SmallInput
                 amountValue={slippage}
                 amountChanged={onSlippageChanged}
-                loading={
-                  stakeLoading ||
-                  isCreateGaugeLoading ||
-                  depositLoading ||
-                  isAddLiqLoading ||
-                  depositStakeLoading
-                }
+                loading={loading}
               />
             </div>
           </div>
@@ -772,13 +724,7 @@ export default function LiquidityManage() {
             <SmallInput
               amountValue={slippage}
               amountChanged={onSlippageChanged}
-              loading={
-                stakeLoading ||
-                isCreateGaugeLoading ||
-                depositLoading ||
-                isAddLiqLoading ||
-                depositStakeLoading
-              }
+              loading={loading}
             />
           </div>
         </div>
@@ -967,36 +913,23 @@ export default function LiquidityManage() {
                       variant="contained"
                       size="large"
                       className={
-                        (amount0 === "" && amount1 === "") ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
+                        (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
                           : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
-                      disabled={
-                        (amount0 === "" && amount1 === "") ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
-                      }
+                      disabled={(amount0 === "" && amount1 === "") || loading}
                       onClick={onDeposit}
                     >
                       <Typography className="font-bold capitalize">
-                        {depositLoading || isAddLiqLoading
-                          ? `Depositing`
-                          : `Deposit`}
+                        {isAddLiqLoading ? `Depositing` : `Deposit`}
                       </Typography>
-                      {depositLoading ||
-                        (isAddLiqLoading && (
-                          <CircularProgress
-                            size={10}
-                            className="ml-2 fill-white"
-                          />
-                        ))}
+                      {isAddLiqLoading || (
+                        <CircularProgress
+                          size={10}
+                          className="ml-2 fill-white"
+                        />
+                      )}
                     </Button>
                     {isBaseAsset(pair.token0) &&
                       isBaseAsset(pair.token1) &&
@@ -1006,22 +939,12 @@ export default function LiquidityManage() {
                           variant="contained"
                           size="large"
                           className={
-                            isCreateGaugeLoading ||
-                            depositLoading ||
-                            isAddLiqLoading ||
-                            stakeLoading ||
-                            depositStakeLoading
+                            loading
                               ? "min-w-[auto]"
                               : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                           }
                           color="primary"
-                          disabled={
-                            isCreateGaugeLoading ||
-                            depositLoading ||
-                            isAddLiqLoading ||
-                            stakeLoading ||
-                            depositStakeLoading
-                          }
+                          disabled={loading}
                           onClick={onCreateGauge}
                         >
                           <Typography className="font-bold capitalize">
@@ -1046,100 +969,72 @@ export default function LiquidityManage() {
                       variant="contained"
                       size="large"
                       className={
-                        (amount0 === "" && amount1 === "") ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
+                        (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
                           : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
-                      disabled={
-                        (amount0 === "" && amount1 === "") ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
-                      }
+                      disabled={(amount0 === "" && amount1 === "") || loading}
                       onClick={onDepositAndStake}
                     >
                       <Typography className="font-bold capitalize">
-                        {depositStakeLoading ? `Depositing` : `Deposit & Stake`}
+                        {isAddLiqAndStakeLoading
+                          ? `Depositing`
+                          : `Deposit & Stake`}
                       </Typography>
-                      {depositStakeLoading && (
+                      {isAddLiqAndStakeLoading && (
                         <CircularProgress
                           size={10}
                           className="ml-2 fill-white"
                         />
                       )}
                     </Button>
-
                     <Button
                       variant="contained"
                       size="large"
                       className={
-                        (amount0 === "" && amount1 === "") ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
+                        (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
                           : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
-                      disabled={
-                        (amount0 === "" && amount1 === "") ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
-                      }
+                      disabled={(amount0 === "" && amount1 === "") || loading}
                       onClick={onDeposit}
                     >
                       <Typography className="font-bold capitalize">
-                        {depositLoading || isAddLiqLoading
-                          ? `Depositing`
-                          : `Deposit LP`}
+                        {isAddLiqLoading ? `Depositing` : `Deposit LP`}
                       </Typography>
-                      {depositLoading ||
-                        (isAddLiqLoading && (
-                          <CircularProgress
-                            size={10}
-                            className="ml-2 fill-white"
-                          />
-                        ))}
+                      {isAddLiqLoading || (
+                        <CircularProgress
+                          size={10}
+                          className="ml-2 fill-white"
+                        />
+                      )}
                     </Button>
                     <Button
                       variant="contained"
                       size="large"
                       className={
                         (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
+                        loading
                           ? "min-w-[auto]"
                           : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                       }
                       color="primary"
                       disabled={
                         (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                        depositLoading ||
-                        isAddLiqLoading ||
-                        stakeLoading ||
-                        depositStakeLoading
+                        loading
                       }
                       onClick={onStake}
                     >
                       <Typography className="font-bold capitalize">
                         {pair.balance && BigNumber(pair.balance).gt(0)
-                          ? stakeLoading
+                          ? isStakeLiqLoading
                             ? `Staking`
                             : `Stake ${formatCurrency(pair.balance)} LP`
                           : `Nothing Unstaked`}
                       </Typography>
-                      {stakeLoading && (
+                      {isStakeLiqLoading && (
                         <CircularProgress
                           size={10}
                           className="ml-2 fill-white"
@@ -1159,17 +1054,17 @@ export default function LiquidityManage() {
                   size="large"
                   color="primary"
                   className={
-                    depositLoading || withdrawAmount === ""
+                    loading || withdrawAmount === ""
                       ? "min-w-[auto]"
                       : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                   }
-                  disabled={depositLoading || withdrawAmount === ""}
+                  disabled={loading || withdrawAmount === ""}
                   onClick={onWithdraw}
                 >
                   <Typography className="font-bold capitalize">
-                    {depositLoading ? `Withdrawing` : `Withdraw`}
+                    {isRemoveLiqLoading ? `Withdrawing` : `Withdraw`}
                   </Typography>
-                  {depositLoading && (
+                  {isRemoveLiqLoading && (
                     <CircularProgress size={10} className="ml-2 fill-white" />
                   )}
                 </Button>
@@ -1181,55 +1076,38 @@ export default function LiquidityManage() {
                     size="large"
                     color="primary"
                     className={
-                      depositLoading ||
-                      stakeLoading ||
-                      depositStakeLoading ||
-                      withdrawAmount === ""
+                      loading || withdrawAmount === ""
                         ? "min-w-[auto]"
                         : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                     }
-                    disabled={
-                      depositLoading ||
-                      stakeLoading ||
-                      depositStakeLoading ||
-                      withdrawAmount === ""
-                    }
+                    disabled={loading || withdrawAmount === ""}
                     onClick={onUnstakeAndWithdraw}
                   >
                     <Typography className="font-bold capitalize">
-                      {depositStakeLoading
+                      {isUnstakeAndRemoveLiqLoading
                         ? `Withdrawing`
                         : `Unstake and Withdraw`}
                     </Typography>
-                    {depositStakeLoading && (
+                    {isUnstakeAndRemoveLiqLoading && (
                       <CircularProgress size={10} className="ml-2 fill-white" />
                     )}
                   </Button>
-
                   <Button
                     variant="contained"
                     size="large"
                     className={
-                      withdrawAmount === "" ||
-                      depositLoading ||
-                      stakeLoading ||
-                      depositStakeLoading
+                      withdrawAmount === "" || loading
                         ? "min-w-[auto]"
                         : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                     }
                     color="primary"
-                    disabled={
-                      withdrawAmount === "" ||
-                      depositLoading ||
-                      stakeLoading ||
-                      depositStakeLoading
-                    }
+                    disabled={withdrawAmount === "" || loading}
                     onClick={onUnstake}
                   >
                     <Typography className="font-bold capitalize">
-                      {stakeLoading ? `Unstaking` : `Unstake LP`}
+                      {isUnstakeLiqLoading ? `Unstaking` : `Unstake LP`}
                     </Typography>
-                    {stakeLoading && (
+                    {isUnstakeLiqLoading && (
                       <CircularProgress size={10} className="ml-2 fill-white" />
                     )}
                   </Button>
@@ -1237,30 +1115,24 @@ export default function LiquidityManage() {
                     variant="contained"
                     size="large"
                     className={
-                      (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                      depositLoading ||
-                      stakeLoading ||
-                      depositStakeLoading
+                      (pair.balance && BigNumber(pair.balance).eq(0)) || loading
                         ? "min-w-[auto]"
                         : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
                     }
                     color="primary"
                     disabled={
-                      (pair.balance && BigNumber(pair.balance).eq(0)) ||
-                      depositLoading ||
-                      stakeLoading ||
-                      depositStakeLoading
+                      (pair.balance && BigNumber(pair.balance).eq(0)) || loading
                     }
                     onClick={onWithdraw}
                   >
                     <Typography className="font-bold capitalize">
                       {pair.balance && BigNumber(pair.balance).gt(0)
-                        ? depositLoading
+                        ? isRemoveLiqLoading
                           ? `Withdrawing`
                           : `Withdraw ${formatCurrency(pair.balance)} LP`
                         : `Nothing Unstaked`}
                     </Typography>
-                    {depositLoading && (
+                    {isRemoveLiqLoading && (
                       <CircularProgress size={10} className="ml-2 fill-white" />
                     )}
                   </Button>

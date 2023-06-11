@@ -11,7 +11,13 @@ import {
   writeApprove,
   writeContractWrapper,
 } from "../../../lib/global/mutations";
-import { BaseAsset, Gauge, Pair, hasGauge } from "../../../stores/types/types";
+import {
+  BaseAsset,
+  Gauge,
+  Pair,
+  RouteAsset,
+  hasGauge,
+} from "../../../stores/types/types";
 import {
   ACTIONS,
   CONTRACTS,
@@ -26,6 +32,8 @@ import stores from "../../../stores";
 import { getTXUUID } from "../../../utils/utils";
 
 import { getPairByAddress } from "./queries";
+
+// --- hooks ---
 
 export function useCreatePairStake(onSuccess?: () => void) {
   const queryClient = useQueryClient();
@@ -120,6 +128,59 @@ export function useAddLiquidityAndStake(onSuccess?: () => void) {
   });
 }
 
+export function useRemoveLiquidity(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: {
+      token0: BaseAsset | RouteAsset;
+      token1: BaseAsset | RouteAsset;
+      pair: Pair;
+      slippage: string;
+    }) => removeLiquidity(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess && onSuccess();
+    },
+  });
+}
+
+export function useUnstakeAndRemoveLiquidity(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: {
+      token0: BaseAsset | RouteAsset;
+      token1: BaseAsset | RouteAsset;
+      amount: string;
+      amount0: string | undefined;
+      amount1: string | undefined;
+      pair: Gauge;
+      slippage: string;
+    }) => unstakeAndRemoveLiquidity(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess && onSuccess();
+    },
+  });
+}
+
+export function useUnstakeLiquidity(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: { amount: string; pair: Gauge }) =>
+      unstakeLiquidity(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess && onSuccess();
+    },
+  });
+}
+
 export function useCreateGauge(onSuccess?: () => void) {
   const { address } = useAccount();
   return useMutation({
@@ -127,6 +188,8 @@ export function useCreateGauge(onSuccess?: () => void) {
     onSuccess,
   });
 }
+
+// --- functions ---
 
 const createPairStake = async (
   account: Address | undefined,
@@ -1261,4 +1324,342 @@ const createGauge = async (
   });
 
   await writeCreateGauge(walletClient, createGaugeTXID, pair.address);
+};
+
+const removeLiquidity = async (
+  account: Address | undefined,
+  options: {
+    token0: BaseAsset | RouteAsset;
+    token1: BaseAsset | RouteAsset;
+    pair: Pair;
+    slippage: string;
+  }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not foundva");
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    throw new Error("wallet not found");
+  }
+
+  const { token0, token1, pair, slippage } = options;
+  if (!token0 || !token1 || !pair) {
+    throw new Error("invalid options in remove liq");
+  }
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let allowanceTXID = getTXUUID();
+  let withdrawTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Remove liquidity from ${pair.symbol}`,
+    type: "Liquidity",
+    verb: "Liquidity Removed",
+    transactions: [
+      {
+        uuid: allowanceTXID,
+        description: `Checking your ${pair.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: withdrawTXID,
+        description: `Withdraw tokens from the pool`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  // CHECK ALLOWANCES AND SET TX DISPLAY
+  const allowance = await getWithdrawAllowance(pair, account);
+  if (!allowance) throw new Error("Error getting withdraw allowance");
+  if (!pair.balance) throw new Error("No pair balance");
+  if (BigNumber(allowance).lt(pair.balance)) {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowanceTXID,
+      description: `Allow the router to spend your ${pair.symbol}`,
+    });
+  } else {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowanceTXID,
+      description: `Allowance on ${pair.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  if (BigNumber(allowance).lt(pair.balance)) {
+    await writeApprove(
+      walletClient,
+      allowanceTXID,
+      pair.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  // SUBMIT WITHDRAW TRANSACTION
+  const sendAmount = BigNumber(pair.balance)
+    .times(10 ** PAIR_DECIMALS)
+    .toFixed(0);
+
+  const [amountA, amountB] = await viemClient.readContract({
+    address: CONTRACTS.ROUTER_ADDRESS,
+    abi: CONTRACTS.ROUTER_ABI,
+    functionName: "quoteRemoveLiquidity",
+    args: [token0.address, token1.address, pair.stable, BigInt(sendAmount)],
+  });
+
+  const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  const deadline = "" + moment().add(600, "seconds").unix();
+  const sendAmount0Min = BigNumber(amountA.toString())
+    .times(sendSlippage)
+    .toFixed(0);
+  const sendAmount1Min = BigNumber(amountB.toString())
+    .times(sendSlippage)
+    .toFixed(0);
+
+  await writeRemoveLiquidty(
+    walletClient,
+    withdrawTXID,
+    token0.address,
+    token1.address,
+    pair.stable,
+    BigInt(sendAmount),
+    sendAmount0Min,
+    sendAmount1Min,
+    deadline
+  );
+};
+
+const getWithdrawAllowance = async (pair: Pair, address: `0x${string}`) => {
+  const allowance = await viemClient.readContract({
+    address: pair.address,
+    abi: CONTRACTS.ERC20_ABI,
+    functionName: "allowance",
+    args: [address, CONTRACTS.ROUTER_ADDRESS],
+  });
+
+  return formatUnits(allowance, PAIR_DECIMALS);
+};
+
+const writeRemoveLiquidty = async (
+  walletClient: WalletClient,
+  withdrawTXID: string,
+  token0Address: `0x${string}`,
+  token1Address: `0x${string}`,
+  stable: boolean,
+  sendAmount: bigint,
+  sendAmount0Min: string,
+  sendAmount1Min: string,
+  deadline: string
+) => {
+  const [account] = await walletClient.getAddresses();
+  const write = async () => {
+    const { request } = await viemClient.simulateContract({
+      account,
+      abi: CONTRACTS.ROUTER_ABI,
+      address: CONTRACTS.ROUTER_ADDRESS,
+      functionName: "removeLiquidity",
+      args: [
+        token0Address,
+        token1Address,
+        stable,
+        sendAmount,
+        BigInt(sendAmount0Min),
+        BigInt(sendAmount1Min),
+        account,
+        BigInt(deadline),
+      ],
+    });
+    const txHash = await walletClient.writeContract(request);
+    return txHash;
+  };
+  await writeContractWrapper(withdrawTXID, write);
+};
+
+const unstakeAndRemoveLiquidity = async (
+  account: Address | undefined,
+  options: {
+    token0: BaseAsset | RouteAsset;
+    token1: BaseAsset | RouteAsset;
+    amount: string;
+    amount0: string | undefined;
+    amount1: string | undefined;
+    pair: Gauge;
+    slippage: string;
+  }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not found");
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    throw new Error("wallet not found");
+  }
+
+  const { token0, token1, amount, amount0, amount1, pair, slippage } = options;
+  if (!amount0 || !amount1) {
+    throw new Error("invalid quote options in unstake and remove liq");
+  }
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let allowanceTXID = getTXUUID();
+  let withdrawTXID = getTXUUID();
+  let unstakeTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Remove liquidity from ${pair.symbol}`,
+    type: "Liquidity",
+    verb: "Liquidity Removed",
+    transactions: [
+      {
+        uuid: allowanceTXID,
+        description: `Checking your ${pair.symbol} allowance`,
+        status: "WAITING",
+      },
+      {
+        uuid: unstakeTXID,
+        description: `Unstake LP tokens from the gauge`,
+        status: "WAITING",
+      },
+      {
+        uuid: withdrawTXID,
+        description: `Withdraw tokens from the pool`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  // CHECK ALLOWANCES AND SET TX DISPLAY
+  const allowance = await getWithdrawAllowance(pair, account);
+  if (!allowance) throw new Error("Error getting withdraw allowance");
+
+  if (BigNumber(allowance).lt(amount)) {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowanceTXID,
+      description: `Allow the router to spend your ${pair.symbol}`,
+    });
+  } else {
+    stores.emitter.emit(ACTIONS.TX_STATUS, {
+      uuid: allowanceTXID,
+      description: `Allowance on ${pair.symbol} sufficient`,
+      status: "DONE",
+    });
+  }
+
+  // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  if (BigNumber(allowance).lt(amount)) {
+    await writeApprove(
+      walletClient,
+      allowanceTXID,
+      pair.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  // SUBMIT DEPOSIT TRANSACTION
+  const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  const sendAmount = BigNumber(amount)
+    .times(10 ** PAIR_DECIMALS)
+    .toFixed(0);
+  const deadline = "" + moment().add(600, "seconds").unix();
+  const sendAmount0Min = BigNumber(amount0)
+    .times(sendSlippage)
+    .times(10 ** token0.decimals)
+    .toFixed(0);
+  const sendAmount1Min = BigNumber(amount1)
+    .times(sendSlippage)
+    .times(10 ** token1.decimals)
+    .toFixed(0);
+
+  const withdraw = async () => {
+    const { request } = await viemClient.simulateContract({
+      account,
+      address: pair.gauge?.address,
+      abi: CONTRACTS.GAUGE_ABI,
+      functionName: "withdraw",
+      args: [BigInt(sendAmount)],
+    });
+    const txHash = await walletClient.writeContract(request);
+    return txHash;
+  };
+
+  await writeContractWrapper(unstakeTXID, withdraw);
+
+  const balanceOf = await viemClient.readContract({
+    abi: CONTRACTS.PAIR_ABI,
+    address: pair.address,
+    functionName: "balanceOf",
+    args: [account],
+  });
+
+  await writeRemoveLiquidty(
+    walletClient,
+    withdrawTXID,
+    token0.address,
+    token1.address,
+    pair.stable,
+    balanceOf,
+    sendAmount0Min,
+    sendAmount1Min,
+    deadline
+  );
+};
+
+const unstakeLiquidity = async (
+  account: Address | undefined,
+  options: { amount: string; pair: Gauge }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    return null;
+  }
+
+  const walletClient = await getWalletClient({ chainId: canto.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    return null;
+  }
+
+  const { amount, pair } = options;
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let unstakeTXID = getTXUUID();
+
+  stores.emitter.emit(ACTIONS.TX_ADDED, {
+    title: `Unstake liquidity from gauge`,
+    type: "Liquidity",
+    verb: "Liquidity Unstaked",
+    transactions: [
+      {
+        uuid: unstakeTXID,
+        description: `Unstake LP tokens from the gauge`,
+        status: "WAITING",
+      },
+    ],
+  });
+
+  // SUBMIT WITHDRAW TRANSACTION
+  const sendAmount = BigNumber(amount)
+    .times(10 ** PAIR_DECIMALS)
+    .toFixed(0);
+
+  const withdraw = async () => {
+    const { request } = await viemClient.simulateContract({
+      account,
+      address: pair.gauge?.address,
+      abi: CONTRACTS.GAUGE_ABI,
+      functionName: "withdraw",
+      args: [BigInt(sendAmount)],
+    });
+    const txHash = await walletClient.writeContract(request);
+    return txHash;
+  };
+
+  await writeContractWrapper(unstakeTXID, withdraw);
 };

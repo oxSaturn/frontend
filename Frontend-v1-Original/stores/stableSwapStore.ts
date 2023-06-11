@@ -68,77 +68,6 @@ class Store {
       function (this: Store, payload: { type: string; content: any }) {
         console.log("<< Payload of dispatched event", payload);
         switch (payload.type) {
-          // case ACTIONS.CONFIGURE:
-          //   this.configureAccStore();
-          //   break;
-          // case ACTIONS.CONFIGURE_SS:
-          //   this.configure();
-          //   break;
-          // case ACTIONS.GET_BALANCES:
-          //   this.getBalances();
-          //   break;
-          // case ACTIONS.SEARCH_ASSET:
-          //   this.searchBaseAsset(payload);
-          //   break;
-
-          // case ACTIONS.UPDATED:
-          //   break;
-
-          // LIQUIDITY
-          // case ACTIONS.CREATE_PAIR_AND_STAKE:
-          //   this.createPairStake(payload);
-          //   break;
-          // case ACTIONS.CREATE_PAIR_AND_DEPOSIT:
-          //   this.createPairDeposit(payload);
-          //   break;
-          // case ACTIONS.ADD_LIQUIDITY:
-          //   this.addLiquidity(payload);
-          //   break;
-          // case ACTIONS.STAKE_LIQUIDITY:
-          //   this.stakeLiquidity(payload);
-          //   break;
-          // case ACTIONS.ADD_LIQUIDITY_AND_STAKE:
-          //   this.addLiquidityAndStake(payload);
-          //   break;
-          // case ACTIONS.QUOTE_ADD_LIQUIDITY:
-          //   this.quoteAddLiquidity(payload);
-          //   break;
-          // case ACTIONS.GET_LIQUIDITY_BALANCES:
-          //   this.getLiquidityBalances(payload);
-          //   break;
-          case ACTIONS.REMOVE_LIQUIDITY:
-            this.removeLiquidity(payload);
-            break;
-          case ACTIONS.UNSTAKE_AND_REMOVE_LIQUIDITY:
-            this.unstakeAndRemoveLiquidity(payload);
-            break;
-          // case ACTIONS.QUOTE_REMOVE_LIQUIDITY:
-          //   this.quoteRemoveLiquidity(payload);
-          //   break;
-          case ACTIONS.UNSTAKE_LIQUIDITY:
-            this.unstakeLiquidity(payload);
-            break;
-          // case ACTIONS.CREATE_GAUGE:
-          //   this.createGauge(payload);
-          //   break;
-
-          // SWAP
-          // case ACTIONS.QUOTE_SWAP:
-          //   this.quoteSwap(payload);
-          //   break;
-          // case ACTIONS.SWAP:
-          //   this.swap(payload);
-          //   break;
-
-          // WRAP / UNWRAP:
-          // case ACTIONS.WRAP_UNWRAP:
-          //   this.wrapOrUnwrap(payload);
-          //   break;
-
-          // VESTING
-          // case ACTIONS.GET_VEST_NFTS:
-          //   this.getVestNFTs();
-          //   break;
           case ACTIONS.CREATE_VEST:
             this.createVest(payload);
             break;
@@ -157,20 +86,6 @@ class Store {
           case ACTIONS.MERGE_NFT:
             this.mergeNft(payload);
             break;
-
-          //VOTE
-          // case ACTIONS.VOTE:
-          //   this.vote(payload);
-          //   break;
-          // case ACTIONS.GET_VEST_VOTES:
-          //   this.getVestVotes(payload);
-          //   break;
-          // case ACTIONS.CREATE_BRIBE:
-          //   this.createBribe(payload);
-          //   break;
-          // case ACTIONS.GET_VEST_BALANCES:
-          //   this.getVestBalances(payload);
-          //   break;
 
           //REWARDS
           case ACTIONS.CLAIM_X_BRIBE:
@@ -192,20 +107,6 @@ class Store {
           case ACTIONS.CLAIM_ALL_REWARDS:
             this.claimAllRewards(payload);
             break;
-
-          // case ACTIONS.BRIBE_AUTO_BRIBE:
-          //   this.bribeAutoBribe(payload);
-          //   break;
-
-          // case ACTIONS.BUY:
-          //   this.buy(payload);
-          //   break;
-          // case ACTIONS.CLAIM_EARNED:
-          //   this.claimEarned(payload);
-          //   break;
-          // case ACTIONS.CLAIM_REF_EARNED:
-          //   this.claimRefEarned(payload);
-          //   break;
 
           default: {
           }
@@ -3330,327 +3231,327 @@ class Store {
   //   }
   // };
 
-  removeLiquidity = async (payload: {
-    type: string;
-    content: {
-      token0: BaseAsset;
-      token1: BaseAsset;
-      pair: Pair;
-      slippage: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // removeLiquidity = async (payload: {
+  //   type: string;
+  //   content: {
+  //     token0: BaseAsset;
+  //     token1: BaseAsset;
+  //     pair: Pair;
+  //     slippage: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { token0, token1, pair, slippage } = payload.content;
+  //     const { token0, token1, pair, slippage } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let withdrawTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let withdrawTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Remove liquidity from ${pair.symbol}`,
-        type: "Liquidity",
-        verb: "Liquidity Removed",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your ${pair.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: withdrawTXID,
-            description: `Withdraw tokens from the pool`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Remove liquidity from ${pair.symbol}`,
+  //       type: "Liquidity",
+  //       verb: "Liquidity Removed",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${pair.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: withdrawTXID,
+  //           description: `Withdraw tokens from the pool`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getWithdrawAllowance(pair, account);
-      if (!allowance) throw new Error("Error getting withdraw allowance");
-      if (!pair.balance) throw new Error("No pair balance");
-      if (BigNumber(allowance).lt(pair.balance)) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allow the router to spend your ${pair.symbol}`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on ${pair.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     const allowance = await this._getWithdrawAllowance(pair, account);
+  //     if (!allowance) throw new Error("Error getting withdraw allowance");
+  //     if (!pair.balance) throw new Error("No pair balance");
+  //     if (BigNumber(allowance).lt(pair.balance)) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allow the router to spend your ${pair.symbol}`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${pair.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(pair.balance)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          pair.address,
-          CONTRACTS.ROUTER_ADDRESS
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(pair.balance)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         pair.address,
+  //         CONTRACTS.ROUTER_ADDRESS
+  //       );
+  //     }
 
-      // SUBMIT WITHDRAW TRANSACTION
-      const sendAmount = BigNumber(pair.balance)
-        .times(10 ** PAIR_DECIMALS)
-        .toFixed(0);
+  //     // SUBMIT WITHDRAW TRANSACTION
+  //     const sendAmount = BigNumber(pair.balance)
+  //       .times(10 ** PAIR_DECIMALS)
+  //       .toFixed(0);
 
-      const [amountA, amountB] = await viemClient.readContract({
-        address: CONTRACTS.ROUTER_ADDRESS,
-        abi: CONTRACTS.ROUTER_ABI,
-        functionName: "quoteRemoveLiquidity",
-        args: [token0.address, token1.address, pair.stable, BigInt(sendAmount)],
-      });
+  //     const [amountA, amountB] = await viemClient.readContract({
+  //       address: CONTRACTS.ROUTER_ADDRESS,
+  //       abi: CONTRACTS.ROUTER_ABI,
+  //       functionName: "quoteRemoveLiquidity",
+  //       args: [token0.address, token1.address, pair.stable, BigInt(sendAmount)],
+  //     });
 
-      const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const deadline = "" + moment().add(600, "seconds").unix();
-      const sendAmount0Min = BigNumber(amountA.toString())
-        .times(sendSlippage)
-        .toFixed(0);
-      const sendAmount1Min = BigNumber(amountB.toString())
-        .times(sendSlippage)
-        .toFixed(0);
+  //     const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  //     const deadline = "" + moment().add(600, "seconds").unix();
+  //     const sendAmount0Min = BigNumber(amountA.toString())
+  //       .times(sendSlippage)
+  //       .toFixed(0);
+  //     const sendAmount1Min = BigNumber(amountB.toString())
+  //       .times(sendSlippage)
+  //       .toFixed(0);
 
-      await this.writeRemoveLiquidty(
-        walletClient,
-        withdrawTXID,
-        token0.address,
-        token1.address,
-        pair.stable,
-        BigInt(sendAmount),
-        sendAmount0Min,
-        sendAmount1Min,
-        deadline
-      );
+  //     await this.writeRemoveLiquidty(
+  //       walletClient,
+  //       withdrawTXID,
+  //       token0.address,
+  //       token1.address,
+  //       pair.stable,
+  //       BigInt(sendAmount),
+  //       sendAmount0Min,
+  //       sendAmount1Min,
+  //       deadline
+  //     );
 
-      // this._getPairInfo(account);
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
-      this._getSpecificAssetInfo(account, token0.address);
-      this._getSpecificAssetInfo(account, token1.address);
-      this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     // this._getPairInfo(account);
+  //     queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
+  //     this._getSpecificAssetInfo(account, token0.address);
+  //     this._getSpecificAssetInfo(account, token1.address);
+  //     this.emitter.emit(ACTIONS.LIQUIDITY_REMOVED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  unstakeAndRemoveLiquidity = async (payload: {
-    type: string;
-    content: {
-      token0: BaseAsset;
-      token1: BaseAsset;
-      amount: string;
-      amount0: string;
-      amount1: string;
-      pair: Gauge;
-      slippage: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // unstakeAndRemoveLiquidity = async (payload: {
+  //   type: string;
+  //   content: {
+  //     token0: BaseAsset;
+  //     token1: BaseAsset;
+  //     amount: string;
+  //     amount0: string;
+  //     amount1: string;
+  //     pair: Gauge;
+  //     slippage: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { token0, token1, amount, amount0, amount1, pair, slippage } =
-        payload.content;
+  //     const { token0, token1, amount, amount0, amount1, pair, slippage } =
+  //       payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let withdrawTXID = this.getTXUUID();
-      let unstakeTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let withdrawTXID = this.getTXUUID();
+  //     let unstakeTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Remove liquidity from ${pair.symbol}`,
-        type: "Liquidity",
-        verb: "Liquidity Removed",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your ${pair.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: unstakeTXID,
-            description: `Unstake LP tokens from the gauge`,
-            status: "WAITING",
-          },
-          {
-            uuid: withdrawTXID,
-            description: `Withdraw tokens from the pool`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Remove liquidity from ${pair.symbol}`,
+  //       type: "Liquidity",
+  //       verb: "Liquidity Removed",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${pair.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: unstakeTXID,
+  //           description: `Unstake LP tokens from the gauge`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: withdrawTXID,
+  //           description: `Withdraw tokens from the pool`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getWithdrawAllowance(pair, account);
-      if (!allowance) throw new Error("Error getting withdraw allowance");
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     const allowance = await this._getWithdrawAllowance(pair, account);
+  //     if (!allowance) throw new Error("Error getting withdraw allowance");
 
-      if (BigNumber(allowance).lt(amount)) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allow the router to spend your ${pair.symbol}`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on ${pair.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allow the router to spend your ${pair.symbol}`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${pair.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(amount)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          pair.address,
-          CONTRACTS.ROUTER_ADDRESS
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         pair.address,
+  //         CONTRACTS.ROUTER_ADDRESS
+  //       );
+  //     }
 
-      // SUBMIT DEPOSIT TRANSACTION
-      const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const sendAmount = BigNumber(amount)
-        .times(10 ** PAIR_DECIMALS)
-        .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
-      const sendAmount0Min = BigNumber(amount0)
-        .times(sendSlippage)
-        .times(10 ** token0.decimals)
-        .toFixed(0);
-      const sendAmount1Min = BigNumber(amount1)
-        .times(sendSlippage)
-        .times(10 ** token1.decimals)
-        .toFixed(0);
+  //     // SUBMIT DEPOSIT TRANSACTION
+  //     const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  //     const sendAmount = BigNumber(amount)
+  //       .times(10 ** PAIR_DECIMALS)
+  //       .toFixed(0);
+  //     const deadline = "" + moment().add(600, "seconds").unix();
+  //     const sendAmount0Min = BigNumber(amount0)
+  //       .times(sendSlippage)
+  //       .times(10 ** token0.decimals)
+  //       .toFixed(0);
+  //     const sendAmount1Min = BigNumber(amount1)
+  //       .times(sendSlippage)
+  //       .times(10 ** token1.decimals)
+  //       .toFixed(0);
 
-      const withdrawFunction = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: pair.gauge?.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "withdraw",
-          args: [BigInt(sendAmount)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const withdrawFunction = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: pair.gauge?.address,
+  //         abi: CONTRACTS.GAUGE_ABI,
+  //         functionName: "withdraw",
+  //         args: [BigInt(sendAmount)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(unstakeTXID, withdrawFunction);
+  //     await this._writeContractWrapper(unstakeTXID, withdrawFunction);
 
-      const balanceOf = await viemClient.readContract({
-        abi: CONTRACTS.PAIR_ABI,
-        address: pair.address,
-        functionName: "balanceOf",
-        args: [account],
-      });
+  //     const balanceOf = await viemClient.readContract({
+  //       abi: CONTRACTS.PAIR_ABI,
+  //       address: pair.address,
+  //       functionName: "balanceOf",
+  //       args: [account],
+  //     });
 
-      await this.writeRemoveLiquidty(
-        walletClient,
-        withdrawTXID,
-        token0.address,
-        token1.address,
-        pair.stable,
-        balanceOf,
-        sendAmount0Min,
-        sendAmount1Min,
-        deadline
-      );
+  //     await this.writeRemoveLiquidty(
+  //       walletClient,
+  //       withdrawTXID,
+  //       token0.address,
+  //       token1.address,
+  //       pair.stable,
+  //       balanceOf,
+  //       sendAmount0Min,
+  //       sendAmount1Min,
+  //       deadline
+  //     );
 
-      // this._getPairInfo(account);
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
-      this._getSpecificAssetInfo(account, token0.address);
-      this._getSpecificAssetInfo(account, token1.address);
-      this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     // this._getPairInfo(account);
+  //     queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
+  //     this._getSpecificAssetInfo(account, token0.address);
+  //     this._getSpecificAssetInfo(account, token1.address);
+  //     this.emitter.emit(ACTIONS.REMOVE_LIQUIDITY_AND_UNSTAKED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  unstakeLiquidity = async (payload: {
-    type: string;
-    content: { amount: string; pair: Gauge };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // unstakeLiquidity = async (payload: {
+  //   type: string;
+  //   content: { amount: string; pair: Gauge };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { amount, pair } = payload.content;
+  //     const { amount, pair } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let unstakeTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let unstakeTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Unstake liquidity from gauge`,
-        type: "Liquidity",
-        verb: "Liquidity Unstaked",
-        transactions: [
-          {
-            uuid: unstakeTXID,
-            description: `Unstake LP tokens from the gauge`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Unstake liquidity from gauge`,
+  //       type: "Liquidity",
+  //       verb: "Liquidity Unstaked",
+  //       transactions: [
+  //         {
+  //           uuid: unstakeTXID,
+  //           description: `Unstake LP tokens from the gauge`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // SUBMIT WITHDRAW TRANSACTION
-      const sendAmount = BigNumber(amount)
-        .times(10 ** PAIR_DECIMALS)
-        .toFixed(0);
+  //     // SUBMIT WITHDRAW TRANSACTION
+  //     const sendAmount = BigNumber(amount)
+  //       .times(10 ** PAIR_DECIMALS)
+  //       .toFixed(0);
 
-      const withdrawFunction = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: pair.gauge?.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "withdraw",
-          args: [BigInt(sendAmount)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const withdrawFunction = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: pair.gauge?.address,
+  //         abi: CONTRACTS.GAUGE_ABI,
+  //         functionName: "withdraw",
+  //         args: [BigInt(sendAmount)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(unstakeTXID, withdrawFunction);
+  //     await this._writeContractWrapper(unstakeTXID, withdrawFunction);
 
-      // this._getPairInfo(account);
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
-      this.emitter.emit(ACTIONS.LIQUIDITY_UNSTAKED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     // this._getPairInfo(account);
+  //     queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITHOUT_GAUGES]);
+  //     this.emitter.emit(ACTIONS.LIQUIDITY_UNSTAKED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   // quoteRemoveLiquidity = async (payload: {
   //   type: string;
@@ -6253,40 +6154,40 @@ class Store {
     }
   };
 
-  writeRemoveLiquidty = async (
-    walletClient: WalletClient,
-    withdrawTXID: string,
-    token0Address: `0x${string}`,
-    token1Address: `0x${string}`,
-    stable: boolean,
-    sendAmount: bigint,
-    sendAmount0Min: string,
-    sendAmount1Min: string,
-    deadline: string
-  ) => {
-    const [account] = await walletClient.getAddresses();
-    const write = async () => {
-      const { request } = await viemClient.simulateContract({
-        account,
-        abi: CONTRACTS.ROUTER_ABI,
-        address: CONTRACTS.ROUTER_ADDRESS,
-        functionName: "removeLiquidity",
-        args: [
-          token0Address,
-          token1Address,
-          stable,
-          sendAmount,
-          BigInt(sendAmount0Min),
-          BigInt(sendAmount1Min),
-          account,
-          BigInt(deadline),
-        ],
-      });
-      const txHash = await walletClient.writeContract(request);
-      return txHash;
-    };
-    await this._writeContractWrapper(withdrawTXID, write);
-  };
+  // writeRemoveLiquidty = async (
+  //   walletClient: WalletClient,
+  //   withdrawTXID: string,
+  //   token0Address: `0x${string}`,
+  //   token1Address: `0x${string}`,
+  //   stable: boolean,
+  //   sendAmount: bigint,
+  //   sendAmount0Min: string,
+  //   sendAmount1Min: string,
+  //   deadline: string
+  // ) => {
+  //   const [account] = await walletClient.getAddresses();
+  //   const write = async () => {
+  //     const { request } = await viemClient.simulateContract({
+  //       account,
+  //       abi: CONTRACTS.ROUTER_ABI,
+  //       address: CONTRACTS.ROUTER_ADDRESS,
+  //       functionName: "removeLiquidity",
+  //       args: [
+  //         token0Address,
+  //         token1Address,
+  //         stable,
+  //         sendAmount,
+  //         BigInt(sendAmount0Min),
+  //         BigInt(sendAmount1Min),
+  //         account,
+  //         BigInt(deadline),
+  //       ],
+  //     });
+  //     const txHash = await walletClient.writeContract(request);
+  //     return txHash;
+  //   };
+  //   await this._writeContractWrapper(withdrawTXID, write);
+  // };
 
   writeCreateGauge = async (
     walletClient: WalletClient,
