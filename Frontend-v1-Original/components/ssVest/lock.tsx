@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   Paper,
   Typography,
@@ -17,8 +17,6 @@ import moment from "moment";
 import { ArrowBack } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 
 import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 
@@ -26,6 +24,7 @@ import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
 import { lockOptions } from "./lockDuration";
+import { useCreateVest } from "./lib/mutations";
 
 export default function Lock({
   govToken,
@@ -37,8 +36,6 @@ export default function Lock({
   const inputEl = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
 
-  const [lockLoading, setLockLoading] = useState(false);
-
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
   const [selectedValue, setSelectedValue] = useState<string | null>("8"); // select 1 week by default
@@ -47,22 +44,9 @@ export default function Lock({
   );
   const [selectedDateError] = useState(false);
 
-  useEffect(() => {
-    const lockReturned = () => {
-      setLockLoading(false);
-      router.push("/vest");
-    };
-    const errorReturned = () => {
-      setLockLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.CREATE_VEST_RETURNED, lockReturned);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(ACTIONS.CREATE_VEST_RETURNED, lockReturned);
-    };
-  }, [router]);
+  const { mutate: createVest, isLoading: lockLoading } = useCreateVest(() => {
+    router.push("/vest");
+  });
 
   const setAmountPercent = (percent: number) => {
     setAmount(
@@ -113,16 +97,10 @@ export default function Lock({
     }
 
     if (!error) {
-      setLockLoading(true);
-
       const now = moment();
       const expiry = moment(selectedDate).add(1, "days");
       const secondsToExpire = expiry.diff(now, "seconds");
-
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_VEST,
-        content: { amount, unlockTime: secondsToExpire },
-      });
+      createVest({ amount, unlockTime: secondsToExpire.toString() });
     }
   };
 

@@ -34,10 +34,9 @@ import moment from "moment";
 import BigNumber from "bignumber.js";
 import Link from "next/link";
 
-import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
-import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+import { useResetVest } from "../ssVest/lib/mutations";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -174,7 +173,7 @@ export default function EnhancedTable({
   veToken: VeToken | undefined;
 }) {
   const router = useRouter();
-
+  const { mutate: resetNft } = useResetVest();
   const [order, setOrder] = React.useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = React.useState<OrderBy>("Lock Value");
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -213,10 +212,7 @@ export default function EnhancedTable({
     lockEnds: string;
     id: string;
   }) => {
-    stores.dispatcher.dispatch({
-      type: ACTIONS.RESET_VEST,
-      content: { tokenID: nft.id },
-    });
+    resetNft(nft.id);
   };
 
   // const emptyRows =

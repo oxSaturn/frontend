@@ -11,13 +11,13 @@ import {
 import viemClient, {
   chunkArray,
   multicallChunks,
-} from "../../stores/connectors/viem";
-import stores from "../../stores";
+} from "../../../stores/connectors/viem";
+import stores from "../../../stores";
 import {
   CONTRACTS,
   ACTIONS,
   QUERY_KEYS,
-} from "../../stores/constants/constants";
+} from "../../../stores/constants/constants";
 import {
   hasGauge,
   VeDistReward,
@@ -26,9 +26,10 @@ import {
   VeToken,
   VestNFT,
   Pair,
-} from "../../stores/types/types";
-import { useGovToken, useVeToken, usePairs } from "../../lib/global/queries";
-import { useVestNfts } from "../ssVests/queries";
+  Rewards,
+} from "../../../stores/types/types";
+import { useGovToken, useVeToken, usePairs } from "../../../lib/global/queries";
+import { useVestNfts } from "../../ssVests/queries";
 
 const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
 
@@ -308,19 +309,7 @@ export const getRewardBalances = async (
 
 export const useRewards = (
   tokenID: string | undefined,
-  onSuccess:
-    | ((
-        _data:
-          | {
-              xBribes: Gauge[];
-              xxBribes: Gauge[];
-              rewards: Gauge[];
-              oBlotrRewards: Gauge[];
-              veDist: VeDistReward[];
-            }
-          | undefined
-      ) => void)
-    | undefined
+  onSuccess?: (_data: Rewards | undefined) => void
 ) => {
   const { address } = useAccount();
   const { data: veToken } = useVeToken();

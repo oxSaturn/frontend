@@ -18,7 +18,7 @@ import { useVeToken } from "../../lib/global/queries";
 import { useVestNfts } from "../ssVests/queries";
 
 import RewardsTable from "./ssRewardsTable";
-import { useRewards } from "./queries";
+import { useRewards } from "./lib/queries";
 
 const initialEmptyToken: VestNFT = {
   id: "0",

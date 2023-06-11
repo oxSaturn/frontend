@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRouter } from "next/router";
 import {
   Button,
@@ -10,15 +11,13 @@ import {
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
-import { ACTIONS } from "../../stores/constants/constants";
 import { useVeToken } from "../../lib/global/queries";
 import { useVestNfts } from "../ssVests/queries";
 
 import classes from "./ssVest.module.css";
+import { useMergeVest } from "./lib/mutations";
 
 export function MergeNFT() {
   const router = useRouter();
@@ -28,28 +27,17 @@ export function MergeNFT() {
   const { data: nfts } = useVestNfts();
   const { data: veToken } = useVeToken();
 
+  const { mutate } = useMergeVest(() => {
+    router.push("/vest");
+  });
+
   const onMergeNFT = (from: string, to: string | null) => {
     if (to === null) return;
-    stores.dispatcher.dispatch({
-      type: ACTIONS.MERGE_NFT,
-      content: {
-        from,
-        to,
-      },
+    mutate({
+      from,
+      to,
     });
   };
-
-  useEffect(() => {
-    const nftMerged = () => {
-      router.push("/vest");
-    };
-
-    // wait for nft merged
-    stores.emitter.on(ACTIONS.MERGE_NFT_RETURNED, nftMerged);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.MERGE_NFT_RETURNED, nftMerged);
-    };
-  }, [router]);
 
   return (
     <div className={classes.vestContainer}>

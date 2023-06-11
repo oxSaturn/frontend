@@ -13,13 +13,11 @@ import {
   BaseError,
 } from "viem";
 import { canto } from "viem/chains";
-import { serialize } from "wagmi";
 import { getAccount, getWalletClient } from "@wagmi/core";
 
 import { Dispatcher } from "flux";
 
 import { queryClient } from "../pages/_app";
-import { getRewardBalances } from "../components/ssRewards/queries";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
 import tokenlistCan from "../mainnet-canto-token-list.json";
@@ -68,24 +66,24 @@ class Store {
       function (this: Store, payload: { type: string; content: any }) {
         console.log("<< Payload of dispatched event", payload);
         switch (payload.type) {
-          case ACTIONS.CREATE_VEST:
-            this.createVest(payload);
-            break;
-          case ACTIONS.INCREASE_VEST_AMOUNT:
-            this.increaseVestAmount(payload);
-            break;
-          case ACTIONS.INCREASE_VEST_DURATION:
-            this.increaseVestDuration(payload);
-            break;
-          case ACTIONS.RESET_VEST:
-            this.resetVest(payload);
-            break;
-          case ACTIONS.WITHDRAW_VEST:
-            this.withdrawVest(payload);
-            break;
-          case ACTIONS.MERGE_NFT:
-            this.mergeNft(payload);
-            break;
+          // case ACTIONS.CREATE_VEST:
+          //   this.createVest(payload);
+          //   break;
+          // case ACTIONS.INCREASE_VEST_AMOUNT:
+          //   this.increaseVestAmount(payload);
+          //   break;
+          // case ACTIONS.INCREASE_VEST_DURATION:
+          //   this.increaseVestDuration(payload);
+          //   break;
+          // case ACTIONS.RESET_VEST:
+          //   this.resetVest(payload);
+          //   break;
+          // case ACTIONS.WITHDRAW_VEST:
+          //   this.withdrawVest(payload);
+          //   break;
+          // case ACTIONS.MERGE_NFT:
+          //   this.mergeNft(payload);
+          //   break;
 
           //REWARDS
           case ACTIONS.CLAIM_X_BRIBE:
@@ -4132,110 +4130,110 @@ class Store {
   //   }
   // };
 
-  createVest = async (payload: {
-    type: string;
-    content: { amount: string; unlockTime: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // createVest = async (payload: {
+  //   type: string;
+  //   content: { amount: string; unlockTime: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const govToken = queryClient.getQueryData<GovToken>([
-        QUERY_KEYS.GOV_TOKEN,
-      ]);
-      if (!govToken) throw new Error("No gov token");
-      const { amount, unlockTime } = payload.content;
+  //     const govToken = queryClient.getQueryData<GovToken>([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //     ]);
+  //     if (!govToken) throw new Error("No gov token");
+  //     const { amount, unlockTime } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let vestTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let vestTXID = this.getTXUUID();
 
-      const unlockString = moment()
-        .add(unlockTime, "seconds")
-        .format("YYYY-MM-DD");
+  //     const unlockString = moment()
+  //       .add(unlockTime, "seconds")
+  //       .format("YYYY-MM-DD");
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Vest ${govToken.symbol} until ${unlockString}`,
-        type: "Vest",
-        verb: "Vest Created",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your ${govToken.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: vestTXID,
-            description: `Vesting your tokens`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Vest ${govToken.symbol} until ${unlockString}`,
+  //       type: "Vest",
+  //       verb: "Vest Created",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${govToken.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: vestTXID,
+  //           description: `Vesting your tokens`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getVestAllowance(govToken, account);
-      if (!allowance) throw new Error("Error getting allowance in create vest");
-      if (BigNumber(allowance).lt(amount)) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allow the vesting contract to use your ${govToken.symbol}`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on ${govToken.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     const allowance = await this._getVestAllowance(govToken, account);
+  //     if (!allowance) throw new Error("Error getting allowance in create vest");
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allow the vesting contract to use your ${govToken.symbol}`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${govToken.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(amount)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          govToken.address,
-          CONTRACTS.VE_TOKEN_ADDRESS
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         govToken.address,
+  //         CONTRACTS.VE_TOKEN_ADDRESS
+  //       );
+  //     }
 
-      // SUBMIT VEST TRANSACTION
-      const sendAmount = BigNumber(amount)
-        .times(10 ** govToken.decimals)
-        .toFixed(0);
+  //     // SUBMIT VEST TRANSACTION
+  //     const sendAmount = BigNumber(amount)
+  //       .times(10 ** govToken.decimals)
+  //       .toFixed(0);
 
-      const writeCreateLock = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VE_TOKEN_ADDRESS,
-          abi: CONTRACTS.VE_TOKEN_ABI,
-          functionName: "create_lock",
-          args: [BigInt(sendAmount), BigInt(unlockTime)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeCreateLock = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //         abi: CONTRACTS.VE_TOKEN_ABI,
+  //         functionName: "create_lock",
+  //         args: [BigInt(sendAmount), BigInt(unlockTime)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(vestTXID, writeCreateLock);
+  //     await this._writeContractWrapper(vestTXID, writeCreateLock);
 
-      queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
+  //     queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
 
-      this.getNFTByID("fetchAll");
+  //     this.getNFTByID("fetchAll");
 
-      this.emitter.emit(ACTIONS.CREATE_VEST_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.CREATE_VEST_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   _getVestAllowance = async (token: GovToken, address: `0x${string}`) => {
     try {
@@ -4253,579 +4251,579 @@ class Store {
     }
   };
 
-  increaseVestAmount = async (payload: {
-    type: string;
-    content: { amount: string; tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // increaseVestAmount = async (payload: {
+  //   type: string;
+  //   content: { amount: string; tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const govToken = queryClient.getQueryData<GovToken>([
-        QUERY_KEYS.GOV_TOKEN,
-      ]);
-      if (!govToken)
-        throw new Error("Error getting gov token in increase vest");
-      const { amount, tokenID } = payload.content;
+  //     const govToken = queryClient.getQueryData<GovToken>([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //     ]);
+  //     if (!govToken)
+  //       throw new Error("Error getting gov token in increase vest");
+  //     const { amount, tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let allowanceTXID = this.getTXUUID();
-      let vestTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let allowanceTXID = this.getTXUUID();
+  //     let vestTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Increase vest amount on token #${tokenID}`,
-        type: "Vest",
-        verb: "Vest Increased",
-        transactions: [
-          {
-            uuid: allowanceTXID,
-            description: `Checking your ${govToken.symbol} allowance`,
-            status: "WAITING",
-          },
-          {
-            uuid: vestTXID,
-            description: `Increasing your vest amount`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Increase vest amount on token #${tokenID}`,
+  //       type: "Vest",
+  //       verb: "Vest Increased",
+  //       transactions: [
+  //         {
+  //           uuid: allowanceTXID,
+  //           description: `Checking your ${govToken.symbol} allowance`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: vestTXID,
+  //           description: `Increasing your vest amount`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // CHECK ALLOWANCES AND SET TX DISPLAY
-      const allowance = await this._getVestAllowance(govToken, account);
-      if (!allowance)
-        throw new Error("Error getting allowance in increase vest");
-      if (BigNumber(allowance).lt(amount)) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allow vesting contract to use your ${govToken.symbol}`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: allowanceTXID,
-          description: `Allowance on ${govToken.symbol} sufficient`,
-          status: "DONE",
-        });
-      }
+  //     // CHECK ALLOWANCES AND SET TX DISPLAY
+  //     const allowance = await this._getVestAllowance(govToken, account);
+  //     if (!allowance)
+  //       throw new Error("Error getting allowance in increase vest");
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allow vesting contract to use your ${govToken.symbol}`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: allowanceTXID,
+  //         description: `Allowance on ${govToken.symbol} sufficient`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-      if (BigNumber(allowance).lt(amount)) {
-        await this.writeApprove(
-          walletClient,
-          allowanceTXID,
-          govToken.address,
-          CONTRACTS.VE_TOKEN_ADDRESS
-        );
-      }
+  //     // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  //     if (BigNumber(allowance).lt(amount)) {
+  //       await this.writeApprove(
+  //         walletClient,
+  //         allowanceTXID,
+  //         govToken.address,
+  //         CONTRACTS.VE_TOKEN_ADDRESS
+  //       );
+  //     }
 
-      // SUBMIT INCREASE TRANSACTION
-      const sendAmount = BigNumber(amount)
-        .times(10 ** govToken.decimals)
-        .toFixed(0);
+  //     // SUBMIT INCREASE TRANSACTION
+  //     const sendAmount = BigNumber(amount)
+  //       .times(10 ** govToken.decimals)
+  //       .toFixed(0);
 
-      const writeIncreaseAmount = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VE_TOKEN_ADDRESS,
-          abi: CONTRACTS.VE_TOKEN_ABI,
-          functionName: "increase_amount",
-          args: [BigInt(tokenID), BigInt(sendAmount)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeIncreaseAmount = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //         abi: CONTRACTS.VE_TOKEN_ABI,
+  //         functionName: "increase_amount",
+  //         args: [BigInt(tokenID), BigInt(sendAmount)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(vestTXID, writeIncreaseAmount);
+  //     await this._writeContractWrapper(vestTXID, writeIncreaseAmount);
 
-      queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
-      this._updateVestNFTByID(tokenID);
+  //     queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
+  //     this._updateVestNFTByID(tokenID);
 
-      this.emitter.emit(ACTIONS.INCREASE_VEST_AMOUNT_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.INCREASE_VEST_AMOUNT_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  increaseVestDuration = async (payload: {
-    type: string;
-    content: { unlockTime: string; tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // increaseVestDuration = async (payload: {
+  //   type: string;
+  //   content: { unlockTime: string; tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { tokenID, unlockTime } = payload.content;
+  //     const { tokenID, unlockTime } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let vestTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let vestTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Increase unlock time on token #${tokenID}`,
-        type: "Vest",
-        verb: "Vest Increased",
-        transactions: [
-          {
-            uuid: vestTXID,
-            description: `Increasing your vest duration`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Increase unlock time on token #${tokenID}`,
+  //       type: "Vest",
+  //       verb: "Vest Increased",
+  //       transactions: [
+  //         {
+  //           uuid: vestTXID,
+  //           description: `Increasing your vest duration`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeIncreaseDuration = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VE_TOKEN_ADDRESS,
-          abi: CONTRACTS.VE_TOKEN_ABI,
-          functionName: "increase_unlock_time",
-          args: [BigInt(tokenID), BigInt(unlockTime)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeIncreaseDuration = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //         abi: CONTRACTS.VE_TOKEN_ABI,
+  //         functionName: "increase_unlock_time",
+  //         args: [BigInt(tokenID), BigInt(unlockTime)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(vestTXID, writeIncreaseDuration);
+  //     await this._writeContractWrapper(vestTXID, writeIncreaseDuration);
 
-      this._updateVestNFTByID(tokenID);
+  //     this._updateVestNFTByID(tokenID);
 
-      this.emitter.emit(ACTIONS.INCREASE_VEST_DURATION_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.INCREASE_VEST_DURATION_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  resetVest = async (payload: {
-    type: string;
-    content: { tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  // resetVest = async (payload: {
+  //   type: string;
+  //   content: { tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { tokenID } = payload.content;
+  //     const { tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let rewardsTXID = this.getTXUUID();
-      let rebaseTXID = this.getTXUUID();
-      let resetTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let rewardsTXID = this.getTXUUID();
+  //     let rebaseTXID = this.getTXUUID();
+  //     let resetTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Reset veNFT #${tokenID}`,
-        type: "Reset",
-        verb: "Vest Reseted",
-        transactions: [
-          {
-            uuid: rewardsTXID,
-            description: `Checking unclaimed bribes`,
-            status: "WAITING",
-          },
-          {
-            uuid: rebaseTXID,
-            description: `Checking unclaimed rebase distribution`,
-            status: "WAITING",
-          },
-          {
-            uuid: resetTXID,
-            description: `Resetting your veNFT`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Reset veNFT #${tokenID}`,
+  //       type: "Reset",
+  //       verb: "Vest Reseted",
+  //       transactions: [
+  //         {
+  //           uuid: rewardsTXID,
+  //           description: `Checking unclaimed bribes`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: rebaseTXID,
+  //           description: `Checking unclaimed rebase distribution`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: resetTXID,
+  //           description: `Resetting your veNFT`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const govToken = queryClient.getQueryData<GovToken>([
-        QUERY_KEYS.GOV_TOKEN,
-      ]);
-      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
-      const vestNFTs = queryClient.getQueryData<VestNFT[]>([
-        QUERY_KEYS.VEST_NFTS,
-      ]);
-      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
-      const serialised_vestNFTs = serialize(vestNFTs);
+  //     const govToken = queryClient.getQueryData<GovToken>([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //     ]);
+  //     const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+  //     const vestNFTs = queryClient.getQueryData<VestNFT[]>([
+  //       QUERY_KEYS.VEST_NFTS,
+  //     ]);
+  //     const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+  //     const serialised_vestNFTs = serialize(vestNFTs);
 
-      // CHECK unclaimed bribes
-      const rewards = await queryClient.fetchQuery({
-        queryKey: [
-          QUERY_KEYS.REWARDS,
-          account,
-          tokenID,
-          govToken,
-          veToken,
-          serialised_vestNFTs,
-          pairs,
-        ],
-        queryFn: () =>
-          getRewardBalances(
-            account,
-            tokenID,
-            govToken,
-            veToken,
-            serialised_vestNFTs,
-            pairs
-          ),
-      });
+  //     // CHECK unclaimed bribes
+  //     const rewards = await queryClient.fetchQuery({
+  //       queryKey: [
+  //         QUERY_KEYS.REWARDS,
+  //         account,
+  //         tokenID,
+  //         govToken,
+  //         veToken,
+  //         serialised_vestNFTs,
+  //         pairs,
+  //       ],
+  //       queryFn: () =>
+  //         getRewardBalances(
+  //           account,
+  //           tokenID,
+  //           govToken,
+  //           veToken,
+  //           serialised_vestNFTs,
+  //           pairs
+  //         ),
+  //     });
 
-      if (rewards && rewards.xxBribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewardsTXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewardsTXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
+  //     if (rewards && rewards.xxBribes.length > 0) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rewardsTXID,
+  //         description: `Unclaimed bribes found, claiming`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rewardsTXID,
+  //         description: `No unclaimed bribes found`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (rewards && rewards.xxBribes.length > 0) {
-        const sendGauges = rewards.xxBribes.map((pair) => {
-          return pair.gauge.xx_wrapped_bribe_address;
-        });
-        const sendTokens = rewards.xxBribes.map((pair) => {
-          return pair.gauge.xx_bribesEarned!.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
+  //     if (rewards && rewards.xxBribes.length > 0) {
+  //       const sendGauges = rewards.xxBribes.map((pair) => {
+  //         return pair.gauge.xx_wrapped_bribe_address;
+  //       });
+  //       const sendTokens = rewards.xxBribes.map((pair) => {
+  //         return pair.gauge.xx_bribesEarned!.map((bribe) => {
+  //           return (bribe as Bribe).token.address;
+  //         });
+  //       });
 
-        await this.writeClaimBribes(
-          walletClient,
-          rewardsTXID,
-          sendGauges,
-          sendTokens,
-          tokenID
-        );
-      }
+  //       await this.writeClaimBribes(
+  //         walletClient,
+  //         rewardsTXID,
+  //         sendGauges,
+  //         sendTokens,
+  //         tokenID
+  //       );
+  //     }
 
-      if (rewards && rewards.veDist.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rebaseTXID,
-          description: `Claiming rebase distribution`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rebaseTXID,
-          description: `No unclaimed rebase`,
-          status: "DONE",
-        });
-      }
+  //     if (rewards && rewards.veDist.length > 0) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rebaseTXID,
+  //         description: `Claiming rebase distribution`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rebaseTXID,
+  //         description: `No unclaimed rebase`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (rewards && rewards.veDist.length > 0) {
-        const writeClaim = async () => {
-          const { request } = await viemClient.simulateContract({
-            account,
-            address: CONTRACTS.VE_DIST_ADDRESS,
-            abi: CONTRACTS.VE_DIST_ABI,
-            functionName: "claim",
-            args: [BigInt(tokenID)],
-          });
-          const txHash = await walletClient.writeContract(request);
-          return txHash;
-        };
-        await this._writeContractWrapper(rebaseTXID, writeClaim);
-      }
+  //     if (rewards && rewards.veDist.length > 0) {
+  //       const writeClaim = async () => {
+  //         const { request } = await viemClient.simulateContract({
+  //           account,
+  //           address: CONTRACTS.VE_DIST_ADDRESS,
+  //           abi: CONTRACTS.VE_DIST_ABI,
+  //           functionName: "claim",
+  //           args: [BigInt(tokenID)],
+  //         });
+  //         const txHash = await walletClient.writeContract(request);
+  //         return txHash;
+  //       };
+  //       await this._writeContractWrapper(rebaseTXID, writeClaim);
+  //     }
 
-      const writeReset = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VOTER_ADDRESS,
-          abi: CONTRACTS.VOTER_ABI,
-          functionName: "reset",
-          args: [BigInt(tokenID)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeReset = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VOTER_ADDRESS,
+  //         abi: CONTRACTS.VOTER_ABI,
+  //         functionName: "reset",
+  //         args: [BigInt(tokenID)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(resetTXID, writeReset);
+  //     await this._writeContractWrapper(resetTXID, writeReset);
 
-      this._updateVestNFTByID(tokenID);
+  //     this._updateVestNFTByID(tokenID);
 
-      this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
-    } catch (e) {
-      console.log(e);
-      console.log("RESET VEST ERROR");
-    }
-  };
+  //     this.emitter.emit(ACTIONS.RESET_VEST_RETURNED);
+  //   } catch (e) {
+  //     console.log(e);
+  //     console.log("RESET VEST ERROR");
+  //   }
+  // };
 
-  withdrawVest = async (payload: {
-    type: string;
-    content: { tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // withdrawVest = async (payload: {
+  //   type: string;
+  //   content: { tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { tokenID } = payload.content;
+  //     const { tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let rewards01TXID = this.getTXUUID();
-      let rewards0TXID = this.getTXUUID();
-      let resetTXID = this.getTXUUID();
-      let vestTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let rewards01TXID = this.getTXUUID();
+  //     let rewards0TXID = this.getTXUUID();
+  //     let resetTXID = this.getTXUUID();
+  //     let vestTXID = this.getTXUUID();
 
-      this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Withdraw vest amount on token #${tokenID}`,
-        type: "Vest",
-        verb: "Vest Withdrawn",
-        transactions: [
-          {
-            uuid: rewards01TXID,
-            description: `Checking unclaimed bribes`,
-            status: "WAITING",
-          },
-          {
-            uuid: rewards0TXID,
-            description: `Checking unclaimed bribes`,
-            status: "WAITING",
-          },
-          {
-            uuid: resetTXID,
-            description: `Checking if your has votes`,
-            status: "WAITING",
-          },
-          {
-            uuid: vestTXID,
-            description: `Withdrawing your expired tokens`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Withdraw vest amount on token #${tokenID}`,
+  //       type: "Vest",
+  //       verb: "Vest Withdrawn",
+  //       transactions: [
+  //         {
+  //           uuid: rewards01TXID,
+  //           description: `Checking unclaimed bribes`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: rewards0TXID,
+  //           description: `Checking unclaimed bribes`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: resetTXID,
+  //           description: `Checking if your has votes`,
+  //           status: "WAITING",
+  //         },
+  //         {
+  //           uuid: vestTXID,
+  //           description: `Withdrawing your expired tokens`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const govToken = queryClient.getQueryData<GovToken>([
-        QUERY_KEYS.GOV_TOKEN,
-      ]);
-      const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
-      const vestNFTs = queryClient.getQueryData<VestNFT[]>([
-        QUERY_KEYS.VEST_NFTS,
-      ]);
-      const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
-      const serialised_vestNFTs = serialize(vestNFTs);
+  //     const govToken = queryClient.getQueryData<GovToken>([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //     ]);
+  //     const veToken = queryClient.getQueryData<VeToken>([QUERY_KEYS.VE_TOKEN]);
+  //     const vestNFTs = queryClient.getQueryData<VestNFT[]>([
+  //       QUERY_KEYS.VEST_NFTS,
+  //     ]);
+  //     const pairs = queryClient.getQueryData<Pair[]>([QUERY_KEYS.PAIRS]);
+  //     const serialised_vestNFTs = serialize(vestNFTs);
 
-      // CHECK unclaimed bribes
-      const rewards = await queryClient.fetchQuery({
-        queryKey: [
-          QUERY_KEYS.REWARDS,
-          account,
-          tokenID,
-          govToken,
-          veToken,
-          serialised_vestNFTs,
-          pairs,
-        ],
-        queryFn: () =>
-          getRewardBalances(
-            account,
-            tokenID,
-            govToken,
-            veToken,
-            serialised_vestNFTs,
-            pairs
-          ),
-      });
+  //     // CHECK unclaimed bribes
+  //     const rewards = await queryClient.fetchQuery({
+  //       queryKey: [
+  //         QUERY_KEYS.REWARDS,
+  //         account,
+  //         tokenID,
+  //         govToken,
+  //         veToken,
+  //         serialised_vestNFTs,
+  //         pairs,
+  //       ],
+  //       queryFn: () =>
+  //         getRewardBalances(
+  //           account,
+  //           tokenID,
+  //           govToken,
+  //           veToken,
+  //           serialised_vestNFTs,
+  //           pairs
+  //         ),
+  //     });
 
-      if (rewards && rewards.xxBribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewards01TXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewards01TXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
-      if (rewards && rewards.xBribes.length > 0) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewards0TXID,
-          description: `Unclaimed bribes found, claiming`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: rewards0TXID,
-          description: `No unclaimed bribes found`,
-          status: "DONE",
-        });
-      }
+  //     if (rewards && rewards.xxBribes.length > 0) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rewards01TXID,
+  //         description: `Unclaimed bribes found, claiming`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rewards01TXID,
+  //         description: `No unclaimed bribes found`,
+  //         status: "DONE",
+  //       });
+  //     }
+  //     if (rewards && rewards.xBribes.length > 0) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rewards0TXID,
+  //         description: `Unclaimed bribes found, claiming`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: rewards0TXID,
+  //         description: `No unclaimed bribes found`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (rewards && rewards.xxBribes.length > 0) {
-        const sendGauges = rewards.xxBribes.map((pair) => {
-          return pair.gauge.xx_wrapped_bribe_address;
-        });
-        const sendTokens = rewards.xxBribes.map((pair) => {
-          return pair.gauge.xx_bribesEarned!.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
+  //     if (rewards && rewards.xxBribes.length > 0) {
+  //       const sendGauges = rewards.xxBribes.map((pair) => {
+  //         return pair.gauge.xx_wrapped_bribe_address;
+  //       });
+  //       const sendTokens = rewards.xxBribes.map((pair) => {
+  //         return pair.gauge.xx_bribesEarned!.map((bribe) => {
+  //           return (bribe as Bribe).token.address;
+  //         });
+  //       });
 
-        await this.writeClaimBribes(
-          walletClient,
-          rewards01TXID,
-          sendGauges,
-          sendTokens,
-          tokenID
-        );
-      }
-      if (rewards && rewards.xBribes.length > 0) {
-        const sendGauges = rewards.xBribes.map((pair) => {
-          return pair.gauge.x_wrapped_bribe_address;
-        });
-        const sendTokens = rewards.xBribes.map((pair) => {
-          return pair.gauge.x_bribesEarned!.map((bribe) => {
-            return (bribe as Bribe).token.address;
-          });
-        });
+  //       await this.writeClaimBribes(
+  //         walletClient,
+  //         rewards01TXID,
+  //         sendGauges,
+  //         sendTokens,
+  //         tokenID
+  //       );
+  //     }
+  //     if (rewards && rewards.xBribes.length > 0) {
+  //       const sendGauges = rewards.xBribes.map((pair) => {
+  //         return pair.gauge.x_wrapped_bribe_address;
+  //       });
+  //       const sendTokens = rewards.xBribes.map((pair) => {
+  //         return pair.gauge.x_bribesEarned!.map((bribe) => {
+  //           return (bribe as Bribe).token.address;
+  //         });
+  //       });
 
-        await this.writeClaimBribes(
-          walletClient,
-          rewards0TXID,
-          sendGauges,
-          sendTokens,
-          tokenID
-        );
-      }
+  //       await this.writeClaimBribes(
+  //         walletClient,
+  //         rewards0TXID,
+  //         sendGauges,
+  //         sendTokens,
+  //         tokenID
+  //       );
+  //     }
 
-      // CHECK if veNFT has votes
-      const voted = await this._checkNFTVoted(tokenID);
+  //     // CHECK if veNFT has votes
+  //     const voted = await this._checkNFTVoted(tokenID);
 
-      if (!!voted) {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: resetTXID,
-          description: `NFT has votes, resetting`,
-        });
-      } else {
-        this.emitter.emit(ACTIONS.TX_STATUS, {
-          uuid: resetTXID,
-          description: `NFT doesn't have votes`,
-          status: "DONE",
-        });
-      }
+  //     if (!!voted) {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: resetTXID,
+  //         description: `NFT has votes, resetting`,
+  //       });
+  //     } else {
+  //       this.emitter.emit(ACTIONS.TX_STATUS, {
+  //         uuid: resetTXID,
+  //         description: `NFT doesn't have votes`,
+  //         status: "DONE",
+  //       });
+  //     }
 
-      if (!!voted) {
-        const writeReset = async () => {
-          const { request } = await viemClient.simulateContract({
-            account,
-            address: CONTRACTS.VOTER_ADDRESS,
-            abi: CONTRACTS.VOTER_ABI,
-            functionName: "reset",
-            args: [BigInt(tokenID)],
-          });
-          const txHash = await walletClient.writeContract(request);
-          return txHash;
-        };
+  //     if (!!voted) {
+  //       const writeReset = async () => {
+  //         const { request } = await viemClient.simulateContract({
+  //           account,
+  //           address: CONTRACTS.VOTER_ADDRESS,
+  //           abi: CONTRACTS.VOTER_ABI,
+  //           functionName: "reset",
+  //           args: [BigInt(tokenID)],
+  //         });
+  //         const txHash = await walletClient.writeContract(request);
+  //         return txHash;
+  //       };
 
-        await this._writeContractWrapper(resetTXID, writeReset);
-      }
+  //       await this._writeContractWrapper(resetTXID, writeReset);
+  //     }
 
-      const writeWithdrawLock = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VE_TOKEN_ADDRESS,
-          abi: CONTRACTS.VE_TOKEN_ABI,
-          functionName: "withdraw",
-          args: [BigInt(tokenID)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeWithdrawLock = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //         abi: CONTRACTS.VE_TOKEN_ABI,
+  //         functionName: "withdraw",
+  //         args: [BigInt(tokenID)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(vestTXID, writeWithdrawLock);
+  //     await this._writeContractWrapper(vestTXID, writeWithdrawLock);
 
-      this._updateVestNFTByID(tokenID);
+  //     this._updateVestNFTByID(tokenID);
 
-      this.emitter.emit(ACTIONS.WITHDRAW_VEST_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.WITHDRAW_VEST_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  mergeNft = async (payload: {
-    type: string;
-    content: { from: string; to: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
-      const { from, to } = payload.content;
+  // mergeNft = async (payload: {
+  //   type: string;
+  //   content: { from: string; to: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
+  //     const { from, to } = payload.content;
 
-      let mergeTXID = this.getTXUUID();
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Merge NFT #${from} into #${to}`,
-        verb: "NFT Merged",
-        transactions: [
-          {
-            uuid: mergeTXID,
-            description: `Merging NFT #${from} into #${to}`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     let mergeTXID = this.getTXUUID();
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Merge NFT #${from} into #${to}`,
+  //       verb: "NFT Merged",
+  //       transactions: [
+  //         {
+  //           uuid: mergeTXID,
+  //           description: `Merging NFT #${from} into #${to}`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeMergeLock = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VE_TOKEN_ADDRESS,
-          abi: CONTRACTS.VE_TOKEN_ABI,
-          functionName: "merge",
-          args: [BigInt(from), BigInt(to)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
+  //     const writeMergeLock = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VE_TOKEN_ADDRESS,
+  //         abi: CONTRACTS.VE_TOKEN_ABI,
+  //         functionName: "merge",
+  //         args: [BigInt(from), BigInt(to)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
 
-      await this._writeContractWrapper(mergeTXID, writeMergeLock);
+  //     await this._writeContractWrapper(mergeTXID, writeMergeLock);
 
-      this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
-    } catch (e) {
-      console.log(e);
-      this.emitter.emit(ACTIONS.ERROR, e);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.MERGE_NFT_RETURNED);
+  //   } catch (e) {
+  //     console.log(e);
+  //     this.emitter.emit(ACTIONS.ERROR, e);
+  //   }
+  // };
 
   // actioned in current epoch
   // either vote or reset, not both

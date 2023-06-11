@@ -132,6 +132,14 @@ interface VeDistReward {
   rewardType: "Distribution";
 }
 
+interface Rewards {
+  xBribes: Gauge[];
+  xxBribes: Gauge[];
+  rewards: Gauge[];
+  oBlotrRewards: Gauge[];
+  veDist: VeDistReward[];
+}
+
 type Vote = {
   address: `0x${string}`;
   votePercent: string;
@@ -320,6 +328,7 @@ export type {
   Swap,
   FireBirdTokens,
   PairsCallResponse,
+  Rewards,
 };
 
 export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };
