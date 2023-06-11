@@ -39,7 +39,7 @@ const initialEmptyToken: VestNFT = {
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
-  actionedInCurrentEpoch: false,
+  votedInCurrentEpoch: false,
   reset: false,
   lastVoted: BigInt(0),
   influence: 0,
@@ -87,7 +87,7 @@ export default function Votes() {
 
     if (nfts && nfts.length > 0) {
       const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
+        (nft) => nft.votedInCurrentEpoch === false
       );
       if (votableNFTs.length > 0) {
         setToken(votableNFTs[0]);
@@ -103,7 +103,7 @@ export default function Votes() {
       filteredAssets.length > 0
     ) {
       const votableNFTs = nfts.filter(
-        (nft) => nft.actionedInCurrentEpoch === false
+        (nft) => nft.votedInCurrentEpoch === false
       );
       const defaultSelectedNFT =
         votableNFTs.length > 0 ? votableNFTs[0] : nfts[0];
@@ -235,10 +235,10 @@ export default function Votes() {
 
   const renderMediumInput = (value: VestNFT, options: VestNFT[]) => {
     const actionedNFTs = options.filter(
-      (option) => option.actionedInCurrentEpoch === true
+      (option) => option.votedInCurrentEpoch === true
     );
     const votableNFTs = options.filter(
-      (option) => option.actionedInCurrentEpoch === false
+      (option) => option.votedInCurrentEpoch === false
     );
     return (
       <div className={classes.textField}>
@@ -297,9 +297,7 @@ export default function Votes() {
                       );
                     })}
                   {actionedNFTs.length > 0 ? (
-                    <MyListSubheader>
-                      Already Voted/Reset this Epoch
-                    </MyListSubheader>
+                    <MyListSubheader>Already Voted this Epoch</MyListSubheader>
                   ) : null}
                   {actionedNFTs.length > 0 &&
                     actionedNFTs.map((option) => {
@@ -445,14 +443,13 @@ export default function Votes() {
           token={token}
         />
       </Paper>
-      {token.actionedInCurrentEpoch ? (
+      {token.votedInCurrentEpoch ? (
         <Paper
           elevation={10}
           className="fixed bottom-0 left-0 right-0 z-10 border-t border-solid border-[rgba(126,153,176,0.2)] bg-[#0e110c] md:left-1/2 md:bottom-7 md:max-w-[560px] md:-translate-x-1/2 md:border"
         >
           <Alert severity="error" className="flex justify-center py-5">
-            NFT #{token.id} has already {token.reset ? "Reset" : "Voted"} this
-            epoch.
+            NFT #{token.id} has already voted this epoch.
           </Alert>
         </Paper>
       ) : (

@@ -27,7 +27,7 @@ const initialEmptyToken: VestNFT = {
   lockAmount: "0",
   lockEnds: "0",
   lockValue: "0",
-  actionedInCurrentEpoch: false,
+  votedInCurrentEpoch: false,
   reset: false,
   lastVoted: BigInt(0),
   influence: 0,

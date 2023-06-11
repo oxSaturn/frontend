@@ -276,8 +276,9 @@ export default function EnhancedTable({
           severity="info"
           className="w-full rounded-br-none rounded-bl-none"
         >
-          You can either vote or reset in the same epoch, but not both. NFTs
-          voted in the past will have to be reset first to merge.
+          A reset NFT can still be used to vote, but the opposite is not true.
+          NFTs that have been used to vote in the past must be reset before they
+          can be merged.
         </Alert>
         <TableContainer>
           <Table
@@ -383,15 +384,13 @@ function MyTableRow(props: {
       </TableCell>
       <TableCell>
         <Typography variant="h2" className="text-xs font-extralight">
-          {row.actionedInCurrentEpoch && !row.reset ? (
+          {row.votedInCurrentEpoch ? (
             <Check className="fill-green-500" />
           ) : (
             <Close className="fill-red-500" />
           )}
         </Typography>
-        {row.actionedInCurrentEpoch &&
-        !row.reset &&
-        Number(row.lastVoted) !== 0 ? (
+        {row.votedInCurrentEpoch ? (
           <Typography
             variant="h5"
             className="text-xs font-extralight"
@@ -401,7 +400,7 @@ function MyTableRow(props: {
           </Typography>
         ) : null}
         {/* show last voted so users can tell to reset or not */}
-        {!row.actionedInCurrentEpoch && Number(row.lastVoted) !== 0 ? (
+        {!row.votedInCurrentEpoch && Number(row.lastVoted) !== 0 ? (
           <Typography
             variant="h5"
             className="text-xs font-extralight"
@@ -420,15 +419,6 @@ function MyTableRow(props: {
             <Close className="fill-red-500" />
           )}
         </Typography>
-        {row.reset ? (
-          <Typography
-            variant="h5"
-            className="text-xs font-extralight"
-            color="textSecondary"
-          >
-            Reset on: {new Date(Number(row.lastVoted) * 1000).toLocaleString()}
-          </Typography>
-        ) : null}
       </TableCell>
       <TableCell align="right">
         <Typography variant="h2" className="text-xs font-extralight">
@@ -506,7 +496,7 @@ function MyTableRow(props: {
         >
           <MenuItem
             disableRipple
-            disabled={row.actionedInCurrentEpoch}
+            disabled={row.votedInCurrentEpoch}
             onClick={() => {
               handleClose();
               onReset(row);
@@ -515,24 +505,18 @@ function MyTableRow(props: {
             <RestartAlt className="mr-2" /> <span>Reset</span>
           </MenuItem>
           {/*
-      1. last voted is 0, i.e., totally new nft
-      2. actioned in current epoch, and that action is reset
+          disabled when:
+      1. voted in current epoch
+      2. actioned in past epoch, and voted is true, i.e., not reset yet
        */}
           <MenuItem
             disableRipple
-            disabled={
-              !(
-                Number(row.lastVoted) === 0 ||
-                (row.actionedInCurrentEpoch && row.reset)
-              )
-            }
+            disabled={row.votedInCurrentEpoch || row.reset === false}
           >
-            <Link
-              href={`/vest/${row.id}/merge`}
-              className="flex items-center space-x-2"
-            >
+            <Link href={`/vest/${row.id}/merge`} className="flex items-center">
               <a>
-                <Merge className="mr-2" /> <span>Merge</span>
+                <Merge className="mr-2" />
+                <span>Merge</span>
               </a>
             </Link>
           </MenuItem>
@@ -554,10 +538,10 @@ function descendingComparator(a: VestNFT, b: VestNFT, orderBy: OrderBy) {
     case "NFT":
       return BigNumber(b.id).minus(a.id).toNumber();
     case "Voted":
-      if (b.actionedInCurrentEpoch && !a.actionedInCurrentEpoch) {
+      if (b.votedInCurrentEpoch && !a.votedInCurrentEpoch) {
         return -1;
       }
-      if (!b.actionedInCurrentEpoch && a.actionedInCurrentEpoch) {
+      if (!b.votedInCurrentEpoch && a.votedInCurrentEpoch) {
         return 1;
       }
       return 0;

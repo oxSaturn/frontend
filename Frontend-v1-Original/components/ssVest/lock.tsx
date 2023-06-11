@@ -290,7 +290,7 @@ export default function Lock({
         .div(lockOptions["26 weeks"])
         .toFixed(18),
       lockEnds: expiry.unix().toString(),
-      actionedInCurrentEpoch: false,
+      votedInCurrentEpoch: false,
       reset: false,
       lastVoted: BigInt(0),
       influence: 0,

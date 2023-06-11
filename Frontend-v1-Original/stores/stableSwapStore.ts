@@ -336,7 +336,7 @@ class Store {
               ],
             });
 
-          const [actionedInCurrentEpoch, lastVoted] =
+          const [votedInCurrentEpoch, lastVoted] =
             await this._checkNFTActionEpoch(tokenIndex.toString());
 
           return {
@@ -344,8 +344,10 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            actionedInCurrentEpoch,
-            reset: actionedInCurrentEpoch && !voted,
+            votedInCurrentEpoch,
+            reset:
+              (!votedInCurrentEpoch && lastVoted > 0n && voted === false) ||
+              lastVoted === 0n,
             lastVoted,
             influence:
               Number(formatUnits(lockValue, veToken.decimals)) /
@@ -432,8 +434,9 @@ class Store {
           ],
         });
 
-      const [actionedInCurrentEpoch, lastVoted] =
-        await this._checkNFTActionEpoch(id);
+      const [votedInCurrentEpoch, lastVoted] = await this._checkNFTActionEpoch(
+        id
+      );
 
       const newVestNFTs: VestNFT[] = vestNFTs.map((nft) => {
         if (nft.id == id) {
@@ -442,8 +445,10 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            actionedInCurrentEpoch,
-            reset: actionedInCurrentEpoch && !voted,
+            votedInCurrentEpoch,
+            reset:
+              (!votedInCurrentEpoch && lastVoted > 0n && voted === false) ||
+              lastVoted === 0n,
             lastVoted,
             influence:
               Number(formatUnits(lockValue, veToken.decimals)) /
@@ -1564,7 +1569,7 @@ class Store {
               ],
             });
 
-          const [actionedInCurrentEpoch, lastVoted] =
+          const [votedInCurrentEpoch, lastVoted] =
             await this._checkNFTActionEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
@@ -1573,8 +1578,10 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            actionedInCurrentEpoch,
-            reset: actionedInCurrentEpoch && !voted,
+            votedInCurrentEpoch,
+            reset:
+              (!votedInCurrentEpoch && lastVoted > 0n && voted === false) ||
+              lastVoted === 0n,
             lastVoted,
             influence:
               Number(formatUnits(lockValue, veToken.decimals)) /
@@ -4049,7 +4056,7 @@ class Store {
               ],
             });
 
-          const [actionedInCurrentEpoch, lastVoted] =
+          const [votedInCurrentEpoch, lastVoted] =
             await this._checkNFTActionEpoch(tokenIndex.toString());
 
           // probably do some decimals math before returning info. Maybe get more info. I don't know what it returns.
@@ -4058,8 +4065,14 @@ class Store {
             lockEnds: lockedEnd.toString(),
             lockAmount: formatUnits(lockedAmount, govToken.decimals),
             lockValue: formatUnits(lockValue, veToken.decimals),
-            actionedInCurrentEpoch,
-            reset: actionedInCurrentEpoch && !voted,
+            votedInCurrentEpoch: votedInCurrentEpoch,
+            // all nfts are reset initially
+            // and there's one other case where reset should be true
+            // 1.1 user voted in past epoch, but not in current epoch
+            // 1.2 user called reset to set `voted` to false
+            reset:
+              (!votedInCurrentEpoch && lastVoted > 0n && voted === false) ||
+              lastVoted === 0n,
             lastVoted,
             influence:
               Number(formatUnits(lockValue, veToken.decimals)) /
@@ -4674,14 +4687,17 @@ class Store {
     }
   };
 
-  // actioned in current epoch
-  // either vote or reset, not both
-  // reset would update lastVoted value as well
+  // voted in current epoch
+  // reset wouldn't update lastVoted value in v3 anymore
+  /**
+   *
+   * @returns [votedInCurrentEpoch, lastVoted]
+   */
   _checkNFTActionEpoch = async (tokenID: string) => {
     const _lastVoted = await this._checkNFTLastVoted(tokenID);
 
     // if last voted eq 0, means never voted
-    if (_lastVoted === BigInt("0")) return [false, _lastVoted] as const;
+    if (_lastVoted === 0n) return [false, _lastVoted] as const;
     const lastVoted = parseInt(_lastVoted.toString());
 
     let nextEpochTimestamp = this.getStore("updateDate");
@@ -4691,9 +4707,9 @@ class Store {
     }
 
     // 7 days epoch length
-    const actionedInCurrentEpoch =
+    const votedInCurrentEpoch =
       lastVoted > nextEpochTimestamp - 7 * 24 * 60 * 60;
-    return [actionedInCurrentEpoch, _lastVoted] as const;
+    return [votedInCurrentEpoch, _lastVoted] as const;
   };
 
   _checkNFTLastVoted = async (tokenID: string) => {
