@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
-import moment from "moment";
+import dayjs from "dayjs";
 import { ArrowBack } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -46,7 +46,7 @@ export default function Lock({
     lockOptions["6.5 weeks"] + ""
   );
   const [selectedDate, setSelectedDate] = useState(
-    moment().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
+    dayjs().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
 
@@ -85,7 +85,7 @@ export default function Lock({
     setSelectedValue(event.target.value);
 
     let days = +event.target.value ?? 0;
-    const newDate = moment().add(days, "days").format("YYYY-MM-DD");
+    const newDate = dayjs().add(days, "days").format("YYYY-MM-DD");
 
     setSelectedDate(newDate);
   };
@@ -118,8 +118,8 @@ export default function Lock({
     if (!error) {
       setLockLoading(true);
 
-      const now = moment();
-      const expiry = moment(selectedDate).add(1, "days");
+      const now = dayjs();
+      const expiry = dayjs(selectedDate).add(1, "days");
       const secondsToExpire = expiry.diff(now, "seconds");
 
       stores.dispatcher.dispatch({
@@ -175,10 +175,10 @@ export default function Lock({
               onChange={amountChanged}
               disabled={lockLoading}
               inputProps={{
-                min: moment()
+                min: dayjs()
                   .add(lockOptions["6.5 weeks"], "days")
                   .format("YYYY-MM-DD"),
-                max: moment()
+                max: dayjs()
                   .add(lockOptions["26 weeks"], "days")
                   .format("YYYY-MM-DD"),
               }}
@@ -278,8 +278,8 @@ export default function Lock({
   };
 
   const renderVestInformation = () => {
-    const now = moment();
-    const expiry = moment(selectedDate);
+    const now = dayjs();
+    const expiry = dayjs(selectedDate);
     const dayToExpire = expiry.diff(now, "days");
 
     const tmpNFT: VestNFT = {
@@ -352,8 +352,8 @@ export default function Lock({
         </div>
         {renderVestInformation()}
         <Alert severity="info">
-          All lock will be rounded down to the nearest Thursday at 00:00 UTC, which
-          is the start of the nearest epoch.
+          All lock will be rounded down to the nearest Thursday at 00:00 UTC,
+          which is the start of the nearest epoch.
         </Alert>
         <div className={classes.actionsContainer}>
           <Button

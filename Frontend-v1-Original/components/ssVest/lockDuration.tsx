@@ -9,7 +9,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import moment from "moment";
+import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 
 import stores from "../../stores";
@@ -31,7 +31,7 @@ export const lockOptions: Record<LockOption, number> = {
  * @param date
  * @returns timestamp of the start of the epoch, i.e., thursday 00:00 UTC
  */
-function roundDownToWeekBoundary(date: moment.Moment) {
+function roundDownToWeekBoundary(date: dayjs.Dayjs) {
   const WEEK = 7 * 24 * 60 * 60 * 1000;
   // convert date to timestamp
   const timestamp = date.valueOf();
@@ -49,7 +49,7 @@ export default function LockDuration({
   const [lockLoading, setLockLoading] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
-    moment().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
+    dayjs().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function LockDuration({
 
   useEffect(() => {
     if (nft && nft.lockEnds) {
-      setSelectedDate(moment.unix(+nft.lockEnds).format("YYYY-MM-DD"));
+      setSelectedDate(dayjs.unix(+nft.lockEnds).format("YYYY-MM-DD"));
       setSelectedValue(null);
     }
   }, [nft]);
@@ -94,7 +94,7 @@ export default function LockDuration({
     setSelectedValue(event.target.value);
 
     let days = +event.target.value ?? 0;
-    const newDate = moment().add(days, "days").format("YYYY-MM-DD");
+    const newDate = dayjs().add(days, "days").format("YYYY-MM-DD");
 
     setSelectedDate(newDate);
     updateLockDuration(newDate);
@@ -103,8 +103,8 @@ export default function LockDuration({
   const onLock = () => {
     setLockLoading(true);
 
-    const now = moment();
-    const expiry = moment(selectedDate).add(1, "days");
+    const now = dayjs();
+    const expiry = dayjs(selectedDate).add(1, "days");
     const secondsToExpire = expiry.diff(now, "seconds");
 
     stores.dispatcher.dispatch({
@@ -117,9 +117,9 @@ export default function LockDuration({
     inputEl.current?.focus();
   };
 
-  let min = moment().add(7, "days").format("YYYY-MM-DD");
+  let min = dayjs().add(7, "days").format("YYYY-MM-DD");
   if (BigNumber(nft?.lockEnds).gt(0)) {
-    min = moment.unix(+nft?.lockEnds).format("YYYY-MM-DD");
+    min = dayjs.unix(+nft?.lockEnds).format("YYYY-MM-DD");
   }
 
   const renderMassiveInput = (
@@ -160,7 +160,7 @@ export default function LockDuration({
               disabled={lockLoading}
               inputProps={{
                 min: min,
-                max: moment()
+                max: dayjs()
                   .add(lockOptions["26 weeks"], "days")
                   .format("YYYY-MM-DD"),
               }}
@@ -174,7 +174,7 @@ export default function LockDuration({
     );
   };
 
-  const max = moment().add(lockOptions["26 weeks"], "days");
+  const max = dayjs().add(lockOptions["26 weeks"], "days");
   const roundedDownMax = roundDownToWeekBoundary(max);
   const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
   return (

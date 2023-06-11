@@ -1,11 +1,14 @@
 import { Typography } from "@mui/material";
-import moment from "moment";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 import { lockOptions } from "./lockDuration";
+
+dayjs.extend(relativeTime);
 
 interface VestingInfoProps {
   veToken: VeToken | null;
@@ -40,7 +43,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 {formatCurrency(currentNFT.lockAmount)} {govToken?.symbol}{" "}
-                locked expires {moment.unix(+currentNFT?.lockEnds).fromNow()}{" "}
+                locked expires {dayjs.unix(+currentNFT?.lockEnds).fromNow()}{" "}
               </Typography>
               <Typography
                 color="textSecondary"
@@ -48,7 +51,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 Locked until{" "}
-                {moment.unix(+currentNFT?.lockEnds).format("YYYY / MM / DD")}
+                {dayjs.unix(+currentNFT?.lockEnds).format("YYYY / MM / DD")}
               </Typography>
             </div>
           </div>
@@ -70,7 +73,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 {formatCurrency(futureNFT.lockAmount)} {govToken?.symbol} locked
-                expires {moment.unix(+futureNFT?.lockEnds).fromNow()}{" "}
+                expires {dayjs.unix(+futureNFT?.lockEnds).fromNow()}{" "}
               </Typography>
               <Typography
                 color="textSecondary"
@@ -78,7 +81,7 @@ export default function VestingInfo({
                 className={classes.val}
               >
                 Locked until{" "}
-                {moment.unix(+futureNFT?.lockEnds).format("YYYY / MM / DD")}
+                {dayjs.unix(+futureNFT?.lockEnds).format("YYYY / MM / DD")}
               </Typography>
             </div>
           </div>
