@@ -1004,7 +1004,7 @@ export default function LiquidityManage() {
                       <Typography className="font-bold capitalize">
                         {isAddLiqLoading ? `Depositing` : `Deposit LP`}
                       </Typography>
-                      {isAddLiqLoading || (
+                      {isAddLiqLoading && (
                         <CircularProgress
                           size={10}
                           className="ml-2 fill-white"

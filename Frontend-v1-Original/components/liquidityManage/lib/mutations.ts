@@ -427,7 +427,7 @@ const createPairStake = async (
     args: [account],
   });
 
-  const pair = (await getPairByAddress(account, _pairFor)) as Gauge | null; // this has to have gauge because it was created moment ago
+  const pair = (await getPairByAddress(account, _pairFor, [])) as Gauge | null; // this has to have gauge because it was created moment ago
 
   const stakeAllowance = await getStakeAllowance(pair, account, _pairFor);
   if (!stakeAllowance) throw new Error("stakeAllowance is null");

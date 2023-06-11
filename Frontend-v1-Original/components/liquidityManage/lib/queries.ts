@@ -47,9 +47,10 @@ export function usePairExistance(pairParams: {
 
 export function useGetPair(pairAddress: string | string[] | undefined) {
   const { address } = useAccount();
+  const { data: pairs } = usePairsWithGauges();
   return useQuery({
-    queryKey: [KEYS.PAIR_BY_ADDRESS, address, pairAddress],
-    queryFn: () => getPairByAddress(address, pairAddress as Address),
+    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pairAddress],
+    queryFn: () => getPairByAddress(address, pairAddress as Address, pairs),
     enabled:
       !!address &&
       !!pairAddress &&
@@ -158,7 +159,7 @@ export function useQuoteAddLiquidity(
         amount1,
       });
     },
-    enabled: !!pair && amount0 !== "" && amount1 !== "" && !!address,
+    enabled: !!pair && (amount0 !== "" || amount1 !== "") && !!address,
   });
 }
 
@@ -276,7 +277,8 @@ const checkIfPairExists = async (pairParams: {
 
 export const getPairByAddress = async (
   account: Address | undefined,
-  pairAddress: Address | undefined
+  pairAddress: Address | undefined,
+  pairs: Pair[] | undefined
 ) => {
   if (!account) {
     console.warn("account not found");
@@ -285,6 +287,14 @@ export const getPairByAddress = async (
   if (!pairAddress) {
     console.warn("account not found");
     throw new Error("pair not found");
+  }
+
+  const pair = pairs?.find(
+    (p) => p.address.toLowerCase() === pairAddress.toLowerCase()
+  );
+
+  if (pair) {
+    return pair;
   }
 
   const pairContract = {
