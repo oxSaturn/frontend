@@ -15,8 +15,6 @@ import {
 import { canto } from "viem/chains";
 import { getAccount, getWalletClient } from "@wagmi/core";
 
-import { Dispatcher } from "flux";
-
 import { queryClient } from "../pages/_app";
 
 import tokenlistArb from "../mainnet-arb-token-list.json";
@@ -30,8 +28,8 @@ import {
   NATIVE_TOKEN,
   PAIR_DECIMALS,
   QUERY_KEYS,
-} from "./constants/constants";
-import viemClient from "./connectors/viem";
+} from "../stores/constants/constants";
+import viemClient from "../stores/connectors/viem";
 
 import {
   BaseAsset,
@@ -40,83 +38,21 @@ import {
   VeToken,
   VestNFT,
   GovToken,
-  Bribe,
-  VeDistReward,
-  ITransaction,
   Gauge,
-  TransactionStatus,
-} from "./types/types";
+} from "../stores/types/types";
 
-import stores from ".";
+import stores from "../stores";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
 const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
 
-const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
 class Store {
-  dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
 
-  constructor(dispatcher: Dispatcher<any>, emitter: EventEmitter) {
-    this.dispatcher = dispatcher;
+  constructor(emitter: EventEmitter) {
     this.emitter = emitter;
-
-    dispatcher.register(
-      function (this: Store, payload: { type: string; content: any }) {
-        console.log("<< Payload of dispatched event", payload);
-        switch (payload.type) {
-          // case ACTIONS.CREATE_VEST:
-          //   this.createVest(payload);
-          //   break;
-          // case ACTIONS.INCREASE_VEST_AMOUNT:
-          //   this.increaseVestAmount(payload);
-          //   break;
-          // case ACTIONS.INCREASE_VEST_DURATION:
-          //   this.increaseVestDuration(payload);
-          //   break;
-          // case ACTIONS.RESET_VEST:
-          //   this.resetVest(payload);
-          //   break;
-          // case ACTIONS.WITHDRAW_VEST:
-          //   this.withdrawVest(payload);
-          //   break;
-          // case ACTIONS.MERGE_NFT:
-          //   this.mergeNft(payload);
-          //   break;
-
-          //REWARDS
-          case ACTIONS.CLAIM_X_BRIBE:
-            this.claimXBribes(payload);
-            break;
-          case ACTIONS.CLAIM_XX_BRIBE:
-            this.claimXXBribes(payload);
-            break;
-
-          case ACTIONS.CLAIM_REWARD:
-            this.claimRewards(payload);
-            break;
-          case ACTIONS.CLAIM_BLOTR_REWARD:
-            this.claimBlotrRewards(payload);
-            break;
-          case ACTIONS.CLAIM_VE_DIST:
-            this.claimVeDist(payload);
-            break;
-          case ACTIONS.CLAIM_ALL_REWARDS:
-            this.claimAllRewards(payload);
-            break;
-
-          default: {
-          }
-        }
-      }.bind(this)
-    );
   }
-
-  // configureAccStore = async () => {
-  //   this.emitter.emit(ACTIONS.ACCOUNT_CONFIGURED);
-  //   this.emitter.emit(ACTIONS.CONFIGURE_RETURNED);
-  // };
 
   getNFTByID = async (id: string) => {
     try {
@@ -1323,6 +1259,7 @@ class Store {
       //only save when a user adds it. don't for when we lookup a pair and find he asset.
       if (save) {
         let localBaseAssets = this.getLocalAssets();
+        //@ts-ignore legacy
         localBaseAssets = [...localBaseAssets, newBaseAsset];
         localStorage.setItem(
           "stableSwap-assets",
@@ -5159,564 +5096,564 @@ class Store {
   //   }
   // };
 
-  _getBuyAllowanceNOTE = async (
-    tokenAddress: `0x${string}`,
-    launchpadProjectAddress: `0x${string}`,
-    account: `0x${string}` | null
-  ) => {
-    try {
-      if (!account) throw Error("No account found");
-      const allowance = await viemClient.readContract({
-        address: tokenAddress,
-        abi: CONTRACTS.ERC20_ABI,
-        functionName: "allowance",
-        args: [account, launchpadProjectAddress],
-      });
+  // _getBuyAllowanceNOTE = async (
+  //   tokenAddress: `0x${string}`,
+  //   launchpadProjectAddress: `0x${string}`,
+  //   account: `0x${string}` | null
+  // ) => {
+  //   try {
+  //     if (!account) throw Error("No account found");
+  //     const allowance = await viemClient.readContract({
+  //       address: tokenAddress,
+  //       abi: CONTRACTS.ERC20_ABI,
+  //       functionName: "allowance",
+  //       args: [account, launchpadProjectAddress],
+  //     });
 
-      return formatEther(allowance);
-    } catch (ex) {
-      console.error(ex);
-      return null;
-    }
-  };
+  //     return formatEther(allowance);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     return null;
+  //   }
+  // };
 
-  claimXBribes = async (payload: {
-    type: string;
-    content: {
-      pair: Gauge;
-      tokenID: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimXBribes = async (payload: {
+  //   type: string;
+  //   content: {
+  //     pair: Gauge;
+  //     tokenID: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { pair, tokenID } = payload.content;
+  //     const { pair, tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-        verb: "Rewards Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your bribes`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+  //       verb: "Rewards Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming your bribes`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // SUBMIT CLAIM TRANSACTION
-      const sendGauges = [pair.gauge.x_wrapped_bribe_address];
-      const sendTokens = [
-        pair.gauge.x_bribesEarned!.map((bribe) => {
-          return (bribe as Bribe).token.address;
-        }),
-      ];
-      await this.writeClaimBribes(
-        walletClient,
-        claimTXID,
-        sendGauges,
-        sendTokens,
-        tokenID
-      );
+  //     // SUBMIT CLAIM TRANSACTION
+  //     const sendGauges = [pair.gauge.x_wrapped_bribe_address];
+  //     const sendTokens = [
+  //       pair.gauge.x_bribesEarned!.map((bribe) => {
+  //         return (bribe as Bribe).token.address;
+  //       }),
+  //     ];
+  //     await this.writeClaimBribes(
+  //       walletClient,
+  //       claimTXID,
+  //       sendGauges,
+  //       sendTokens,
+  //       tokenID
+  //     );
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-      });
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+  //     });
 
-      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimXXBribes = async (payload: {
-    type: string;
-    content: {
-      pair: Gauge;
-      tokenID: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimXXBribes = async (payload: {
+  //   type: string;
+  //   content: {
+  //     pair: Gauge;
+  //     tokenID: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { pair, tokenID } = payload.content;
+  //     const { pair, tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-        verb: "Rewards Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your bribes`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+  //       verb: "Rewards Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming your bribes`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      // SUBMIT CLAIM TRANSACTION
-      const sendGauges = [pair.gauge.xx_wrapped_bribe_address];
-      const sendTokens = [
-        pair.gauge.xx_bribesEarned!.map((bribe) => {
-          return (bribe as Bribe).token.address;
-        }),
-      ];
-      await this.writeClaimBribes(
-        walletClient,
-        claimTXID,
-        sendGauges,
-        sendTokens,
-        tokenID
-      );
+  //     // SUBMIT CLAIM TRANSACTION
+  //     const sendGauges = [pair.gauge.xx_wrapped_bribe_address];
+  //     const sendTokens = [
+  //       pair.gauge.xx_bribesEarned!.map((bribe) => {
+  //         return (bribe as Bribe).token.address;
+  //       }),
+  //     ];
+  //     await this.writeClaimBribes(
+  //       walletClient,
+  //       claimTXID,
+  //       sendGauges,
+  //       sendTokens,
+  //       tokenID
+  //     );
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-      });
-      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+  //     });
+  //     this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
 
-      queryClient.invalidateQueries([
-        QUERY_KEYS.GOV_TOKEN,
-        QUERY_KEYS.VEST_NFTS,
-        QUERY_KEYS.BASE_ASSET_INFO,
-        QUERY_KEYS.PAIRS_WITH_GAUGES,
-      ]);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //       QUERY_KEYS.VEST_NFTS,
+  //       QUERY_KEYS.BASE_ASSET_INFO,
+  //       QUERY_KEYS.PAIRS_WITH_GAUGES,
+  //     ]);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimAllRewards = async (payload: {
-    type: string;
-    content: {
-      rewards: (Gauge | VeDistReward)[];
-      tokenID: string;
-    };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimAllRewards = async (payload: {
+  //   type: string;
+  //   content: {
+  //     rewards: (Gauge | VeDistReward)[];
+  //     tokenID: string;
+  //   };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { rewards, tokenID } = payload.content;
+  //     const { rewards, tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claim01TXID = this.getTXUUID();
-      let claim0TXID = this.getTXUUID();
-      let rewardClaimTXIDs: string[] = [];
-      let oblotr_rewardClaimTXIDs: string[] = [];
-      let distributionClaimTXIDs: string[] = [];
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claim01TXID = this.getTXUUID();
+  //     let claim0TXID = this.getTXUUID();
+  //     let rewardClaimTXIDs: string[] = [];
+  //     let oblotr_rewardClaimTXIDs: string[] = [];
+  //     let distributionClaimTXIDs: string[] = [];
 
-      let xBribePairs = (rewards as Gauge[]).filter((pair) => {
-        return pair.rewardType === "XBribe";
-      });
-      let xxBribePairs = (rewards as Gauge[]).filter((pair) => {
-        return pair.rewardType === "XXBribe";
-      });
+  //     let xBribePairs = (rewards as Gauge[]).filter((pair) => {
+  //       return pair.rewardType === "XBribe";
+  //     });
+  //     let xxBribePairs = (rewards as Gauge[]).filter((pair) => {
+  //       return pair.rewardType === "XXBribe";
+  //     });
 
-      let rewardPairs = (rewards as Gauge[]).filter((pair) => {
-        return pair.rewardType === "Reward";
-      });
+  //     let rewardPairs = (rewards as Gauge[]).filter((pair) => {
+  //       return pair.rewardType === "Reward";
+  //     });
 
-      let oBlotrRewardPairs = (rewards as Gauge[]).filter((pair) => {
-        return pair.rewardType === "oBLOTR_Reward";
-      });
+  //     let oBlotrRewardPairs = (rewards as Gauge[]).filter((pair) => {
+  //       return pair.rewardType === "oBLOTR_Reward";
+  //     });
 
-      let distribution = (rewards as VeDistReward[]).filter((pair) => {
-        return pair.rewardType === "Distribution";
-      });
+  //     let distribution = (rewards as VeDistReward[]).filter((pair) => {
+  //       return pair.rewardType === "Distribution";
+  //     });
 
-      const sendGauges01 = xxBribePairs.map((pair) => {
-        return pair.gauge.xx_wrapped_bribe_address;
-      });
-      const sendTokens01 = xxBribePairs.map((pair) => {
-        return pair.gauge.xx_bribesEarned!.map((bribe) => {
-          return (bribe as Bribe).token.address;
-        });
-      });
-      const sendGauges0 = xBribePairs.map((pair) => {
-        return pair.gauge.x_wrapped_bribe_address;
-      });
-      const sendTokens0 = xBribePairs.map((pair) => {
-        return pair.gauge.x_bribesEarned!.map((bribe) => {
-          return (bribe as Bribe).token.address;
-        });
-      });
+  //     const sendGauges01 = xxBribePairs.map((pair) => {
+  //       return pair.gauge.xx_wrapped_bribe_address;
+  //     });
+  //     const sendTokens01 = xxBribePairs.map((pair) => {
+  //       return pair.gauge.xx_bribesEarned!.map((bribe) => {
+  //         return (bribe as Bribe).token.address;
+  //       });
+  //     });
+  //     const sendGauges0 = xBribePairs.map((pair) => {
+  //       return pair.gauge.x_wrapped_bribe_address;
+  //     });
+  //     const sendTokens0 = xBribePairs.map((pair) => {
+  //       return pair.gauge.x_bribesEarned!.map((bribe) => {
+  //         return (bribe as Bribe).token.address;
+  //       });
+  //     });
 
-      if (
-        xBribePairs.length == 0 &&
-        xxBribePairs.length == 0 &&
-        rewardPairs.length == 0 &&
-        oBlotrRewardPairs.length == 0
-      ) {
-        this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
-        this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
-        return;
-      }
+  //     if (
+  //       xBribePairs.length == 0 &&
+  //       xxBribePairs.length == 0 &&
+  //       rewardPairs.length == 0 &&
+  //       oBlotrRewardPairs.length == 0
+  //     ) {
+  //       this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
+  //       this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
+  //       return;
+  //     }
 
-      let sendOBJ: {
-        title: string;
-        verb: string;
-        transactions: ITransaction["transactions"];
-      } = {
-        title: `Claim all rewards`,
-        verb: "Rewards Claimed",
-        transactions: [],
-      };
+  //     let sendOBJ: {
+  //       title: string;
+  //       verb: string;
+  //       transactions: ITransaction["transactions"];
+  //     } = {
+  //       title: `Claim all rewards`,
+  //       verb: "Rewards Claimed",
+  //       transactions: [],
+  //     };
 
-      if (xxBribePairs.length > 0) {
-        sendOBJ.transactions.push({
-          uuid: claim01TXID,
-          description: `Claiming all your available bribes`,
-          status: TransactionStatus.WAITING,
-        });
-      }
-      if (xBribePairs.length > 0) {
-        sendOBJ.transactions.push({
-          uuid: claim0TXID,
-          description: `Claiming all your available bribes`,
-          status: TransactionStatus.WAITING,
-        });
-      }
+  //     if (xxBribePairs.length > 0) {
+  //       sendOBJ.transactions.push({
+  //         uuid: claim01TXID,
+  //         description: `Claiming all your available bribes`,
+  //         status: TransactionStatus.WAITING,
+  //       });
+  //     }
+  //     if (xBribePairs.length > 0) {
+  //       sendOBJ.transactions.push({
+  //         uuid: claim0TXID,
+  //         description: `Claiming all your available bribes`,
+  //         status: TransactionStatus.WAITING,
+  //       });
+  //     }
 
-      if (rewardPairs.length > 0) {
-        for (let i = 0; i < rewardPairs.length; i++) {
-          const newClaimTX = this.getTXUUID();
+  //     if (rewardPairs.length > 0) {
+  //       for (let i = 0; i < rewardPairs.length; i++) {
+  //         const newClaimTX = this.getTXUUID();
 
-          rewardClaimTXIDs.push(newClaimTX);
-          sendOBJ.transactions.push({
-            uuid: newClaimTX,
-            description: `Claiming reward for ${rewardPairs[i].symbol}`,
-            status: TransactionStatus.WAITING,
-          });
-        }
-      }
-      if (oBlotrRewardPairs.length > 0) {
-        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
-          const newClaimTX = this.getTXUUID();
+  //         rewardClaimTXIDs.push(newClaimTX);
+  //         sendOBJ.transactions.push({
+  //           uuid: newClaimTX,
+  //           description: `Claiming reward for ${rewardPairs[i].symbol}`,
+  //           status: TransactionStatus.WAITING,
+  //         });
+  //       }
+  //     }
+  //     if (oBlotrRewardPairs.length > 0) {
+  //       for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+  //         const newClaimTX = this.getTXUUID();
 
-          oblotr_rewardClaimTXIDs.push(newClaimTX);
-          sendOBJ.transactions.push({
-            uuid: newClaimTX,
-            description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
-            status: TransactionStatus.WAITING,
-          });
-        }
-      }
+  //         oblotr_rewardClaimTXIDs.push(newClaimTX);
+  //         sendOBJ.transactions.push({
+  //           uuid: newClaimTX,
+  //           description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
+  //           status: TransactionStatus.WAITING,
+  //         });
+  //       }
+  //     }
 
-      if (distribution.length > 0) {
-        for (let i = 0; i < distribution.length; i++) {
-          const newClaimTX = this.getTXUUID();
+  //     if (distribution.length > 0) {
+  //       for (let i = 0; i < distribution.length; i++) {
+  //         const newClaimTX = this.getTXUUID();
 
-          distributionClaimTXIDs.push(newClaimTX);
-          sendOBJ.transactions.push({
-            uuid: newClaimTX,
-            description: `Claiming distribution for NFT #${distribution[i].token.id}`,
-            status: TransactionStatus.WAITING,
-          });
-        }
-      }
+  //         distributionClaimTXIDs.push(newClaimTX);
+  //         sendOBJ.transactions.push({
+  //           uuid: newClaimTX,
+  //           description: `Claiming distribution for NFT #${distribution[i].token.id}`,
+  //           status: TransactionStatus.WAITING,
+  //         });
+  //       }
+  //     }
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
 
-      if (xxBribePairs.length > 0) {
-        await this.writeClaimBribes(
-          walletClient,
-          claim01TXID,
-          sendGauges01,
-          sendTokens01,
-          tokenID
-        );
-      }
-      if (xBribePairs.length > 0) {
-        await this.writeClaimBribes(
-          walletClient,
-          claim0TXID,
-          sendGauges0,
-          sendTokens0,
-          tokenID
-        );
-      }
+  //     if (xxBribePairs.length > 0) {
+  //       await this.writeClaimBribes(
+  //         walletClient,
+  //         claim01TXID,
+  //         sendGauges01,
+  //         sendTokens01,
+  //         tokenID
+  //       );
+  //     }
+  //     if (xBribePairs.length > 0) {
+  //       await this.writeClaimBribes(
+  //         walletClient,
+  //         claim0TXID,
+  //         sendGauges0,
+  //         sendTokens0,
+  //         tokenID
+  //       );
+  //     }
 
-      if (rewardPairs.length > 0) {
-        for (let i = 0; i < rewardPairs.length; i++) {
-          const writeGetReward = async () => {
-            const { request } = await viemClient.simulateContract({
-              account,
-              address: rewardPairs[i].gauge.address,
-              abi: CONTRACTS.GAUGE_ABI,
-              functionName: "getReward",
-              args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
-            });
-            const txHash = await walletClient.writeContract(request);
-            return txHash;
-          };
-          await this._writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
-        }
-      }
+  //     if (rewardPairs.length > 0) {
+  //       for (let i = 0; i < rewardPairs.length; i++) {
+  //         const writeGetReward = async () => {
+  //           const { request } = await viemClient.simulateContract({
+  //             account,
+  //             address: rewardPairs[i].gauge.address,
+  //             abi: CONTRACTS.GAUGE_ABI,
+  //             functionName: "getReward",
+  //             args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+  //           });
+  //           const txHash = await walletClient.writeContract(request);
+  //           return txHash;
+  //         };
+  //         await this._writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
+  //       }
+  //     }
 
-      if (oBlotrRewardPairs.length > 0) {
-        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
-          const writeGetReward = async () => {
-            const { request } = await viemClient.simulateContract({
-              account,
-              address: oBlotrRewardPairs[i].gauge.address,
-              abi: CONTRACTS.GAUGE_ABI,
-              functionName: "getReward",
-              args: [account, [CANTO_OPTION_TOKEN]],
-            });
-            const txHash = await walletClient.writeContract(request);
-            return txHash;
-          };
-          await this._writeContractWrapper(
-            oblotr_rewardClaimTXIDs[i],
-            writeGetReward
-          );
-        }
-      }
+  //     if (oBlotrRewardPairs.length > 0) {
+  //       for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+  //         const writeGetReward = async () => {
+  //           const { request } = await viemClient.simulateContract({
+  //             account,
+  //             address: oBlotrRewardPairs[i].gauge.address,
+  //             abi: CONTRACTS.GAUGE_ABI,
+  //             functionName: "getReward",
+  //             args: [account, [CANTO_OPTION_TOKEN]],
+  //           });
+  //           const txHash = await walletClient.writeContract(request);
+  //           return txHash;
+  //         };
+  //         await this._writeContractWrapper(
+  //           oblotr_rewardClaimTXIDs[i],
+  //           writeGetReward
+  //         );
+  //       }
+  //     }
 
-      if (distribution.length > 0) {
-        for (let i = 0; i < distribution.length; i++) {
-          const writeClaim = async () => {
-            const { request } = await viemClient.simulateContract({
-              account,
-              address: CONTRACTS.VE_DIST_ADDRESS,
-              abi: CONTRACTS.VE_DIST_ABI,
-              functionName: "claim",
-              args: [BigInt(tokenID)],
-            });
-            const txHash = await walletClient.writeContract(request);
-            return txHash;
-          };
-          await this._writeContractWrapper(
-            distributionClaimTXIDs[i],
-            writeClaim
-          );
-        }
-      }
+  //     if (distribution.length > 0) {
+  //       for (let i = 0; i < distribution.length; i++) {
+  //         const writeClaim = async () => {
+  //           const { request } = await viemClient.simulateContract({
+  //             account,
+  //             address: CONTRACTS.VE_DIST_ADDRESS,
+  //             abi: CONTRACTS.VE_DIST_ABI,
+  //             functionName: "claim",
+  //             args: [BigInt(tokenID)],
+  //           });
+  //           const txHash = await walletClient.writeContract(request);
+  //           return txHash;
+  //         };
+  //         await this._writeContractWrapper(
+  //           distributionClaimTXIDs[i],
+  //           writeClaim
+  //         );
+  //       }
+  //     }
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REWARDS],
-      });
-      this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
-      queryClient.invalidateQueries([
-        QUERY_KEYS.GOV_TOKEN,
-        QUERY_KEYS.VEST_NFTS,
-        QUERY_KEYS.BASE_ASSET_INFO,
-        QUERY_KEYS.PAIRS_WITH_GAUGES,
-      ]);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.REWARDS],
+  //     });
+  //     this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
+  //     queryClient.invalidateQueries([
+  //       QUERY_KEYS.GOV_TOKEN,
+  //       QUERY_KEYS.VEST_NFTS,
+  //       QUERY_KEYS.BASE_ASSET_INFO,
+  //       QUERY_KEYS.PAIRS_WITH_GAUGES,
+  //     ]);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimRewards = async (payload: {
-    type: string;
-    content: { pair: Gauge; tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimRewards = async (payload: {
+  //   type: string;
+  //   content: { pair: Gauge; tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { pair, tokenID } = payload.content;
+  //     const { pair, tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-        verb: "Rewards Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your rewards`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+  //       verb: "Rewards Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming your rewards`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeGetReward = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: pair.gauge?.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "getReward",
-          args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(claimTXID, writeGetReward);
+  //     const writeGetReward = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: pair.gauge?.address,
+  //         abi: CONTRACTS.GAUGE_ABI,
+  //         functionName: "getReward",
+  //         args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(claimTXID, writeGetReward);
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-      });
-      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
-      this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+  //     });
+  //     this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+  //     this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimBlotrRewards = async (payload: {
-    type: string;
-    content: { pair: Gauge; tokenID: string };
-  }) => {
-    try {
-      const account = getAccount().address;
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimBlotrRewards = async (payload: {
+  //   type: string;
+  //   content: { pair: Gauge; tokenID: string };
+  // }) => {
+  //   try {
+  //     const account = getAccount().address;
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { pair, tokenID } = payload.content;
+  //     const { pair, tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-        verb: "Rewards Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your rewards`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+  //       verb: "Rewards Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming your rewards`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeGetReward = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: pair.gauge?.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "getReward",
-          args: [account, [CANTO_OPTION_TOKEN]],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(claimTXID, writeGetReward);
+  //     const writeGetReward = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: pair.gauge?.address,
+  //         abi: CONTRACTS.GAUGE_ABI,
+  //         functionName: "getReward",
+  //         args: [account, [CANTO_OPTION_TOKEN]],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(claimTXID, writeGetReward);
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-      });
-      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
-      this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+  //     });
+  //     this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+  //     this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
-  claimVeDist = async (payload: {
-    type: string;
-    content: { tokenID: string };
-  }) => {
-    try {
-      const { address: account } = getAccount();
-      if (!account) {
-        console.warn("account not found");
-        return null;
-      }
+  // claimVeDist = async (payload: {
+  //   type: string;
+  //   content: { tokenID: string };
+  // }) => {
+  //   try {
+  //     const { address: account } = getAccount();
+  //     if (!account) {
+  //       console.warn("account not found");
+  //       return null;
+  //     }
 
-      const walletClient = await getWalletClient({ chainId: canto.id });
-      if (!walletClient) {
-        console.warn("wallet");
-        return null;
-      }
+  //     const walletClient = await getWalletClient({ chainId: canto.id });
+  //     if (!walletClient) {
+  //       console.warn("wallet");
+  //       return null;
+  //     }
 
-      const { tokenID } = payload.content;
+  //     const { tokenID } = payload.content;
 
-      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
-      let claimTXID = this.getTXUUID();
+  //     // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  //     let claimTXID = this.getTXUUID();
 
-      await this.emitter.emit(ACTIONS.TX_ADDED, {
-        title: `Claim distribution for NFT #${tokenID}`,
-        verb: "Rewards Claimed",
-        transactions: [
-          {
-            uuid: claimTXID,
-            description: `Claiming your distribution`,
-            status: "WAITING",
-          },
-        ],
-      });
+  //     await this.emitter.emit(ACTIONS.TX_ADDED, {
+  //       title: `Claim distribution for NFT #${tokenID}`,
+  //       verb: "Rewards Claimed",
+  //       transactions: [
+  //         {
+  //           uuid: claimTXID,
+  //           description: `Claiming your distribution`,
+  //           status: "WAITING",
+  //         },
+  //       ],
+  //     });
 
-      const writeClaim = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: CONTRACTS.VE_DIST_ADDRESS,
-          abi: CONTRACTS.VE_DIST_ABI,
-          functionName: "claim",
-          args: [BigInt(tokenID)],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await this._writeContractWrapper(claimTXID, writeClaim);
+  //     const writeClaim = async () => {
+  //       const { request } = await viemClient.simulateContract({
+  //         account,
+  //         address: CONTRACTS.VE_DIST_ADDRESS,
+  //         abi: CONTRACTS.VE_DIST_ABI,
+  //         functionName: "claim",
+  //         args: [BigInt(tokenID)],
+  //       });
+  //       const txHash = await walletClient.writeContract(request);
+  //       return txHash;
+  //     };
+  //     await this._writeContractWrapper(claimTXID, writeClaim);
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
-      });
-      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
-    } catch (ex) {
-      console.error(ex);
-      this.emitter.emit(ACTIONS.ERROR, ex);
-    }
-  };
+  //     queryClient.invalidateQueries({
+  //       queryKey: [QUERY_KEYS.REWARDS, account, tokenID],
+  //     });
+  //     this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+  //   } catch (ex) {
+  //     console.error(ex);
+  //     this.emitter.emit(ACTIONS.ERROR, ex);
+  //   }
+  // };
 
   // bribeAutoBribe = async (payload: {
   //   type: string;

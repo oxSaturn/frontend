@@ -11,14 +11,13 @@ import {
 import { AddCircleOutline } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
-import { VeDistReward, VestNFT, Gauge } from "../../stores/types/types";
+import { VestNFT } from "../../stores/types/types";
 import { useVeToken } from "../../lib/global/queries";
 import { useVestNfts } from "../ssVests/queries";
 
 import RewardsTable from "./ssRewardsTable";
 import { useRewards } from "./lib/queries";
+import { useClaimAllRewards } from "./lib/mutations";
 
 const initialEmptyToken: VestNFT = {
   id: "0",
@@ -32,13 +31,13 @@ const initialEmptyToken: VestNFT = {
 };
 
 export default function Rewards() {
-  const [rewards, setRewards] = useState<(Gauge | VeDistReward)[]>([]);
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
-  const [loading, setLoading] = useState(false);
 
   const { data: veToken } = useVeToken();
 
   const { data: vestNFTs } = useVestNfts();
+
+  const { mutate: claimAllRewards, isLoading: loading } = useClaimAllRewards();
 
   useEffect(() => {
     if (vestNFTs && vestNFTs.length > 0) {
@@ -48,8 +47,9 @@ export default function Rewards() {
     }
   }, [vestNFTs, token]);
 
-  const { isFetching: isFetchingRewards } = useRewards(token?.id, (data) => {
-    if (data) {
+  const { isFetching: isFetchingRewards, data: rewards } = useRewards(
+    token?.id,
+    (data) => {
       if (
         data.xBribes &&
         data.xxBribes &&
@@ -61,26 +61,25 @@ export default function Rewards() {
         data.rewards.length >= 0 &&
         data.oBlotrRewards.length >= 0
       ) {
-        setRewards([
+        return [
           ...data.xxBribes,
           ...data.xBribes,
           ...data.rewards,
           ...data.oBlotrRewards,
           ...data.veDist,
-        ]);
+        ];
       }
     }
-  });
+  );
 
   const onClaimAll = () => {
-    setLoading(true);
-    let sendTokenID = 0;
+    let sendTokenID = "0";
     if (token && token.id) {
-      sendTokenID = +token.id;
+      sendTokenID = token.id;
     }
-    stores.dispatcher.dispatch({
-      type: ACTIONS.CLAIM_ALL_REWARDS,
-      content: { rewards, tokenID: sendTokenID },
+    claimAllRewards({
+      rewards,
+      tokenID: sendTokenID,
     });
   };
 

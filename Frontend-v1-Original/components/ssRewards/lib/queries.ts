@@ -26,7 +26,6 @@ import {
   VeToken,
   VestNFT,
   Pair,
-  Rewards,
 } from "../../../stores/types/types";
 import { useGovToken, useVeToken, usePairs } from "../../../lib/global/queries";
 import { useVestNfts } from "../../ssVests/queries";
@@ -307,9 +306,23 @@ export const getRewardBalances = async (
   return rewards;
 };
 
-export const useRewards = (
+export const useRewards = <
+  TData = {
+    xBribes: Gauge[];
+    xxBribes: Gauge[];
+    rewards: Gauge[];
+    oBlotrRewards: Gauge[];
+    veDist: VeDistReward[];
+  }
+>(
   tokenID: string | undefined,
-  onSuccess?: (_data: Rewards | undefined) => void
+  select?: (_data: {
+    xBribes: Gauge[];
+    xxBribes: Gauge[];
+    rewards: Gauge[];
+    oBlotrRewards: Gauge[];
+    veDist: VeDistReward[];
+  }) => TData
 ) => {
   const { address } = useAccount();
   const { data: veToken } = useVeToken();
@@ -337,7 +350,7 @@ export const useRewards = (
         pairs
       ),
     enabled: !!address && !!govToken && !!veToken && !!pairs,
-    onSuccess,
+    select,
     refetchOnWindowFocus: false,
     onError: (e) => {
       stores.emitter.emit(ACTIONS.ERROR, e);

@@ -47,7 +47,7 @@ export function useCreateVest(onSuccess?: () => void) {
       queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
       queryClient.invalidateQueries([QUERY_KEYS.VEST_NFTS]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -63,7 +63,7 @@ export function useIncreaseVestAmount(onSuccess?: () => void) {
       queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
       queryClient.invalidateQueries([QUERY_KEYS.VEST_NFTS]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -76,7 +76,7 @@ export function useIncreaseVestDuration(onSuccess?: () => void) {
       increaseVestDuration(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.VEST_NFTS]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -112,7 +112,7 @@ export function useWithdrawVest(tokenID: string, onSuccess?: () => void) {
     mutationFn: () => withdrawVest(address, { tokenID, rewards }),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.VEST_NFTS]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -125,7 +125,7 @@ export function useMergeVest(onSuccess?: () => void) {
       mergeNft(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.VEST_NFTS]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }

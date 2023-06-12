@@ -48,7 +48,7 @@ export function useCreatePairStake(onSuccess?: () => void) {
       slippage: string;
     }) => createPairStake(address, options),
     onSuccess: () => {
-      onSuccess && onSuccess();
+      onSuccess?.();
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
@@ -67,7 +67,7 @@ export function useCreatePairDeposit(onSuccess?: () => void) {
       slippage: string;
     }) => createPairDeposit(address, options),
     onSuccess: () => {
-      onSuccess && onSuccess();
+      onSuccess?.();
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
@@ -88,7 +88,7 @@ export function useAddLiquidity(onSuccess?: () => void) {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -102,7 +102,7 @@ export function useStakeLiquidity(onSuccess?: () => void) {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -123,7 +123,7 @@ export function useAddLiquidityAndStake(onSuccess?: () => void) {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -141,7 +141,7 @@ export function useRemoveLiquidity(onSuccess?: () => void) {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -162,7 +162,7 @@ export function useUnstakeAndRemoveLiquidity(onSuccess?: () => void) {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
@@ -176,7 +176,7 @@ export function useUnstakeLiquidity(onSuccess?: () => void) {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      onSuccess && onSuccess();
+      onSuccess?.();
     },
   });
 }
