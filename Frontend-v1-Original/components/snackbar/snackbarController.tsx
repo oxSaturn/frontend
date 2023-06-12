@@ -19,44 +19,6 @@ const SnackbarController = () => {
   });
 
   React.useEffect(() => {
-    const showError = (error: Error) => {
-      const snackbarObj = {
-        snackbarMessage: null,
-        snackbarType: null,
-        open: false,
-      };
-      setState(snackbarObj);
-
-      if (process.env.NODE_ENV === "development") {
-        setTimeout(() => {
-          const snackbarObj = {
-            snackbarMessage: error.toString(),
-            snackbarType: "Error",
-            open: true,
-          };
-          setState(snackbarObj);
-        });
-      }
-    };
-
-    const showHash = ({ txHash }: { txHash: string }) => {
-      const snackbarObj = {
-        snackbarMessage: null,
-        snackbarType: null,
-        open: false,
-      };
-      setState(snackbarObj);
-
-      setTimeout(() => {
-        const snackbarObj = {
-          snackbarMessage: txHash,
-          snackbarType: "Hash",
-          open: true,
-        };
-        setState(snackbarObj);
-      });
-    };
-
     const showWarn = ({ warning }: { warning: string }) => {
       const snackbarObj = {
         snackbarMessage: null,
@@ -75,12 +37,8 @@ const SnackbarController = () => {
       });
     };
 
-    emitter.on(ACTIONS.ERROR, showError);
-    emitter.on(ACTIONS.TX_SUBMITTED, showHash);
     emitter.on(ACTIONS.WARNING, showWarn);
     return () => {
-      emitter.removeListener(ACTIONS.ERROR, showError);
-      emitter.removeListener(ACTIONS.TX_SUBMITTED, showHash);
       emitter.removeListener(ACTIONS.WARNING, showWarn);
     };
   }, []);

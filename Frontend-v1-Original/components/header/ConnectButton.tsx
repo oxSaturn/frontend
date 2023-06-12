@@ -6,7 +6,6 @@ import {
   useAccountModal,
 } from "@rainbow-me/rainbowkit";
 
-import stores from "../../stores";
 import { QUERY_KEYS } from "../../stores/constants/constants";
 
 export function ConnectButton() {
@@ -16,7 +15,7 @@ export function ConnectButton() {
 
   const { data: domain } = useQuery({
     queryKey: [QUERY_KEYS.DOMAIN, address],
-    queryFn: () => stores.helper.resolveUnstoppableDomain(address),
+    queryFn: () => resolveUnstoppableDomain(address),
   });
 
   return address && !chain?.unsupported && domain ? (
@@ -35,3 +34,16 @@ export function ConnectButton() {
     <RainbowKitConnectButton showBalance={false} accountStatus="address" />
   );
 }
+
+const resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
+  if (!address) return null;
+  const res = await fetch("/api/u-domains", {
+    method: "POST",
+    body: JSON.stringify({
+      address,
+    }),
+  });
+  const resJson = (await res.json()) as { domain: string };
+  if (!resJson?.domain || resJson?.domain === "") return null;
+  return resJson?.domain as string;
+};

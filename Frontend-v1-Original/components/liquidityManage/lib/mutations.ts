@@ -244,7 +244,6 @@ const createPairStake = async (
   });
 
   if (pairFor && pairFor !== ZERO_ADDRESS) {
-    stores.emitter.emit(ACTIONS.ERROR, "Pair already exists");
     throw new Error("Pair already exists");
   }
 
@@ -512,7 +511,6 @@ const createPairDeposit = async (
   });
 
   if (pairFor && pairFor !== ZERO_ADDRESS) {
-    stores.emitter.emit(ACTIONS.ERROR, "Pair already exists");
     throw new Error("Pair already exists");
   }
 

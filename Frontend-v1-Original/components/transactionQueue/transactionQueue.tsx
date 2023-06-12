@@ -83,19 +83,6 @@ export default function TransactionQueue({
       setTransactions(txs);
     };
 
-    const transactionSubmitted = (
-      params: Pick<ITransaction["transactions"][number], "uuid" | "txHash">
-    ) => {
-      let txs = transactions.map((tx) => {
-        if (tx.uuid === params.uuid) {
-          tx.status = TransactionStatus.SUBMITTED;
-          tx.txHash = params.txHash;
-        }
-        return tx;
-      });
-      setTransactions(txs);
-    };
-
     const transactionConfirmed = (
       params: Pick<ITransaction["transactions"][number], "uuid" | "txHash">
     ) => {
@@ -142,7 +129,6 @@ export default function TransactionQueue({
     // stores.emitter.on(ACTIONS.CLEAR_TRANSACTION_QUEUE, clearTransactions); TODO: we don't have impl for this one
     stores.emitter.on(ACTIONS.TX_ADDED, transactionAdded);
     stores.emitter.on(ACTIONS.TX_PENDING, transactionPending);
-    stores.emitter.on(ACTIONS.TX_SUBMITTED, transactionSubmitted);
     stores.emitter.on(ACTIONS.TX_CONFIRMED, transactionConfirmed);
     stores.emitter.on(ACTIONS.TX_REJECTED, transactionRejected);
     stores.emitter.on(ACTIONS.TX_STATUS, transactionStatus);
@@ -155,7 +141,6 @@ export default function TransactionQueue({
       // );
       stores.emitter.removeListener(ACTIONS.TX_ADDED, transactionAdded);
       stores.emitter.removeListener(ACTIONS.TX_PENDING, transactionPending);
-      stores.emitter.removeListener(ACTIONS.TX_SUBMITTED, transactionSubmitted);
       stores.emitter.removeListener(ACTIONS.TX_CONFIRMED, transactionConfirmed);
       stores.emitter.removeListener(ACTIONS.TX_REJECTED, transactionRejected);
       stores.emitter.removeListener(ACTIONS.TX_STATUS, transactionStatus);

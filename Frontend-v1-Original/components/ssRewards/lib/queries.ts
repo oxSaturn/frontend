@@ -12,12 +12,7 @@ import viemClient, {
   chunkArray,
   multicallChunks,
 } from "../../../stores/connectors/viem";
-import stores from "../../../stores";
-import {
-  CONTRACTS,
-  ACTIONS,
-  QUERY_KEYS,
-} from "../../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
 import {
   hasGauge,
   VeDistReward,
@@ -352,8 +347,5 @@ export const useRewards = <
     enabled: !!address && !!govToken && !!veToken && !!pairs,
     select,
     refetchOnWindowFocus: false,
-    onError: (e) => {
-      stores.emitter.emit(ACTIONS.ERROR, e);
-    },
   });
 };

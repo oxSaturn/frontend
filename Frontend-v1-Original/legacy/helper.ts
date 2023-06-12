@@ -2,13 +2,13 @@ import { getContract, formatUnits, parseUnits } from "viem";
 
 import { queryClient } from "../pages/_app";
 
-import viemClient from "./connectors/viem";
-import { CONTRACTS, QUERY_KEYS } from "./constants/constants";
+import viemClient from "../stores/connectors/viem";
+import { CONTRACTS, QUERY_KEYS } from "../stores/constants/constants";
 import {
   DefiLlamaTokenPrice,
   DexScrennerPair,
   TokenForPrice,
-} from "./types/types";
+} from "../stores/types/types";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 const WEEK = 604800;
