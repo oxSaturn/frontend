@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
-import moment from "moment";
+import dayjs from "dayjs";
 
 import stores from "../../stores";
 import { ACTIONS } from "../../stores/constants/constants";
@@ -53,13 +53,13 @@ export default function Vest() {
       )}
       {router.query.id !== "create" &&
         nft &&
-        BigNumber(nft.lockEnds).gte(moment().unix()) &&
+        BigNumber(nft.lockEnds).gte(dayjs().unix()) &&
         BigNumber(nft.lockEnds).gt(0) && (
           <ExistingLock nft={nft} govToken={govToken} veToken={veToken} />
         )}
       {router.query.id !== "create" &&
         nft &&
-        BigNumber(nft.lockEnds).lt(moment().unix()) &&
+        BigNumber(nft.lockEnds).lt(dayjs().unix()) &&
         BigNumber(nft.lockEnds).gt(0) && (
           <Unlock nft={nft} govToken={govToken} veToken={veToken} />
         )}
