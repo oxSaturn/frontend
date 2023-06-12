@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { Paper, Typography, IconButton } from "@mui/material";
-import moment from "moment";
+import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 import { ArrowBack } from "@mui/icons-material";
 
@@ -57,8 +57,8 @@ export default function ExistingLock({
       influence: nft.influence,
     };
 
-    const now = moment();
-    const expiry = moment.unix(+tmpNFT.lockEnds);
+    const now = dayjs();
+    const expiry = dayjs.unix(+tmpNFT.lockEnds);
     const dayToExpire = expiry.diff(now, "days");
 
     tmpNFT.lockAmount = BigNumber(nft.lockAmount).plus(amount).toFixed(18);
@@ -82,8 +82,8 @@ export default function ExistingLock({
       influence: nft.influence,
     };
 
-    const now = moment();
-    const expiry = moment(val);
+    const now = dayjs();
+    const expiry = dayjs(val);
     const dayToExpire = expiry.diff(now, "days");
 
     tmpNFT.lockEnds = expiry.unix().toString();
