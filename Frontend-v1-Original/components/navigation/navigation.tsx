@@ -23,6 +23,13 @@ function Navigation() {
     window.open("https://www.scanto.io/", "_blank");
     handleClose();
   };
+  const handleGeckoClick = () => {
+    window.open(
+      "https://www.geckoterminal.com/pulsechain/velocimeter-pulsechain/pools",
+      "_blank"
+    );
+    handleClose();
+  };
 
   useEffect(() => {
     const activePath = router.asPath;
@@ -139,6 +146,14 @@ function Navigation() {
           >
             <div className="m-0 pl-0 text-center text-xs xs:text-base">
               Docs
+            </div>
+          </MenuItem>
+          <MenuItem
+            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
+            onClick={handleGeckoClick}
+          >
+            <div className="m-0 pl-0 text-center text-xs xs:text-base">
+              Coingecko
             </div>
           </MenuItem>
         </Menu>
