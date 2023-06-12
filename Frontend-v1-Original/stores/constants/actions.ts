@@ -5,4 +5,3 @@ export const TX_CONFIRMED = "TX_CONFIRMED";
 export const TX_STATUS = "TX_STATUS";
 export const TX_ADDED = "TX_ADDED";
 export const TX_OPEN = "TX_OPEN";
-export const WARNING = "WARNING";

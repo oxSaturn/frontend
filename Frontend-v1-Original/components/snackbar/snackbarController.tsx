@@ -1,49 +1,33 @@
 import React from "react";
-
-import { ACTIONS } from "../../stores/constants/constants";
-import stores from "../../stores";
+import { create } from "zustand";
 
 import Snackbar from "./snackbar";
 
-const emitter = stores.emitter;
+interface SnackBarState {
+  open: boolean;
+  snackbarType: undefined | string;
+  snackbarMessage: undefined | string;
+  setState: (_state: {
+    open: boolean;
+    snackbarType: undefined | string;
+    snackbarMessage: undefined | string;
+  }) => void;
+}
+
+export const useSnackbarStore = create<SnackBarState>()((set) => ({
+  open: false,
+  snackbarType: undefined,
+  snackbarMessage: undefined,
+  setState: (state: {
+    open: boolean;
+    snackbarType: undefined | string;
+    snackbarMessage: undefined | string;
+  }) => set(state),
+}));
 
 const SnackbarController = () => {
-  const [state, setState] = React.useState<{
-    open: boolean;
-    snackbarType: null | string;
-    snackbarMessage: null | string;
-  }>({
-    open: false,
-    snackbarType: null,
-    snackbarMessage: null,
-  });
+  const { open, snackbarType, snackbarMessage } = useSnackbarStore();
 
-  React.useEffect(() => {
-    const showWarn = ({ warning }: { warning: string }) => {
-      const snackbarObj = {
-        snackbarMessage: null,
-        snackbarType: null,
-        open: false,
-      };
-      setState(snackbarObj);
-
-      setTimeout(() => {
-        const snackbarObj = {
-          snackbarMessage: warning,
-          snackbarType: "Warning",
-          open: true,
-        };
-        setState(snackbarObj);
-      });
-    };
-
-    emitter.on(ACTIONS.WARNING, showWarn);
-    return () => {
-      emitter.removeListener(ACTIONS.WARNING, showWarn);
-    };
-  }, []);
-
-  const { snackbarType, snackbarMessage, open } = state;
   return (
     <>
       {open ? (

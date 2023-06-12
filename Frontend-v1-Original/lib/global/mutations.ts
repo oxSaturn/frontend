@@ -13,6 +13,7 @@ import {
 } from "../../stores/constants/constants";
 import stores from "../../stores";
 import { BaseAsset } from "../../stores/types/types";
+import { useSnackbarStore } from "../../components/snackbar/snackbarController";
 
 import { getLocalAssets } from "./queries";
 
@@ -75,13 +76,23 @@ const removeBaseAsset = async (asset: BaseAsset) => {
 
 export const useAddLocalAsset = () => {
   const queryClient = useQueryClient();
+  const { setState } = useSnackbarStore();
   return useMutation({
     mutationFn: (assetAddress: `0x${string}`) => addBaseAsset(assetAddress),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.LOCAL_ASSETS]);
-      stores.emitter.emit(ACTIONS.WARNING, {
-        warning: "Token is not whitelisted",
+      setState({
+        open: false,
+        snackbarType: undefined,
+        snackbarMessage: undefined,
       });
+      setTimeout(() =>
+        setState({
+          open: true,
+          snackbarType: "Warning",
+          snackbarMessage: "Token is not whitelisted",
+        })
+      );
     },
   });
 };
