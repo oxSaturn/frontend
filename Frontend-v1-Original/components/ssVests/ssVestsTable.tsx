@@ -527,9 +527,7 @@ function MyTableRow(props: {
               href={`/vest/${row.id}/merge`}
               className="flex items-center space-x-2"
             >
-              <a>
-                <Merge className="mr-2" /> <span>Merge</span>
-              </a>
+              <Merge className="mr-2" /> <span>Merge</span>
             </Link>
           </MenuItem>
           <MenuItem disableRipple onClick={() => onView(row)}>

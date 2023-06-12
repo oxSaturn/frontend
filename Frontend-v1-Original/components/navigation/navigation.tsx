@@ -52,18 +52,15 @@ function Navigation() {
 
   const renderSubNav = (title: string, link: string) => {
     return (
-      <Link href={"/" + link}>
-        <a
-          className={`relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 ${
-            active === link
-              ? "border-cantoGreen text-white"
-              : "border-transparent"
-          } inline-flex items-center justify-center hover:bg-[hsla(0,0%,100%,.04)]`}
-        >
-          <div className="m-0 pl-0 text-center text-xs xs:text-base">
-            {title}
-          </div>
-        </a>
+      <Link
+        href={"/" + link}
+        className={`relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 ${
+          active === link
+            ? "border-cantoGreen text-white"
+            : "border-transparent"
+        } inline-flex items-center justify-center hover:bg-[hsla(0,0%,100%,.04)]`}
+      >
+        <div className="m-0 pl-0 text-center text-xs xs:text-base">{title}</div>
       </Link>
     );
   };
