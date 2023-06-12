@@ -30,13 +30,16 @@ import {
   Merge,
   TrendingUp,
 } from "@mui/icons-material";
-import moment from "moment";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import BigNumber from "bignumber.js";
 import Link from "next/link";
 
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 import { useResetVest } from "../ssVest/lib/mutations";
+
+dayjs.extend(relativeTime);
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -452,14 +455,14 @@ function MyTableRow(props: {
       </TableCell>
       <TableCell align="right">
         <Typography variant="h2" className="text-xs font-extralight">
-          {moment.unix(+row.lockEnds).format("YYYY-MM-DD")}
+          {dayjs.unix(+row.lockEnds).format("YYYY-MM-DD")}
         </Typography>
         <Typography
           variant="h5"
           className="text-xs font-extralight"
           color="textSecondary"
         >
-          Expires {moment.unix(+row.lockEnds).fromNow()}
+          Expires {dayjs.unix(+row.lockEnds).fromNow()}
         </Typography>
       </TableCell>
       <TableCell align="right">

@@ -7,7 +7,7 @@ import { serialize, useAccount } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
 import { Address, formatUnits } from "viem";
 import { canto } from "viem/chains";
-import moment from "moment";
+import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
@@ -158,7 +158,7 @@ const createVest = async (
   let allowanceTXID = getTXUUID();
   let vestTXID = getTXUUID();
 
-  const unlockString = moment().add(unlockTime, "seconds").format("YYYY-MM-DD");
+  const unlockString = dayjs().add(+unlockTime, "seconds").format("YYYY-MM-DD");
 
   stores.emitter.emit(ACTIONS.TX_ADDED, {
     title: `Vest ${govToken.symbol} until ${unlockString}`,

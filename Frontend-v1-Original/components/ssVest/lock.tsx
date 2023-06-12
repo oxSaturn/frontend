@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
-import moment from "moment";
+import dayjs from "dayjs";
 import { ArrowBack } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -23,7 +23,7 @@ import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
-import { lockOptions } from "./lockDuration";
+import { type LockOption, lockOptions } from "./lockDuration";
 import { useCreateVest } from "./lib/mutations";
 
 export default function Lock({
@@ -40,7 +40,7 @@ export default function Lock({
   const [amountError, setAmountError] = useState<string | false>(false);
   const [selectedValue, setSelectedValue] = useState<string | null>("8"); // select 1 week by default
   const [selectedDate, setSelectedDate] = useState(
-    moment().add(7, "days").format("YYYY-MM-DD")
+    dayjs().add(7, "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
 
@@ -66,7 +66,7 @@ export default function Lock({
     setSelectedValue(event.target.value);
 
     let days = +event.target.value ?? 0;
-    const newDate = moment().add(days, "days").format("YYYY-MM-DD");
+    const newDate = dayjs().add(days, "days").format("YYYY-MM-DD");
 
     setSelectedDate(newDate);
   };
@@ -97,8 +97,8 @@ export default function Lock({
     }
 
     if (!error) {
-      const now = moment();
-      const expiry = moment(selectedDate).add(1, "days");
+      const now = dayjs();
+      const expiry = dayjs(selectedDate).add(1, "days");
       const secondsToExpire = expiry.diff(now, "seconds");
       createVest({ amount, unlockTime: secondsToExpire.toString() });
     }
@@ -150,8 +150,8 @@ export default function Lock({
               onChange={amountChanged}
               disabled={lockLoading}
               inputProps={{
-                min: moment().add(7, "days").format("YYYY-MM-DD"),
-                max: moment().add(1460, "days").format("YYYY-MM-DD"),
+                min: dayjs().add(7, "days").format("YYYY-MM-DD"),
+                max: dayjs().add(1460, "days").format("YYYY-MM-DD"),
               }}
               InputProps={{
                 className: classes.largeInput,
@@ -249,8 +249,8 @@ export default function Lock({
   };
 
   const renderVestInformation = () => {
-    const now = moment();
-    const expiry = moment(selectedDate);
+    const now = dayjs();
+    const expiry = dayjs(selectedDate);
     const dayToExpire = expiry.diff(now, "days");
 
     const tmpNFT: VestNFT = {
@@ -311,7 +311,7 @@ export default function Lock({
                   <FormControlLabel
                     key={key}
                     className={classes.vestPeriodLabel}
-                    value={lockOptions[key]}
+                    value={lockOptions[key as LockOption]}
                     control={<Radio color="primary" />}
                     label={key}
                     labelPlacement="end"

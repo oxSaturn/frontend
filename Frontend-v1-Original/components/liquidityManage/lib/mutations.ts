@@ -4,7 +4,7 @@ import { getWalletClient } from "@wagmi/core";
 import { canto } from "wagmi/chains";
 import { formatEther, formatUnits } from "viem";
 import BigNumber from "bignumber.js";
-import moment from "moment";
+import dayjs from "dayjs";
 
 import viemClient from "../../../stores/connectors/viem";
 import {
@@ -372,7 +372,7 @@ const createPairStake = async (
   const sendAmount1 = BigNumber(amount1)
     .times(10 ** token1.decimals)
     .toFixed(0);
-  const deadline = "" + moment().add(600, "seconds").unix();
+  const deadline = "" + dayjs().add(600, "seconds").unix();
   const sendAmount0Min = BigNumber(amount0)
     .times(sendSlippage)
     .times(10 ** token0.decimals)
@@ -427,7 +427,7 @@ const createPairStake = async (
     args: [account],
   });
 
-  const pair = (await getPairByAddress(account, _pairFor, [])) as Gauge | null; // this has to have gauge because it was created moment ago
+  const pair = (await getPairByAddress(account, _pairFor, [])) as Gauge | null; // this has to have gauge because it was created dayjs ago
 
   const stakeAllowance = await getStakeAllowance(pair, account, _pairFor);
   if (!stakeAllowance) throw new Error("stakeAllowance is null");
@@ -626,7 +626,7 @@ const createPairDeposit = async (
   const sendAmount1 = BigNumber(amount1)
     .times(10 ** token1.decimals)
     .toFixed(0);
-  const deadline = "" + moment().add(600, "seconds").unix();
+  const deadline = "" + dayjs().add(600, "seconds").unix();
   const sendAmount0Min = BigNumber(amount0)
     .times(sendSlippage)
     .times(10 ** token0.decimals)
@@ -976,7 +976,7 @@ const addLiquidity = async (
   const sendAmount1 = BigNumber(amount1)
     .times(10 ** token1.decimals)
     .toFixed(0);
-  const deadline = "" + moment().add(600, "seconds").unix();
+  const deadline = "" + dayjs().add(600, "seconds").unix();
   const sendAmount0Min = BigNumber(amount0)
     .times(sendSlippage)
     .times(10 ** token0.decimals)
@@ -1255,7 +1255,7 @@ const addLiquidityAndStake = async (
   const sendAmount1 = BigNumber(amount1)
     .times(10 ** token1.decimals)
     .toFixed(0);
-  const deadline = "" + moment().add(600, "seconds").unix();
+  const deadline = "" + dayjs().add(600, "seconds").unix();
   const sendAmount0Min = BigNumber(amount0)
     .times(sendSlippage)
     .times(10 ** token0.decimals)
@@ -1413,7 +1413,7 @@ const removeLiquidity = async (
   });
 
   const sendSlippage = BigNumber(100).minus(slippage).div(100);
-  const deadline = "" + moment().add(600, "seconds").unix();
+  const deadline = "" + dayjs().add(600, "seconds").unix();
   const sendAmount0Min = BigNumber(amountA.toString())
     .times(sendSlippage)
     .toFixed(0);
@@ -1567,7 +1567,7 @@ const unstakeAndRemoveLiquidity = async (
   const sendAmount = BigNumber(amount)
     .times(10 ** PAIR_DECIMALS)
     .toFixed(0);
-  const deadline = "" + moment().add(600, "seconds").unix();
+  const deadline = "" + dayjs().add(600, "seconds").unix();
   const sendAmount0Min = BigNumber(amount0)
     .times(sendSlippage)
     .times(10 ** token0.decimals)
