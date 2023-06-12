@@ -24,6 +24,7 @@
     "@tanstack/react-query-devtools": "^4.29.6",
     "bignumber.js": "^9.0.1",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.8",
     "eslint-plugin-import": "^2.27.5",
     "flux": "^4.0.3",
     "lottie-react": "^2.2.1",

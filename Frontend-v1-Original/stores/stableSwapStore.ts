@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 
-import moment from "moment";
+import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
 import BigNumber from "bignumber.js";
 
@@ -2319,7 +2319,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -2592,7 +2592,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -2799,7 +2799,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -3104,7 +3104,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -3450,7 +3450,7 @@ class Store {
       });
 
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amountA.toString())
         .times(sendSlippage)
         .toFixed(0);
@@ -3568,7 +3568,7 @@ class Store {
       const sendAmount = BigNumber(amount)
         .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -4244,8 +4244,8 @@ class Store {
       let allowanceTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
-      const unlockString = moment()
-        .add(unlockTime, "seconds")
+      const unlockString = dayjs()
+        .add(+unlockTime, "seconds")
         .format("YYYY-MM-DD");
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
