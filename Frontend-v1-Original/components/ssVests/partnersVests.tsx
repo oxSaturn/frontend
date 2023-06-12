@@ -7,31 +7,12 @@ interface PartnerCardProps {
   logo: string;
 }
 
-const partners: PartnerCardProps[] = [
-  {
-    title: "Alto",
-    description:
-      "To buy or sell a veFLOW position as a veNFT, visit Alto, the premier NFT marketplace on Canto.",
-    link: "https://alto.build/collections/flow",
-    logo: "https://alto.build/_next/image?url=%2Falto-logo-v2.png&w=128&q=75",
-  },
-  {
-    title: "ACryptoS - Advanced Crypto Strategies",
-    description:
-      "For a liquid locking option, visit ACryptoS and wrap your FLOW into acsFLOW.",
-    link: "https://app.acryptos.com/vaults/7700/0x53a5dD07127739e5038cE81eff24ec503A6CC479",
-    logo: "https://cre8r.vip/wp-content/uploads/2023/04/IMG_20230411_173159_601.png",
-  },
-  {
-    title: "OpenX Project",
-    description:
-      "For an OpenX Perpetual Bond option, visit OpenXSwap and wrap your FLOW into opxveFLOW.",
-    link: "https://app.openxswap.exchange/PerpetualBonds",
-    logo: "https://app.openxswap.exchange/assets/oswap_logo_icon.cdc95c52.png",
-  },
-];
+const partners: PartnerCardProps[] = [];
 
 export default function PartnersVests() {
+  if (partners.length === 0) {
+    return null;
+  }
   return (
     <div className="mt-6 w-full self-start">
       <div className="flex flex-col gap-1 text-left">
