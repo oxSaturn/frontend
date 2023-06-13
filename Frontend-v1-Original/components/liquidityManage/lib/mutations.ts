@@ -16,10 +16,10 @@ import {
   Gauge,
   Pair,
   RouteAsset,
+  TransactionStatus,
   hasGauge,
 } from "../../../stores/types/types";
 import {
-  ACTIONS,
   CONTRACTS,
   MAX_UINT256,
   NATIVE_TOKEN,
@@ -28,8 +28,8 @@ import {
   W_NATIVE_ADDRESS,
   ZERO_ADDRESS,
 } from "../../../stores/constants/constants";
-import stores from "../../../stores";
 import { getTXUUID } from "../../../utils/utils";
+import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
 import { getPairByAddress } from "./queries";
 
@@ -254,42 +254,41 @@ const createPairStake = async (
   let stakeAllowanceTXID = getTXUUID();
   let stakeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
-    type: "Liquidity",
-    verb: "Liquidity Pool Created",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowance0TXID,
         description: `Checking your ${token0.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: allowance1TXID,
         description: `Checking your ${token1.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: depositTXID,
         description: `Create liquidity pool`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: createGaugeTXID,
         description: `Create gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: stakeAllowanceTXID,
         description: `Checking your pool allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: stakeTXID,
         description: `Stake LP tokens in the gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
+    purpose: "Liquidity",
   });
 
   let allowance0: string | null = "0";
@@ -300,23 +299,24 @@ const createPairStake = async (
     allowance0 = await getDepositAllowance(token0, account);
     if (!allowance0) throw new Error("Couldnt get allowance");
     if (BigNumber(allowance0).lt(amount0)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allow the router to spend your ${token0.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allowance on ${token0.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance0 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance0TXID,
       description: `Allowance on ${token0.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -324,23 +324,24 @@ const createPairStake = async (
     allowance1 = await getDepositAllowance(token1, account);
     if (!allowance1) throw new Error("Couldnt get allowance");
     if (BigNumber(allowance1).lt(amount1)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
         description: `Allow the router to spend your ${token1.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
-        description: `Allowance on ${token1.symbol} sufficient`,
-        status: "DONE",
+        description: `Allowance on ${token0.symbol} sufficient`,
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance1 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance1TXID,
-      description: `Allowance on ${token1.symbol} sufficient`,
-      status: "DONE",
+      description: `Allowance on ${token0.symbol} sufficient`,
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -432,17 +433,18 @@ const createPairStake = async (
   if (!stakeAllowance) throw new Error("stakeAllowance is null");
 
   if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: stakeAllowanceTXID,
       description: `Allow the router to spend your ${
         pair?.symbol ?? "LP token"
       }`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: stakeAllowanceTXID,
       description: `Allowance on ${pair?.symbol ?? "LP token"} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -519,82 +521,81 @@ const createPairDeposit = async (
   let depositTXID = getTXUUID();
   let createGaugeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
-    type: "Liquidity",
-    verb: "Liquidity Pool Created",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowance0TXID,
         description: `Checking your ${token0.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: allowance1TXID,
         description: `Checking your ${token1.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: depositTXID,
         description: `Create liquidity pool`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: createGaugeTXID,
         description: `Create gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
+    purpose: "Liquidity",
   });
 
-  let allowance0: string | null = "0";
-  let allowance1: string | null = "0";
+  let allowance0: string = "0";
+  let allowance1: string = "0";
 
   if (token0.address !== NATIVE_TOKEN.symbol) {
     allowance0 = await getDepositAllowance(token0, account);
-    if (!allowance0) throw new Error("Error getting allowance0");
     if (BigNumber(allowance0).lt(amount0)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allow the router to spend your ${token0.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allowance on ${token0.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance0 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance0TXID,
       description: `Allowance on ${token0.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
   if (token1.address !== NATIVE_TOKEN.symbol) {
     allowance1 = await getDepositAllowance(token1, account);
-    if (!allowance1) throw new Error("couldnt get allowance");
     if (BigNumber(allowance1).lt(amount1)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
         description: `Allow the router to spend your ${token1.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
         description: `Allowance on ${token1.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance1 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance1TXID,
       description: `Allowance on ${token1.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -872,27 +873,26 @@ const addLiquidity = async (
   let allowance1TXID = getTXUUID();
   let depositTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Add liquidity to ${pair.symbol}`,
-    verb: "Liquidity Added",
-    type: "Liquidity",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowance0TXID,
         description: `Checking your ${token0.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: allowance1TXID,
         description: `Checking your ${token1.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: depositTXID,
         description: `Deposit tokens in the pool`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Add liquidity to ${pair.symbol}`,
+    purpose: "Liquidity",
   });
 
   let allowance0: string | null = "0";
@@ -903,23 +903,24 @@ const addLiquidity = async (
     allowance0 = await getDepositAllowance(token0, account);
     if (!allowance0) throw new Error("Error getting allowance");
     if (BigNumber(allowance0).lt(amount0)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
-        description: `Allow the router to spend your ${token0.symbol}`,
+        description: `Approve ${token0.symbol} spending`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allowance on ${token0.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance0 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance0TXID,
       description: `Allowance on ${token0.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -927,23 +928,24 @@ const addLiquidity = async (
     allowance1 = await getDepositAllowance(token1, account);
     if (!allowance1) throw new Error("couldnt get allowance");
     if (BigNumber(allowance1).lt(amount1)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
-        description: `Allow the router to spend your ${token1.symbol}`,
+        description: `Approve ${token1.symbol} spending`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
         description: `Allowance on ${token1.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance1 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance1TXID,
       description: `Allowance on ${token1.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1022,22 +1024,21 @@ const stakeLiquidity = async (
   let stakeAllowanceTXID = getTXUUID();
   let stakeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Stake ${pair.symbol} in the gauge`,
-    type: "Liquidity",
-    verb: "Liquidity Staked",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: stakeAllowanceTXID,
         description: `Checking your ${pair.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: stakeTXID,
         description: `Stake LP tokens in the gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Stake ${pair.symbol} in the gauge`,
+    purpose: "Liquidity",
   });
 
   const stakeAllowance = await getStakeAllowance(pair, account);
@@ -1051,15 +1052,16 @@ const stakeLiquidity = async (
   });
 
   if (BigNumber(stakeAllowance).lt(BigNumber(formatEther(balanceOf)))) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: stakeAllowanceTXID,
       description: `Allow the router to spend your ${pair.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: stakeAllowanceTXID,
       description: `Allowance on ${pair.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1114,37 +1116,36 @@ const addLiquidityAndStake = async (
   let depositTXID = getTXUUID();
   let stakeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Add liquidity to ${pair.symbol}`,
-    type: "Liquidity",
-    verb: "Liquidity Added",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowance0TXID,
         description: `Checking your ${token0.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: allowance1TXID,
         description: `Checking your ${token1.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: stakeAllowanceTXID,
         description: `Checking your ${pair.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: depositTXID,
         description: `Deposit tokens in the pool`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: stakeTXID,
         description: `Stake LP tokens in the gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Add liquidity to ${pair.symbol}`,
+    purpose: "Liquidity",
   });
 
   let allowance0: string | null = "0";
@@ -1155,23 +1156,24 @@ const addLiquidityAndStake = async (
     allowance0 = await getDepositAllowance(token0, account);
     if (!allowance0) throw new Error();
     if (BigNumber(allowance0).lt(amount0)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allow the router to spend your ${token0.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance0TXID,
         description: `Allowance on ${token0.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance0 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance0TXID,
       description: `Allowance on ${token0.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1179,23 +1181,24 @@ const addLiquidityAndStake = async (
     allowance1 = await getDepositAllowance(token1, account);
     if (!allowance1) throw new Error("couldnt get allowance");
     if (BigNumber(allowance1).lt(amount1)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
         description: `Allow the router to spend your ${token1.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowance1TXID,
         description: `Allowance on ${token1.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance1 = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowance1TXID,
       description: `Allowance on ${token1.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1203,15 +1206,16 @@ const addLiquidityAndStake = async (
   if (!stakeAllowance) throw new Error("Error getting stake allowance");
 
   if (BigNumber(stakeAllowance).lt(minLiquidity)) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: stakeAllowanceTXID,
-      description: `Allow the router to spend your ${pair.symbol}`,
+      description: `Allow the gauge to spend your ${pair.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: stakeAllowanceTXID,
       description: `Allowance on ${pair.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1305,20 +1309,18 @@ const createGauge = async (
     throw new Error("wallet not found");
   }
 
-  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let createGaugeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Create liquidity gauge for ${pair.token0.symbol}/${pair.token1.symbol}`,
-    type: "Liquidity",
-    verb: "Gauge Created",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: createGaugeTXID,
         description: `Create gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Create liquidity gauge for ${pair.token0.symbol}/${pair.token1.symbol}`,
+    purpose: "Liquidty",
   });
 
   await writeCreateGauge(walletClient, createGaugeTXID, pair.address);
@@ -1349,26 +1351,24 @@ const removeLiquidity = async (
     throw new Error("invalid options in remove liq");
   }
 
-  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let allowanceTXID = getTXUUID();
   let withdrawTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Remove liquidity from ${pair.symbol}`,
-    type: "Liquidity",
-    verb: "Liquidity Removed",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowanceTXID,
         description: `Checking your ${pair.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: withdrawTXID,
         description: `Withdraw tokens from the pool`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Remove liquidity from ${pair.symbol}`,
+    purpose: "Liquidty",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
@@ -1376,15 +1376,16 @@ const removeLiquidity = async (
   if (!allowance) throw new Error("Error getting withdraw allowance");
   if (!pair.balance) throw new Error("No pair balance");
   if (BigNumber(allowance).lt(pair.balance)) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allow the router to spend your ${pair.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allowance on ${pair.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1505,32 +1506,30 @@ const unstakeAndRemoveLiquidity = async (
   if (!amount0 || !amount1) {
     throw new Error("invalid quote options in unstake and remove liq");
   }
-  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let allowanceTXID = getTXUUID();
   let withdrawTXID = getTXUUID();
   let unstakeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Remove liquidity from ${pair.symbol}`,
-    type: "Liquidity",
-    verb: "Liquidity Removed",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowanceTXID,
         description: `Checking your ${pair.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: unstakeTXID,
         description: `Unstake LP tokens from the gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: withdrawTXID,
         description: `Withdraw tokens from the pool`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Remove liquidity from ${pair.symbol}`,
+    purpose: "Liquidity",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
@@ -1538,15 +1537,16 @@ const unstakeAndRemoveLiquidity = async (
   if (!allowance) throw new Error("Error getting withdraw allowance");
 
   if (BigNumber(allowance).lt(amount)) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allow the router to spend your ${pair.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allowance on ${pair.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -1626,20 +1626,18 @@ const unstakeLiquidity = async (
 
   const { amount, pair } = options;
 
-  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let unstakeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Unstake liquidity from gauge`,
-    type: "Liquidity",
-    verb: "Liquidity Unstaked",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: unstakeTXID,
         description: `Unstake LP tokens from the gauge`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Unstake liquidity from ${pair.symbol}`,
+    purpose: "Liquidity",
   });
 
   // SUBMIT WITHDRAW TRANSACTION

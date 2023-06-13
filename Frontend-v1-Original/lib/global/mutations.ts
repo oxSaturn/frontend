@@ -3,15 +3,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BaseError, type WriteContractReturnType } from "viem";
 
 import viemClient from "../../stores/connectors/viem";
-
+import { useTransactionStore } from "../../components/transactionQueue/transactionQueue";
 import {
-  ACTIONS,
   CONTRACTS,
   MAX_UINT256,
   QUERY_KEYS,
   W_NATIVE_ABI,
 } from "../../stores/constants/constants";
-import stores from "../../stores";
 import { BaseAsset } from "../../stores/types/types";
 import { useSnackbarStore } from "../../components/snackbar/snackbarController";
 
@@ -173,7 +171,7 @@ export const writeContractWrapper = async (
   write: () => Promise<WriteContractReturnType>
 ) => {
   try {
-    stores.emitter.emit(ACTIONS.TX_PENDING, { uuid: txId });
+    useTransactionStore.getState().updatePendingTransaction({ uuid: txId });
 
     const txHash = await write();
 
@@ -181,29 +179,29 @@ export const writeContractWrapper = async (
       hash: txHash,
     });
     if (receipt.status === "success") {
-      stores.emitter.emit(ACTIONS.TX_CONFIRMED, {
+      useTransactionStore.getState().updateConfirmedTransaction({
         uuid: txId,
         txHash: receipt.transactionHash,
       });
     }
   } catch (error) {
     if (error instanceof Error) {
-      stores.emitter.emit(ACTIONS.TX_REJECTED, {
+      useTransactionStore.getState().updateRejectedTransaction({
         uuid: txId,
         error: error.message,
       });
       return;
     }
     if (error instanceof BaseError) {
-      stores.emitter.emit(ACTIONS.TX_REJECTED, {
+      useTransactionStore.getState().updateRejectedTransaction({
         uuid: txId,
         error: error.details,
       });
       return;
     }
-    stores.emitter.emit(ACTIONS.TX_REJECTED, {
+    useTransactionStore.getState().updateRejectedTransaction({
       uuid: txId,
-      error: error,
+      error: "Unknown error",
     });
   }
 };

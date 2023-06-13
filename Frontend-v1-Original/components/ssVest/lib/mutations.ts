@@ -21,18 +21,15 @@ import {
   GovToken,
   Pair,
   Rewards,
+  TransactionStatus,
   VeToken,
 } from "../../../stores/types/types";
-import stores from "../../../stores";
-import {
-  ACTIONS,
-  CONTRACTS,
-  QUERY_KEYS,
-} from "../../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
 import { useGovToken, usePairs, useVeToken } from "../../../lib/global/queries";
 import { writeClaimBribes } from "../../ssRewards/lib/mutations";
 import { getRewardBalances, useRewards } from "../../ssRewards/lib/queries";
 import { useVestNfts } from "../../ssVests/queries";
+import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
 // --- hooks ---
 
@@ -160,36 +157,36 @@ const createVest = async (
 
   const unlockString = dayjs().add(+unlockTime, "seconds").format("YYYY-MM-DD");
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Vest ${govToken.symbol} until ${unlockString}`,
-    type: "Vest",
-    verb: "Vest Created",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowanceTXID,
         description: `Checking your ${govToken.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: vestTXID,
         description: `Vesting your tokens`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Vest ${govToken.symbol} until ${unlockString} `,
+    purpose: "Vest",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
   const allowance = await getVestAllowance(govToken, account);
   if (BigNumber(allowance).lt(amount)) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allow the vesting contract to use your ${govToken.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allowance on ${govToken.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -249,37 +246,37 @@ const increaseVestAmount = async (
   let allowanceTXID = getTXUUID();
   let vestTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Increase vest amount on token #${tokenID}`,
-    type: "Vest",
-    verb: "Vest Increased",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowanceTXID,
         description: `Checking your ${govToken.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: vestTXID,
         description: `Increasing your vest amount`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Increase vest amount on token #${tokenID}`,
+    purpose: "Vest",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
   const allowance = await getVestAllowance(govToken, account);
   if (!allowance) throw new Error("Error getting allowance in increase vest");
   if (BigNumber(allowance).lt(amount)) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
-      description: `Allow vesting contract to use your ${govToken.symbol}`,
+      description: `Allow the vesting contract to use your ${govToken.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allowance on ${govToken.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -347,17 +344,16 @@ const increaseVestDuration = async (
   // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let vestTXID = getTXUUID();
 
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Increase unlock time on token #${tokenID}`,
-    type: "Vest",
-    verb: "Vest Increased",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: vestTXID,
         description: `Increasing your vest duration`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Increase vest duration on token #${tokenID}`,
+    purpose: "Vest",
   });
 
   const writeIncreaseDuration = async () => {
@@ -403,27 +399,26 @@ const resetVest = async (
   let rebaseTXID = getTXUUID();
   let resetTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Reset veNFT #${tokenID}`,
-    type: "Reset",
-    verb: "Vest Reseted",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: rewardsTXID,
         description: `Checking unclaimed bribes`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: rebaseTXID,
         description: `Checking unclaimed rebase distribution`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: resetTXID,
         description: `Resetting your veNFT`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Reset veNFT #${tokenID}`,
+    purpose: "Vest",
   });
 
   // CHECK unclaimed bribes
@@ -449,15 +444,16 @@ const resetVest = async (
   });
 
   if (rewards && rewards.xxBribes.length > 0) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rewardsTXID,
       description: `Unclaimed bribes found, claiming`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rewardsTXID,
       description: `No unclaimed bribes found`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -481,15 +477,16 @@ const resetVest = async (
   }
 
   if (rewards && rewards.veDist.length > 0) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rebaseTXID,
-      description: `Claiming rebase distribution`,
+      description: `Unclaimed rebase distribution found, claiming`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rebaseTXID,
-      description: `No unclaimed rebase`,
-      status: "DONE",
+      description: `No unclaimed rebase distribution found`,
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -545,56 +542,57 @@ const withdrawVest = async (
   let resetTXID = getTXUUID();
   let vestTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Withdraw vest amount on token #${tokenID}`,
-    type: "Vest",
-    verb: "Vest Withdrawn",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: rewards01TXID,
         description: `Checking unclaimed bribes`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: rewards0TXID,
         description: `Checking unclaimed bribes`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: resetTXID,
         description: `Checking if your has votes`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: vestTXID,
         description: `Withdrawing your expired tokens`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Withdraw vest amount on token #${tokenID}`,
+    purpose: "Vest",
   });
 
   if (rewards && rewards.xxBribes.length > 0) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rewards01TXID,
       description: `Unclaimed bribes found, claiming`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rewards01TXID,
       description: `No unclaimed bribes found`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
   if (rewards && rewards.xBribes.length > 0) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rewards0TXID,
       description: `Unclaimed bribes found, claiming`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: rewards0TXID,
       description: `No unclaimed bribes found`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -639,15 +637,16 @@ const withdrawVest = async (
   const voted = await checkNFTVoted(tokenID);
 
   if (!!voted) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: resetTXID,
       description: `NFT has votes, resetting`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: resetTXID,
       description: `NFT doesn't have votes`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -702,16 +701,17 @@ const mergeNft = async (
   const { from, to } = options;
 
   let mergeTXID = getTXUUID();
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Merge NFT #${from} into #${to}`,
-    verb: "NFT Merged",
+
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: mergeTXID,
         description: `Merging NFT #${from} into #${to}`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Merge NFT #${from} into #${to}`,
+    purpose: "Merge NFT",
   });
 
   const writeMergeLock = async () => {

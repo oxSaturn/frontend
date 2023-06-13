@@ -4,14 +4,11 @@ import { canto } from "wagmi/chains";
 
 import viemClient from "../../stores/connectors/viem";
 
-import stores from "../../stores";
-import {
-  ACTIONS,
-  CONTRACTS,
-  QUERY_KEYS,
-} from "../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
 import { getTXUUID } from "../../utils/utils";
 import { writeContractWrapper } from "../../lib/global/mutations";
+import { useTransactionStore } from "../transactionQueue/transactionQueue";
+import { TransactionStatus } from "../../stores/types/types";
 
 const bribeAutoBribe = async (autoBribeAddress: `0x${string}`) => {
   const { address: account } = getAccount();
@@ -29,16 +26,16 @@ const bribeAutoBribe = async (autoBribeAddress: `0x${string}`) => {
   // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let bribeTXID = getTXUUID();
 
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Bribe AutoBribe`,
-    verb: "Bribed",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: bribeTXID,
         description: `Bribing AutoBribe`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: "Bribe autobribe",
+    purpose: "Bribe autobribe",
   });
 
   const writeBribeAutoBribe = async () => {

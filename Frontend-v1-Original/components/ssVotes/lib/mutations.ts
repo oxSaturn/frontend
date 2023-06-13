@@ -5,13 +5,13 @@ import { canto } from "wagmi/chains";
 import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
-import stores from "../../../stores";
-import { Pair, Votes } from "../../../stores/types/types";
-import { ACTIONS, CONTRACTS } from "../../../stores/constants/constants";
+import { Pair, TransactionStatus, Votes } from "../../../stores/types/types";
+import { CONTRACTS } from "../../../stores/constants/constants";
 import { writeContractWrapper } from "../../../lib/global/mutations";
 import { getTXUUID } from "../../../utils/utils";
 import { usePairs } from "../../../lib/global/queries";
 import { useVestNfts } from "../../ssVests/queries";
+import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
 export function useVote() {
   const { address } = useAccount();
@@ -56,17 +56,16 @@ const vote = async (
 
   const voteTXID = getTXUUID();
 
-  // NOTE understand OR learn why 'await' needed here and all similar places (only one tx makes it done right away)
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Cast vote using token #${tokenID}`,
-    verb: "Votes Cast",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: voteTXID,
         description: `Cast votes`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Cast vote using token #${tokenID}`,
+    purpose: "Votes Cast",
   });
 
   const deadGauges: string[] = [];
@@ -89,9 +88,10 @@ const vote = async (
     const error_message = `Gauges ${deadGauges.join(
       ", "
     )} are dead and cannot be voted on`;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: voteTXID,
       description: error_message,
+      status: TransactionStatus.REJECTED,
     });
     throw new Error(error_message);
   }

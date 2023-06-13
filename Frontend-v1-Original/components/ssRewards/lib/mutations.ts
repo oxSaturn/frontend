@@ -5,12 +5,7 @@ import { canto } from "wagmi/chains";
 import { Address, type WalletClient } from "viem";
 
 import viemClient from "../../../stores/connectors/viem";
-import stores from "../../../stores";
-import {
-  ACTIONS,
-  CONTRACTS,
-  QUERY_KEYS,
-} from "../../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
 import {
   Bribe,
   Gauge,
@@ -20,6 +15,7 @@ import {
 } from "../../../stores/types/types";
 import { writeContractWrapper } from "../../../lib/global/mutations";
 import { getTXUUID } from "../../../utils/utils";
+import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
 export function useClaimBribes(onSuccess?: () => void) {
   const queryClient = useQueryClient();
@@ -123,16 +119,16 @@ const claimBribes = async (
   // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let claimTXID = getTXUUID();
 
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-    verb: "Rewards Claimed",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: claimTXID,
         description: `Claiming your bribes`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Claim bribes for ${pair.token0.symbol}/${pair.token1.symbol}`,
+    purpose: "Claim Bribes",
   });
 
   let targetBribeContractAddress = pair.gauge.x_wrapped_bribe_address;
@@ -175,19 +171,18 @@ const claimRewards = async (
 
   const { pair, type } = options;
 
-  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let claimTXID = getTXUUID();
 
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-    verb: "Rewards Claimed",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: claimTXID,
         description: `Claiming your rewards`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+    purpose: "Claim Rewards",
   });
 
   const targetReward =
@@ -222,16 +217,16 @@ const claimVeDist = async (account: Address | undefined, tokenID: string) => {
   // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let claimTXID = getTXUUID();
 
-  await stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Claim distribution for NFT #${tokenID}`,
-    verb: "Rewards Claimed",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: claimTXID,
         description: `Claiming your distribution`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Claim distribution for NFT #${tokenID}`,
+    purpose: "Claim Distribution",
   });
 
   const writeClaim = async () => {
@@ -386,7 +381,11 @@ const claimAllRewards = async (
     }
   }
 
-  await stores.emitter.emit(ACTIONS.TX_ADDED, sendOBJ);
+  useTransactionStore.getState().updateTransactionQueue({
+    transactions: sendOBJ.transactions,
+    action: sendOBJ.title,
+    purpose: "Claim",
+  });
 
   if (xxBribePairs.length > 0) {
     await writeClaimBribes(

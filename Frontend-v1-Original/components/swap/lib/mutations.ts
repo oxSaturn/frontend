@@ -1,11 +1,11 @@
 import { getWalletClient } from "@wagmi/core";
 import { canto } from "wagmi/chains";
-import { formatUnits } from "viem";
+import { BaseError, formatUnits } from "viem";
 import BigNumber from "bignumber.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import viemClient from "../../../stores/connectors/viem";
-import stores from "../../../stores";
+import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 import {
   BaseAsset,
   ITransaction,
@@ -14,7 +14,6 @@ import {
 } from "../../../stores/types/types";
 import { formatCurrency, getTXUUID } from "../../../utils/utils";
 import {
-  ACTIONS,
   CONTRACTS,
   MAX_UINT256,
   NATIVE_TOKEN,
@@ -63,24 +62,23 @@ const swap = async (options: {
   let allowanceTXID = getTXUUID();
   let swapTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Swap ${fromAsset.symbol} for ${toAsset.symbol}`,
-    type: "Swap",
-    verb: "Swap Successful",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowanceTXID,
         description: `Checking your ${fromAsset.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: swapTXID,
         description: `Swap ${formatCurrency(fromAmount)} ${
           fromAsset.symbol
         } for ${toAsset.symbol}`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Swap ${fromAsset.symbol} for ${toAsset.symbol}`,
+    purpose: "Swap",
   });
 
   let allowance: string | null = "0";
@@ -89,23 +87,24 @@ const swap = async (options: {
   if (fromAsset.address !== NATIVE_TOKEN.symbol) {
     allowance = await getFirebirdSwapAllowance(fromAsset, account, quote);
     if (BigNumber(allowance).lt(fromAmount)) {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowanceTXID,
         description: `Allow the router to spend your ${fromAsset.symbol}`,
+        status: TransactionStatus.WAITING,
       });
     } else {
-      stores.emitter.emit(ACTIONS.TX_STATUS, {
+      useTransactionStore.getState().updateTransactionStatus({
         uuid: allowanceTXID,
         description: `Allowance on ${fromAsset.symbol} sufficient`,
-        status: "DONE",
+        status: TransactionStatus.DONE,
       });
     }
   } else {
     allowance = MAX_UINT256;
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allowance on ${fromAsset.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
@@ -123,7 +122,9 @@ const swap = async (options: {
   // SUBMIT SWAP TRANSACTION
   if (quote.maxReturn.from === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
     try {
-      stores.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+      useTransactionStore.getState().updatePendingTransaction({
+        uuid: swapTXID,
+      });
       const txHash = await walletClient.sendTransaction({
         account,
         to: quote.encodedData.router,
@@ -136,28 +137,36 @@ const swap = async (options: {
         hash: txHash,
       });
       if (receipt.status === "success") {
-        stores.emitter.emit(ACTIONS.TX_CONFIRMED, {
+        useTransactionStore.getState().updateConfirmedTransaction({
           uuid: swapTXID,
           txHash: receipt.transactionHash,
         });
       }
     } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          stores.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: swapTXID,
-            error: (error as Error).message,
-          });
-        }
-        stores.emitter.emit(ACTIONS.TX_REJECTED, {
+      if (error instanceof Error) {
+        useTransactionStore.getState().updateRejectedTransaction({
           uuid: swapTXID,
-          error: error,
+          error: error.message,
         });
+        return;
       }
+      if (error instanceof BaseError) {
+        useTransactionStore.getState().updateRejectedTransaction({
+          uuid: swapTXID,
+          error: error.details,
+        });
+        return;
+      }
+      useTransactionStore.getState().updateRejectedTransaction({
+        uuid: swapTXID,
+        error: "Unknown error",
+      });
     }
   } else {
     try {
-      stores.emitter.emit(ACTIONS.TX_PENDING, { uuid: swapTXID });
+      useTransactionStore.getState().updatePendingTransaction({
+        uuid: swapTXID,
+      });
       const txHash = await walletClient.sendTransaction({
         account,
         to: quote.encodedData.router,
@@ -170,24 +179,30 @@ const swap = async (options: {
         hash: txHash,
       });
       if (receipt.status === "success") {
-        stores.emitter.emit(ACTIONS.TX_CONFIRMED, {
+        useTransactionStore.getState().updateConfirmedTransaction({
           uuid: swapTXID,
           txHash: receipt.transactionHash,
         });
       }
     } catch (error) {
-      if (!(error as Error).toString().includes("-32601")) {
-        if ((error as Error).message) {
-          stores.emitter.emit(ACTIONS.TX_REJECTED, {
-            uuid: swapTXID,
-            error: (error as Error).message,
-          });
-        }
-        stores.emitter.emit(ACTIONS.TX_REJECTED, {
+      if (error instanceof Error) {
+        useTransactionStore.getState().updateRejectedTransaction({
           uuid: swapTXID,
-          error: error,
+          error: error.message,
         });
+        return;
       }
+      if (error instanceof BaseError) {
+        useTransactionStore.getState().updateRejectedTransaction({
+          uuid: swapTXID,
+          error: error.details,
+        });
+        return;
+      }
+      useTransactionStore.getState().updateRejectedTransaction({
+        uuid: swapTXID,
+        error: "Unknown error",
+      });
     }
   }
 };
@@ -245,7 +260,11 @@ const wrapOrUnwrap = async (options: {
     ],
   };
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, tx);
+  useTransactionStore.getState().updateTransactionQueue({
+    transactions: tx.transactions,
+    action: tx.title,
+    purpose: tx.type,
+  });
 
   // SUBMIT WRAP_UNWRAP TRANSACTION
   const sendFromAmount = BigNumber(fromAmount)

@@ -8,15 +8,14 @@ import BigNumber from "bignumber.js";
 import viemClient from "../../stores/connectors/viem";
 import { writeApprove, writeContractWrapper } from "../../lib/global/mutations";
 
-import stores from "../../stores";
-import { BaseAsset, Gauge } from "../../stores/types/types";
+import { BaseAsset, Gauge, TransactionStatus } from "../../stores/types/types";
 import {
-  ACTIONS,
   CONTRACTS,
   QUERY_KEYS,
   ZERO_ADDRESS,
 } from "../../stores/constants/constants";
 import { getTXUUID } from "../../utils/utils";
+import { useTransactionStore } from "../transactionQueue/transactionQueue";
 
 export function useCreateBribe() {
   const [createLoading, setCreateLoading] = useState(false);
@@ -70,36 +69,37 @@ const createBribe = async (options: {
   let allowanceTXID = getTXUUID();
   let bribeTXID = getTXUUID();
 
-  stores.emitter.emit(ACTIONS.TX_ADDED, {
-    title: `Create bribe on ${gauge.token0.symbol}/${gauge.token1.symbol}`,
-    verb: "Bribe Created",
+  useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
         uuid: allowanceTXID,
         description: `Checking your ${asset.symbol} allowance`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
       {
         uuid: bribeTXID,
         description: `Create bribe`,
-        status: "WAITING",
+        status: TransactionStatus.WAITING,
       },
     ],
+    action: `Create bribe on ${gauge.token0.symbol}/${gauge.token1.symbol}`,
+    purpose: "Create bribe",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
   const allowance = await getBribeAllowance(asset, gauge, account);
   if (!allowance) throw new Error("Error getting bribe allowance");
   if (BigNumber(allowance).lt(amount)) {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allow the bribe contract to spend your ${asset.symbol}`,
+      status: TransactionStatus.WAITING,
     });
   } else {
-    stores.emitter.emit(ACTIONS.TX_STATUS, {
+    useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
       description: `Allowance on ${asset.symbol} sufficient`,
-      status: "DONE",
+      status: TransactionStatus.DONE,
     });
   }
 
