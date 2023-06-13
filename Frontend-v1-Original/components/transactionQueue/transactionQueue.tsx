@@ -7,13 +7,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
-import { OpenInNew, Close } from "@mui/icons-material";
-import Lottie from "lottie-react";
-
-import successAnim from "../../public/lottiefiles/successAnim.json";
-import swapSuccessAnim from "../../public/lottiefiles/swapSuccess.json";
-import lockSuccessAnim from "../../public/lottiefiles/lockSuccess.json";
-import pairSuccessAnim from "../../public/lottiefiles/pairSuccess.json";
+import { OpenInNew, Close, TaskAltRounded } from "@mui/icons-material";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -41,7 +35,6 @@ export default function TransactionQueue({
     ITransaction["transactions"]
   >([]);
   const [purpose, setPurpose] = useState<string | null>(null);
-  const [type, setType] = useState<string | null>(null);
   const [action, setAction] = useState<string | null>(null);
 
   const handleClose = () => {
@@ -62,7 +55,6 @@ export default function TransactionQueue({
   useEffect(() => {
     const transactionAdded = (params: ITransaction) => {
       setPurpose(params.title);
-      setType(params.type);
       setAction(params.verb);
       setOpen(true);
       const txs = [...params.transactions];
@@ -175,42 +167,12 @@ export default function TransactionQueue({
       return null;
     }
 
-    let lottie = (
-      <Lottie
-        loop={false}
-        className={classes.animClass}
-        animationData={successAnim}
-      />
-    );
-    if (type === "Liquidity") {
-      lottie = (
-        <Lottie
-          loop={false}
-          className={classes.animClass}
-          animationData={pairSuccessAnim}
-        />
-      );
-    } else if (type === "Swap") {
-      lottie = (
-        <Lottie
-          loop={false}
-          className={classes.animClass}
-          animationData={swapSuccessAnim}
-        />
-      );
-    } else if (type === "Vest") {
-      lottie = (
-        <Lottie
-          loop={false}
-          className={classes.animClass}
-          animationData={lockSuccessAnim}
-        />
-      );
-    }
-
     return (
       <div className={classes.successDialog}>
-        {lottie}
+        <div className="relative my-10 flex items-center justify-center">
+          <span className="flex h-32 w-32 items-center justify-center rounded-full bg-[rgb(6,211,215)]/10"></span>
+          <TaskAltRounded className="absolute top-1/2 left-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-[rgb(6,211,215)]" />
+        </div>
         <Typography className={classes.successTitle}>
           {action ? action : "Transaction Successful!"}
         </Typography>
