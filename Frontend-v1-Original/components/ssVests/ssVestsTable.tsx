@@ -528,7 +528,7 @@ function MyTableRow(props: {
           >
             <Link
               href={`/vest/${row.id}/merge`}
-              className="flex items-center space-x-2"
+              className="flex items-center"
             >
               <Merge className="mr-2" /> <span>Merge</span>
             </Link>
