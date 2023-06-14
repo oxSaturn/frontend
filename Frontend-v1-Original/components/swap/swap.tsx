@@ -17,7 +17,7 @@ import {
   W_NATIVE_ADDRESS,
 } from "../../stores/constants/constants";
 import type { BaseAsset } from "../../stores/types/types";
-import { useTokenPrices } from "../header/queries";
+import { useTokenPrices } from "../header/lib/queries";
 
 import { useSwapAssets, useQuote } from "./lib/queries";
 import { useSwap, useWrapOrUnwrap } from "./lib/mutations";

@@ -9,7 +9,7 @@ import {
   useTbv,
   useTokenPrices,
   useTvl,
-} from "./queries";
+} from "./lib/queries";
 
 export default function Info() {
   const { data: tokenPrices } = useTokenPrices();

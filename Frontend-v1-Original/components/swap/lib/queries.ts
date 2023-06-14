@@ -13,7 +13,7 @@ import {
   QuoteSwapResponse,
 } from "../../../stores/types/types";
 import { useBaseAssetWithInfo, usePairs } from "../../../lib/global/queries";
-import { useTokenPrices } from "../../header/queries";
+import { useTokenPrices } from "../../header/lib/queries";
 
 import { useIsWrapUnwrap } from "./useIsWrapUnwrap";
 

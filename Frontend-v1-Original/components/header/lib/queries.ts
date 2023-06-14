@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatUnits } from "viem";
 
-import viemClient from "../../stores/connectors/viem";
-import { usePairsData } from "../../lib/global/queries";
-import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
-import { PairsCallResponse } from "../../stores/types/types";
+import viemClient from "../../../stores/connectors/viem";
+import { usePairsData } from "../../../lib/global/queries";
+import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
+import { PairsCallResponse } from "../../../stores/types/types";
 
 const WEEK = 604800;
 
@@ -60,6 +60,15 @@ export const useActivePeriod = () => {
   });
 };
 
+export const useDomain = (address: `0x${string}` | undefined) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.DOMAIN, address],
+    queryFn: () => resolveUnstoppableDomain(address),
+    enabled: !!address,
+    refetchOnWindowFocus: false,
+  });
+};
+
 const getActivePeriod = async () => {
   const activePeriod = await viemClient.readContract({
     abi: CONTRACTS.MINTER_ABI,
@@ -72,6 +81,7 @@ const getActivePeriod = async () => {
 };
 
 const getTokenPrices = (pairsData: PairsCallResponse | undefined) => {
+  console.log("another check");
   if (!pairsData) throw new Error("Need pairs data");
   return new Map(pairsData.prices);
 };
@@ -159,4 +169,17 @@ const getMarketCap = async (
   if (!price) throw new Error("Missing price");
 
   return circulatingSupply * price;
+};
+
+const resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
+  if (!address) return null;
+  const res = await fetch("/api/u-domains", {
+    method: "POST",
+    body: JSON.stringify({
+      address,
+    }),
+  });
+  const resJson = (await res.json()) as { domain: string };
+  if (!resJson?.domain || resJson?.domain === "") return null;
+  return resJson?.domain as string;
 };

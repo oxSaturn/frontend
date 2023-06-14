@@ -26,7 +26,7 @@ import {
   VestNFT,
   hasGauge,
 } from "../../stores/types/types";
-import { useActivePeriod } from "../../components/header/queries";
+import { useActivePeriod } from "../../components/header/lib/queries";
 
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 

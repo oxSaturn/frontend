@@ -5,7 +5,7 @@ import { formatUnits } from "viem";
 import viemClient from "../../../stores/connectors/viem";
 import { GovToken, VeToken, VestNFT } from "../../../stores/types/types";
 import { CONTRACTS } from "../../../stores/constants/constants";
-import { useActivePeriod } from "../../header/queries";
+import { useActivePeriod } from "../../header/lib/queries";
 import {
   checkNFTActionEpoch,
   useGovToken,
