@@ -7,7 +7,7 @@
     "name": "Wrapped PLS",
     "symbol": "WPLS"
   },
-    {
+  {
     "address": "0x95B303987A60C71504D99Aa1b13B4DA07b0790ab",
     "chainId": 369,
     "decimals": 18,
@@ -15,7 +15,7 @@
     "name": "PLSX",
     "symbol": "PLSX"
   },
-  
+
   {
     "address": "0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07",
     "chainId": 369,
@@ -64,7 +64,7 @@
     "name": "HEX",
     "symbol": "HEX"
   },
-    {
+  {
     "address": "0x57fde0a71132198BBeC939B98976993d8D89D225",
     "chainId": 369,
     "decimals": 8,
@@ -87,5 +87,13 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
     "name": "Velocimeter FLOW",
     "symbol": "FLOW"
+  },
+  {
+    "address": "0xbb366a397d7d4d2bedabd9139d4c32a8826605ed",
+    "chainId": 369,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/30664/large/project-logo-white-200.png",
+    "name": "OlympulseX SEX",
+    "symbol": "SEX"
   }
 ]
