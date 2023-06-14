@@ -351,5 +351,7 @@ export const useRewards = <
     enabled: !!address && !!govToken && !!veToken && !!pairs,
     select,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    keepPreviousData: true,
   });
 };

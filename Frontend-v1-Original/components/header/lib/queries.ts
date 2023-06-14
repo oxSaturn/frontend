@@ -14,6 +14,9 @@ export const useTokenPrices = () => {
     queryKey: [QUERY_KEYS.TOKEN_PRICES, pairsData],
     queryFn: () => getTokenPrices(pairsData),
     enabled: !!pairsData,
+    keepPreviousData: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -23,6 +26,9 @@ export const useTvl = () => {
     queryKey: [QUERY_KEYS.TVL, pairsData],
     queryFn: () => getTvl(pairsData),
     enabled: !!pairsData,
+    keepPreviousData: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -32,6 +38,9 @@ export const useTbv = () => {
     queryKey: [QUERY_KEYS.TBV, pairsData],
     queryFn: () => getTbv(pairsData),
     enabled: !!pairsData,
+    keepPreviousData: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -39,6 +48,9 @@ export const useCirculatingSupply = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.CIRCULATING_SUPPLY],
     queryFn: getCirculatingSupply,
+    keepPreviousData: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -49,6 +61,9 @@ export const useMarketCap = () => {
     queryKey: [QUERY_KEYS.MARKET_CAP, circulatingSupply, tokenPrices],
     queryFn: () => getMarketCap(circulatingSupply, tokenPrices),
     enabled: !!circulatingSupply && !!tokenPrices,
+    keepPreviousData: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -56,6 +71,8 @@ export const useActivePeriod = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.ACTIVE_PERIOD],
     queryFn: getActivePeriod,
+    keepPreviousData: true,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 };
@@ -65,6 +82,7 @@ export const useDomain = (address: `0x${string}` | undefined) => {
     queryKey: [QUERY_KEYS.DOMAIN, address],
     queryFn: () => resolveUnstoppableDomain(address),
     enabled: !!address,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 };
@@ -81,7 +99,6 @@ const getActivePeriod = async () => {
 };
 
 const getTokenPrices = (pairsData: PairsCallResponse | undefined) => {
-  console.log("another check");
   if (!pairsData) throw new Error("Need pairs data");
   return new Map(pairsData.prices);
 };
@@ -172,7 +189,7 @@ const getMarketCap = async (
 };
 
 const resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
-  if (!address) return null;
+  if (!address) throw new Error("No address");
   const res = await fetch("/api/u-domains", {
     method: "POST",
     body: JSON.stringify({
@@ -180,6 +197,7 @@ const resolveUnstoppableDomain = async (address: `0x${string}` | undefined) => {
     }),
   });
   const resJson = (await res.json()) as { domain: string };
-  if (!resJson?.domain || resJson?.domain === "") return null;
+  if (!resJson?.domain || resJson?.domain === "")
+    throw new Error("No domain in response");
   return resJson?.domain as string;
 };

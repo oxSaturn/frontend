@@ -85,6 +85,7 @@ const useLocalAssets = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.LOCAL_ASSETS],
     queryFn: getLocalAssets,
+    refetchOnMount: false,
   });
 };
 
@@ -119,6 +120,7 @@ export const usePairsData = () => {
     queryFn: () => getPairsData(),
     refetchInterval: 1000 * 60 * 15,
     refetchOnMount: false,
+    staleTime: 1000 * 60 * 1,
   });
 };
 
@@ -133,6 +135,8 @@ export const usePairs = () => {
     queryKey: [QUERY_KEYS.PAIRS, pairsData],
     queryFn: () => getPairs(pairsData),
     enabled: !!pairsData,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 1,
   });
 };
 
@@ -164,6 +168,7 @@ export const useGovToken = () => {
     queryKey: [QUERY_KEYS.GOV_TOKEN, address, govTokenBase],
     queryFn: () => getGovToken(address, govTokenBase!), // enabled only when govTokenBase is defined
     enabled: !!govTokenBase,
+    refetchOnMount: false,
   });
 };
 
@@ -278,6 +283,7 @@ export const useBaseAssetWithInfo = <TData = BaseAsset[]>(
     queryKey: [QUERY_KEYS.BASE_ASSET_INFO, address, localAssets],
     queryFn: () => getBaseAssetsWithInfo(address, localAssets),
     select,
+    refetchOnMount: false,
   });
 };
 
@@ -425,6 +431,7 @@ export const usePairsWithoutGauges = () => {
     ],
     queryFn: () => getPairsWithoutGauges(address!, pairs!, baseAssetsWithInfo!),
     enabled: !!address && !!pairs && !!baseAssetsWithInfo,
+    refetchOnMount: false,
   });
 };
 
@@ -556,6 +563,7 @@ export const usePairsWithGauges = <TData = Pair[]>(
     queryFn: () => getPairsWithGauges(address!, pairsWithoutGauges!),
     enabled: !!address && !!pairsWithoutGauges,
     select,
+    refetchOnMount: false,
   });
 };
 
@@ -592,7 +600,7 @@ const getVestNFTs = async (
   activePeriod: number
 ) => {
   if (!veToken || !govToken || !address) {
-    return [];
+    throw new Error("veToken, govToken or address is undefined");
   }
 
   const vestingContract = {
@@ -676,6 +684,9 @@ export const useVestNfts = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.VEST_NFTS, address, govToken, veToken, activePeriod],
     queryFn: () => getVestNFTs(address, govToken, veToken, activePeriod!), // enabled only when activePeriod is defined
-    enabled: !!govToken && !!veToken && !!activePeriod,
+    enabled: !!address && !!govToken && !!veToken && !!activePeriod,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 1,
   });
 };

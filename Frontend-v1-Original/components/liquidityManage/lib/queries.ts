@@ -42,6 +42,7 @@ export function usePairExistance(pairParams: {
   return useQuery({
     queryKey: [KEYS.PAIR_EXISTANCE, pairParams],
     queryFn: () => checkIfPairExists(pairParams),
+    staleTime: Infinity,
   });
 }
 
