@@ -60,7 +60,7 @@ export default function Info() {
   }, [forceUpdate]);
 
   return (
-    <div className="flex flex-col items-start gap-3 px-6 pt-2 font-sono md:flex-row md:items-center md:px-4">
+    <div className="flex flex-col items-start gap-1 px-6 pt-2 font-sono md:flex-row md:items-center md:gap-3 md:px-4">
       <div>
         <span className="font-normal">TVL: </span>
         <span className="tracking-tighter">${formatFinancialData(tvl)}</span>
@@ -94,7 +94,7 @@ const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;
 
 function Timer({ deadline }: { deadline: number }) {
-  const { days, hours, minutes, seconds } = useTimer(deadline, MINUTE);
+  const { days, hours, minutes, seconds } = useTimer(deadline, SECOND);
 
   return (
     <div>
@@ -102,7 +102,7 @@ function Timer({ deadline }: { deadline: number }) {
       <span className="tracking-tighter">
         {days + hours + minutes + seconds <= 0
           ? "0d_0h_0m"
-          : `${days}d_${hours}h_${minutes}m`}
+          : `${days}d_${hours}h_${minutes}m_${seconds}s`}
       </span>
     </div>
   );
