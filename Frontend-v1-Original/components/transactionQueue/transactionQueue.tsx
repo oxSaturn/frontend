@@ -193,6 +193,9 @@ export default function TransactionQueue() {
         }).length !== transactions.length && (
           <>
             <Typography className="block w-full text-center text-2xl">
+              Transactions
+            </Typography>
+            <Typography className="block w-full text-center text-xl">
               {purpose ? purpose : "Pending Transactions"}
             </Typography>
             <div className="mb-3 rounded-xl border border-secondaryGray bg-primaryBg p-6">
