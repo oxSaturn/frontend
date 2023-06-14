@@ -843,7 +843,7 @@ function Setup() {
         <div className="flex min-h-[176px] flex-col items-center justify-center">
           {renderSwapInformation()}
         </div>
-        <div className="mt-3 grid h-full w-full grid-cols-[1fr] gap-3 py-0">
+        <div className="mt-3 grid w-full grid-cols-[1fr] gap-3 py-0">
           <Button
             variant="contained"
             size="large"
