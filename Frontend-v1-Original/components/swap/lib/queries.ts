@@ -52,7 +52,8 @@ export const quoteSwap = async (
     toAsset: BaseAsset | null;
     fromAmount: string;
     slippage: string;
-  }
+  },
+  signal?: AbortSignal
 ) => {
   if (!address) throw new Error("no address");
   const res = await fetch("/api/firebird-router", {
@@ -61,6 +62,7 @@ export const quoteSwap = async (
       options,
       address,
     }),
+    signal,
   });
   const resJson = (await res.json()) as QuoteSwapResponse;
 
@@ -96,13 +98,17 @@ export function useQuote({
       fromAmountValue,
       slippage,
     ],
-    queryFn: () =>
-      quoteSwap(address, {
-        fromAsset: fromAssetValue,
-        toAsset: toAssetValue,
-        fromAmount: fromAmountValue,
-        slippage,
-      }),
+    queryFn: async ({ signal }) =>
+      quoteSwap(
+        address,
+        {
+          fromAsset: fromAssetValue,
+          toAsset: toAssetValue,
+          fromAmount: fromAmountValue,
+          slippage,
+        },
+        signal
+      ),
     enabled:
       !loadingTrade &&
       !!fromAssetValue &&
