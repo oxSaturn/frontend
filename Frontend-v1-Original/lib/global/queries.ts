@@ -120,6 +120,7 @@ export const usePairsData = () => {
     queryFn: () => getPairsData(),
     refetchInterval: 1000 * 60 * 15,
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 1,
   });
 };
