@@ -1,7 +1,6 @@
 import {
   createPublicClient,
   http,
-  webSocket,
   fallback,
   ContractFunctionConfig,
   MulticallParameters,
@@ -9,14 +8,16 @@ import {
 import { canto } from "viem/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
-import { getDefaultWallets } from "@rainbow-me/rainbowkit";
-
-import { CONTRACTS } from "../constants/constants";
+import { connectorsForWallets } from "@rainbow-me/rainbowkit";
+import {
+  walletConnectWallet,
+  rabbyWallet,
+  metaMaskWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 
 // invalid chain id for signer error thrown by chandrastation for eth_getTransactionReceipt method
 // neobase sends back empty data when can't fetch, this breaks the fallback
-const dexvaults = http("https://canto.dexvaults.com");
-const dexvaultsWS = webSocket("wss://canto.dexvaults/ws");
+const veloci = http(process.env.NEXT_PUBLIC_RPC_URL!);
 const plexnode = http("https://mainnode.plexnode.org:8545");
 const nodestake = http("https://jsonrpc.canto.nodestake.top");
 const slingshot = http("https://canto.slingshot.finance");
@@ -26,14 +27,11 @@ const slingshot = http("https://canto.slingshot.finance");
 // used in store for reading blockchain
 const client = createPublicClient({
   chain: canto,
-  transport: fallback(
-    [dexvaults, dexvaultsWS, plexnode, nodestake, slingshot],
-    {
-      rank: {
-        interval: 30_000,
-      },
-    }
-  ),
+  transport: fallback([veloci, plexnode, nodestake, slingshot], {
+    rank: {
+      interval: 30_000,
+    },
+  }),
 });
 
 // rainbow kit set up
@@ -42,8 +40,7 @@ const { chains, publicClient } = configureChains(
   [
     jsonRpcProvider({
       rpc: () => ({
-        http: "https://canto.dexvaults.com",
-        webSocket: "wss://canto.dexvaults/ws",
+        http: process.env.NEXT_PUBLIC_RPC_URL!,
       }),
     }),
     jsonRpcProvider({
@@ -63,11 +60,25 @@ const { chains, publicClient } = configureChains(
     }),
   ]
 );
-const { connectors } = getDefaultWallets({
-  appName: "Velocimeter DEX",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-  chains,
-});
+// const { connectors } = getDefaultWallets({
+//   appName: "Velocimeter DEX",
+//   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+//   chains,
+// });
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
+const connectors = connectorsForWallets([
+  {
+    groupName: "Recommended",
+    wallets: [
+      rabbyWallet({ chains }),
+      metaMaskWallet({ projectId, chains }),
+      walletConnectWallet({
+        projectId,
+        chains,
+      }),
+    ],
+  },
+]);
 
 // config for wagmi provider
 export const config = createConfig({
@@ -109,7 +120,6 @@ export async function multicallChunks<
     chunks.map(async (chunk) => {
       const chunkResult = await client.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: chunk,
       });
       return chunkResult;

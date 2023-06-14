@@ -9,7 +9,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import moment from "moment";
+import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 
 import stores from "../../stores";
@@ -18,16 +18,34 @@ import { VestNFT } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 
-export const lockOptions: {
-  [key: string]: number;
-} = {
+export type LockOption =
+  | "1 week"
+  | "1 month"
+  | "1 year"
+  | "2 years"
+  | "3 years"
+  | "4 years";
+export const lockOptions: Record<LockOption, number> = {
   "1 week": 8,
   "1 month": 30,
   "1 year": 365,
   "2 years": 730,
   "3 years": 1095,
-  "4 years": 1461,
+  "4 years": 1460,
 };
+
+/**
+ *
+ * @param date
+ * @returns timestamp of the start of the epoch, i.e., thursday 00:00 UTC
+ */
+function roundDownToWeekBoundary(date: dayjs.Dayjs) {
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  // convert date to timestamp
+  const timestamp = date.valueOf();
+  return Math.floor(timestamp / WEEK) * WEEK;
+}
+
 export default function LockDuration({
   nft,
   updateLockDuration,
@@ -39,7 +57,7 @@ export default function LockDuration({
   const [lockLoading, setLockLoading] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
-    moment().add(8, "days").format("YYYY-MM-DD")
+    dayjs().add(8, "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
@@ -68,7 +86,7 @@ export default function LockDuration({
 
   useEffect(() => {
     if (nft && nft.lockEnds) {
-      setSelectedDate(moment.unix(+nft.lockEnds).format("YYYY-MM-DD"));
+      setSelectedDate(dayjs.unix(+nft.lockEnds).format("YYYY-MM-DD"));
       setSelectedValue(null);
     }
   }, [nft]);
@@ -84,7 +102,7 @@ export default function LockDuration({
     setSelectedValue(event.target.value);
 
     let days = +event.target.value ?? 0;
-    const newDate = moment().add(days, "days").format("YYYY-MM-DD");
+    const newDate = dayjs().add(days, "days").format("YYYY-MM-DD");
 
     setSelectedDate(newDate);
     updateLockDuration(newDate);
@@ -93,8 +111,8 @@ export default function LockDuration({
   const onLock = () => {
     setLockLoading(true);
 
-    const now = moment();
-    const expiry = moment(selectedDate).add(1, "days");
+    const now = dayjs();
+    const expiry = dayjs(selectedDate).add(1, "days");
     const secondsToExpire = expiry.diff(now, "seconds");
 
     stores.dispatcher.dispatch({
@@ -107,9 +125,9 @@ export default function LockDuration({
     inputEl.current?.focus();
   };
 
-  let min = moment().add(7, "days").format("YYYY-MM-DD");
+  let min = dayjs().add(7, "days").format("YYYY-MM-DD");
   if (BigNumber(nft?.lockEnds).gt(0)) {
-    min = moment.unix(+nft?.lockEnds).format("YYYY-MM-DD");
+    min = dayjs.unix(+nft?.lockEnds).format("YYYY-MM-DD");
   }
 
   const renderMassiveInput = (
@@ -150,7 +168,7 @@ export default function LockDuration({
               disabled={lockLoading}
               inputProps={{
                 min: min,
-                max: moment().add(1460, "days").format("YYYY-MM-DD"),
+                max: dayjs().add(1460, "days").format("YYYY-MM-DD"),
               }}
               InputProps={{
                 className: classes.largeInput,
@@ -162,6 +180,9 @@ export default function LockDuration({
     );
   };
 
+  const max = dayjs().add(lockOptions["4 years"], "days");
+  const roundedDownMax = roundDownToWeekBoundary(max);
+  const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
   return (
     <div className={classes.someContainer}>
       <div className={classes.inputsContainer3}>
@@ -174,11 +195,12 @@ export default function LockDuration({
             value={selectedValue}
           >
             {Object.keys(lockOptions).map((key) => {
+              const value = lockOptions[key as LockOption];
               return (
                 <FormControlLabel
                   key={key}
                   className={classes.vestPeriodLabel}
-                  value={lockOptions[key]}
+                  value={value}
                   control={<Radio color="primary" />}
                   label={key}
                   labelPlacement="end"
@@ -195,12 +217,16 @@ export default function LockDuration({
           variant="contained"
           size="large"
           color="primary"
-          disabled={lockLoading}
+          disabled={lockLoading || maxLocked}
           onClick={onLock}
         >
-          <Typography className={classes.actionButtonText}>
-            {lockLoading ? `Increasing Duration` : `Increase Duration`}
-          </Typography>
+          {maxLocked ? (
+            <Typography className="text-gray-600">MAX LOCKED</Typography>
+          ) : (
+            <Typography className={classes.actionButtonText}>
+              {lockLoading ? `Increasing Duration` : `Increase Duration`}
+            </Typography>
+          )}
           {lockLoading && (
             <CircularProgress size={10} className={classes.loadingCircle} />
           )}

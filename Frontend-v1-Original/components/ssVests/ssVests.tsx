@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useAccount } from "wagmi";
 import { Typography } from "@mui/material";
 
 import stores from "../../stores";
@@ -16,6 +17,8 @@ export default function Vests() {
   const [govToken, setGovToken] = useState<GovToken | null>(null);
   const [veToken, setVeToken] = useState<VeToken | null>(null);
 
+  const { address } = useAccount();
+
   useEffect(() => {
     const ssUpdated = async () => {
       setGovToken(stores.stableSwapStore.getStore("govToken"));
@@ -31,14 +34,15 @@ export default function Vests() {
   }, []);
 
   useEffect(() => {
+    if (address && govToken && veToken)
+      stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
+  }, [address, govToken, veToken]);
+
+  useEffect(() => {
     const vestNFTsReturned = (nfts: VestNFT[]) => {
       setVestNFTs(nfts);
       forceUpdate();
     };
-
-    window.setTimeout(() => {
-      stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
-    }, 1);
 
     const resetVestReturned = () => {
       stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });

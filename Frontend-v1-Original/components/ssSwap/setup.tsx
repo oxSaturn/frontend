@@ -60,7 +60,7 @@ function Setup() {
   const [toAssetError, setToAssetError] = useState<string | false>(false);
   const [toAssetOptions, setToAssetOptions] = useState<BaseAsset[]>([]);
 
-  const [slippage, setSlippage] = useState("2");
+  const [slippage, setSlippage] = useState("0.5");
   const [slippageError] = useState(false);
 
   const [quoteError, setQuoteError] = useState<string | null | false>(null);
@@ -185,11 +185,11 @@ function Setup() {
       setFromAssetOptions(swapAssets);
 
       if (swapAssets.length > 0 && toAssetValue == null) {
-        setToAssetValue(swapAssets[0]);
+        setToAssetValue(swapAssets[1]);
       }
 
       if (swapAssets.length > 0 && fromAssetValue == null) {
-        setFromAssetValue(swapAssets[1]);
+        setFromAssetValue(swapAssets[0]);
       }
 
       if (tokenPrices.size > 0) {

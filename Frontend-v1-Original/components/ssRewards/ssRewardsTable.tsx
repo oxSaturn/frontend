@@ -187,6 +187,11 @@ export default function EnhancedTable({
         type: ACTIONS.CLAIM_REWARD,
         content: { pair: reward, tokenID },
       });
+    } else if (reward.rewardType === "oBLOTR_Reward") {
+      stores.dispatcher.dispatch({
+        type: ACTIONS.CLAIM_BLOTR_REWARD,
+        content: { pair: reward, tokenID },
+      });
     } else if (reward.rewardType === "Distribution") {
       stores.dispatcher.dispatch({
         type: ACTIONS.CLAIM_VE_DIST,
@@ -230,9 +235,12 @@ export default function EnhancedTable({
                     >
                       <TableCell>
                         {isGaugeReward(row) &&
-                          ["XBribe", "XXBribe", "Reward"].includes(
-                            row.rewardType ?? ""
-                          ) && (
+                          [
+                            "XBribe",
+                            "XXBribe",
+                            "Reward",
+                            "oBLOTR_Reward",
+                          ].includes(row.rewardType ?? "") && (
                             <div className="flex items-center">
                               <div className="relative flex h-9 w-[70px]">
                                 <img
@@ -488,6 +496,52 @@ export default function EnhancedTable({
                               </>
                             )}
                           {row &&
+                            row.rewardType === "oBLOTR_Reward" &&
+                            row.gauge &&
+                            row.gauge.balance &&
+                            row.gauge.totalSupply && (
+                              <>
+                                <div className="flex items-center justify-end">
+                                  <Typography
+                                    variant="h2"
+                                    className="text-xs font-extralight"
+                                  >
+                                    {formatCurrency(
+                                      BigNumber(row.gauge.balance)
+                                        .div(row.gauge.totalSupply)
+                                        .times(row.gauge.reserve0 ?? 0)
+                                    )}
+                                  </Typography>
+                                  <Typography
+                                    variant="h5"
+                                    className={`min-w-[40px] text-xs font-extralight`}
+                                    color="textSecondary"
+                                  >
+                                    {row.token0.symbol}
+                                  </Typography>
+                                </div>
+                                <div className="flex items-center justify-end">
+                                  <Typography
+                                    variant="h5"
+                                    className="text-xs font-extralight"
+                                  >
+                                    {formatCurrency(
+                                      BigNumber(row.gauge.balance)
+                                        .div(row.gauge.totalSupply)
+                                        .times(row.gauge.reserve1 ?? 0)
+                                    )}
+                                  </Typography>
+                                  <Typography
+                                    variant="h5"
+                                    className={`min-w-[40px] text-xs font-extralight`}
+                                    color="textSecondary"
+                                  >
+                                    {row.token1.symbol}
+                                  </Typography>
+                                </div>
+                              </>
+                            )}
+                          {row &&
                             !isGaugeReward(row) &&
                             row.rewardType === "Distribution" && (
                               <>
@@ -617,6 +671,27 @@ export default function EnhancedTable({
                                   color="textSecondary"
                                 >
                                   FLOW
+                                </Typography>
+                              </div>
+                            </>
+                          )}
+                          {row && row.rewardType === "oBLOTR_Reward" && (
+                            <>
+                              <div className="flex items-center justify-end">
+                                <Typography
+                                  variant="h2"
+                                  className="text-xs font-extralight"
+                                >
+                                  {formatCurrency(
+                                    row.gauge.BLOTR_rewardsEarned
+                                  )}
+                                </Typography>
+                                <Typography
+                                  variant="h5"
+                                  className={`min-w-[40px] text-xs font-extralight`}
+                                  color="textSecondary"
+                                >
+                                  oBLOTR
                                 </Typography>
                               </div>
                             </>

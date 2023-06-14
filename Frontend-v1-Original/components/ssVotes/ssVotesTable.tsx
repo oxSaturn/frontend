@@ -29,10 +29,17 @@ import {
 import { formatCurrency } from "../../utils/utils";
 import { Gauge, Vote, VestNFT } from "../../stores/types/types";
 import tokens from "../../tokens.json";
+import { formatTVL } from "../ssLiquidityPairs/ssLiquidityPairsTable";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
   { id: "asset", numeric: false, disablePadding: false, label: "Asset" },
+  {
+    id: "tvl",
+    numeric: true,
+    disablePadding: false,
+    label: "TVL",
+  },
   {
     id: "totalVotes",
     numeric: true,
@@ -403,7 +410,14 @@ const VotesRow = memo(function VotesRow({
             </div>
             <div>
               <Typography variant="h2" className="text-xs font-extralight">
-                {row.symbol}
+                <a
+                  href={`https://dexscreener.com/canto/${row.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="hover:underline"
+                >
+                  {row.symbol}
+                </a>
               </Typography>
               <Typography
                 variant="h5"
@@ -414,6 +428,12 @@ const VotesRow = memo(function VotesRow({
               </Typography>
             </div>
           </div>
+        </TableCell>
+        {/* insert tvl */}
+        <TableCell align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
+            {formatTVL(row.tvl)}
+          </Typography>
         </TableCell>
         <TableCell align="right">
           {!!row.gauge.weight && !!row.gauge.weightPercent ? (
@@ -685,6 +705,15 @@ function descendingComparator(
         return -1;
       }
       if (caseB > caseA) {
+        return 1;
+      }
+      return 0;
+
+    case "tvl":
+      if (BigNumber(b.tvl).lt(a.tvl)) {
+        return -1;
+      }
+      if (BigNumber(b.tvl).gt(a.tvl)) {
         return 1;
       }
       return 0;

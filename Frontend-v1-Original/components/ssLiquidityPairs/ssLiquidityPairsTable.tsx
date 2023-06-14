@@ -17,10 +17,6 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Popper,
-  Fade,
-  Grid,
-  Switch,
   Collapse,
   List,
   ListItem,
@@ -31,13 +27,13 @@ import {
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 import {
-  FilterList,
   Search,
   AddCircleOutline,
   WarningOutlined,
   KeyboardArrowUp,
   KeyboardArrowDown,
   OpenInNewOutlined,
+  LocalFireDepartmentOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -151,24 +147,19 @@ function EnhancedTableHead(props: {
   );
 }
 
-const getLocalToggles = () => {
-  let localToggles = {
-    toggleActive: false,
-    toggleActiveGauge: true,
-    toggleVariable: true,
-    toggleStable: true,
-  };
-  // get locally saved toggles
-  try {
-    const localToggleString = localStorage.getItem("solidly-pairsToggle-v1");
-    if (localToggleString && localToggleString.length > 0) {
-      localToggles = JSON.parse(localToggleString);
-    }
-  } catch (ex) {
-    console.log(ex);
+const getLocalState = () => {
+  let localState = "all";
+
+  const localToggleString = localStorage.getItem("pairsState-v1");
+  if (localToggleString) {
+    localState = localToggleString;
   }
 
-  return localToggles;
+  return localState;
+};
+
+const setLocalState = (state: string) => {
+  localStorage.setItem("pairsState-v1", state);
 };
 
 interface PairsTableProps {
@@ -176,102 +167,47 @@ interface PairsTableProps {
 }
 
 interface PairsTableToolbarProps {
+  search: string;
   setSearch: (_search: string) => void;
-  setToggleActive: (_toggleActive: boolean) => void;
-  setToggleActiveGauge: (_toggleActiveGauge: boolean) => void;
-  setToggleStable: (_toggleStable: boolean) => void;
-  setToggleVariable: (_toggleVariable: boolean) => void;
+  filter: string;
+  handleFilterChange: (_locatState: string) => void;
 }
 
-const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
+const EnhancedTableToolbar = ({
+  search,
+  setSearch,
+  filter,
+  handleFilterChange,
+}: PairsTableToolbarProps) => {
   const router = useRouter();
-
-  const localToggles = getLocalToggles();
-
-  const [search, setSearch] = useState("");
-  const [toggleActive, setToggleActive] = useState(localToggles.toggleActive);
-  const [toggleActiveGauge, setToggleActiveGauge] = useState(
-    localToggles.toggleActiveGauge
-  );
-  const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
-  const [toggleVariable, setToggleVariable] = useState(
-    localToggles.toggleVariable
-  );
 
   const onSearchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
-    props.setSearch(event.target.value);
   };
 
-  const onToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const localToggles = getLocalToggles();
-
-    switch (event.target.name) {
-      case "toggleActive":
-        setToggleActive(event.target.checked);
-        props.setToggleActive(event.target.checked);
-        localToggles.toggleActive = event.target.checked;
-        break;
-      case "toggleActiveGauge":
-        setToggleActiveGauge(event.target.checked);
-        props.setToggleActiveGauge(event.target.checked);
-        localToggles.toggleActiveGauge = event.target.checked;
-        break;
-      case "toggleStable":
-        setToggleStable(event.target.checked);
-        props.setToggleStable(event.target.checked);
-        localToggles.toggleStable = event.target.checked;
-        break;
-      case "toggleVariable":
-        setToggleVariable(event.target.checked);
-        props.setToggleVariable(event.target.checked);
-        localToggles.toggleVariable = event.target.checked;
-        break;
-      default:
-    }
-
-    // set locally saved toggles
-    try {
-      localStorage.setItem(
-        "solidly-pairsToggle-v1",
-        JSON.stringify(localToggles)
-      );
-    } catch (ex) {
-      console.log(ex);
-    }
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleFilterChange(event.target.value);
+    setLocalState(event.target.value);
   };
 
   const onCreate = () => {
     router.push("/liquidity/create");
   };
 
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? "transitions-popper" : undefined;
-
   return (
     <Toolbar className="my-6 mx-0 p-0">
-      <Grid container spacing={2}>
-        <Grid item lg={2} md={2} sm={12} xs={12}>
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<AddCircleOutline />}
-            size="large"
-            className="w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
-            onClick={onCreate}
-          >
-            <Typography className="text-base font-bold">
-              Add Liquidity
-            </Typography>
-          </Button>
-        </Grid>
-        <Grid item lg={9} md={9} sm={10} xs={10}>
+      <div className="flex w-full flex-col items-center justify-between gap-2 lg:flex-row lg:gap-0">
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AddCircleOutline />}
+          size="large"
+          className="flex w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
+          onClick={onCreate}
+        >
+          <Typography className="text-base font-bold">Add Liquidity</Typography>
+        </Button>
+        <div className="w-full lg:w-auto lg:flex-grow-[0.6]">
           <TextField
             className="flex w-full flex-[1]"
             variant="outlined"
@@ -287,104 +223,31 @@ const EnhancedTableToolbar = (props: PairsTableToolbarProps) => {
               ),
             }}
           />
-        </Grid>
-        <Grid item lg={1} md={true} sm={2} xs={2}>
-          <Tooltip placement="top" title="Filter list">
-            <IconButton
-              onClick={handleClick}
-              className="h-[94.5%] w-full rounded-lg border border-[rgba(126,153,176,0.3)] bg-primaryBg text-cantoGreen"
-              aria-label="filter list"
-            >
-              <FilterList />
-            </IconButton>
-          </Tooltip>
-        </Grid>
-      </Grid>
-
-      <Popper
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        transition
-        placement="bottom-end"
-      >
-        {({ TransitionProps }) => (
-          <Fade {...TransitionProps} timeout={350}>
-            <div className="mt-4 min-w-[300px] rounded-lg border border-[rgba(126,153,176,0.2)] bg-deepBlue p-5 shadow-[0_10px_20px_0_rgba(0,0,0,0.2)]">
-              <Typography
-                className="mb-2 border-b border-b-[rgba(126,153,176,0.2)] pb-5"
-                variant="h5"
-              >
-                List Filters
-              </Typography>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    My Deposits
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleActive}
-                    name={"toggleActive"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    Show Active Gauges
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleActiveGauge}
-                    name={"toggleActiveGauge"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    Show Stable Pools
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleStable}
-                    name={"toggleStable"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={0}>
-                <Grid item lg={9} className="flex items-center">
-                  <Typography className="text-sm" variant="body1">
-                    Show Volatile Pools
-                  </Typography>
-                </Grid>
-                <Grid item lg={3} className="text-right">
-                  <Switch
-                    color="primary"
-                    checked={toggleVariable}
-                    name={"toggleVariable"}
-                    onChange={onToggle}
-                  />
-                </Grid>
-              </Grid>
-            </div>
-          </Fade>
-        )}
-      </Popper>
+        </div>
+        <ul className="flex flex-wrap gap-2 xs:flex-nowrap">
+          {["all", "boosted", "deposited", "stable", "volatile"].map(
+            (filterOption) => (
+              <li key={filterOption}>
+                <input
+                  type="radio"
+                  id={filterOption}
+                  name="filter"
+                  value={filterOption}
+                  checked={filter === filterOption}
+                  onChange={onChange}
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={filterOption}
+                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+                >
+                  <div className="uppercase">{filterOption}</div>
+                </label>
+              </li>
+            )
+          )}
+        </ul>
+      </div>
     </Toolbar>
   );
 };
@@ -397,17 +260,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
-  const localToggles = getLocalToggles();
+  const localState = getLocalState();
 
   const [search, setSearch] = useState("");
-  const [toggleActive, setToggleActive] = useState(localToggles.toggleActive);
-  const [toggleActiveGauge, setToggleActiveGauge] = useState(
-    localToggles.toggleActiveGauge
-  );
-  const [toggleStable, setToggleStable] = useState(localToggles.toggleStable);
-  const [toggleVariable, setToggleVariable] = useState(
-    localToggles.toggleVariable
-  );
+  const [filter, setFilter] = useState(localState);
 
   const handleRequestSort = (
     _e: React.MouseEvent<unknown>,
@@ -430,6 +286,11 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
     newPage: number
   ) => {
     setPage(newPage);
+  };
+
+  const handleFilterChange = (newStateFilter: string) => {
+    setPage(0);
+    setFilter(newStateFilter);
   };
 
   const handleChangeRowsPerPage = (
@@ -477,16 +338,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
           return false;
         })
         .filter((pair) => {
-          if (toggleStable !== true && pair.stable === true) {
-            return false;
+          if (filter === "all") {
+            return true;
           }
-          if (toggleVariable !== true && pair.stable === false) {
-            return false;
-          }
-          if (toggleActiveGauge === true && !pair.gauge) {
-            return false;
-          }
-          if (toggleActive === true) {
+          if (filter === "deposited") {
             if (
               (!pair.gauge?.balance || !BigNumber(pair.gauge?.balance).gt(0)) &&
               (!pair.balance || !BigNumber(pair.balance).gt(0))
@@ -494,17 +349,24 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
               return false;
             }
           }
-
+          if (filter === "stable") {
+            if (pair.stable !== true) {
+              return false;
+            }
+          }
+          if (filter === "volatile") {
+            if (pair.stable !== false) {
+              return false;
+            }
+          }
+          if (filter === "boosted") {
+            if (!pair.oblotr_apr) {
+              return false;
+            }
+          }
           return true;
         }),
-    [
-      pairs,
-      toggleActiveGauge,
-      toggleActive,
-      toggleStable,
-      toggleVariable,
-      search,
-    ]
+    [pairs, filter, search]
   );
 
   const sortedPairs = useMemo(
@@ -564,11 +426,10 @@ export default function EnhancedTable({ pairs }: PairsTableProps) {
   return (
     <div className="w-full">
       <EnhancedTableToolbar
+        search={search}
         setSearch={setSearch}
-        setToggleActive={setToggleActive}
-        setToggleActiveGauge={setToggleActiveGauge}
-        setToggleStable={setToggleStable}
-        setToggleVariable={setToggleVariable}
+        filter={filter}
+        handleFilterChange={handleFilterChange}
       />
       <Paper
         elevation={0}
@@ -1004,37 +865,23 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             {formatTVL(row.tvl)}
           </Typography>
         </TableCell>
-        {row && (row.apr !== undefined || row.apr !== null) && (
-          <TableCell align="right">
-            <Grid container spacing={0}>
-              <Grid item lg={10}>
-                <Typography variant="h2" className="text-xs font-extralight">
-                  {row.apr.toFixed(2)}%
-                </Typography>
-              </Grid>
-              {row && row.isAliveGauge === false && (
-                <Grid item lg={2}>
-                  <Tooltip title="Gauge has been killed">
-                    <WarningOutlined className="ml-2 text-base text-yellow-300" />
-                  </Tooltip>
-                </Grid>
-              )}
-            </Grid>
-          </TableCell>
-        )}
-        {!(row && (row.apr !== undefined || row.apr !== null)) && (
-          <div className="flex items-center justify-end max-md:block">
-            <Skeleton
-              variant="rectangular"
-              width={120}
-              height={16}
-              style={{
-                marginTop: "1px",
-                marginBottom: "1px",
-              }}
-            />
+        <TableCell align="right">
+          <div className="flex items-center justify-end gap-1">
+            {row.isAliveGauge === false && (
+              <Tooltip title="Gauge has been killed">
+                <WarningOutlined className="ml-2 text-base text-yellow-300" />
+              </Tooltip>
+            )}
+            {row.oblotr_apr > 0 && (
+              <Tooltip title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}>
+                <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+              </Tooltip>
+            )}
+            <Typography variant="h2" className="text-xs font-extralight">
+              {(row.apr + row.oblotr_apr).toFixed(2)}%
+            </Typography>
           </div>
-        )}
+        </TableCell>
         <TableCell align="right">
           <Button
             variant="outlined"
@@ -1170,10 +1017,12 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       return 0;
 
     case "apr":
-      if (BigNumber(b?.apr).lt(a?.apr)) {
+      const bApr = b.apr + b.oblotr_apr;
+      const aApr = a.apr + a.oblotr_apr;
+      if (BigNumber(bApr).lt(aApr)) {
         return -1;
       }
-      if (BigNumber(b?.apr).gt(a?.apr)) {
+      if (BigNumber(bApr).gt(aApr)) {
         return 1;
       }
       return 0;
@@ -1279,7 +1128,7 @@ function stableSort(array: Pair[], comparator: (_a: Pair, _b: Pair) => number) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-function formatTVL(dataNumber: number) {
+export function formatTVL(dataNumber: number) {
   if (dataNumber < 1_000) {
     return "< $1k";
   } else if (dataNumber < 1_000_000) {

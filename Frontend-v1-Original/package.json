@@ -24,17 +24,16 @@
     "@tanstack/react-query-devtools": "^4.29.6",
     "bignumber.js": "^9.0.1",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.8",
     "eslint-plugin-import": "^2.27.5",
     "flux": "^4.0.3",
-    "lottie-react": "^2.2.1",
-    "moment": "^2.29.1",
     "next": "12.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-use-window-scroll": "^1.0.13",
     "uuid": "^8.3.2",
-    "viem": "^0.3.22",
-    "wagmi": "^1.0.2"
+    "viem": "^0.3.49",
+    "wagmi": "^1.1.0"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^4.29.4",

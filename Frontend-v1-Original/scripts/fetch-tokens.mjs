@@ -51,9 +51,7 @@ const pairsLength = await client.readContract({
   abi,
   functionName: "allPairsLength",
 });
-const multicallAddress = "0xcA11bde05977b3631167028862bE2a173976CA11";
 const pairs = await client.multicall({
-  multicallAddress,
   contracts: Array.from({ length: Number(pairsLength) }, (_, i) => ({
     address: pairFactoryAddress,
     abi,
@@ -63,7 +61,6 @@ const pairs = await client.multicall({
 });
 const lpTokens = pairs.map(({ result }) => result);
 let tokens = await client.multicall({
-  multicallAddress,
   contracts: lpTokens
     .map((address) => [
       {

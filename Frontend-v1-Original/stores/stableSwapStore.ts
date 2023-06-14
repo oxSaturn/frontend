@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 
-import moment from "moment";
+import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
 import BigNumber from "bignumber.js";
 
@@ -16,6 +16,7 @@ import {
   BaseError,
 } from "viem";
 import { canto } from "viem/chains";
+import { getAccount, getWalletClient } from "@wagmi/core";
 
 import { Dispatcher } from "flux";
 
@@ -60,6 +61,8 @@ import stores from ".";
 const isArbitrum = process.env.NEXT_PUBLIC_CHAINID === "42161";
 
 const tokenlist = isArbitrum ? tokenlistArb : tokenlistCan;
+
+const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
 class Store {
   dispatcher: Dispatcher<any>;
   emitter: EventEmitter;
@@ -75,6 +78,7 @@ class Store {
       xBribes: Gauge[];
       xxBribes: Gauge[];
       rewards: Gauge[];
+      BLOTR_rewards: Gauge[];
       veDist: VeDistReward[];
     };
     updateDate: number;
@@ -101,6 +105,7 @@ class Store {
         xBribes: [],
         xxBribes: [],
         rewards: [],
+        BLOTR_rewards: [],
         veDist: [],
       },
       updateDate: 0,
@@ -230,6 +235,9 @@ class Store {
           case ACTIONS.CLAIM_REWARD:
             this.claimRewards(payload);
             break;
+          case ACTIONS.CLAIM_BLOTR_REWARD:
+            this.claimBlotrRewards(payload);
+            break;
           case ACTIONS.CLAIM_VE_DIST:
             this.claimVeDist(payload);
             break;
@@ -278,7 +286,7 @@ class Store {
         return theNFT[0];
       }
 
-      const address = stores.accountStore.getStore("address");
+      const address = getAccount().address;
       if (!address) {
         console.warn("address not found");
         return null;
@@ -313,10 +321,9 @@ class Store {
             functionName: "tokenOfOwnerByIndex",
             args: [address, BigInt(idx)],
           });
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
+          const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
             await viemClient.multicall({
               allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
               contracts: [
                 {
                   ...vestingContract,
@@ -333,6 +340,10 @@ class Store {
                   functionName: "voted",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "totalSupply",
+                },
               ],
             });
 
@@ -347,6 +358,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         })
       );
@@ -379,7 +393,7 @@ class Store {
         return null;
       }
 
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -403,10 +417,9 @@ class Store {
         args: [account, BigInt(id)],
       });
 
-      const [[lockedAmount, lockedEnd], lockValue, voted] =
+      const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
         await viemClient.multicall({
           allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: [
             {
               ...vestingContract,
@@ -422,6 +435,10 @@ class Store {
               ...vestingContract,
               functionName: "voted",
               args: [tokenIndex],
+            },
+            {
+              ...vestingContract,
+              functionName: "totalSupply",
             },
           ],
         });
@@ -439,6 +456,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         }
 
@@ -456,7 +476,7 @@ class Store {
 
   getPairByAddress = async (pairAddress: `0x${string}`) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -476,7 +496,6 @@ class Store {
         const [totalSupply, reserve0, reserve1, balanceOf] =
           await viemClient.multicall({
             allowFailure: false,
-            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
             contracts: [
               {
                 ...pc,
@@ -535,7 +554,6 @@ class Store {
         gaugeWeight,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...pairContract,
@@ -606,7 +624,6 @@ class Store {
         token1Balance,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...token0Contract,
@@ -667,6 +684,7 @@ class Store {
           local: false,
         },
         apr: 0,
+        oblotr_apr: 0,
         total_supply: 0,
         token0_address: token0,
         token1_address: token1,
@@ -738,7 +756,6 @@ class Store {
         const [totalSupply, gaugeBalance, bribeAddress] =
           await viemClient.multicall({
             allowFailure: false,
-            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
             contracts: [
               {
                 ...gaugeContract,
@@ -921,7 +938,7 @@ class Store {
       addressB = W_NATIVE_ADDRESS as `0x${string}`;
     }
 
-    const account = stores.accountStore.getStore("address");
+    const account = getAccount().address;
     if (!account) {
       console.warn("account not found");
       return null;
@@ -947,7 +964,6 @@ class Store {
       const [totalSupply, reserve0, reserve1, balanceOf] =
         await viemClient.multicall({
           allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: [
             {
               ...pc,
@@ -1018,7 +1034,6 @@ class Store {
         gaugeWeight,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...pairContract,
@@ -1089,7 +1104,6 @@ class Store {
         token1Balance,
       ] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...token0Contract,
@@ -1184,7 +1198,6 @@ class Store {
         const [totalSupply, gaugeBalance, bribeAddress] =
           await viemClient.multicall({
             allowFailure: false,
-            multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
             contracts: [
               {
                 ...gaugeContract,
@@ -1404,7 +1417,6 @@ class Store {
 
       const [symbol, decimals, name] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...baseAssetContract,
@@ -1434,7 +1446,7 @@ class Store {
       };
 
       if (getBalance) {
-        const account = stores.accountStore.getStore("address");
+        const account = getAccount().address;
         if (account) {
           const balanceOf = await viemClient.readContract({
             ...baseAssetContract,
@@ -1605,7 +1617,7 @@ class Store {
 
   getBalances = async () => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -1651,10 +1663,9 @@ class Store {
             functionName: "tokenOfOwnerByIndex",
             args: [address, BigInt(idx)],
           });
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
+          const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
             await viemClient.multicall({
               allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
               contracts: [
                 {
                   ...vestingContract,
@@ -1671,6 +1682,10 @@ class Store {
                   functionName: "voted",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "totalSupply",
+                },
               ],
             });
 
@@ -1686,6 +1701,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         })
       );
@@ -1840,6 +1858,18 @@ class Store {
             functionName: "weights",
             args: [pair.address],
           },
+          {
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "left",
+            args: [CONTRACTS.GOV_TOKEN_ADDRESS],
+          },
+          {
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "left",
+            args: [CANTO_OPTION_TOKEN],
+          },
         ] as const;
       });
       const gaugesCallsChunks = chunkArray(gaugesCalls);
@@ -1852,10 +1882,13 @@ class Store {
           if (hasGauge(pair)) {
             const isAliveGauge = gaugesAliveData[outerIndex];
 
-            const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
-              outerIndex * 3,
-              outerIndex * 3 + 3
-            );
+            const [
+              totalSupply,
+              gaugeBalance,
+              gaugeWeight,
+              flowLeft,
+              optionLeft,
+            ] = gaugesData.slice(outerIndex * 5, outerIndex * 5 + 5);
 
             const bribes = pair.gauge.bribes.map((bribe) => {
               bribe.rewardAmount = 0;
@@ -1905,6 +1938,8 @@ class Store {
             pair.gaugebribes = bribes;
             pair.isAliveGauge = isAliveGauge;
             if (isAliveGauge === false) pair.apr = 0;
+            if (flowLeft === 0n) pair.apr = 0;
+            if (optionLeft === 0n) pair.oblotr_apr = 0;
 
             outerIndex++;
           }
@@ -2055,7 +2090,6 @@ class Store {
 
       const [symbol, decimals, name] = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: [
           {
             ...baseAssetContract,
@@ -2115,13 +2149,13 @@ class Store {
     try {
       const context = this;
 
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = await stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -2285,7 +2319,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -2400,13 +2434,13 @@ class Store {
     try {
       const context = this;
 
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -2558,7 +2592,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -2643,13 +2677,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("walletClient not found");
         return null;
@@ -2765,7 +2799,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -2803,13 +2837,13 @@ class Store {
     content: { pair: Gauge; token: any };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -2901,13 +2935,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3070,7 +3104,7 @@ class Store {
       const sendAmount1 = BigNumber(amount1)
         .times(10 ** token1.decimals)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -3195,7 +3229,7 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -3248,7 +3282,7 @@ class Store {
     content: { pair: Pair };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -3294,7 +3328,6 @@ class Store {
       const [token0Balance, token1Balance, poolBalance] =
         await viemClient.multicall({
           allowFailure: false,
-          multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
           contracts: balanceCalls,
         });
 
@@ -3341,13 +3374,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3417,7 +3450,7 @@ class Store {
       });
 
       const sendSlippage = BigNumber(100).minus(slippage).div(100);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amountA.toString())
         .times(sendSlippage)
         .toFixed(0);
@@ -3460,13 +3493,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3535,7 +3568,7 @@ class Store {
       const sendAmount = BigNumber(amount)
         .times(10 ** PAIR_DECIMALS)
         .toFixed(0);
-      const deadline = "" + moment().add(600, "seconds").unix();
+      const deadline = "" + dayjs().add(600, "seconds").unix();
       const sendAmount0Min = BigNumber(amount0)
         .times(sendSlippage)
         .times(10 ** token0.decimals)
@@ -3593,13 +3626,13 @@ class Store {
     content: { amount: string; pair: Gauge };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3660,7 +3693,7 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -3705,13 +3738,13 @@ class Store {
 
   createGauge = async (payload: { type: string; content: { pair: Pair } }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3755,7 +3788,7 @@ class Store {
       slippage: number;
     };
   }) => {
-    const address = stores.accountStore.getStore("address");
+    const address = getAccount().address;
     if (!address) throw new Error("no address");
     try {
       const res = await fetch("/api/firebird-router", {
@@ -3786,7 +3819,7 @@ class Store {
     };
   }) => {
     try {
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -3955,7 +3988,7 @@ class Store {
     content: { fromAsset: BaseAsset; toAsset: BaseAsset; fromAmount: string };
   }) => {
     try {
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4097,7 +4130,7 @@ class Store {
 
   getVestNFTs = async () => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -4133,10 +4166,9 @@ class Store {
             args: [account, BigInt(idx)] as const,
           });
 
-          const [[lockedAmount, lockedEnd], lockValue, voted] =
+          const [[lockedAmount, lockedEnd], lockValue, voted, totalSupply] =
             await viemClient.multicall({
               allowFailure: false,
-              multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
               contracts: [
                 {
                   ...vestingContract,
@@ -4153,6 +4185,10 @@ class Store {
                   functionName: "voted",
                   args: [tokenIndex],
                 },
+                {
+                  ...vestingContract,
+                  functionName: "totalSupply",
+                },
               ],
             });
 
@@ -4168,6 +4204,9 @@ class Store {
             actionedInCurrentEpoch,
             reset: actionedInCurrentEpoch && !voted,
             lastVoted,
+            influence:
+              Number(formatUnits(lockValue, veToken.decimals)) /
+              Number(formatUnits(totalSupply, veToken.decimals)),
           };
         })
       );
@@ -4185,13 +4224,13 @@ class Store {
     content: { amount: string; unlockTime: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4205,8 +4244,8 @@ class Store {
       let allowanceTXID = this.getTXUUID();
       let vestTXID = this.getTXUUID();
 
-      const unlockString = moment()
-        .add(unlockTime, "seconds")
+      const unlockString = dayjs()
+        .add(+unlockTime, "seconds")
         .format("YYYY-MM-DD");
 
       this.emitter.emit(ACTIONS.TX_ADDED, {
@@ -4303,13 +4342,13 @@ class Store {
     content: { amount: string; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4403,13 +4442,13 @@ class Store {
     content: { unlockTime: string; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4461,12 +4500,12 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4594,13 +4633,13 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4768,12 +4807,12 @@ class Store {
     content: { from: string; to: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4862,13 +4901,13 @@ class Store {
     content: { votes: Votes; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -4955,7 +4994,7 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -4991,7 +5030,6 @@ class Store {
 
       const voteCounts = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: calls,
       });
 
@@ -5026,13 +5064,13 @@ class Store {
     content: { asset: BaseAsset; amount: string; gauge: Gauge };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5169,7 +5207,7 @@ class Store {
     content: { tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
@@ -5196,6 +5234,7 @@ class Store {
       const x_filteredPairs = structuredClone(gauges);
       const xx_filteredPairs = structuredClone(gauges);
       const filteredPairs2 = structuredClone(gauges);
+      const filteredPairs3 = structuredClone(gauges);
 
       let veDistReward: VeDistReward[] = [];
       let x_filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "XBribe"
@@ -5356,13 +5395,27 @@ class Store {
         } as const;
       });
 
+      const BLOTR_rewardsCalls = filteredPairs3.map((pair) => {
+        return {
+          address: pair.gauge.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "earned",
+          args: [CANTO_OPTION_TOKEN, account],
+        } as const;
+      });
+
       const rewardsEarnedCallResult = await viemClient.multicall({
         allowFailure: false,
-        multicallAddress: CONTRACTS.MULTICALL_ADDRESS,
         contracts: rewardsCalls,
       });
 
+      const BLOTR_rewardsEarnedCallResult = await viemClient.multicall({
+        allowFailure: false,
+        contracts: BLOTR_rewardsCalls,
+      });
+
       const rewardsEarned = [...filteredPairs2];
+      const BLOTR_rewardsEarned = [...filteredPairs3];
 
       for (let i = 0; i < rewardsEarned.length; i++) {
         rewardsEarned[i].gauge.rewardsEarned = formatEther(
@@ -5370,7 +5423,14 @@ class Store {
         );
       }
 
+      for (let i = 0; i < BLOTR_rewardsEarned.length; i++) {
+        BLOTR_rewardsEarned[i].gauge.BLOTR_rewardsEarned = formatEther(
+          BLOTR_rewardsEarnedCallResult[i]
+        );
+      }
+
       const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
+      const filteredBlotrRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
       for (let j = 0; j < rewardsEarned.length; j++) {
         let pair = Object.assign({}, rewardsEarned[j]);
         if (
@@ -5382,11 +5442,23 @@ class Store {
           filteredRewards.push(pair);
         }
       }
+      for (let j = 0; j < BLOTR_rewardsEarned.length; j++) {
+        let pair = Object.assign({}, BLOTR_rewardsEarned[j]);
+        if (
+          pair.gauge &&
+          pair.gauge.BLOTR_rewardsEarned &&
+          parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
+        ) {
+          pair.rewardType = "oBLOTR_Reward";
+          filteredBlotrRewards.push(pair);
+        }
+      }
 
       const rewards: Store["store"]["rewards"] = {
         xBribes: x_filteredBribes,
         xxBribes: xx_filteredBribes,
         rewards: filteredRewards,
+        BLOTR_rewards: filteredBlotrRewards,
         veDist: veDistReward,
       };
 
@@ -5409,13 +5481,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5472,13 +5544,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5536,13 +5608,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5554,6 +5626,7 @@ class Store {
       let claim01TXID = this.getTXUUID();
       let claim0TXID = this.getTXUUID();
       let rewardClaimTXIDs: string[] = [];
+      let oblotr_rewardClaimTXIDs: string[] = [];
       let distributionClaimTXIDs: string[] = [];
 
       let xBribePairs = (pairs as Gauge[]).filter((pair) => {
@@ -5565,6 +5638,10 @@ class Store {
 
       let rewardPairs = (pairs as Gauge[]).filter((pair) => {
         return pair.rewardType === "Reward";
+      });
+
+      let oBlotrRewardPairs = (pairs as Gauge[]).filter((pair) => {
+        return pair.rewardType === "oBLOTR_Reward";
       });
 
       let distribution = (pairs as VeDistReward[]).filter((pair) => {
@@ -5591,7 +5668,8 @@ class Store {
       if (
         xBribePairs.length == 0 &&
         xxBribePairs.length == 0 &&
-        rewardPairs.length == 0
+        rewardPairs.length == 0 &&
+        oBlotrRewardPairs.length == 0
       ) {
         this.emitter.emit(ACTIONS.ERROR, "Nothing to claim");
         this.emitter.emit(ACTIONS.CLAIM_ALL_REWARDS_RETURNED);
@@ -5631,6 +5709,18 @@ class Store {
           sendOBJ.transactions.push({
             uuid: newClaimTX,
             description: `Claiming reward for ${rewardPairs[i].symbol}`,
+            status: TransactionStatus.WAITING,
+          });
+        }
+      }
+      if (oBlotrRewardPairs.length > 0) {
+        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+          const newClaimTX = this.getTXUUID();
+
+          oblotr_rewardClaimTXIDs.push(newClaimTX);
+          sendOBJ.transactions.push({
+            uuid: newClaimTX,
+            description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
             status: TransactionStatus.WAITING,
           });
         }
@@ -5687,6 +5777,26 @@ class Store {
         }
       }
 
+      if (oBlotrRewardPairs.length > 0) {
+        for (let i = 0; i < oBlotrRewardPairs.length; i++) {
+          const writeGetReward = async () => {
+            const { request } = await viemClient.simulateContract({
+              account,
+              address: oBlotrRewardPairs[i].gauge.address,
+              abi: CONTRACTS.GAUGE_ABI,
+              functionName: "getReward",
+              args: [account, [CANTO_OPTION_TOKEN]],
+            });
+            const txHash = await walletClient.writeContract(request);
+            return txHash;
+          };
+          await this._writeContractWrapper(
+            oblotr_rewardClaimTXIDs[i],
+            writeGetReward
+          );
+        }
+      }
+
       if (distribution.length > 0) {
         for (let i = 0; i < distribution.length; i++) {
           const writeClaim = async () => {
@@ -5724,13 +5834,13 @@ class Store {
     content: { pair: Gauge; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5778,18 +5888,77 @@ class Store {
     }
   };
 
-  claimVeDist = async (payload: {
+  claimBlotrRewards = async (payload: {
     type: string;
-    content: { tokenID: string };
+    content: { pair: Gauge; tokenID: string };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
+      if (!walletClient) {
+        console.warn("wallet");
+        return null;
+      }
+
+      const { pair, tokenID } = payload.content;
+
+      // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+      let claimTXID = this.getTXUUID();
+
+      await this.emitter.emit(ACTIONS.TX_ADDED, {
+        title: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
+        verb: "Rewards Claimed",
+        transactions: [
+          {
+            uuid: claimTXID,
+            description: `Claiming your rewards`,
+            status: "WAITING",
+          },
+        ],
+      });
+
+      const writeGetReward = async () => {
+        const { request } = await viemClient.simulateContract({
+          account,
+          address: pair.gauge?.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "getReward",
+          args: [account, [CANTO_OPTION_TOKEN]],
+        });
+        const txHash = await walletClient.writeContract(request);
+        return txHash;
+      };
+      await this._writeContractWrapper(claimTXID, writeGetReward);
+
+      this.getRewardBalances({
+        type: "internal reward balances",
+        content: { tokenID },
+      });
+      this.emitter.emit(ACTIONS.CLAIM_REWARD_RETURNED);
+      this._getSpecificAssetInfo(account, CONTRACTS.GOV_TOKEN_ADDRESS);
+    } catch (ex) {
+      console.error(ex);
+      this.emitter.emit(ACTIONS.ERROR, ex);
+    }
+  };
+
+  claimVeDist = async (payload: {
+    type: string;
+    content: { tokenID: string };
+  }) => {
+    try {
+      const account = getAccount().address;
+      if (!account) {
+        console.warn("account not found");
+        return null;
+      }
+
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5841,13 +6010,13 @@ class Store {
     content: { address: `0x${string}` };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -5898,13 +6067,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -6005,13 +6174,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
@@ -6067,13 +6236,13 @@ class Store {
     };
   }) => {
     try {
-      const account = stores.accountStore.getStore("address");
+      const account = getAccount().address;
       if (!account) {
         console.warn("account not found");
         return null;
       }
 
-      const walletClient = stores.accountStore.getStore("walletClient");
+      const walletClient = await getWalletClient({ chainId: canto.id });
       if (!walletClient) {
         console.warn("wallet");
         return null;
