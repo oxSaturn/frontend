@@ -12,8 +12,6 @@ import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { formatAddress } from "../../utils/utils";
 import { TransactionStatus, ITransaction } from "../../stores/types/types";
 
-import classes from "./transactionQueue.module.css";
-
 export default function Transaction({
   transaction,
 }: {
@@ -24,17 +22,17 @@ export default function Transaction({
   const mapStatusToIcon = (status: TransactionStatus) => {
     switch (status) {
       case "WAITING":
-        return <Pause className={classes.orangeIcon} />;
+        return <Pause className="text-[#ffc512]" />;
       case "PENDING":
-        return <HourglassEmpty className={classes.greenIcon} />;
+        return <HourglassEmpty className="text-[#49a766]" />;
       case "SUBMITTED":
-        return <HourglassFull className={classes.greenIcon} />;
+        return <HourglassFull className="text-[#49a766]" />;
       case "CONFIRMED":
-        return <CheckCircle className={classes.greenIcon} />;
+        return <CheckCircle className="text-[#49a766]" />;
       case "REJECTED":
-        return <Error className={classes.redIcon} />;
+        return <Error className="text-red-500" />;
       case "DONE":
-        return <CheckCircle className={classes.greenIcon} />;
+        return <CheckCircle className="text-[#49a766]" />;
       default:
         return <div />;
     }
@@ -66,19 +64,23 @@ export default function Transaction({
   };
 
   return (
-    <div className={classes.transaction} key={transaction.uuid}>
-      <div className={classes.transactionInfo} onClick={onExpendTransaction}>
-        <Typography className={classes.transactionDescription}>
-          {transaction.description}
-        </Typography>
+    <div
+      className="cursor-pointer border-b border-b-secondaryGray p-3 hover:bg-[rgba(0,0,0,0.2)]"
+      key={transaction.uuid}
+    >
+      <div
+        className="flex items-center justify-between"
+        onClick={onExpendTransaction}
+      >
+        <Typography>{transaction.description}</Typography>
         <Tooltip title={mapStatusToTootip(transaction.status)}>
           {mapStatusToIcon(transaction.status)}
         </Tooltip>
       </div>
       {expanded && (
-        <div className={classes.transactionExpanded}>
+        <>
           {transaction.txHash && (
-            <div className={classes.transaactionHash}>
+            <div className="flex w-full items-center justify-between">
               <Typography color="textSecondary">
                 {formatAddress(transaction.txHash, "long")}
               </Typography>
@@ -86,11 +88,11 @@ export default function Transaction({
             </div>
           )}
           {transaction?.error && (
-            <Typography className={classes.errorText}>
+            <Typography className="pt-3 text-red-500">
               {transaction?.error}
             </Typography>
           )}
-        </div>
+        </>
       )}
     </div>
   );

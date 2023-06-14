@@ -13,7 +13,6 @@ import { OpenInNew, Close, TaskAltRounded } from "@mui/icons-material";
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { ITransaction, TransactionStatus } from "../../stores/types/types";
 
-import classes from "./transactionQueue.module.css";
 import Transaction from "./transaction";
 
 interface TransactionStore {
@@ -172,83 +171,9 @@ export default function TransactionQueue() {
 
   const fullScreen = window.innerWidth < 576;
 
-  const renderDone = (txs: ITransaction["transactions"]) => {
-    if (
-      !(
-        transactions &&
-        transactions.filter((tx) => {
-          return ["DONE", "CONFIRMED"].includes(tx.status);
-        }).length === transactions.length
-      )
-    ) {
-      return null;
-    }
-
-    return (
-      <div className={classes.successDialog}>
-        <div className="relative my-10 flex items-center justify-center">
-          <span className="flex h-32 w-32 items-center justify-center rounded-full bg-[rgb(6,211,215)]/10"></span>
-          <TaskAltRounded className="absolute top-1/2 left-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-[rgb(6,211,215)]" />
-        </div>
-        <Typography className={classes.successTitle}>
-          {action ? action : "Transaction Successful!"}
-        </Typography>
-        <Typography className={classes.successText}>
-          Transaction has been confirmed by the blockchain.
-        </Typography>
-        {txs &&
-          txs.length > 0 &&
-          txs
-            .filter((tx) => {
-              return tx.txHash != null;
-            })
-            .map((tx, idx) => {
-              return (
-                <Typography
-                  className={classes.viewDetailsText}
-                  key={`tx_key_${idx}`}
-                >
-                  <a href={`${ETHERSCAN_URL}tx/${tx?.txHash}`} target="_blank">
-                    {tx && tx.description ? tx.description : "View in Explorer"}{" "}
-                    <OpenInNew className={classes.newWindowIcon} />
-                  </a>
-                </Typography>
-              );
-            })}
-      </div>
-    );
-  };
-
-  const renderTransactions = (transactions: ITransaction["transactions"]) => {
-    if (
-      transactions &&
-      transactions.filter((tx) => {
-        return ["DONE", "CONFIRMED"].includes(tx.status);
-      }).length === transactions.length
-    ) {
-      return null;
-    }
-
-    return (
-      <>
-        <div className={classes.headingContainer}>
-          <Typography className={classes.heading}>
-            {purpose ? purpose : "Pending Transactions"}
-          </Typography>
-        </div>
-        <div className={classes.transactionsContainer}>
-          {transactions &&
-            transactions.map((tx, idx) => {
-              return <Transaction transaction={tx} key={`${tx}${idx}`} />;
-            })}
-        </div>
-      </>
-    );
-  };
-
   return (
     <Dialog
-      className={classes.dialogScale}
+      className="m-auto max-w-[640px] text-center"
       open={open}
       onClose={() => closeQueue()}
       fullWidth={true}
@@ -258,13 +183,66 @@ export default function TransactionQueue() {
     >
       <DialogContent>
         <IconButton
-          className={classes.closeIconbutton}
+          className="absolute top-0 right-0"
           onClick={() => closeQueue()}
         >
           <Close />
         </IconButton>
-        {renderTransactions(transactions)}
-        {renderDone(transactions)}
+        {transactions.filter((tx) => {
+          return ["DONE", "CONFIRMED"].includes(tx.status);
+        }).length !== transactions.length && (
+          <>
+            <Typography className="block w-full text-center text-2xl">
+              {purpose ? purpose : "Pending Transactions"}
+            </Typography>
+            <div className="mb-3 rounded-xl border border-secondaryGray bg-primaryBg p-6">
+              {transactions &&
+                transactions.map((tx, idx) => {
+                  return <Transaction transaction={tx} key={`${tx}${idx}`} />;
+                })}
+            </div>
+          </>
+        )}
+        {transactions.filter((tx) => {
+          return ["DONE", "CONFIRMED"].includes(tx.status);
+        }).length === transactions.length && (
+          <div className="m-auto max-w-[400px] pb-5 text-center">
+            <div className="relative my-10 flex items-center justify-center">
+              <span className="flex h-32 w-32 items-center justify-center rounded-full bg-[rgb(6,211,215)]/10"></span>
+              <TaskAltRounded className="absolute top-1/2 left-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-[rgb(6,211,215)]" />
+            </div>
+            <Typography className="mt-5 mr-0 mb-2 ml-0 py-0 px-10 text-center text-xl font-bold">
+              {action ? action : "Transaction Successful!"}
+            </Typography>
+            <Typography className="mb-10 py-0 px-10 text-center text-secondaryGray ">
+              Transaction has been confirmed by the blockchain.
+            </Typography>
+            {transactions.length > 0 &&
+              transactions
+                .filter((tx) => {
+                  return tx.txHash != null;
+                })
+                .map((tx, idx) => {
+                  return (
+                    <Typography
+                      className="mx-auto mt-2 mb-5 bg-none text-sm"
+                      key={`tx_key_${idx}`}
+                    >
+                      <a
+                        href={`${ETHERSCAN_URL}tx/${tx?.txHash}`}
+                        target="_blank"
+                        className="text-cantoGreen underline hover:text-white hover:no-underline"
+                      >
+                        {tx && tx.description
+                          ? tx.description
+                          : "View in Explorer"}{" "}
+                        <OpenInNew className="-mb-1 ml-1 text-base" />
+                      </a>
+                    </Typography>
+                  );
+                })}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
