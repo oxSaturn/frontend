@@ -1,8 +1,7 @@
 import { Typography } from "@mui/material";
 
-import { useGovToken, useVeToken } from "../../lib/global/queries";
+import { useGovToken, useVeToken, useVestNfts } from "../../lib/global/queries";
 
-import { useVestNfts } from "./queries";
 import PartnersVests from "./partnersVests";
 import VestsTable from "./ssVestsTable";
 

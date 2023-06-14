@@ -9,8 +9,7 @@ import { Pair, TransactionStatus, Votes } from "../../../stores/types/types";
 import { CONTRACTS } from "../../../stores/constants/constants";
 import { writeContractWrapper } from "../../../lib/global/mutations";
 import { getTXUUID } from "../../../utils/utils";
-import { usePairs } from "../../../lib/global/queries";
-import { useVestNfts } from "../../ssVests/queries";
+import { usePairs, useVestNfts } from "../../../lib/global/queries";
 import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
 export function useVote() {

@@ -17,8 +17,7 @@ import {
 import BigNumber from "bignumber.js";
 import { Search } from "@mui/icons-material";
 
-import { useVeToken } from "../../lib/global/queries";
-import { useVestNfts } from "../ssVests/queries";
+import { useVeToken, useVestNfts } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import WarningModal from "../warning/warning";
 import { VestNFT } from "../../stores/types/types";

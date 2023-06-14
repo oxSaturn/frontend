@@ -12,8 +12,7 @@ import { AddCircleOutline } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
 import { VestNFT } from "../../stores/types/types";
-import { useVeToken } from "../../lib/global/queries";
-import { useVestNfts } from "../ssVests/queries";
+import { useVeToken, useVestNfts } from "../../lib/global/queries";
 
 import RewardsTable from "./ssRewardsTable";
 import { useRewards } from "./lib/queries";

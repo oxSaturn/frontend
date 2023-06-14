@@ -25,10 +25,14 @@ import {
   VeToken,
 } from "../../../stores/types/types";
 import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
-import { useGovToken, usePairs, useVeToken } from "../../../lib/global/queries";
+import {
+  useGovToken,
+  usePairs,
+  useVeToken,
+  useVestNfts,
+} from "../../../lib/global/queries";
 import { writeClaimBribes } from "../../ssRewards/lib/mutations";
 import { getRewardBalances, useRewards } from "../../ssRewards/lib/queries";
-import { useVestNfts } from "../../ssVests/queries";
 import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
 // --- hooks ---

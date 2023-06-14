@@ -6,8 +6,12 @@ import viemClient from "../../../stores/connectors/viem";
 import { GovToken, VeToken, VestNFT } from "../../../stores/types/types";
 import { CONTRACTS } from "../../../stores/constants/constants";
 import { useActivePeriod } from "../../header/queries";
-import { useVestNfts } from "../../ssVests/queries";
-import { useGovToken, useVeToken } from "../../../lib/global/queries";
+import {
+  checkNFTActionEpoch,
+  useGovToken,
+  useVeToken,
+  useVestNfts,
+} from "../../../lib/global/queries";
 
 export function useNftById(id: string | string[] | undefined) {
   const { address } = useAccount();
@@ -137,8 +141,8 @@ const getNFTByID = async (
         });
 
       const [actionedInCurrentEpoch, lastVoted] = await checkNFTActionEpoch(
-        tokenIndex.toString(),
-        activePeriod
+        activePeriod,
+        tokenIndex.toString()
       );
 
       return {
@@ -163,30 +167,4 @@ const getNFTByID = async (
   if (theNFT.length > 0) {
     return theNFT[0];
   }
-};
-
-const checkNFTActionEpoch = async (
-  tokenID: string,
-  nextEpochTimestamp: number
-) => {
-  const _lastVoted = await checkNFTLastVoted(tokenID);
-
-  // if last voted eq 0, means never voted
-  if (_lastVoted === BigInt("0")) return [false, _lastVoted] as const;
-  const lastVoted = parseInt(_lastVoted.toString());
-
-  // 7 days epoch length
-  const actionedInCurrentEpoch =
-    lastVoted > (nextEpochTimestamp ?? 0) - 7 * 24 * 60 * 60;
-  return [actionedInCurrentEpoch, _lastVoted] as const;
-};
-
-const checkNFTLastVoted = async (tokenID: string) => {
-  const _lastVoted = await viemClient.readContract({
-    address: CONTRACTS.VOTER_ADDRESS,
-    abi: CONTRACTS.VOTER_ABI,
-    functionName: "lastVoted",
-    args: [BigInt(tokenID)],
-  });
-  return _lastVoted;
 };

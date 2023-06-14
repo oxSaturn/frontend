@@ -13,8 +13,7 @@ import { ArrowBack } from "@mui/icons-material";
 import Link from "next/link";
 
 import { formatCurrency } from "../../utils/utils";
-import { useVeToken } from "../../lib/global/queries";
-import { useVestNfts } from "../ssVests/queries";
+import { useVeToken, useVestNfts } from "../../lib/global/queries";
 
 import classes from "./ssVest.module.css";
 import { useMergeVest } from "./lib/mutations";
