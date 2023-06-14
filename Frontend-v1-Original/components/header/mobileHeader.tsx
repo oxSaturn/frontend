@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Badge, IconButton } from "@mui/material";
+import { Badge, Drawer, IconButton } from "@mui/material";
 import { Close, List, Menu as MenuIcon } from "@mui/icons-material";
 
 import Navigation from "../navigation/navigation";
@@ -31,7 +31,6 @@ function Header() {
   const [transactionQueueLength] = useState(0);
 
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setOpen(false);
@@ -55,12 +54,22 @@ function Header() {
             {open ? <Close /> : <MenuIcon />}
           </button>
         </div>
-        <div
-          ref={ref}
-          className={`${
-            open ? "" : "hidden"
-          } absolute top-[78px] right-2 z-10 flex w-80 animate-slideLeftAndFade flex-col items-start justify-between rounded-sm border-none bg-primaryBg py-5 px-6 shadow-2xl`}
+        <Drawer
+          anchor="right"
+          open={open}
+          onClose={() => setOpen(false)}
+          className="relative md:hidden"
+          PaperProps={{
+            className: "flex flex-col items-start py-5 px-6 space-y-2",
+          }}
+          data-rk
         >
+          <button
+            onClick={() => setOpen(false)}
+            className="absolute top-0 right-6 flex h-[78px] cursor-pointer items-center"
+          >
+            <Close />
+          </button>
           <ConnectButton />
           <Navigation />
           <Info />
@@ -88,7 +97,7 @@ function Header() {
             </IconButton>
           )}
           {/* <TransactionQueue setQueueLength={setQueueLength} /> */}
-        </div>
+        </Drawer>
       </div>
     </>
   );
