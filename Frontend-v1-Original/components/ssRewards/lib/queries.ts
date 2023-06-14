@@ -29,8 +29,6 @@ import {
   useVestNfts,
 } from "../../../lib/global/queries";
 
-const CANTO_OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
-
 export const getRewardBalances = async (
   address: Address | undefined,
   tokenID: string | undefined,
@@ -229,7 +227,7 @@ export const getRewardBalances = async (
       address: pair.gauge.address,
       abi: CONTRACTS.GAUGE_ABI,
       functionName: "earned",
-      args: [CANTO_OPTION_TOKEN, address],
+      args: [CONTRACTS.OPTION_TOKEN, address],
     } as const;
   });
 
