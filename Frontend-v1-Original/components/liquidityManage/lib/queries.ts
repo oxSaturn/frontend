@@ -64,81 +64,8 @@ export function useQuoteAddLiquidity(
   pairAddress: string | string[] | undefined
 ) {
   const { address } = useAccount();
-  const { amount0, amount1, setAmount0, setAmount1, activeInput } =
-    useAmounts();
+  const { amount0, amount1 } = useAmounts();
   const { data: pair } = useGetPair(pairAddress);
-
-  const preQuoteAddLiquidity = () => {
-    if (!pair) {
-      throw new Error("no pair");
-    }
-
-    const { token0, token1 } = pair;
-
-    if (!token0 || !token1) {
-      throw new Error("no tokens");
-    }
-
-    let invert = false;
-
-    let addy0 = token0.address;
-    let addy1 = token1.address;
-    // @ts-expect-error workaround for CANTO
-    if (token0.address === "CANTO") {
-      // @ts-expect-error workaround for CANTO
-      addy0 = W_NATIVE_ADDRESS;
-    }
-    // @ts-expect-error workaround for CANTO
-    if (token1.address === "CANTO") {
-      // @ts-expect-error workaround for CANTO
-      addy1 = W_NATIVE_ADDRESS;
-    }
-
-    if (
-      addy1.toLowerCase() === pair.token0.address.toLowerCase() &&
-      addy0.toLowerCase() === pair.token1.address.toLowerCase()
-    ) {
-      invert = true;
-    }
-    if (activeInput === "0") {
-      if (amount0 === "") {
-        setAmount1("");
-      } else {
-        let newAmount1: string;
-        if (invert) {
-          newAmount1 = BigNumber(amount0)
-            .times(pair.reserve0)
-            .div(pair.reserve1)
-            .toFixed(pair.token0.decimals);
-        } else {
-          newAmount1 = BigNumber(amount0)
-            .times(pair.reserve1)
-            .div(pair.reserve0)
-            .toFixed(pair.token1.decimals);
-        }
-        setAmount1(newAmount1);
-      }
-    }
-    if (activeInput === "1") {
-      if (amount1 === "") {
-        setAmount0("");
-      } else {
-        let newAmount0: string;
-        if (invert) {
-          newAmount0 = BigNumber(amount1)
-            .times(pair.reserve1)
-            .div(pair.reserve0)
-            .toFixed(pair.token1.decimals);
-        } else {
-          newAmount0 = BigNumber(amount1)
-            .times(pair.reserve0)
-            .div(pair.reserve1)
-            .toFixed(pair.token0.decimals);
-        }
-        setAmount0(newAmount0);
-      }
-    }
-  };
 
   return useQuery({
     queryKey: [
@@ -151,7 +78,6 @@ export function useQuoteAddLiquidity(
       pair?.token1,
     ],
     queryFn: () => {
-      preQuoteAddLiquidity();
       return quoteAddLiquidity(address, {
         pair,
         token0: pair?.token0,
@@ -160,7 +86,7 @@ export function useQuoteAddLiquidity(
         amount1,
       });
     },
-    enabled: !!pair && (amount0 !== "" || amount1 !== "") && !!address,
+    enabled: !!pair && amount0 !== "" && amount1 !== "" && !!address,
   });
 }
 

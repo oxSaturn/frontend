@@ -29,7 +29,7 @@ import {
 import BigNumber from "bignumber.js";
 import { isAddress } from "viem";
 
-import { ETHERSCAN_URL } from "../../stores/constants/constants";
+import { ETHERSCAN_URL, NATIVE_TOKEN } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
   BaseAsset,
@@ -186,14 +186,14 @@ export default function LiquidityManage() {
         .times(percent)
         .div(100)
         .toFixed(asset0.decimals);
-      setAmount0(am);
+      handleAmount0Input(am);
       if (!!amount0Ref.current) amount0Ref.current.focus();
     } else if (input === "amount1") {
       let am = BigNumber(asset1.balance)
         .times(percent)
         .div(100)
         .toFixed(asset1.decimals);
-      setAmount1(am);
+      handleAmount1Input(am);
       if (!!amount1Ref.current) amount1Ref.current.focus();
     } else if (input === "withdraw") {
       let am = "";
@@ -435,14 +435,112 @@ export default function LiquidityManage() {
     setActiveTab("withdraw");
   };
 
+  const handleAmount0Input = (input: string) => {
+    if (!pair || !pair.token0 || !pair.token1) {
+      return setAmount0(input);
+    }
+
+    const { token0, token1 } = pair;
+
+    let invert = false;
+
+    let addy0 = token0.address;
+    let addy1 = token1.address;
+    if (token0.address === NATIVE_TOKEN.address) {
+      // @ts-expect-error workaround for CANTO
+      addy0 = W_NATIVE_ADDRESS;
+    }
+    if (token1.address === NATIVE_TOKEN.address) {
+      // @ts-expect-error workaround for CANTO
+      addy1 = W_NATIVE_ADDRESS;
+    }
+
+    if (
+      addy1.toLowerCase() === pair.token0.address.toLowerCase() &&
+      addy0.toLowerCase() === pair.token1.address.toLowerCase()
+    ) {
+      invert = true;
+    }
+
+    if (input === "") {
+      setAmount0("");
+      setAmount1("");
+      return;
+    }
+    setAmount0(input);
+
+    let newAmount1: string;
+    if (invert) {
+      newAmount1 = BigNumber(input)
+        .times(pair.reserve0)
+        .div(pair.reserve1)
+        .toFixed(pair.token0.decimals);
+    } else {
+      newAmount1 = BigNumber(input)
+        .times(pair.reserve1)
+        .div(pair.reserve0)
+        .toFixed(pair.token1.decimals);
+    }
+    setAmount1(newAmount1);
+  };
+
   const amount0Changed = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount0Error(false);
-    setAmount0(event.target.value);
+    handleAmount0Input(event.target.value);
+  };
+
+  const handleAmount1Input = (input: string) => {
+    if (!pair || !pair.token0 || !pair.token1) {
+      return setAmount1(input);
+    }
+
+    const { token0, token1 } = pair;
+
+    let invert = false;
+
+    let addy0 = token0.address;
+    let addy1 = token1.address;
+    if (token0.address === NATIVE_TOKEN.address) {
+      // @ts-expect-error workaround for CANTO
+      addy0 = W_NATIVE_ADDRESS;
+    }
+    if (token1.address === NATIVE_TOKEN.address) {
+      // @ts-expect-error workaround for CANTO
+      addy1 = W_NATIVE_ADDRESS;
+    }
+
+    if (
+      addy1.toLowerCase() === pair.token0.address.toLowerCase() &&
+      addy0.toLowerCase() === pair.token1.address.toLowerCase()
+    ) {
+      invert = true;
+    }
+
+    if (input === "") {
+      setAmount0("");
+      setAmount1("");
+      return;
+    }
+    setAmount1(input);
+
+    let newAmount0: string;
+    if (invert) {
+      newAmount0 = BigNumber(input)
+        .times(pair.reserve1)
+        .div(pair.reserve0)
+        .toFixed(pair.token1.decimals);
+    } else {
+      newAmount0 = BigNumber(input)
+        .times(pair.reserve0)
+        .div(pair.reserve1)
+        .toFixed(pair.token0.decimals);
+    }
+    setAmount0(newAmount0);
   };
 
   const amount1Changed = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount1Error(false);
-    setAmount1(event.target.value);
+    handleAmount1Input(event.target.value);
   };
 
   const amount0Focused = (_event: React.FocusEvent<HTMLInputElement>) => {
