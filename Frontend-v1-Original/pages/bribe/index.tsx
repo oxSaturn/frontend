@@ -1,7 +1,7 @@
-import { useAccount } from "wagmi";
-import { Typography, Paper, SvgIcon } from "@mui/material";
+import { Typography, SvgIcon } from "@mui/material";
 
 import SSBribes from "../../components/ssBribes/ssBribes";
+import { PageWrapper } from "../../components/common/PageWrapper";
 
 function BalanceIcon({ className }: { className: string }) {
   return (
@@ -65,16 +65,10 @@ function BalanceIcon({ className }: { className: string }) {
 }
 
 function Bribes() {
-  const { address } = useAccount();
-
   return (
-    <div className="relative mt-0 flex h-full w-full flex-col pt-8">
-      {address ? (
-        <div>
-          <SSBribes />
-        </div>
-      ) : (
-        <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-full flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">
+    <PageWrapper
+      placeholder={
+        <>
           <BalanceIcon className="mb-8 -mt-20 text-7xl sm:text-8xl" />
           <Typography
             className="text-center font-['Monument'] text-2xl font-thin text-white sm:text-3xl"
@@ -89,9 +83,11 @@ function Bribes() {
             Use your veFLOW to vote for your selected pool&apos;s rewards
             distribution or create a bribe to encourage others to do the same.
           </Typography>
-        </Paper>
-      )}
-    </div>
+        </>
+      }
+    >
+      <SSBribes />
+    </PageWrapper>
   );
 }
 

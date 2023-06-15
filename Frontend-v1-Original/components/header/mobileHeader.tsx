@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Badge, IconButton } from "@mui/material";
-import { List, Menu as MenuIcon } from "@mui/icons-material";
+import { Badge, Drawer, IconButton } from "@mui/material";
+import { Close, List, Menu as MenuIcon } from "@mui/icons-material";
 
 import Navigation from "../navigation/navigation";
 // import TransactionQueue from "../transactionQueue/transactionQueue";
@@ -31,7 +31,6 @@ function Header() {
   const [transactionQueueLength] = useState(0);
 
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setOpen(false);
@@ -44,24 +43,34 @@ function Header() {
   return (
     <>
       <div className="relative top-0 z-10 flex w-full flex-col gap-2 border-b-0 border-none">
-        <a
-          onClick={() => router.push("/home")}
-          className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-1"
-        >
-          <SiteLogo />
-        </a>
-        <div className="flex justify-between px-6">
-          <ConnectButton />
+        <div className="flex items-center justify-between px-5">
+          <a
+            onClick={() => router.push("/home")}
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-5"
+          >
+            <SiteLogo />
+          </a>
           <button onClick={() => setOpen((prev) => !prev)}>
-            <MenuIcon />
+            {open ? <Close /> : <MenuIcon />}
           </button>
         </div>
-        <div
-          ref={ref}
-          className={`${
-            open ? "" : "hidden"
-          } absolute top-[105%] right-2 z-10 flex w-80 animate-slideLeftAndFade flex-col items-start justify-between rounded-sm border-none bg-[#0d3531] py-5 px-6 shadow-md shadow-cantoGreen`}
+        <Drawer
+          anchor="right"
+          open={open}
+          onClose={() => setOpen(false)}
+          className="relative md:hidden"
+          PaperProps={{
+            className: "flex flex-col items-start py-5 px-6 space-y-2",
+          }}
+          data-rk
         >
+          <button
+            onClick={() => setOpen(false)}
+            className="absolute top-0 right-6 flex h-[78px] cursor-pointer items-center"
+          >
+            <Close />
+          </button>
+          <ConnectButton />
           <Navigation />
           <Info />
           {transactionQueueLength > 0 && (
@@ -88,7 +97,7 @@ function Header() {
             </IconButton>
           )}
           {/* <TransactionQueue setQueueLength={setQueueLength} /> */}
-        </div>
+        </Drawer>
       </div>
     </>
   );
