@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Drawer } from "@mui/material";
-import { Close, Menu as MenuIcon } from "@mui/icons-material";
+import { Badge, Drawer, IconButton } from "@mui/material";
+import { Close, List, Menu as MenuIcon } from "@mui/icons-material";
 
 import Navigation from "../navigation/navigation";
-// import TransactionQueue from "../transactionQueue/transactionQueue";
+import TransactionQueue, {
+  useTransactionStore,
+} from "../transactionQueue/transactionQueue";
 
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
@@ -27,6 +29,8 @@ function Header() {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
+
+  const { openQueue, transactions } = useTransactionStore();
 
   useEffect(() => {
     setOpen(false);
@@ -62,10 +66,33 @@ function Header() {
           >
             <Close />
           </button>
-          <ConnectButton />
+          <div className="flex items-center gap-2">
+            <ConnectButton />
+            {transactions.length > 0 && (
+              <IconButton
+                className="flex min-h-[40px] items-center rounded-none border-none bg-[rgba(224,232,255,0.05)] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+                color="primary"
+                onClick={() => openQueue()}
+              >
+                <Badge
+                  badgeContent={transactions.length}
+                  color="secondary"
+                  overlap="circular"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      background: "#06D3D7",
+                      color: "#000",
+                    },
+                  }}
+                >
+                  <List className="text-white" />
+                </Badge>
+              </IconButton>
+            )}
+          </div>
           <Navigation />
           <Info />
-          {/* <TransactionQueue /> */}
+          <TransactionQueue />
         </Drawer>
       </div>
     </>

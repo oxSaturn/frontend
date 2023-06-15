@@ -25,7 +25,7 @@ import {
 import {
   useGovToken,
   useVeToken,
-  usePairs,
+  usePairsWithGauges,
   useVestNfts,
 } from "../../../lib/global/queries";
 
@@ -325,7 +325,7 @@ export const useRewards = <
   const { data: veToken } = useVeToken();
   const { data: govToken } = useGovToken();
   const { data: vestNFTs } = useVestNfts();
-  const { data: pairs } = usePairs();
+  const { data: pairs } = usePairsWithGauges();
   const serialised_vestNFTs = serialize(vestNFTs);
   return useQuery({
     queryKey: [
@@ -346,7 +346,7 @@ export const useRewards = <
         serialised_vestNFTs,
         pairs
       ),
-    enabled: !!address && !!govToken && !!veToken && !!pairs,
+    enabled: !!address && !!govToken && !!veToken && !!pairs && !!vestNFTs,
     select,
     refetchOnWindowFocus: false,
     refetchOnMount: false,

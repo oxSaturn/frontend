@@ -7,6 +7,7 @@ import {
   MenuItem,
   SelectChangeEvent,
   Skeleton,
+  CircularProgress,
 } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
@@ -46,30 +47,31 @@ export default function Rewards() {
     }
   }, [vestNFTs, token]);
 
-  const { isFetching: isFetchingRewards, data: rewards } = useRewards(
-    token?.id,
-    (data) => {
-      if (
-        data.xBribes &&
-        data.xxBribes &&
-        data.rewards &&
-        data.oBlotrRewards &&
-        data.veDist &&
-        data.xBribes.length >= 0 &&
-        data.xxBribes.length >= 0 &&
-        data.rewards.length >= 0 &&
-        data.oBlotrRewards.length >= 0
-      ) {
-        return [
-          ...data.xxBribes,
-          ...data.xBribes,
-          ...data.rewards,
-          ...data.oBlotrRewards,
-          ...data.veDist,
-        ];
-      }
+  const {
+    isLoading: isLoadingRewards,
+    isFetching: isFetchingRewards,
+    data: rewards,
+  } = useRewards(token?.id, (data) => {
+    if (
+      data.xBribes &&
+      data.xxBribes &&
+      data.rewards &&
+      data.oBlotrRewards &&
+      data.veDist &&
+      data.xBribes.length >= 0 &&
+      data.xxBribes.length >= 0 &&
+      data.rewards.length >= 0 &&
+      data.oBlotrRewards.length >= 0
+    ) {
+      return [
+        ...data.xxBribes,
+        ...data.xBribes,
+        ...data.rewards,
+        ...data.oBlotrRewards,
+        ...data.veDist,
+      ];
     }
-  );
+  });
 
   const onClaimAll = () => {
     let sendTokenID = "0";
@@ -151,11 +153,16 @@ export default function Rewards() {
 
   return (
     <div className="m-auto mb-5 mt-[100px] w-[calc(100%-40px)] max-w-[1400px] flex-col items-end pb-2 min-[1200px]:mb-16 min-[1200px]:mt-['unset'] min-[1200px]:w-[calc(100%-180px)]">
-      <div className="flex flex-col gap-1 self-start text-left">
-        <Typography variant="h1">Rewards</Typography>
-        <Typography variant="body2">
-          Choose your veFLOW and claim your rewards.
-        </Typography>
+      <div className="flex justify-between">
+        <div className="flex flex-col gap-1 self-start text-left">
+          <Typography variant="h1">Rewards</Typography>
+          <Typography variant="body2">
+            Choose your veFLOW and claim your rewards.
+          </Typography>
+        </div>
+        {(isFetchingRewards || isLoadingRewards) && (
+          <CircularProgress size={20} />
+        )}
       </div>
       <div className="flex w-full items-center justify-between py-6 px-0">
         <Grid container spacing={1}>
@@ -185,10 +192,16 @@ export default function Rewards() {
           </Grid>
         </Grid>
       </div>
-      {!isFetchingRewards ? (
+      {!isLoadingRewards ? (
         <RewardsTable rewards={rewards} tokenID={token?.id} />
       ) : (
-        <Skeleton />
+        <>
+          <Skeleton height={40} />
+          <Skeleton height={40} />
+          <Skeleton height={40} />
+          <Skeleton height={40} />
+          <Skeleton height={40} />
+        </>
       )}
     </div>
   );
