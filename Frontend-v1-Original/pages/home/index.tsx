@@ -9,11 +9,11 @@ function Home() {
 
   return (
     <div className="relative mt-0 flex h-full w-full flex-col pt-8">
-      <div className="w-100 relative h-screen">
+      <div className="relative h-screen w-full">
         <Grid
           container
           spacing={2}
-          className="absolute top-1/2 left-1/2 z-[2] h-auto max-w-[50vw] -translate-x-1/2 -translate-y-1/2 text-center md:max-w-[80vw]"
+          className="absolute top-1/2 left-1/2 z-[2] h-auto max-w-[80vw] -translate-x-1/2 -translate-y-1/2 text-center"
         >
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <Typography
