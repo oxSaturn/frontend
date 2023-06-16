@@ -191,7 +191,7 @@ export default function TransactionQueue() {
         {transactions.filter((tx) => {
           return ["DONE", "CONFIRMED"].includes(tx.status);
         }).length !== transactions.length && (
-          <>
+          <div className="space-y-3">
             <Typography className="block w-full text-center text-2xl">
               Transactions
             </Typography>
@@ -204,7 +204,7 @@ export default function TransactionQueue() {
                   return <Transaction transaction={tx} key={`${tx}${idx}`} />;
                 })}
             </div>
-          </>
+          </div>
         )}
         {transactions.filter((tx) => {
           return ["DONE", "CONFIRMED"].includes(tx.status);
