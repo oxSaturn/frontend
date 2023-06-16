@@ -160,9 +160,7 @@ export default function Rewards() {
             Choose your veFLOW and claim your rewards.
           </Typography>
         </div>
-        {(isFetchingRewards || isLoadingRewards) && (
-          <CircularProgress size={20} />
-        )}
+        {isFetchingRewards && <CircularProgress size={20} />}
       </div>
       <div className="flex w-full items-center justify-between py-6 px-0">
         <Grid container spacing={1}>

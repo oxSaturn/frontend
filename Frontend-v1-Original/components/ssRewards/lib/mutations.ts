@@ -53,7 +53,6 @@ export function useClaimVeDist(onSuccess?: () => void) {
       claimVeDist(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.REWARDS]);
-      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
   });

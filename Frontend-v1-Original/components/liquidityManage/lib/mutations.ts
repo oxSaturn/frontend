@@ -86,7 +86,6 @@ export function useAddLiquidity(onSuccess?: () => void) {
       slippage: string;
     }) => addLiquidity(address, options),
     onSuccess: () => {
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
@@ -100,7 +99,6 @@ export function useStakeLiquidity(onSuccess?: () => void) {
     mutationFn: (options: { pair: Pair | undefined }) =>
       stakeLiquidity(address, options),
     onSuccess: () => {
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
@@ -121,7 +119,6 @@ export function useAddLiquidityAndStake(onSuccess?: () => void) {
       slippage: string;
     }) => addLiquidityAndStake(address, options),
     onSuccess: () => {
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
@@ -139,7 +136,6 @@ export function useRemoveLiquidity(onSuccess?: () => void) {
       slippage: string;
     }) => removeLiquidity(address, options),
     onSuccess: () => {
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
@@ -160,7 +156,6 @@ export function useUnstakeAndRemoveLiquidity(onSuccess?: () => void) {
       slippage: string;
     }) => unstakeAndRemoveLiquidity(address, options),
     onSuccess: () => {
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
@@ -174,7 +169,6 @@ export function useUnstakeLiquidity(onSuccess?: () => void) {
     mutationFn: (options: { amount: string; pair: Gauge }) =>
       unstakeLiquidity(address, options),
     onSuccess: () => {
-      queryClient.invalidateQueries([QUERY_KEYS.PAIRS_WITH_GAUGES]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       onSuccess?.();
     },
