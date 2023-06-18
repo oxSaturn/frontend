@@ -34,8 +34,6 @@ const bribeAutoBribe = async (autoBribeAddress: `0x${string}`) => {
         status: TransactionStatus.WAITING,
       },
     ],
-    action: "Bribe autobribe",
-    purpose: "Bribe autobribe",
   });
 
   const writeBribeAutoBribe = async () => {

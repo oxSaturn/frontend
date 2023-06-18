@@ -77,8 +77,6 @@ const swap = async (options: {
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Swap ${fromAsset.symbol} for ${toAsset.symbol}`,
-    purpose: "Swap",
   });
 
   let allowance: string | null = "0";
@@ -262,8 +260,6 @@ const wrapOrUnwrap = async (options: {
 
   useTransactionStore.getState().updateTransactionQueue({
     transactions: tx.transactions,
-    action: tx.title,
-    purpose: tx.type,
   });
 
   // SUBMIT WRAP_UNWRAP TRANSACTION

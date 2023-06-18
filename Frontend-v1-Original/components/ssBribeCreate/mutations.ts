@@ -82,8 +82,6 @@ const createBribe = async (options: {
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Create bribe on ${gauge.token0.symbol}/${gauge.token1.symbol}`,
-    purpose: "Create bribe",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY

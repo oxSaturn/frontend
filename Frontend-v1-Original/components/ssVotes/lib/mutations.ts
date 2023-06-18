@@ -59,12 +59,10 @@ const vote = async (
     transactions: [
       {
         uuid: voteTXID,
-        description: `Cast votes`,
+        description: `Cast votes using token #${tokenID}`,
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Cast vote using token #${tokenID}`,
-    purpose: "Votes Cast",
   });
 
   const deadGauges: string[] = [];

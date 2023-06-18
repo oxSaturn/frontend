@@ -170,12 +170,10 @@ const createVest = async (
       },
       {
         uuid: vestTXID,
-        description: `Vesting your tokens`,
+        description: `Vesting ${govToken.symbol} until ${unlockString} `,
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Vest ${govToken.symbol} until ${unlockString} `,
-    purpose: "Vest",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
@@ -259,12 +257,10 @@ const increaseVestAmount = async (
       },
       {
         uuid: vestTXID,
-        description: `Increasing your vest amount`,
+        description: `Increasing your vest amount on token #${tokenID}`,
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Increase vest amount on token #${tokenID}`,
-    purpose: "Vest",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
@@ -352,12 +348,10 @@ const increaseVestDuration = async (
     transactions: [
       {
         uuid: vestTXID,
-        description: `Increasing your vest duration`,
+        description: `Increasing vest duration on token #${tokenID}`,
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Increase vest duration on token #${tokenID}`,
-    purpose: "Vest",
   });
 
   const writeIncreaseDuration = async () => {
@@ -417,12 +411,10 @@ const resetVest = async (
       },
       {
         uuid: resetTXID,
-        description: `Resetting your veNFT`,
+        description: `Resetting your veNFT #${tokenID}`,
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Reset veNFT #${tokenID}`,
-    purpose: "Vest",
   });
 
   // CHECK unclaimed bribes
@@ -569,8 +561,6 @@ const withdrawVest = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Withdraw vest amount on token #${tokenID}`,
-    purpose: "Vest",
   });
 
   if (rewards && rewards.xxBribes.length > 0) {
@@ -714,8 +704,6 @@ const mergeNft = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Merge NFT #${from} into #${to}`,
-    purpose: "Merge NFT",
   });
 
   const writeMergeLock = async () => {
