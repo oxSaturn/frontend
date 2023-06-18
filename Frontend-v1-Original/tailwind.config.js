@@ -44,10 +44,16 @@ module.exports = {
       },
       colors: {
         cantoGreen: "#06fc99",
+        primary: "#06fc99",
         secondaryGray: "#7e99b0",
+        secondary: "#7e99b0",
         primaryBg: "#272826",
         deepBlue: "#212b48",
         deepPurple: "#040105",
+        accent: "#ffda58",
+        success: "#07bc0c",
+        warning: "#ffda58",
+        error: "#ff4141",
       },
       boxShadow: {
         glow: "0 0 10px 0 #06fc99",
