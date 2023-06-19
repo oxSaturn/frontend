@@ -132,6 +132,14 @@ interface VeDistReward {
   rewardType: "Distribution";
 }
 
+interface Rewards {
+  xBribes: Gauge[];
+  xxBribes: Gauge[];
+  rewards: Gauge[];
+  oBlotrRewards: Gauge[];
+  veDist: VeDistReward[];
+}
+
 type Vote = {
   address: `0x${string}`;
   votePercent: string;
@@ -213,7 +221,7 @@ interface ITransaction {
     uuid: string;
     description: string;
     status: TransactionStatus;
-    txHash?: string;
+    txHash?: `0x${string}`;
     error?: string;
   }[];
 }
@@ -234,13 +242,11 @@ type EthWindow = Window &
 
 // FIREBIRD
 interface QuoteSwapPayload {
-  payload: {
-    content: {
-      fromAsset: BaseAsset;
-      toAsset: BaseAsset;
-      fromAmount: string;
-      slippage: string;
-    };
+  options: {
+    fromAsset: BaseAsset;
+    toAsset: BaseAsset;
+    fromAmount: string;
+    slippage: string;
   };
   address: `0x${string}`;
 }
@@ -260,6 +266,13 @@ interface QuoteSwapResponse {
     paths: Path[];
     tokens: FireBirdTokens;
   };
+}
+
+interface PairsCallResponse {
+  data: Pair[];
+  prices: [string, number][];
+  tvl: number;
+  tbv: number;
 }
 
 interface Path {
@@ -314,6 +327,8 @@ export type {
   Path,
   Swap,
   FireBirdTokens,
+  PairsCallResponse,
+  Rewards,
 };
 
 export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };

@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js";
 import * as contractsTestnet from "./contractsGoerli";
 import * as contractsCanto from "./contractsCanto";
 import * as contracts from "./contracts";
-import * as actions from "./actions";
+import * as queryKeys from "./queryKeys";
 
 let network: "7700" | "42161" | "421613" = "7700";
 
@@ -24,6 +24,8 @@ const config = {
       name: contractsCanto.CANTO_NAME,
       symbol: contractsCanto.CANTO_SYMBOL,
       chainId: 7700,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contractsCanto.WCANTO_ADDRESS,
     wNativeABI: contractsCanto.WCANTO_ABI,
@@ -38,6 +40,8 @@ const config = {
       name: contractsTestnet.ETH_NAME,
       symbol: contractsTestnet.ETH_SYMBOL,
       chainId: 421613,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contractsTestnet.WETH_ADDRESS,
     wNativeABI: contractsTestnet.WETH_ABI,
@@ -52,6 +56,8 @@ const config = {
       name: contracts.ETH_NAME,
       symbol: contracts.ETH_SYMBOL,
       chainId: 42161,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contractsTestnet.WETH_ADDRESS,
     wNativeABI: contractsTestnet.WETH_ABI,
@@ -61,7 +67,7 @@ const config = {
 export const ETHERSCAN_URL = config[network].scan;
 
 export const CONTRACTS = config[network].contracts;
-export const ACTIONS = actions;
+export const QUERY_KEYS = queryKeys;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

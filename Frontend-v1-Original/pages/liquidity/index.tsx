@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 
-import LiquidityPairs from "../../components/ssLiquidityPairs/ssLiquidityPairs";
+import LiquidityPairs from "../../components/liquidityPairs/LiquidityPairs";
 import { PageWrapper } from "../../components/common/PageWrapper";
 
 function Liquidity() {

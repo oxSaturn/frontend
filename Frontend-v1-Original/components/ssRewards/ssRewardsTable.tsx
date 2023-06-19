@@ -15,10 +15,14 @@ import {
 } from "@mui/material";
 import BigNumber from "bignumber.js";
 
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import { Gauge, VeDistReward, isGaugeReward } from "../../stores/types/types";
+
+import {
+  useClaimBribes,
+  useClaimReward,
+  useClaimVeDist,
+} from "./lib/mutations";
 
 const headCells = [
   { id: "reward", numeric: false, disablePadding: false, label: "Pool" },
@@ -97,13 +101,17 @@ export default function EnhancedTable({
   rewards,
   tokenID,
 }: {
-  rewards: (Gauge | VeDistReward)[];
+  rewards: (Gauge | VeDistReward)[] | undefined;
   tokenID: string;
 }) {
   const [order, setOrder] = React.useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = React.useState<OrderBy>("balance");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
+
+  const { mutate: claimBribes } = useClaimBribes();
+  const { mutate: claimReward } = useClaimReward();
+  const { mutate: claimVeDist } = useClaimVeDist();
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null,
@@ -126,6 +134,28 @@ export default function EnhancedTable({
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
+  };
+
+  const onClaim = (reward: Gauge | VeDistReward) => {
+    if (reward.rewardType === "XXBribe") {
+      claimBribes({
+        pair: reward,
+        tokenID,
+        type: "xxbribe",
+      });
+    } else if (reward.rewardType === "XBribe") {
+      claimBribes({
+        pair: reward,
+        tokenID,
+        type: "xbribe",
+      });
+    } else if (reward.rewardType === "Reward") {
+      claimReward({ pair: reward, type: "gov" });
+    } else if (reward.rewardType === "oBLOTR_Reward") {
+      claimReward({ pair: reward, type: "oblotr" });
+    } else if (reward.rewardType === "Distribution") {
+      claimVeDist(tokenID);
+    }
   };
 
   if (!rewards) {
@@ -170,38 +200,6 @@ export default function EnhancedTable({
       </div>
     );
   }
-
-  const onClaim = (reward: Gauge | VeDistReward) => {
-    if (reward.rewardType === "XXBribe") {
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CLAIM_XX_BRIBE,
-        content: { pair: reward, tokenID },
-      });
-    } else if (reward.rewardType === "XBribe") {
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CLAIM_X_BRIBE,
-        content: { pair: reward, tokenID },
-      });
-    } else if (reward.rewardType === "Reward") {
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CLAIM_REWARD,
-        content: { pair: reward, tokenID },
-      });
-    } else if (reward.rewardType === "oBLOTR_Reward") {
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CLAIM_BLOTR_REWARD,
-        content: { pair: reward, tokenID },
-      });
-    } else if (reward.rewardType === "Distribution") {
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CLAIM_VE_DIST,
-        content: { tokenID },
-      });
-    }
-  };
-
-  // const emptyRows =
-  //   rowsPerPage - Math.min(rowsPerPage, rewards.length - page * rowsPerPage);
 
   return (
     <div className="w-full">
@@ -344,19 +342,20 @@ export default function EnhancedTable({
                       </TableCell>
                       <TableCell align="right">
                         <div>
-                          {"gauge" in row && !row.gauge.balance && (
-                            <div className="flex items-center justify-end">
-                              <Skeleton
-                                variant="rectangular"
-                                width={120}
-                                height={16}
-                                style={{
-                                  marginTop: "1px",
-                                  marginBottom: "1px",
-                                }}
-                              />
-                            </div>
-                          )}
+                          {"gauge" in row &&
+                            row.gauge.balance === undefined && (
+                              <div className="flex items-center justify-end">
+                                <Skeleton
+                                  variant="rectangular"
+                                  width={120}
+                                  height={16}
+                                  style={{
+                                    marginTop: "1px",
+                                    marginBottom: "1px",
+                                  }}
+                                />
+                              </div>
+                            )}
                           {row &&
                             row.rewardType === "XBribe" &&
                             row.gauge &&

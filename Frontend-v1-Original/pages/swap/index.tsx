@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 
-import SwapComponent from "../../components/ssSwap/ssSwap";
+import SwapComponent from "../../components/swap/swap";
 import { PageWrapper } from "../../components/common/PageWrapper";
 
 function Swap() {

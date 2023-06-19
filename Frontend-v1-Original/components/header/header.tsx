@@ -1,14 +1,13 @@
-import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Typography, Badge, IconButton } from "@mui/material";
+import { Badge, IconButton, Typography } from "@mui/material";
 import { List } from "@mui/icons-material";
 
 import Navigation from "../navigation/navigation";
-import TransactionQueue from "../transactionQueue/transactionQueue";
+import TransactionQueue, {
+  useTransactionStore,
+} from "../transactionQueue/transactionQueue";
 import useScrollPosition from "../../hooks/useScrollPosition";
-import { ACTIONS } from "../../stores/constants/constants";
-import stores from "../../stores";
 
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
@@ -29,13 +28,9 @@ function SiteLogo(props: { className?: string }) {
 function Header() {
   const router = useRouter();
 
-  const [transactionQueueLength, setTransactionQueueLength] = useState(0);
-
   const scrollPosition = useScrollPosition();
 
-  const setQueueLength = (length: number) => {
-    setTransactionQueueLength(length);
-  };
+  const { openQueue, transactions } = useTransactionStore();
 
   return (
     <>
@@ -63,16 +58,14 @@ function Header() {
                 </Typography>
               </div>
             )}
-            {transactionQueueLength > 0 && (
+            {transactions.length > 0 && (
               <IconButton
-                className="flex min-h-[40px] items-center rounded-3xl border-none bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
+                className="flex min-h-[40px] items-center rounded-none border-none bg-[rgba(224,232,255,0.05)] px-4 text-[rgba(255,255,255,0.87)] sm:min-h-[50px]"
                 color="primary"
-                onClick={() => {
-                  stores.emitter.emit(ACTIONS.TX_OPEN);
-                }}
+                onClick={() => openQueue()}
               >
                 <Badge
-                  badgeContent={transactionQueueLength}
+                  badgeContent={transactions.length}
                   color="secondary"
                   overlap="circular"
                   sx={{
@@ -88,7 +81,7 @@ function Header() {
             )}
             <ConnectButton />
           </div>
-          <TransactionQueue setQueueLength={setQueueLength} />
+          <TransactionQueue />
         </div>
       </div>
     </>

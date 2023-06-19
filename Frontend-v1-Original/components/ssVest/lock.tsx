@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   Paper,
   Typography,
@@ -17,8 +17,6 @@ import dayjs from "dayjs";
 import { ArrowBack } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 
 import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 
@@ -26,18 +24,17 @@ import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
 import { type LockOption, lockOptions } from "./lockDuration";
+import { useCreateVest } from "./lib/mutations";
 
 export default function Lock({
   govToken,
   veToken,
 }: {
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const inputEl = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
-
-  const [lockLoading, setLockLoading] = useState(false);
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
@@ -47,22 +44,9 @@ export default function Lock({
   );
   const [selectedDateError] = useState(false);
 
-  useEffect(() => {
-    const lockReturned = () => {
-      setLockLoading(false);
-      router.push("/vest");
-    };
-    const errorReturned = () => {
-      setLockLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.CREATE_VEST_RETURNED, lockReturned);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(ACTIONS.CREATE_VEST_RETURNED, lockReturned);
-    };
-  }, [router]);
+  const { mutate: createVest, isLoading: lockLoading } = useCreateVest(() => {
+    router.push("/vest");
+  });
 
   const setAmountPercent = (percent: number) => {
     setAmount(
@@ -113,16 +97,10 @@ export default function Lock({
     }
 
     if (!error) {
-      setLockLoading(true);
-
       const now = dayjs();
       const expiry = dayjs(selectedDate).add(1, "days");
       const secondsToExpire = expiry.diff(now, "seconds");
-
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_VEST,
-        content: { amount, unlockTime: secondsToExpire },
-      });
+      createVest({ amount, unlockTime: secondsToExpire.toString() });
     }
   };
 
@@ -189,7 +167,7 @@ export default function Lock({
     amountValue: string,
     amountError: string | false,
     amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
-    token: GovToken | null
+    token: GovToken | undefined
   ) => {
     return (
       <div className={classes.textField}>
