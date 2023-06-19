@@ -27,6 +27,7 @@ import {
   useErc20Allowance,
   useErc20Approve,
   usePrepareOAggExerciseLp,
+  useOAggExerciseLp,
 } from "../../lib/wagmiGen";
 
 import {
@@ -197,8 +198,8 @@ export function Redeem() {
     write: redeemLP,
     data: txResponseLP,
     isLoading: writingExerciseLP,
-  } = useOAggExercise({
-    ...exerciseBlotrConfig,
+  } = useOAggExerciseLp({
+    ...exerciseLPBlotrConfig,
     onSuccess(data) {
       setToastMessage("Transaction submitted!");
       setToastOpen(true);
@@ -207,7 +208,7 @@ export function Redeem() {
   });
 
   const { isFetching: waitingRedeemReceipt } = useWaitForTransaction({
-    hash: txResponse?.hash,
+    hash: txResponse?.hash || txResponseLP?.hash,
     onSuccess(data) {
       setToastMessage("Transaction confirmed!");
       setToastOpen(true);
@@ -336,35 +337,70 @@ export function Redeem() {
                 Switch to pulse
               </button>
             ) : (
-              <button
-                disabled={
-                  (activeInput === INPUT.OFLOW && !isValidInput(oFlow)) ||
-                  (activeInput === INPUT.WPLS && !isValidInput(WPLS)) ||
-                  (isApprovalNeeded ? !approve : !redeem) ||
-                  isFetchingAmounts ||
-                  isFetchingWplsBalance ||
-                  isFetchingALlowance ||
+              <>
+                <button
+                  disabled={
+                    (activeInput === INPUT.OFLOW && !isValidInput(oFlow)) ||
+                    (activeInput === INPUT.WPLS && !isValidInput(WPLS)) ||
+                    (isApprovalNeeded ? !approve : !redeem) ||
+                    isFetchingAmounts ||
+                    isFetchingWplsBalance ||
+                    isFetchingALlowance ||
+                    writingExercise ||
+                    writingExerciseLP ||
+                    writingApprove ||
+                    waitingApprovalReceipt ||
+                    waitingRedeemReceipt
+                  }
+                  onClick={
+                    isApprovalNeeded ? () => approve?.() : () => redeemLP?.()
+                  }
+                  className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+                >
+                  {waitingApprovalReceipt ||
+                  waitingRedeemReceipt ||
                   writingExercise ||
+                  writingExerciseLP ||
                   writingApprove ||
-                  waitingApprovalReceipt ||
-                  waitingRedeemReceipt
-                }
-                onClick={
-                  isApprovalNeeded ? () => approve?.() : () => redeem?.()
-                }
-                className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
-              >
-                {waitingApprovalReceipt ||
-                waitingRedeemReceipt ||
-                writingExercise ||
-                writingApprove ||
-                isFetchingAmounts ||
-                isFetchingALlowance
-                  ? "Loading..."
-                  : isApprovalNeeded
-                  ? "Approve"
-                  : "Redeem"}
-              </button>
+                  isFetchingAmounts ||
+                  isFetchingALlowance
+                    ? "Loading..."
+                    : isApprovalNeeded
+                    ? "Approve"
+                    : "Redeem into LP"}
+                </button>
+                <button
+                  disabled={
+                    (activeInput === INPUT.OFLOW && !isValidInput(oFlow)) ||
+                    (activeInput === INPUT.WPLS && !isValidInput(WPLS)) ||
+                    (isApprovalNeeded ? !approve : !redeem) ||
+                    isFetchingAmounts ||
+                    isFetchingWplsBalance ||
+                    isFetchingALlowance ||
+                    writingExercise ||
+                    writingExerciseLP ||
+                    writingApprove ||
+                    waitingApprovalReceipt ||
+                    waitingRedeemReceipt
+                  }
+                  onClick={
+                    isApprovalNeeded ? () => approve?.() : () => redeem?.()
+                  }
+                  className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+                >
+                  {waitingApprovalReceipt ||
+                  waitingRedeemReceipt ||
+                  writingExercise ||
+                  writingExerciseLP ||
+                  writingApprove ||
+                  isFetchingAmounts ||
+                  isFetchingALlowance
+                    ? "Loading..."
+                    : isApprovalNeeded
+                    ? "Approve"
+                    : "Redeem"}
+                </button>
+              </>
             )
           ) : (
             <button
