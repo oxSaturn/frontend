@@ -14,13 +14,14 @@ export default defineConfig({
     {
       name: "oAGG",
       abi: oAggABI,
-      address: "0xFc1C15E43abAeAB86571582D2A36BEB32324a1a8",
+      address: "0x1bbd91715EBC03C9f073072eA2319ebF698917dE",
     },
     {
       name: "AggMaxxing",
       abi: aggMaxxingABI,
-      address: "0xc98Ac135209dC7a99a4269Bd6Adc711F68A283a2",
+      address: "0x8189B5F1C389d715eBbF6beBb41c5C6Dfd6F664a",
     },
   ],
   plugins: [react()],
 });
+
