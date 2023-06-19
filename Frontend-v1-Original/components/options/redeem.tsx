@@ -66,7 +66,7 @@ export function Redeem() {
     data: durationForDiscount,
     isFetching: isFetchingDurationForDiscount,
   } = useOAggGetLockDurationForLpDiscount({
-    args: [BigInt(lpDiscount)],
+    args: [BigInt(100 - lpDiscount)],
     select(data) {
       return Number(data);
     },
@@ -186,7 +186,7 @@ export function Redeem() {
         : 0n,
       address!,
       BigInt(now + 1e3 * 60 * 5),
-      BigInt(lpDiscount),
+      BigInt(100 - lpDiscount),
     ],
     enabled:
       !!address &&
