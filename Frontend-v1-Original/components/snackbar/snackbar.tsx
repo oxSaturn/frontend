@@ -73,8 +73,8 @@ function InfoIcon({ color }: { color: string }) {
 
 function MySnackbar(props: {
   open: boolean;
-  type: string | null;
-  message: string | null;
+  type: string | undefined;
+  message: string | undefined;
 }) {
   const { open: initialOpen, type, message } = props;
   const [open, setOpen] = useState(initialOpen);

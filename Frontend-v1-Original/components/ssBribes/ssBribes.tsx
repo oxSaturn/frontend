@@ -1,45 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { Button, Typography } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
 
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
-import { Pair } from "../../stores/types/types";
-
 import { useAutoBribes } from "./queries";
+import { useBribeAutoBribe } from "./mutations";
+
 import classes from "./ssBribes.module.css";
 
 export default function Bribes() {
-  const [, updateState] = useState<undefined | {}>();
-  const forceUpdate = useCallback(() => updateState({}), []);
-
-  const [, setPairs] = useState<Pair[]>([]);
-
-  useEffect(() => {
-    const stableSwapUpdated = () => {
-      const pairs = stores.stableSwapStore.getStore("pairs");
-      const pairsWithBribes = pairs.filter((pair) => {
-        return (
-          pair &&
-          pair.gauge != null &&
-          pair.gauge.address &&
-          pair.gauge.bribes &&
-          pair.gauge.bribes.length > 0
-        );
-      });
-      setPairs(pairsWithBribes);
-      forceUpdate();
-    };
-
-    stableSwapUpdated();
-
-    stores.emitter.on(ACTIONS.UPDATED, stableSwapUpdated);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, stableSwapUpdated);
-    };
-  }, [forceUpdate]);
-
   const router = useRouter();
   const onCreate = () => {
     router.push("/bribe/create");
@@ -79,14 +47,10 @@ export default function Bribes() {
 
 const AutoBribes = () => {
   const { data: autoBribes, isLoading } = useAutoBribes();
+  const { mutate: bribe } = useBribeAutoBribe();
 
   const onBribe = (address: `0x${string}`) => {
-    stores.dispatcher.dispatch({
-      type: ACTIONS.BRIBE_AUTO_BRIBE,
-      content: {
-        address,
-      },
-    });
+    bribe(address);
   };
 
   const mappedAutoBribes = autoBribes && [...autoBribes.entries()];

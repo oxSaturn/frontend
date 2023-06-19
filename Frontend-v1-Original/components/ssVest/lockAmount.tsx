@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Typography, Button, TextField, CircularProgress } from "@mui/material";
 import { useRouter } from "next/router";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
+import { useIncreaseVestAmount } from "./lib/mutations";
 
 export default function LockAmount({
   nft,
@@ -16,38 +15,18 @@ export default function LockAmount({
   updateLockAmount,
 }: {
   nft: VestNFT;
-  govToken: GovToken | null;
+  govToken: GovToken | undefined;
   updateLockAmount: (_arg: string) => void;
 }) {
-  const [, setApprovalLoading] = useState(false);
-  const [lockLoading, setLockLoading] = useState(false);
-
   const [amount, setAmount] = useState("");
   const [amountError] = useState(false);
 
   const router = useRouter();
 
-  useEffect(() => {
-    const lockReturned = () => {
-      setLockLoading(false);
+  const { mutate: increateVestAmount, isLoading: lockLoading } =
+    useIncreaseVestAmount(() => {
       router.push("/vest");
-    };
-
-    const errorReturned = () => {
-      setApprovalLoading(false);
-      setLockLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.INCREASE_VEST_AMOUNT_RETURNED, lockReturned);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(
-        ACTIONS.INCREASE_VEST_AMOUNT_RETURNED,
-        lockReturned
-      );
-    };
-  }, [router]);
+    });
 
   const setAmountPercent = (percent: number) => {
     const val = BigNumber(govToken?.balance || "0")
@@ -59,10 +38,9 @@ export default function LockAmount({
   };
 
   const onLock = () => {
-    setLockLoading(true);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.INCREASE_VEST_AMOUNT,
-      content: { amount, tokenID: nft.id },
+    increateVestAmount({
+      amount,
+      tokenID: nft.id,
     });
   };
 

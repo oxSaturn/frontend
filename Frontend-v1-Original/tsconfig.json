@@ -15,12 +15,6 @@
     "isolatedModules": true,
     "jsx": "preserve"
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "theme/coreTheme.ts",
-    "mainnet-arb-token-list.json"
-  ],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "theme/coreTheme.ts"],
   "exclude": ["node_modules", "legacy"]
 }

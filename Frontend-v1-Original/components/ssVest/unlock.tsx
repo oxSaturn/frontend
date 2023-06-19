@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   Paper,
@@ -9,12 +8,11 @@ import {
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
+import { useWithdrawVest } from "./lib/mutations";
 
 export default function Unlock({
   nft,
@@ -22,39 +20,20 @@ export default function Unlock({
   veToken,
 }: {
   nft: VestNFT;
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const router = useRouter();
 
-  const [lockLoading, setLockLoading] = useState(false);
-
-  useEffect(() => {
-    const lockReturned = () => {
-      setLockLoading(false);
+  const { mutate: withdrawVest, isLoading: lockLoading } = useWithdrawVest(
+    nft.id,
+    () => {
       router.push("/vest");
-    };
-    const errorReturned = () => {
-      setLockLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.WITHDRAW_VEST_RETURNED, lockReturned);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(
-        ACTIONS.WITHDRAW_VEST_RETURNED,
-        lockReturned
-      );
-    };
-  }, [router]);
+    }
+  );
 
   const onWithdraw = () => {
-    setLockLoading(true);
-    stores.dispatcher.dispatch({
-      type: ACTIONS.WITHDRAW_VEST,
-      content: { tokenID: nft.id },
-    });
+    withdrawVest();
   };
 
   const onBack = () => {

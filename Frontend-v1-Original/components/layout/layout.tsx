@@ -1,10 +1,4 @@
-import { useEffect } from "react";
-import {
-  useAccount,
-  useNetwork,
-  useSwitchNetwork,
-  useWalletClient,
-} from "wagmi";
+import { useNetwork, useSwitchNetwork } from "wagmi";
 import Head from "next/head";
 import { canto } from "viem/chains";
 import { Button, Typography } from "@mui/material";
@@ -12,8 +6,6 @@ import { Button, Typography } from "@mui/material";
 import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 
 import classes from "./layout.module.css";
 
@@ -24,17 +16,8 @@ export default function Layout({
   children: React.ReactNode;
   configure?: boolean;
 }) {
-  const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({ chainId: canto.id });
-  const { data: walletClient } = useWalletClient({
-    chainId: canto.id,
-  });
-  useEffect(() => {
-    if (walletClient && address) {
-      stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE_SS });
-    }
-  }, [walletClient, address]);
 
   return (
     <div className={classes.container}>
