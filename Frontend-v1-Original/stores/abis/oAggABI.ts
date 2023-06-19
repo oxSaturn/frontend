@@ -750,6 +750,13 @@ export const oAggABI = [
     type: "function",
     stateMutability: "nonpayable",
     outputs: [],
+    name: "setGauge",
+    inputs: [{ type: "address", name: "_gauge", internalType: "address" }],
+  },
+  {
+    type: "function",
+    stateMutability: "nonpayable",
+    outputs: [],
     name: "setLockDurationForMaxLpDiscount",
     inputs: [{ type: "uint256", name: "_duration", internalType: "uint256" }],
   },

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useAccount,
   useBalance,
@@ -28,8 +28,10 @@ import {
   useErc20Approve,
   usePrepareOAggExerciseLp,
   useOAggExerciseLp,
+  useOAggGetLockDurationForLpDiscount,
 } from "../../lib/wagmiGen";
 
+import { Slider } from "./slider";
 import {
   INPUT,
   INPUT_TYPE,
@@ -45,6 +47,7 @@ export function Redeem() {
     useInputs();
   const maxPaymentWpls = (parseFloat(WPLS) * 1.01).toString();
 
+  const [lpDiscount, setLpDiscount] = useState(20);
   const [now] = useState(Date.now());
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -58,6 +61,18 @@ export function Redeem() {
   });
 
   const { address } = useAccount();
+
+  const {
+    data: durationForDiscount,
+    isFetching: isFetchingDurationForDiscount,
+  } = useOAggGetLockDurationForLpDiscount({
+    args: [BigInt(lpDiscount)],
+    select(data) {
+      return Number(data);
+    },
+  });
+
+  const { days, hours, minutes, seconds } = useTimer(durationForDiscount ?? 0);
 
   const {
     data: WplsBalance,
@@ -171,7 +186,7 @@ export function Redeem() {
         : 0n,
       address!,
       BigInt(now + 1e3 * 60 * 5),
-      BigInt(20),
+      BigInt(lpDiscount),
     ],
     enabled:
       !!address &&
@@ -270,8 +285,22 @@ export function Redeem() {
           <div>{formatCurrency(blotrPrice)} WPLS</div>
         </div>
         <div className="flex items-center justify-between">
-          <div>Discount</div>
+          <div>Liquid Discount</div>
           <div>{formatCurrency(discount)} %</div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>LP Discount</div>
+          <div>{formatCurrency(lpDiscount)} %</div>
+        </div>
+        <div
+          className={`flex items-center justify-between ${
+            isFetchingDurationForDiscount && "animate-pulse"
+          }`}
+        >
+          <div>Duration for this discount</div>
+          <div>
+            {days}d {hours}h {minutes}m {seconds}s
+          </div>
         </div>
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -328,6 +357,10 @@ export function Redeem() {
               placeholder="0.00 FLOW"
             />
           </div>
+          <Slider
+            value={[lpDiscount]}
+            onValueChange={(e) => setLpDiscount(e[0])}
+          />
           {address ? (
             chain?.unsupported ? (
               <button
@@ -425,7 +458,7 @@ export function Redeem() {
           </div>
           <Tooltip.Portal>
             <Tooltip.Content
-              className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity]"
+              className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
               sideOffset={5}
             >
               We take into account 1% slippage
@@ -435,7 +468,7 @@ export function Redeem() {
         </Tooltip.Root>
       </div>
       <Toast.Root
-        className="prose radix-state-closed:animate-hide radix-state-open:animate-slideIn radix-swipe-end:animate-swipeOut radix-swipe-cancel:translate-x-0 radix-swipe-cancel:transition-[transform_200ms_ease-out] radix-swipe-move:translate-x-[var(--radix-toast-swipe-move-x)] rounded-md bg-[#111] p-4 text-left shadow shadow-secondary"
+        className="prose radix-state-closed:animate-hide radix-state-open:animate-slideIn radix-swipe-end:animate-swipeOut rounded-md bg-[#111] p-4 text-left shadow shadow-secondary radix-swipe-cancel:translate-x-0 radix-swipe-cancel:transition-[transform_200ms_ease-out] radix-swipe-move:translate-x-[var(--radix-toast-swipe-move-x)]"
         open={toastOpen}
         onOpenChange={setToastOpen}
       >
@@ -448,19 +481,46 @@ export function Redeem() {
         <Toast.Action
           className="[grid-area:_action]"
           asChild
-          altText="Look on pulsechain explorer"
+          altText="Look up on explorer"
         >
           <a
-            href={`https://scan.pulsechain.com/tx/${toastHash}`}
+            href={`https://tuber.build/tx/${toastHash}`}
             target="_blank"
             rel="noreferrer noopener"
             className="text-sm text-secondary underline transition-colors hover:text-primary hover:no-underline"
           >
-            Look on pulsechain explorer
+            Look up on explorer
           </a>
         </Toast.Action>
       </Toast.Root>
       <Toast.Viewport className="fixed bottom-0 right-0 z-[2147483647] m-0 flex w-[390px] max-w-[100vw] list-none flex-col gap-3 p-6 outline-none" />
     </>
   );
+}
+
+const SECOND = 1_000;
+const MINUTE = SECOND * 60;
+const HOUR = MINUTE * 60;
+const DAY = HOUR * 24;
+
+function useTimer(deadline = 0) {
+  const [timeLeft, setTimeLeft] = useState(deadline);
+
+  useEffect(() => {
+    setTimeLeft(deadline * 1000);
+    const intervalId = setInterval(() => {
+      setTimeLeft(deadline * 1000);
+    }, SECOND);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [deadline]);
+
+  return {
+    days: Math.floor(timeLeft / DAY),
+    hours: Math.floor((timeLeft / HOUR) % 24),
+    minutes: Math.floor((timeLeft / MINUTE) % 60),
+    seconds: Math.floor((timeLeft / SECOND) % 60),
+  };
 }
