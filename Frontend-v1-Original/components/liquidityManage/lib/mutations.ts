@@ -281,8 +281,6 @@ const createPairStake = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
-    purpose: "Liquidity",
   });
 
   let allowance0: string | null = "0";
@@ -538,8 +536,6 @@ const createPairDeposit = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Create liquidity pool for ${token0.symbol}/${token1.symbol}`,
-    purpose: "Liquidity",
   });
 
   let allowance0: string = "0";
@@ -885,8 +881,6 @@ const addLiquidity = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Add liquidity to ${pair.symbol}`,
-    purpose: "Liquidity",
   });
 
   let allowance0: string | null = "0";
@@ -1031,8 +1025,6 @@ const stakeLiquidity = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Stake ${pair.symbol} in the gauge`,
-    purpose: "Liquidity",
   });
 
   const stakeAllowance = await getStakeAllowance(pair, account);
@@ -1138,8 +1130,6 @@ const addLiquidityAndStake = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Add liquidity to ${pair.symbol}`,
-    purpose: "Liquidity",
   });
 
   let allowance0: string | null = "0";
@@ -1313,8 +1303,6 @@ const createGauge = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Create liquidity gauge for ${pair.token0.symbol}/${pair.token1.symbol}`,
-    purpose: "Liquidty",
   });
 
   await writeCreateGauge(walletClient, createGaugeTXID, pair.address);
@@ -1361,8 +1349,6 @@ const removeLiquidity = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Remove liquidity from ${pair.symbol}`,
-    purpose: "Liquidty",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
@@ -1522,8 +1508,6 @@ const unstakeAndRemoveLiquidity = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Remove liquidity from ${pair.symbol}`,
-    purpose: "Liquidity",
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
@@ -1630,8 +1614,6 @@ const unstakeLiquidity = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Unstake liquidity from ${pair.symbol}`,
-    purpose: "Liquidity",
   });
 
   // SUBMIT WITHDRAW TRANSACTION

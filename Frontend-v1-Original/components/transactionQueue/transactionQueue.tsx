@@ -1,16 +1,15 @@
 import { forwardRef } from "react";
 import { create } from "zustand";
 import {
-  Typography,
   DialogContent,
   Dialog,
   Slide,
   IconButton,
+  Typography,
 } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
-import { OpenInNew, Close, TaskAltRounded } from "@mui/icons-material";
+import { Close } from "@mui/icons-material";
 
-import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { ITransaction, TransactionStatus } from "../../stores/types/types";
 
 import Transaction from "./transaction";
@@ -18,17 +17,11 @@ import Transaction from "./transaction";
 interface TransactionStore {
   transactions: ITransaction["transactions"];
   open: boolean;
-  purpose: string | undefined;
-  action: string | undefined;
   clearTransactions: () => void;
   openQueue: () => void;
   closeQueue: () => void;
-  setPurpose: (_purpose: string) => void;
-  setAction: (_action: string) => void;
   updateTransactionQueue: (_updateQueue: {
     transactions: ITransaction["transactions"];
-    action: string;
-    purpose: string;
   }) => void;
   addTransactions: (_transaction: ITransaction["transactions"]) => void;
   updatePendingTransaction: (
@@ -62,8 +55,6 @@ interface TransactionStore {
 export const useTransactionStore = create<TransactionStore>()((set, get) => ({
   transactions: [],
   open: false,
-  purpose: undefined,
-  action: undefined,
   clearTransactions: () => {
     set(() => ({
       transactions: [],
@@ -79,20 +70,8 @@ export const useTransactionStore = create<TransactionStore>()((set, get) => ({
       open: false,
     });
   },
-  setAction: (action) => {
-    set({
-      action,
-    });
-  },
-  setPurpose: (purpose) => {
-    set({
-      purpose,
-    });
-  },
   updateTransactionQueue: (updateParams) => {
     get().addTransactions(updateParams.transactions);
-    get().setPurpose(updateParams.purpose);
-    get().setAction(updateParams.action);
     get().openQueue();
   },
   addTransactions: (_transactions) => {
@@ -166,14 +145,14 @@ const Transition = forwardRef(function Transition(
 });
 
 export default function TransactionQueue() {
-  const { open, closeQueue, transactions, action, purpose } =
+  const { open, closeQueue, transactions, clearTransactions } =
     useTransactionStore();
 
   const fullScreen = window.innerWidth < 576;
 
   return (
     <Dialog
-      className="m-auto max-w-[640px] text-center"
+      className="m-auto max-w-[640px]"
       open={open}
       onClose={() => closeQueue()}
       fullWidth={true}
@@ -188,64 +167,24 @@ export default function TransactionQueue() {
         >
           <Close />
         </IconButton>
-        {transactions.filter((tx) => {
-          return ["DONE", "CONFIRMED"].includes(tx.status);
-        }).length !== transactions.length && (
-          <div className="space-y-3">
-            <Typography className="block w-full text-center text-2xl">
-              Transactions
-            </Typography>
-            <Typography className="block w-full text-center text-xl">
-              {purpose ? purpose : "Pending Transactions"}
-            </Typography>
-            <div className="mb-3 rounded-xl border border-secondaryGray bg-primaryBg p-6">
-              {transactions &&
-                transactions.map((tx, idx) => {
-                  return <Transaction transaction={tx} key={`${tx}${idx}`} />;
-                })}
-            </div>
+        <div className="flex flex-col items-start gap-3">
+          <div className="block w-full text-2xl">Recent Transactions</div>
+          <button
+            onClick={() => clearTransactions()}
+            className="underline hover:no-underline"
+          >
+            Clear all
+          </button>
+          <div className="mb-3 w-full divide-y rounded-xl border border-secondaryGray bg-primaryBg p-6">
+            {transactions.length > 0 ? (
+              transactions.map((tx, idx) => {
+                return <Transaction transaction={tx} key={`${tx}${idx}`} />;
+              })
+            ) : (
+              <Typography>Your transactions will appear here</Typography>
+            )}
           </div>
-        )}
-        {transactions.filter((tx) => {
-          return ["DONE", "CONFIRMED"].includes(tx.status);
-        }).length === transactions.length && (
-          <div className="m-auto max-w-[400px] pb-5 text-center">
-            <div className="relative my-10 flex items-center justify-center">
-              <span className="flex h-32 w-32 items-center justify-center rounded-full bg-[rgb(6,211,215)]/10"></span>
-              <TaskAltRounded className="absolute top-1/2 left-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-[rgb(6,211,215)]" />
-            </div>
-            <Typography className="mt-5 mr-0 mb-2 ml-0 py-0 px-10 text-center text-xl font-bold">
-              {action ? action : "Transaction Successful!"}
-            </Typography>
-            <Typography className="mb-10 py-0 px-10 text-center text-secondaryGray ">
-              Transaction has been confirmed by the blockchain.
-            </Typography>
-            {transactions.length > 0 &&
-              transactions
-                .filter((tx) => {
-                  return tx.txHash != null;
-                })
-                .map((tx, idx) => {
-                  return (
-                    <Typography
-                      className="mx-auto mt-2 mb-5 bg-none text-sm"
-                      key={`tx_key_${idx}`}
-                    >
-                      <a
-                        href={`${ETHERSCAN_URL}tx/${tx?.txHash}`}
-                        target="_blank"
-                        className="text-cantoGreen underline hover:text-white hover:no-underline"
-                      >
-                        {tx && tx.description
-                          ? tx.description
-                          : "View in Explorer"}{" "}
-                        <OpenInNew className="-mb-1 ml-1 text-base" />
-                      </a>
-                    </Typography>
-                  );
-                })}
-          </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );

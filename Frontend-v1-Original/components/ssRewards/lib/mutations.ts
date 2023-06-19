@@ -126,8 +126,6 @@ const claimBribes = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Claim bribes for ${pair.token0.symbol}/${pair.token1.symbol}`,
-    purpose: "Claim Bribes",
   });
 
   let targetBribeContractAddress = pair.gauge.x_wrapped_bribe_address;
@@ -180,8 +178,6 @@ const claimRewards = async (
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Claim rewards for ${pair.token0.symbol}/${pair.token1.symbol}`,
-    purpose: "Claim Rewards",
   });
 
   const targetReward =
@@ -224,8 +220,6 @@ const claimVeDist = async (account: Address | undefined, tokenID: string) => {
         status: TransactionStatus.WAITING,
       },
     ],
-    action: `Claim distribution for NFT #${tokenID}`,
-    purpose: "Claim Distribution",
   });
 
   const writeClaim = async () => {
@@ -382,8 +376,6 @@ const claimAllRewards = async (
 
   useTransactionStore.getState().updateTransactionQueue({
     transactions: sendOBJ.transactions,
-    action: sendOBJ.title,
-    purpose: "Claim",
   });
 
   if (xxBribePairs.length > 0) {
