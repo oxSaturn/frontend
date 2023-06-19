@@ -40,7 +40,7 @@ import {
   isValidInput,
 } from "./lib/useAmountToPay";
 
-const OPTION_TOKEN_ADDRESS = "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621";
+const OPTION_TOKEN_ADDRESS = "0xFc1C15E43abAeAB86571582D2A36BEB32324a1a8";
 
 export function Redeem() {
   const { oFlow, WPLS, activeInput, setActiveInput, setOFlow, setWpls } =
@@ -67,6 +67,7 @@ export function Redeem() {
     isFetching: isFetchingDurationForDiscount,
   } = useOAggGetLockDurationForLpDiscount({
     args: [BigInt(100 - lpDiscount)],
+    cacheTime: 0,
     select(data) {
       return Number(data);
     },
@@ -185,8 +186,8 @@ export function Redeem() {
         ? parseEther(maxPaymentWpls as `${number}`)
         : 0n,
       address!,
-      BigInt(now + 1e3 * 60 * 5),
       BigInt(100 - lpDiscount),
+      BigInt(now + 1e3 * 60 * 5),
     ],
     enabled:
       !!address &&
