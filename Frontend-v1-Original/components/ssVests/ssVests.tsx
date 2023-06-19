@@ -1,66 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
-import { useAccount } from "wagmi";
 import { Typography } from "@mui/material";
 
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
-import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+import { useGovToken, useVeToken, useVestNfts } from "../../lib/global/queries";
 
 import PartnersVests from "./partnersVests";
 import VestsTable from "./ssVestsTable";
 
 export default function Vests() {
-  const [, updateState] = useState<{}>();
-  const forceUpdate = useCallback(() => updateState({}), []);
-
-  const [vestNFTs, setVestNFTs] = useState<VestNFT[]>([]);
-  const [govToken, setGovToken] = useState<GovToken | null>(null);
-  const [veToken, setVeToken] = useState<VeToken | null>(null);
-
-  const { address } = useAccount();
-
-  useEffect(() => {
-    const ssUpdated = async () => {
-      setGovToken(stores.stableSwapStore.getStore("govToken"));
-      setVeToken(stores.stableSwapStore.getStore("veToken"));
-    };
-
-    ssUpdated();
-
-    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (address && govToken && veToken)
-      stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
-  }, [address, govToken, veToken]);
-
-  useEffect(() => {
-    const vestNFTsReturned = (nfts: VestNFT[]) => {
-      setVestNFTs(nfts);
-      forceUpdate();
-    };
-
-    const resetVestReturned = () => {
-      stores.dispatcher.dispatch({ type: ACTIONS.GET_VEST_NFTS, content: {} });
-    };
-
-    stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, vestNFTsReturned);
-    stores.emitter.on(ACTIONS.RESET_VEST_RETURNED, resetVestReturned);
-    return () => {
-      stores.emitter.removeListener(
-        ACTIONS.VEST_NFTS_RETURNED,
-        vestNFTsReturned
-      );
-      stores.emitter.removeListener(
-        ACTIONS.RESET_VEST_RETURNED,
-        resetVestReturned
-      );
-    };
-  }, [forceUpdate]);
+  const { data: govToken } = useGovToken();
+  const { data: veToken } = useVeToken();
+  const { data: vestNFTs } = useVestNfts();
 
   return (
     <div className="m-auto mb-5 flex w-[calc(100%-40px)] max-w-[1400px] flex-col items-end p-0 pt-20 pb-2 xl:mb-14 xl:w-[calc(100%-180px)] xl:pt-0">

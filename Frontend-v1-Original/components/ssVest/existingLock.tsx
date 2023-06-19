@@ -18,8 +18,8 @@ export default function ExistingLock({
   veToken,
 }: {
   nft: VestNFT;
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const [futureNFT, setFutureNFT] = useState<VestNFT | null>(null);
 

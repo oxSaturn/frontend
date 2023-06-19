@@ -1,22 +1,18 @@
 import { useAccount, useNetwork } from "wagmi";
-import { useQuery } from "@tanstack/react-query";
 import { Button, Typography } from "@mui/material";
 import {
   ConnectButton as RainbowKitConnectButton,
   useAccountModal,
 } from "@rainbow-me/rainbowkit";
 
-import stores from "../../stores";
+import { useDomain } from "./lib/queries";
 
 export function ConnectButton() {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { openAccountModal } = useAccountModal();
 
-  const { data: domain } = useQuery({
-    queryKey: ["domain", address],
-    queryFn: () => stores.helper.resolveUnstoppableDomain(address),
-  });
+  const { data: domain } = useDomain(address);
 
   return address && !chain?.unsupported && domain ? (
     <Button

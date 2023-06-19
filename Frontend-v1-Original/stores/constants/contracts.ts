@@ -63,4 +63,6 @@ export const STABLE_TOKEN_ADDRESS =
 
 export const MSIG_ADDRESS = "0xa3082df7a11071db5ed0e02d48bca5f471ddbaf4"; // pulse
 
+export const OPTION_TOKEN = "0x9f9A1Aa08910867F38359F4287865c4A1162C202";
+
 //LFG

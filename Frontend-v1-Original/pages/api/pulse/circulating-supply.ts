@@ -129,7 +129,7 @@ export default async function handler(
       args: [gaugeAddress],
     })),
   });
-  const gaugeBalancesSum = gaugeBalances.reduce(
+  const gaugeBalancesSum = (gaugeBalances as bigint[]).reduce(
     (acc, balance) => acc + balance,
     0n
   );

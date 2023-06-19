@@ -16,87 +16,41 @@ import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import stores from "../../stores";
-import {
-  ACTIONS,
-  ETHERSCAN_URL,
-  NATIVE_TOKEN,
-} from "../../stores/constants/constants";
-import { BaseAsset, Gauge, hasGauge } from "../../stores/types/types";
+import { ETHERSCAN_URL } from "../../stores/constants/constants";
+import { BaseAsset, Gauge } from "../../stores/types/types";
+import { useRemoveLocalAsset } from "../../lib/global/mutations";
 
+import { useBaseAssetWithInfoNoNative, useGauges } from "./queries";
+import { useCreateBribe } from "./mutations";
 import classes from "./ssBribeCreate.module.css";
 
 export default function BribeCreate() {
   const router = useRouter();
-  const [createLoading, setCreateLoading] = useState(false);
 
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
   const [asset, setAsset] = useState<BaseAsset | null>(null);
-  const [assetOptions, setAssetOptions] = useState<BaseAsset[]>([]);
   const [gauge, setGauge] = useState<Gauge | null>(null);
-  const [gaugeOptions, setGaugeOptions] = useState<Gauge[]>([]);
 
-  const ssUpdated = async () => {
-    const storeAssetOptions = stores.stableSwapStore.getStore("baseAssets");
-    let filteredStoreAssetOptions = storeAssetOptions.filter((option) => {
-      return option.address !== NATIVE_TOKEN.address;
-    });
-    const storePairs = stores.stableSwapStore.getStore("pairs");
-    setAssetOptions(filteredStoreAssetOptions);
+  const { mutate: createBribe, createLoading } = useCreateBribe();
 
-    const filteredPairs = storePairs
-      .filter(hasGauge)
-      .filter((gauge) => gauge.isAliveGauge);
-
-    setGaugeOptions(filteredPairs);
-
-    if (filteredStoreAssetOptions.length > 0 && asset == null) {
-      setAsset(filteredStoreAssetOptions[0]);
-    }
-
-    if (filteredPairs.length > 0 && gauge == null) {
-      const noteFlowPair = filteredPairs.filter((pair) => {
-        return pair.symbol === "vAMM-NOTE/FLOW";
+  const { data: gaugeOptions } = useGauges();
+  useEffect(() => {
+    if (gaugeOptions && gaugeOptions.length > 0 && gauge == null) {
+      const noteFlowPair = gaugeOptions.filter((gauge) => {
+        return gauge.symbol === "vAMM-NOTE/FLOW";
       });
-      setGauge(noteFlowPair[0] ?? filteredPairs[0]);
+      setGauge(noteFlowPair[0] ?? gaugeOptions[0]);
     }
-  };
+  }, [gaugeOptions, gauge]);
+
+  const { data: assetOptions } = useBaseAssetWithInfoNoNative();
 
   useEffect(() => {
-    const createReturned = () => {
-      setCreateLoading(false);
-      setAmount("");
-
-      onBack();
-    };
-
-    const errorReturned = () => {
-      setCreateLoading(false);
-    };
-
-    const assetsUpdated = () => {
-      const baseAsset = stores.stableSwapStore.getStore("baseAssets");
-      let filteredStoreAssetOptions = baseAsset.filter((option) => {
-        return option.address !== NATIVE_TOKEN.address;
-      });
-      setAssetOptions(filteredStoreAssetOptions);
-    };
-
-    stores.emitter.on(ACTIONS.UPDATED, ssUpdated);
-    stores.emitter.on(ACTIONS.BRIBE_CREATED, createReturned);
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
-
-    ssUpdated();
-
-    return () => {
-      stores.emitter.removeListener(ACTIONS.UPDATED, ssUpdated);
-      stores.emitter.removeListener(ACTIONS.BRIBE_CREATED, createReturned);
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(ACTIONS.BASE_ASSETS_UPDATED, assetsUpdated);
-    };
-  }, []);
+    if (assetOptions && assetOptions.length > 0 && asset == null) {
+      setAsset(assetOptions[0]);
+    }
+  }, [assetOptions, asset]);
 
   const setAmountPercent = (input: string, percent: number) => {
     setAmountError(false);
@@ -140,14 +94,10 @@ export default function BribeCreate() {
     }
 
     if (!error) {
-      setCreateLoading(true);
-      stores.dispatcher.dispatch({
-        type: ACTIONS.CREATE_BRIBE,
-        content: {
-          asset: asset,
-          amount: amount,
-          gauge: gauge,
-        },
+      createBribe({
+        asset,
+        amount,
+        gauge,
       });
     }
   };
@@ -171,7 +121,7 @@ export default function BribeCreate() {
     amountError: string | false,
     amountChanged: (_event: React.ChangeEvent<HTMLInputElement>) => void,
     assetValue: BaseAsset | null,
-    assetOptions: BaseAsset[],
+    assetOptions: BaseAsset[] | undefined,
     onAssetSelect: (_value: BaseAsset) => void
   ) => {
     return (
@@ -308,7 +258,7 @@ function GaugeSelect({
   onSelect,
 }: {
   value: Gauge | null;
-  gaugeOptions: Gauge[];
+  gaugeOptions: Gauge[] | undefined;
   onSelect: (_value: Gauge) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -335,7 +285,7 @@ function GaugeSelect({
   };
 
   const filteredGaugeOptions = useMemo(() => {
-    const go = gaugeOptions.filter((gauge) => {
+    const go = gaugeOptions?.filter((gauge) => {
       if (search && search !== "") {
         return [gauge.address, gauge.token0.symbol, gauge.token1.symbol].some(
           (s) => s.toLowerCase().includes(search.trim().toLowerCase())
@@ -409,7 +359,7 @@ function GaugeSelect({
             }}
           />
           <div className="mt-3 flex w-full flex-col md:min-w-[512px]">
-            {filteredGaugeOptions.map((option) => {
+            {filteredGaugeOptions?.map((option) => {
               return (
                 <MenuItem
                   key={option.address}
@@ -478,12 +428,14 @@ function AssetSelect({
   onSelect,
 }: {
   value: BaseAsset | null;
-  assetOptions: BaseAsset[];
+  assetOptions: BaseAsset[] | undefined;
   onSelect: (_value: BaseAsset) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [manageLocal, setManageLocal] = useState(false);
+
+  const { mutate: deleteOption } = useRemoveLocalAsset();
 
   const openSearch = () => {
     setOpen(true);
@@ -491,7 +443,7 @@ function AssetSelect({
   };
 
   const filteredAssetOptions = useMemo(() => {
-    const ao = assetOptions.filter((asset) => {
+    const ao = assetOptions?.filter((asset) => {
       if (search && search !== "") {
         return [asset.address, asset.symbol, asset.name].some((s) =>
           s.toLowerCase().includes(search.trim().toLowerCase())
@@ -523,10 +475,6 @@ function AssetSelect({
 
   const toggleLocal = () => {
     setManageLocal(!manageLocal);
-  };
-
-  const deleteOption = (token: BaseAsset) => {
-    stores.stableSwapStore.removeBaseAsset(token);
   };
 
   const viewOption = (token: BaseAsset) => {

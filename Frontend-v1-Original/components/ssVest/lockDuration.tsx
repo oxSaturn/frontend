@@ -12,11 +12,10 @@ import { useRouter } from "next/router";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 import { VestNFT } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
+import { useIncreaseVestDuration } from "./lib/mutations";
 
 export type LockOption = "6.5 weeks" | "13 weeks" | "19.5 weeks" | "26 weeks";
 export const lockOptions: Record<LockOption, number> = {
@@ -46,7 +45,6 @@ export default function LockDuration({
   updateLockDuration: (_arg: string) => void;
 }) {
   const inputEl = useRef<HTMLInputElement | null>(null);
-  const [lockLoading, setLockLoading] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
     dayjs().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
@@ -56,25 +54,10 @@ export default function LockDuration({
 
   const router = useRouter();
 
-  useEffect(() => {
-    const lockReturned = () => {
-      setLockLoading(false);
+  const { mutate: increateVestDuration, isLoading: lockLoading } =
+    useIncreaseVestDuration(() => {
       router.push("/vest");
-    };
-    const errorReturned = () => {
-      setLockLoading(false);
-    };
-
-    stores.emitter.on(ACTIONS.ERROR, errorReturned);
-    stores.emitter.on(ACTIONS.INCREASE_VEST_DURATION_RETURNED, lockReturned);
-    return () => {
-      stores.emitter.removeListener(ACTIONS.ERROR, errorReturned);
-      stores.emitter.removeListener(
-        ACTIONS.INCREASE_VEST_DURATION_RETURNED,
-        lockReturned
-      );
-    };
-  }, [router]);
+    });
 
   useEffect(() => {
     if (nft && nft.lockEnds) {
@@ -101,15 +84,13 @@ export default function LockDuration({
   };
 
   const onLock = () => {
-    setLockLoading(true);
-
     const now = dayjs();
     const expiry = dayjs(selectedDate).add(1, "days");
     const secondsToExpire = expiry.diff(now, "seconds");
 
-    stores.dispatcher.dispatch({
-      type: ACTIONS.INCREASE_VEST_DURATION,
-      content: { unlockTime: secondsToExpire, tokenID: nft.id },
+    increateVestDuration({
+      unlockTime: secondsToExpire.toString(),
+      tokenID: nft.id,
     });
   };
 

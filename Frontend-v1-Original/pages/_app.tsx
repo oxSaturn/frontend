@@ -16,9 +16,7 @@ import * as Toast from "@radix-ui/react-toast";
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
 import Layout from "../components/layout/layout";
-import stores from "../stores/index";
 import { config, chains } from "../stores/connectors/viem";
-import { ACTIONS } from "../stores/constants/constants";
 import createEmotionCache from "../utils/createEmotionCache";
 
 import Configure from "./configure";
@@ -51,23 +49,10 @@ export default function MyApp({
   pageProps,
 }: MyAppProps) {
   const [themeConfig] = useState(darkTheme);
-  const [accountConfigured, setAccountConfigured] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const accountConfigureReturned = () => {
-    setAccountConfigured(true);
-  };
-
-  useEffect(function () {
-    stores.emitter.on(ACTIONS.ACCOUNT_CONFIGURED, accountConfigureReturned);
-
-    stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE });
-
-    return () => {
-      stores.emitter.removeListener(
-        ACTIONS.ACCOUNT_CONFIGURED,
-        accountConfigureReturned
-      );
-    };
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   return (
@@ -93,7 +78,7 @@ export default function MyApp({
                   overlayBlur: "small",
                 })}
               >
-                {accountConfigured ? (
+                {mounted ? (
                   <Layout>
                     <Component {...pageProps} />
                   </Layout>

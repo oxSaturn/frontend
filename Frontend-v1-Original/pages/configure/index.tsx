@@ -5,8 +5,8 @@ function Configure() {
     <div className="w-100 h-100 relative flex min-h-screen flex-col items-center justify-center bg-none">
       <Image
         src="/images/logo-icon-configure.png"
-        width="100%"
-        height="100%"
+        width="100"
+        height="100"
         alt="Velocimeter logo"
       />
       <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-deepPurple" />

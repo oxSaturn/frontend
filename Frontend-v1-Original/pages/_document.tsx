@@ -65,10 +65,8 @@ MyDocument.getInitialProps = async (ctx: DocumentContext) => {
 
   ctx.renderPage = () =>
     originalRenderPage({
-      // @ts-expect-error router types are not correct
       enhanceApp: (App: React.ComponentType<ComponentProps>) =>
         function EnhanceApp(props) {
-          // @ts-expect-error router types are not correct
           return <App emotionCache={cache} {...props} />;
         },
     });
