@@ -1,6 +1,12 @@
 import { forwardRef } from "react";
 import { create } from "zustand";
-import { DialogContent, Dialog, Slide, IconButton } from "@mui/material";
+import {
+  DialogContent,
+  Dialog,
+  Slide,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
 import { Close } from "@mui/icons-material";
 
@@ -162,18 +168,21 @@ export default function TransactionQueue() {
           <Close />
         </IconButton>
         <div className="flex flex-col items-start gap-3">
-          <div className="block w-full text-2xl">Transactions</div>
+          <div className="block w-full text-2xl">Recent Transactions</div>
           <button
             onClick={() => clearTransactions()}
             className="underline hover:no-underline"
           >
             Clear all
           </button>
-          <div className="mb-3 rounded-xl border border-secondaryGray bg-primaryBg p-6">
-            {transactions &&
+          <div className="mb-3 w-full divide-y rounded-xl border border-secondaryGray bg-primaryBg p-6">
+            {transactions.length > 0 ? (
               transactions.map((tx, idx) => {
                 return <Transaction transaction={tx} key={`${tx}${idx}`} />;
-              })}
+              })
+            ) : (
+              <Typography>Your transactions will appear here</Typography>
+            )}
           </div>
         </div>
       </DialogContent>

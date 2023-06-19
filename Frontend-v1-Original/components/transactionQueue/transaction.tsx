@@ -65,7 +65,7 @@ export default function Transaction({
 
   return (
     <div
-      className="cursor-pointer border-b border-b-secondaryGray p-3 hover:bg-[rgba(0,0,0,0.2)]"
+      className="cursor-pointer p-3 hover:bg-[rgba(0,0,0,0.2)]"
       key={transaction.uuid}
     >
       <div
