@@ -1,3 +1,5 @@
+// @ts-nocheck legacy
+/* eslint-disable */
 import EventEmitter from "events";
 
 import moment from "moment";

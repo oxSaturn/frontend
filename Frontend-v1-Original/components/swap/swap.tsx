@@ -40,7 +40,7 @@ function Swap() {
   const [toAmountError] = useState<string | false>(false);
   const [toAssetValue, setToAssetValue] = useState<BaseAsset | null>(null);
 
-  const [slippage, setSlippage] = useState("2");
+  const [slippage, setSlippage] = useState("0.5");
 
   const { address } = useAccount();
   const { data: balanceFrom } = useBalance({
