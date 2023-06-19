@@ -480,6 +480,18 @@ export const getPairsWithGauges = async (
         functionName: "weights",
         args: [pair.address],
       },
+      {
+        address: pair.gauge.address,
+        abi: CONTRACTS.GAUGE_ABI,
+        functionName: "left",
+        args: [CONTRACTS.GOV_TOKEN_ADDRESS],
+      },
+      {
+        address: pair.gauge.address,
+        abi: CONTRACTS.GAUGE_ABI,
+        functionName: "left",
+        args: [CONTRACTS.OPTION_TOKEN],
+      },
     ] as const;
   });
   const gaugesCallsChunks = chunkArray(gaugesCalls);
@@ -491,10 +503,8 @@ export const getPairsWithGauges = async (
     if (hasGauge(pair)) {
       const isAliveGauge = gaugesAliveData[outerIndex];
 
-      const [totalSupply, gaugeBalance, gaugeWeight] = gaugesData.slice(
-        outerIndex * 3,
-        outerIndex * 3 + 3
-      );
+      const [totalSupply, gaugeBalance, gaugeWeight, flowLeft, optionLeft] =
+        gaugesData.slice(outerIndex * 5, outerIndex * 5 + 5);
 
       const bribes = pair.gauge.bribes.map((bribe) => {
         bribe.rewardAmount = bribe.rewardAmmount;
@@ -544,6 +554,8 @@ export const getPairsWithGauges = async (
       pair.gaugebribes = bribes;
       pair.isAliveGauge = isAliveGauge;
       if (isAliveGauge === false) pair.apr = 0;
+      if (flowLeft === 0n) pair.apr = 0;
+      if (optionLeft === 0n) pair.oblotr_apr = 0;
 
       outerIndex++;
     }
