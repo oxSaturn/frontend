@@ -42,6 +42,7 @@ import {
 } from "./lib/useAmountToPay";
 import { useTokenData } from "./lib/useTokenData";
 import { useNow } from "./lib/useNow";
+import { useDiscountsData } from "./lib/useDiscountsData";
 
 const OPTION_TOKEN_ADDRESS = PRO_OPTIONS.oAGG.token;
 
@@ -73,6 +74,7 @@ export function Redeem() {
 
   const { optionTokenSymbol, paymentTokenSymbol, underlyingTokenSymbol } =
     useTokenData();
+  const { maxLpDiscount, minLpDiscount } = useDiscountsData();
 
   const {
     data: durationForDiscount,
@@ -381,6 +383,9 @@ export function Redeem() {
           <Slider
             value={[lpDiscount]}
             onValueChange={(e) => setLpDiscount(e[0])}
+            min={minLpDiscount}
+            max={maxLpDiscount}
+            className="relative flex h-5 touch-none select-none items-center"
           />
           {address ? (
             chain?.unsupported ? (

@@ -6,11 +6,7 @@ export const Slider = forwardRef(function Slider(
   forwardedRef: Ref<HTMLSpanElement>
 ) {
   return (
-    <SliderPrimitive.Root
-      {...props}
-      ref={forwardedRef}
-      className="relative flex h-5 w-[200px] touch-none select-none items-center"
-    >
+    <SliderPrimitive.Root {...props} ref={forwardedRef}>
       <SliderPrimitive.Track className="relative h-[3px] grow rounded-full bg-black">
         <SliderPrimitive.Range className="absolute h-full rounded-full bg-white" />
       </SliderPrimitive.Track>
