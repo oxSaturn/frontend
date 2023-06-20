@@ -29,6 +29,7 @@ import {
   RestartAlt,
   Merge,
   TrendingUp,
+  Send,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -511,10 +512,25 @@ function MyTableRow(props: {
        */}
           <MenuItem
             disableRipple
-            disabled={row.votedInCurrentEpoch || row.reset === false}
+            disabled={
+              row.votedInCurrentEpoch || row.reset === false
+            }
           >
             <Link href={`/vest/${row.id}/merge`} className="flex items-center">
-              <Merge className="mr-2" /> <span>Merge</span>
+              <Merge className="mr-2" />
+              <span>Merge</span>
+            </Link>
+          </MenuItem>
+          <MenuItem
+            disableRipple
+            disabled={row.votedInCurrentEpoch || row.reset === false}
+          >
+            <Link
+              href={`/vest/${row.id}/transfer`}
+              className="flex items-center"
+            >
+              <Send className="mr-2" />
+              <span>Transfer</span>
             </Link>
           </MenuItem>
           <MenuItem disableRipple onClick={() => onView(row)}>
