@@ -41,16 +41,23 @@ import {
   isValidInput,
 } from "./lib/useAmountToPay";
 import { useTokenData } from "./lib/useTokenData";
+import { useNow } from "./lib/useNow";
 
 const OPTION_TOKEN_ADDRESS = PRO_OPTIONS.oAGG.token;
 
 export function Redeem() {
-  const { oFlow, WPLS, activeInput, setActiveInput, setOFlow, setWpls } =
-    useInputs();
-  const maxPaymentWpls = (parseFloat(WPLS) * 1.01).toString();
+  const now = useNow();
+  const {
+    option,
+    payment,
+    activeInput,
+    setActiveInput,
+    setOption,
+    setPayment,
+  } = useInputs();
+  const maxPaymentWpls = (parseFloat(payment) * 1.01).toString();
 
-  const [lpDiscount, setLpDiscount] = useState(20);
-  const [now] = useState(Date.now());
+  const [lpDiscount, setLpDiscount] = useState(80);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastHash, setToastHash] = useState("");
@@ -81,23 +88,22 @@ export function Redeem() {
   const { days, hours, minutes } = useTimer(durationForDiscount ?? 0);
 
   const {
-    data: WplsBalance,
-    isFetching: isFetchingWplsBalance,
-    refetch: refetchWpls,
+    data: paymentBalance,
+    isFetching: isFetchingPaymentBalance,
+    refetch: refetchPaymentBalance,
   } = useBalance({
     address,
     token: "0x9f823d534954fc119e31257b3ddba0db9e2ff4ed",
   });
 
-  const { data: oFlowBalance, refetch: refetchOFlowBalance } = useOAggBalanceOf(
-    {
+  const { data: optionBalance, refetch: refetchOptionBalance } =
+    useOAggBalanceOf({
       args: [address!],
       enabled: !!address,
       select: (data) => formatEther(data),
-    }
-  );
+    });
 
-  const { data: blotrPrice } = useOAggGetTimeWeightedAveragePrice({
+  const { data: optionPrice } = useOAggGetTimeWeightedAveragePrice({
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
@@ -123,8 +129,8 @@ export function Redeem() {
     enabled: !!address,
     select: (allowance) => {
       const formattedAllowance = formatEther(allowance);
-      if (!WPLS) return;
-      return parseFloat(formattedAllowance) < parseFloat(WPLS);
+      if (!payment) return;
+      return parseFloat(formattedAllowance) < parseFloat(payment);
     },
   });
 
@@ -132,7 +138,7 @@ export function Redeem() {
     address: "0x9f823d534954fc119e31257b3ddba0db9e2ff4ed",
     args: [
       OPTION_TOKEN_ADDRESS,
-      isValidInput(WPLS) && isValidInput(maxPaymentWpls)
+      isValidInput(payment) && isValidInput(maxPaymentWpls)
         ? parseEther(maxPaymentWpls as `${number}`)
         : 0n,
     ],
@@ -140,7 +146,7 @@ export function Redeem() {
       !!address &&
       isApprovalNeeded &&
       !isFetchingAmounts &&
-      isValidInput(WPLS) &&
+      isValidInput(payment) &&
       isValidInput(maxPaymentWpls),
   });
 
@@ -167,10 +173,10 @@ export function Redeem() {
     },
   });
 
-  const { config: exerciseBlotrConfig } = usePrepareOAggExercise({
+  const { config: exerciseOptionConfig } = usePrepareOAggExercise({
     args: [
-      isValidInput(oFlow) ? parseEther(oFlow as `${number}`) : 0n,
-      isValidInput(WPLS) && isValidInput(maxPaymentWpls)
+      isValidInput(option) ? parseEther(option as `${number}`) : 0n,
+      isValidInput(payment) && isValidInput(maxPaymentWpls)
         ? parseEther(maxPaymentWpls as `${number}`)
         : 0n,
       address!,
@@ -178,16 +184,16 @@ export function Redeem() {
     ],
     enabled:
       !!address &&
-      isValidInput(WPLS) &&
+      isValidInput(payment) &&
       isValidInput(maxPaymentWpls) &&
-      isValidInput(oFlow) &&
+      isValidInput(option) &&
       !isApprovalNeeded,
   });
 
-  const { config: exerciseLPBlotrConfig } = usePrepareOAggExerciseLp({
+  const { config: exerciseLPOptionConfig } = usePrepareOAggExerciseLp({
     args: [
-      isValidInput(oFlow) ? parseEther(oFlow as `${number}`) : 0n,
-      isValidInput(WPLS) && isValidInput(maxPaymentWpls)
+      isValidInput(option) ? parseEther(option as `${number}`) : 0n,
+      isValidInput(payment) && isValidInput(maxPaymentWpls)
         ? parseEther(maxPaymentWpls as `${number}`)
         : 0n,
       address!,
@@ -196,9 +202,9 @@ export function Redeem() {
     ],
     enabled:
       !!address &&
-      isValidInput(WPLS) &&
+      isValidInput(payment) &&
       isValidInput(maxPaymentWpls) &&
-      isValidInput(oFlow) &&
+      isValidInput(option) &&
       !isApprovalNeeded,
   });
 
@@ -207,7 +213,7 @@ export function Redeem() {
     data: txResponse,
     isLoading: writingExercise,
   } = useOAggExercise({
-    ...exerciseBlotrConfig,
+    ...exerciseOptionConfig,
     onSuccess(data) {
       setToastMessage("Transaction submitted!");
       setToastOpen(true);
@@ -220,7 +226,7 @@ export function Redeem() {
     data: txResponseLP,
     isLoading: writingExerciseLP,
   } = useOAggExerciseLp({
-    ...exerciseLPBlotrConfig,
+    ...exerciseLPOptionConfig,
     onSuccess(data) {
       setToastMessage("Transaction submitted!");
       setToastOpen(true);
@@ -234,42 +240,43 @@ export function Redeem() {
       setToastMessage("Transaction confirmed!");
       setToastOpen(true);
       setToastHash(data.transactionHash);
-      refetchWpls();
-      refetchOFlowBalance();
-      setOFlow("");
-      setWpls("");
+      refetchPaymentBalance();
+      refetchOptionBalance();
+      setOption("");
+      setPayment("");
     },
   });
 
   const setMax = (input: INPUT_TYPE) => {
-    if (input === INPUT.OFLOW) {
-      if (!oFlowBalance || parseFloat(oFlowBalance) === 0) return;
-      setActiveInput(INPUT.OFLOW);
-      return setOFlow(oFlowBalance);
-    } else if (input === INPUT.WPLS) {
-      if (!WplsBalance || parseFloat(WplsBalance.formatted) === 0) return;
-      setActiveInput(INPUT.WPLS);
-      return setWpls(WplsBalance.formatted);
+    if (input === INPUT.OPTION) {
+      if (!optionBalance || parseFloat(optionBalance) === 0) return;
+      setActiveInput(INPUT.OPTION);
+      return setOption(optionBalance);
+    } else if (input === INPUT.PAYMENT) {
+      if (!paymentBalance || parseFloat(paymentBalance.formatted) === 0) return;
+      setActiveInput(INPUT.PAYMENT);
+      return setPayment(paymentBalance.formatted);
     }
   };
 
-  const onOFlowInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setActiveInput(INPUT.OFLOW);
-    setOFlow(e.target.value);
-    if (e.target.value === "") setWpls("");
+  const onOptionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setActiveInput(INPUT.OPTION);
+    setOption(e.target.value);
+    if (e.target.value === "") setPayment("");
   };
 
-  const onWplsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setActiveInput(INPUT.WPLS);
-    setWpls(e.target.value);
-    if (e.target.value === "") setOFlow("");
+  const onPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setActiveInput(INPUT.PAYMENT);
+    setPayment(e.target.value);
+    if (e.target.value === "") setOption("");
   };
 
-  const areInputsEmpty = oFlow === "";
+  const areInputsEmpty = option === "";
   const insufficientOFlow =
-    oFlowBalance && parseFloat(oFlow) > parseFloat(oFlowBalance);
+    optionBalance && parseFloat(option) > parseFloat(optionBalance);
   const insufficientWpls =
-    WplsBalance && parseFloat(WPLS) > parseFloat(WplsBalance?.formatted);
+    paymentBalance &&
+    parseFloat(payment) > parseFloat(paymentBalance?.formatted);
 
   return (
     <>
@@ -277,13 +284,13 @@ export function Redeem() {
         <div className="flex items-center justify-between">
           <div>{paymentTokenSymbol} balance</div>
           <div>
-            {formatCurrency(WplsBalance?.formatted)} {paymentTokenSymbol}
+            {formatCurrency(paymentBalance?.formatted)} {paymentTokenSymbol}
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div>{optionTokenSymbol} balance</div>
           <div>
-            {formatCurrency(oFlowBalance)} {optionTokenSymbol}
+            {formatCurrency(optionBalance)} {optionTokenSymbol}
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -295,7 +302,7 @@ export function Redeem() {
         <div className="flex items-center justify-between">
           <div>{underlyingTokenSymbol} price</div>
           <div>
-            {formatCurrency(blotrPrice)} {paymentTokenSymbol}
+            {formatCurrency(optionPrice)} {paymentTokenSymbol}
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -324,17 +331,17 @@ export function Redeem() {
               } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${optionTokenSymbol}"]`}
             >
               <input
-                value={oFlow}
-                onChange={onOFlowInputChange}
+                value={option}
+                onChange={onOptionInputChange}
                 className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                  (!isValidInput(oFlow) && oFlow !== "") || insufficientOFlow
+                  (!isValidInput(option) && option !== "") || insufficientOFlow
                     ? "text-error focus:outline-error focus-visible:outline-error"
                     : "focus:outline-secondary focus-visible:outline-secondary"
                 }`}
                 placeholder={`0.00 ${optionTokenSymbol}`}
               />
             </div>
-            <button className="p-4" onClick={() => setMax(INPUT.OFLOW)}>
+            <button className="p-4" onClick={() => setMax(INPUT.OPTION)}>
               MAX
             </button>
           </div>
@@ -345,17 +352,17 @@ export function Redeem() {
               } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${paymentTokenSymbol}"]`}
             >
               <input
-                value={WPLS}
-                onChange={onWplsInputChange}
+                value={payment}
+                onChange={onPaymentInputChange}
                 className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                  (!isValidInput(WPLS) && WPLS !== "") || insufficientWpls
+                  (!isValidInput(payment) && payment !== "") || insufficientWpls
                     ? "text-error focus:outline-error focus-visible:outline-error"
                     : "focus:outline-secondary focus-visible:outline-secondary"
                 }`}
                 placeholder={`0.00 ${paymentTokenSymbol}`}
               />
             </div>
-            <button className="p-4" onClick={() => setMax(INPUT.WPLS)}>
+            <button className="p-4" onClick={() => setMax(INPUT.PAYMENT)}>
               MAX
             </button>
           </div>
@@ -366,7 +373,7 @@ export function Redeem() {
           >
             <input
               readOnly
-              value={oFlow}
+              value={option}
               className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
               placeholder={`0.00 ${underlyingTokenSymbol}`}
             />
@@ -387,11 +394,11 @@ export function Redeem() {
               <>
                 <button
                   disabled={
-                    (activeInput === INPUT.OFLOW && !isValidInput(oFlow)) ||
-                    (activeInput === INPUT.WPLS && !isValidInput(WPLS)) ||
+                    (activeInput === INPUT.OPTION && !isValidInput(option)) ||
+                    (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
                     (isApprovalNeeded ? !approve : !redeem) ||
                     isFetchingAmounts ||
-                    isFetchingWplsBalance ||
+                    isFetchingPaymentBalance ||
                     isFetchingALlowance ||
                     writingExercise ||
                     writingExerciseLP ||
@@ -418,11 +425,11 @@ export function Redeem() {
                 </button>
                 <button
                   disabled={
-                    (activeInput === INPUT.OFLOW && !isValidInput(oFlow)) ||
-                    (activeInput === INPUT.WPLS && !isValidInput(WPLS)) ||
+                    (activeInput === INPUT.OPTION && !isValidInput(option)) ||
+                    (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
                     (isApprovalNeeded ? !approve : !redeem) ||
                     isFetchingAmounts ||
-                    isFetchingWplsBalance ||
+                    isFetchingPaymentBalance ||
                     isFetchingALlowance ||
                     writingExercise ||
                     writingExerciseLP ||
@@ -467,7 +474,7 @@ export function Redeem() {
               </Tooltip.Trigger>
             </div>
             <div>
-              {formatCurrency((parseFloat(WPLS) * 1.01).toString())}{" "}
+              {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
               {paymentTokenSymbol}
             </div>
           </div>

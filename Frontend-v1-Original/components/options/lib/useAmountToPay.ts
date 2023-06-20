@@ -5,45 +5,45 @@ import { create } from "zustand";
 import { useOAggGetDiscountedPrice } from "../../../lib/wagmiGen";
 
 export const INPUT = {
-  OFLOW: "0",
-  WPLS: "1",
+  OPTION: "0",
+  PAYMENT: "1",
 } as const;
 
 export type INPUT_TYPE = (typeof INPUT)[keyof typeof INPUT];
 
 interface UseInputs {
-  oFlow: string;
-  WPLS: string;
+  option: string;
+  payment: string;
   activeInput: INPUT_TYPE;
-  setOFlow: (_oFlow: string) => void;
-  setWpls: (_WPLS: string) => void;
+  setOption: (_oFlow: string) => void;
+  setPayment: (_WPLS: string) => void;
   setActiveInput: (_activeInput: INPUT_TYPE) => void;
 }
 
 export const useInputs = create<UseInputs>((set) => ({
-  oFlow: "",
-  WPLS: "",
-  activeInput: INPUT.OFLOW,
-  setOFlow: (oFlow) => set({ oFlow }),
-  setWpls: (WPLS) => set({ WPLS }),
+  option: "",
+  payment: "",
+  activeInput: INPUT.OPTION,
+  setOption: (option) => set({ option }),
+  setPayment: (payment) => set({ payment }),
   setActiveInput: (activeInput) => set({ activeInput }),
 }));
 
 export function useAmountToPay() {
-  const { oFlow, WPLS, activeInput, setOFlow, setWpls } = useInputs();
-  const maxPaymentSCanto = (parseFloat(WPLS) * 1.01).toString();
+  const { option, payment, activeInput, setOption, setPayment } = useInputs();
+  const maxPaymentSCanto = (parseFloat(payment) * 1.01).toString();
 
   const { isFetching: isFetchingSCantoForOBlotr } = useOAggGetDiscountedPrice({
     chainId: pulsechain.id,
-    args: [isValidInput(oFlow) ? parseEther(oFlow as `${number}`) : 0n],
-    enabled: activeInput === INPUT.OFLOW && isValidInput(oFlow),
+    args: [isValidInput(option) ? parseEther(option as `${number}`) : 0n],
+    enabled: activeInput === INPUT.OPTION && isValidInput(option),
     onSuccess: (amountSCantoForOBlotr) => {
       if (
         amountSCantoForOBlotr &&
-        isValidInput(oFlow) &&
-        activeInput === INPUT.OFLOW
+        isValidInput(option) &&
+        activeInput === INPUT.OPTION
       ) {
-        setWpls(formatEther(amountSCantoForOBlotr));
+        setPayment(formatEther(amountSCantoForOBlotr));
       }
     },
   });
@@ -53,20 +53,20 @@ export function useAmountToPay() {
       chainId: pulsechain.id,
       args: [parseEther("1")],
       enabled:
-        activeInput === INPUT.WPLS &&
-        isValidInput(WPLS) &&
+        activeInput === INPUT.PAYMENT &&
+        isValidInput(payment) &&
         isValidInput(maxPaymentSCanto),
-      scopeKey: `oneOBlotrPrice-${INPUT.WPLS}-${WPLS}`,
+      scopeKey: `oneOBlotrPrice-${INPUT.PAYMENT}-${payment}`,
       onSuccess: (oneOBlotrPrice) => {
         if (
           oneOBlotrPrice &&
-          isValidInput(WPLS) &&
+          isValidInput(payment) &&
           isValidInput(maxPaymentSCanto) &&
-          activeInput === INPUT.WPLS
+          activeInput === INPUT.PAYMENT
         ) {
           const amountOBlotrForSCanto =
-            parseFloat(WPLS) / parseFloat(formatEther(oneOBlotrPrice));
-          setOFlow(amountOBlotrForSCanto.toString());
+            parseFloat(payment) / parseFloat(formatEther(oneOBlotrPrice));
+          setOption(amountOBlotrForSCanto.toString());
         }
       },
     });
