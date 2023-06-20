@@ -73,7 +73,7 @@ export function Redeem() {
     },
   });
 
-  const { days, hours, minutes, seconds } = useTimer(durationForDiscount ?? 0);
+  const { days, hours, minutes } = useTimer(durationForDiscount ?? 0);
 
   const {
     data: WplsBalance,
@@ -300,7 +300,7 @@ export function Redeem() {
         >
           <div>Duration for this discount</div>
           <div>
-            {days}d {hours}h {minutes}m {seconds}s
+            {days}d {hours}h {minutes}m
           </div>
         </div>
         <div className="my-5 flex flex-col gap-3">
