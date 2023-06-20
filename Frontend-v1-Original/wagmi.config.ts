@@ -3,6 +3,7 @@ import { react } from "@wagmi/cli/plugins";
 import { erc20ABI } from "wagmi";
 
 import { oAggABI, aggMaxxingABI } from "./stores/abis/abis";
+import { PRO_OPTIONS } from "./stores/constants/constants";
 
 export default defineConfig({
   out: "./lib/wagmiGen.ts",
@@ -14,14 +15,13 @@ export default defineConfig({
     {
       name: "oAGG",
       abi: oAggABI,
-      address: "0x13661E41f6AFF14DE677bbD692601bE809a14F76",
+      address: PRO_OPTIONS.oAGG.token,
     },
     {
       name: "AggMaxxing",
       abi: aggMaxxingABI,
-      address: "0xE6BcBeD3EF839D6AC4EEfacc53bF0BAc0d4Bc384",
+      address: PRO_OPTIONS.oAGG.gauge,
     },
   ],
   plugins: [react()],
 });
-

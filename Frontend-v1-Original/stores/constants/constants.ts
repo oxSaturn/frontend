@@ -64,6 +64,13 @@ const config = {
   },
 };
 
+export const PRO_OPTIONS = {
+  oAGG: {
+    token: "0x13661E41f6AFF14DE677bbD692601bE809a14F76",
+    gauge: "0xE6BcBeD3EF839D6AC4EEfacc53bF0BAc0d4Bc384",
+  },
+} as const;
+
 export const ETHERSCAN_URL = config[network].scan;
 
 export const CONTRACTS = config[network].contracts;

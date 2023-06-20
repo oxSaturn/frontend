@@ -15,6 +15,7 @@ import * as Toast from "@radix-ui/react-toast";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 import { formatCurrency } from "../../utils/utils";
+import { PRO_OPTIONS } from "../../stores/constants/constants";
 
 import {
   useOAggBalanceOf,
@@ -39,8 +40,9 @@ import {
   useInputs,
   isValidInput,
 } from "./lib/useAmountToPay";
+import { useTokenData } from "./lib/useTokenData";
 
-const OPTION_TOKEN_ADDRESS = "0x13661E41f6AFF14DE677bbD692601bE809a14F76";
+const OPTION_TOKEN_ADDRESS = PRO_OPTIONS.oAGG.token;
 
 export function Redeem() {
   const { oFlow, WPLS, activeInput, setActiveInput, setOFlow, setWpls } =
@@ -61,6 +63,9 @@ export function Redeem() {
   });
 
   const { address } = useAccount();
+
+  const { optionTokenSymbol, paymentTokenSymbol, underlyingTokenSymbol } =
+    useTokenData();
 
   const {
     data: durationForDiscount,
@@ -270,20 +275,28 @@ export function Redeem() {
     <>
       <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex items-center justify-between">
-          <div>WPLS balance</div>
-          <div>{formatCurrency(WplsBalance?.formatted)} WPLS</div>
+          <div>{paymentTokenSymbol} balance</div>
+          <div>
+            {formatCurrency(WplsBalance?.formatted)} {paymentTokenSymbol}
+          </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>oFLOW balance</div>
-          <div>{formatCurrency(oFlowBalance)} oFLOW</div>
+          <div>{optionTokenSymbol} balance</div>
+          <div>
+            {formatCurrency(oFlowBalance)} {optionTokenSymbol}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Strike price</div>
-          <div>{formatCurrency(discountedPrice)} WPLS</div>
+          <div>
+            {formatCurrency(discountedPrice)} {paymentTokenSymbol}
+          </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>FLOW price</div>
-          <div>{formatCurrency(blotrPrice)} WPLS</div>
+          <div>{underlyingTokenSymbol} price</div>
+          <div>
+            {formatCurrency(blotrPrice)} {paymentTokenSymbol}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Liquid Discount</div>
@@ -308,7 +321,7 @@ export function Redeem() {
             <div
               className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
                 areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["oFLOW"]`}
+              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${optionTokenSymbol}"]`}
             >
               <input
                 value={oFlow}
@@ -318,7 +331,7 @@ export function Redeem() {
                     ? "text-error focus:outline-error focus-visible:outline-error"
                     : "focus:outline-secondary focus-visible:outline-secondary"
                 }`}
-                placeholder="0.00 oFLOW"
+                placeholder={`0.00 ${optionTokenSymbol}`}
               />
             </div>
             <button className="p-4" onClick={() => setMax(INPUT.OFLOW)}>
@@ -329,7 +342,7 @@ export function Redeem() {
             <div
               className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
                 areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["WPLS"]`}
+              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${paymentTokenSymbol}"]`}
             >
               <input
                 value={WPLS}
@@ -339,7 +352,7 @@ export function Redeem() {
                     ? "text-error focus:outline-error focus-visible:outline-error"
                     : "focus:outline-secondary focus-visible:outline-secondary"
                 }`}
-                placeholder="0.00 WPLS"
+                placeholder={`0.00 ${paymentTokenSymbol}`}
               />
             </div>
             <button className="p-4" onClick={() => setMax(INPUT.WPLS)}>
@@ -349,13 +362,13 @@ export function Redeem() {
           <div
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["FLOW"]`}
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${underlyingTokenSymbol}"]`}
           >
             <input
               readOnly
               value={oFlow}
               className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
-              placeholder="0.00 FLOW"
+              placeholder={`0.00 ${underlyingTokenSymbol}`}
             />
           </div>
           <Slider
@@ -454,7 +467,8 @@ export function Redeem() {
               </Tooltip.Trigger>
             </div>
             <div>
-              {formatCurrency((parseFloat(WPLS) * 1.01).toString())} WPLS
+              {formatCurrency((parseFloat(WPLS) * 1.01).toString())}{" "}
+              {paymentTokenSymbol}
             </div>
           </div>
           <Tooltip.Portal>
