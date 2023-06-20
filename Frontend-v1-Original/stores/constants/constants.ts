@@ -66,8 +66,8 @@ const config = {
 
 export const PRO_OPTIONS = {
   oAGG: {
-    token: "0x13661E41f6AFF14DE677bbD692601bE809a14F76",
-    gauge: "0xE6BcBeD3EF839D6AC4EEfacc53bF0BAc0d4Bc384",
+    token: "0x29f9BF5e35Eb456b8b39580e66Aea73D5a988b04",
+    gauge: "0xD43Ca05886068D20a3757B8bD4380a635911Dbf0",
   },
 } as const;
 
