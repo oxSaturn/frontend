@@ -65,7 +65,7 @@ export function TransferNFT() {
   const { mutate } = useTransferVest(() => {
     router.push("/vest");
   });
-  const transferNFT = (nftId: string, to: `0x${string}`) => {
+  const transferNFT = (nftId: string, to: Address) => {
     mutate({
       nftId,
       to,
@@ -116,9 +116,15 @@ export function TransferNFT() {
           color="primary"
           fullWidth
           disabled={state.error || state.address === ""}
-          onClick={() =>
-            transferNFT(id as string, state.address as `0x${string}`)
-          }
+          onClick={() => {
+            if (id) {
+              if (Array.isArray(id)) {
+                transferNFT(id[0], state.address as Address);
+              } else {
+                transferNFT(id, state.address as Address);
+              }
+            }
+          }}
         >
           Transfer
         </Button>
