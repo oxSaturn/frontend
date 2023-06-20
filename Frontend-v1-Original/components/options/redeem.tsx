@@ -40,7 +40,7 @@ import {
   isValidInput,
 } from "./lib/useAmountToPay";
 
-const OPTION_TOKEN_ADDRESS = "0x1bbd91715EBC03C9f073072eA2319ebF698917dE";
+const OPTION_TOKEN_ADDRESS = "0x13661E41f6AFF14DE677bbD692601bE809a14F76";
 
 export function Redeem() {
   const { oFlow, WPLS, activeInput, setActiveInput, setOFlow, setWpls } =
