@@ -8,7 +8,6 @@ import {
 } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { canto } from "viem/chains";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { InfoOutlined } from "@mui/icons-material";
 
 import * as Toast from "@radix-ui/react-toast";
@@ -62,8 +61,6 @@ export function Redeem() {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastHash, setToastHash] = useState("");
-
-  const { openConnectModal } = useConnectModal();
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
@@ -124,7 +121,7 @@ export function Redeem() {
   const {
     data: isApprovalNeeded,
     refetch: refetchAllowance,
-    isFetching: isFetchingALlowance,
+    isFetching: isFetchingAllowance,
   } = useErc20Allowance({
     address: "0x9f823d534954fc119e31257b3ddba0db9e2ff4ed",
     args: [address!, OPTION_TOKEN_ADDRESS],
@@ -390,87 +387,78 @@ export function Redeem() {
             max={maxLpDiscount}
             className="relative flex h-5 touch-none select-none items-center"
           />
-          {address ? (
-            chain?.unsupported ? (
-              <button
-                className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
-                onClick={() => switchNetwork?.()}
-              >
-                Switch to pulse
-              </button>
-            ) : (
-              <>
-                <button
-                  disabled={
-                    (activeInput === INPUT.OPTION && !isValidInput(option)) ||
-                    (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
-                    (isApprovalNeeded ? !approve : !redeem) ||
-                    isFetchingAmounts ||
-                    isFetchingPaymentBalance ||
-                    isFetchingALlowance ||
-                    writingExercise ||
-                    writingExerciseLP ||
-                    writingApprove ||
-                    waitingApprovalReceipt ||
-                    waitingRedeemReceipt
-                  }
-                  onClick={
-                    isApprovalNeeded ? () => approve?.() : () => redeemLP?.()
-                  }
-                  className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
-                >
-                  {waitingApprovalReceipt ||
-                  waitingRedeemReceipt ||
-                  writingExercise ||
-                  writingExerciseLP ||
-                  writingApprove ||
-                  isFetchingAmounts ||
-                  isFetchingALlowance
-                    ? "Loading..."
-                    : isApprovalNeeded
-                    ? "Approve"
-                    : "Redeem into LP"}
-                </button>
-                <button
-                  disabled={
-                    (activeInput === INPUT.OPTION && !isValidInput(option)) ||
-                    (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
-                    (isApprovalNeeded ? !approve : !redeem) ||
-                    isFetchingAmounts ||
-                    isFetchingPaymentBalance ||
-                    isFetchingALlowance ||
-                    writingExercise ||
-                    writingExerciseLP ||
-                    writingApprove ||
-                    waitingApprovalReceipt ||
-                    waitingRedeemReceipt
-                  }
-                  onClick={
-                    isApprovalNeeded ? () => approve?.() : () => redeem?.()
-                  }
-                  className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
-                >
-                  {waitingApprovalReceipt ||
-                  waitingRedeemReceipt ||
-                  writingExercise ||
-                  writingExerciseLP ||
-                  writingApprove ||
-                  isFetchingAmounts ||
-                  isFetchingALlowance
-                    ? "Loading..."
-                    : isApprovalNeeded
-                    ? "Approve"
-                    : "Redeem"}
-                </button>
-              </>
-            )
-          ) : (
+          {chain?.unsupported ? (
             <button
               className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
-              onClick={() => openConnectModal?.()}
+              onClick={() => switchNetwork?.()}
             >
-              Connect wallet
+              Switch to pulse
             </button>
+          ) : (
+            <>
+              <button
+                disabled={
+                  (activeInput === INPUT.OPTION && !isValidInput(option)) ||
+                  (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
+                  (isApprovalNeeded ? !approve : !redeem) ||
+                  isFetchingAmounts ||
+                  isFetchingPaymentBalance ||
+                  isFetchingAllowance ||
+                  writingExercise ||
+                  writingExerciseLP ||
+                  writingApprove ||
+                  waitingApprovalReceipt ||
+                  waitingRedeemReceipt
+                }
+                onClick={
+                  isApprovalNeeded ? () => approve?.() : () => redeemLP?.()
+                }
+                className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              >
+                {waitingApprovalReceipt ||
+                waitingRedeemReceipt ||
+                writingExercise ||
+                writingExerciseLP ||
+                writingApprove ||
+                isFetchingAmounts ||
+                isFetchingAllowance
+                  ? "Loading..."
+                  : isApprovalNeeded
+                  ? "Approve"
+                  : "Redeem into LP"}
+              </button>
+              <button
+                disabled={
+                  (activeInput === INPUT.OPTION && !isValidInput(option)) ||
+                  (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
+                  (isApprovalNeeded ? !approve : !redeem) ||
+                  isFetchingAmounts ||
+                  isFetchingPaymentBalance ||
+                  isFetchingAllowance ||
+                  writingExercise ||
+                  writingExerciseLP ||
+                  writingApprove ||
+                  waitingApprovalReceipt ||
+                  waitingRedeemReceipt
+                }
+                onClick={
+                  isApprovalNeeded ? () => approve?.() : () => redeem?.()
+                }
+                className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              >
+                {waitingApprovalReceipt ||
+                waitingRedeemReceipt ||
+                writingExercise ||
+                writingExerciseLP ||
+                writingApprove ||
+                isFetchingAmounts ||
+                isFetchingAllowance
+                  ? "Loading..."
+                  : isApprovalNeeded
+                  ? "Approve"
+                  : "Redeem"}
+              </button>
+            </>
           )}
         </div>
         <Tooltip.Root>
