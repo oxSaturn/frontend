@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Skeleton from "@mui/lab/Skeleton";
 import {
   Paper,
   Button,
@@ -18,6 +17,7 @@ import {
   Alert,
   Menu,
   MenuItem,
+  Skeleton,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import {
@@ -35,12 +35,12 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import BigNumber from "bignumber.js";
 import Link from "next/link";
 
-import stores from "../../stores";
 import { formatCurrency } from "../../utils/utils";
-import { ACTIONS } from "../../stores/constants/constants";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
+import { useResetVest } from "../ssVest/lib/mutations";
 
 dayjs.extend(relativeTime);
+
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -172,12 +172,12 @@ export default function EnhancedTable({
   govToken,
   veToken,
 }: {
-  vestNFTs: VestNFT[];
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  vestNFTs: VestNFT[] | undefined;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
 }) {
   const router = useRouter();
-
+  const { mutate: resetNft } = useResetVest();
   const [order, setOrder] = React.useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = React.useState<OrderBy>("Lock Value");
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -205,6 +205,22 @@ export default function EnhancedTable({
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
+
+  const onView = (nft: VestNFT) => {
+    router.push(`/vest/${nft.id}`);
+  };
+
+  const onReset = (nft: {
+    lockAmount: string;
+    lockValue: string;
+    lockEnds: string;
+    id: string;
+  }) => {
+    resetNft(nft.id);
+  };
+
+  // const emptyRows =
+  //   rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
 
   if (!vestNFTs) {
     return (
@@ -248,25 +264,6 @@ export default function EnhancedTable({
       </div>
     );
   }
-
-  const onView = (nft: VestNFT) => {
-    router.push(`/vest/${nft.id}`);
-  };
-
-  const onReset = (nft: {
-    lockAmount: string;
-    lockValue: string;
-    lockEnds: string;
-    id: string;
-  }) => {
-    stores.dispatcher.dispatch({
-      type: ACTIONS.RESET_VEST,
-      content: { tokenID: nft.id },
-    });
-  };
-
-  // const emptyRows =
-  //   rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
 
   return (
     <div className="w-full">
@@ -333,8 +330,8 @@ export default function EnhancedTable({
 function MyTableRow(props: {
   row: VestNFT;
   index: number;
-  govToken: GovToken | null;
-  veToken: VeToken | null;
+  govToken: GovToken | undefined;
+  veToken: VeToken | undefined;
   onReset: any;
   onView: any;
 }) {
@@ -517,10 +514,7 @@ function MyTableRow(props: {
             disabled={row.votedInCurrentEpoch || row.reset === false}
           >
             <Link href={`/vest/${row.id}/merge`} className="flex items-center">
-              <a>
-                <Merge className="mr-2" />
-                <span>Merge</span>
-              </a>
+              <Merge className="mr-2" /> <span>Merge</span>
             </Link>
           </MenuItem>
           <MenuItem disableRipple onClick={() => onView(row)}>

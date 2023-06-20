@@ -1,10 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  useAccount,
-  useNetwork,
-  useSwitchNetwork,
-  useWalletClient,
-} from "wagmi";
+import { useState } from "react";
+import { useNetwork, useSwitchNetwork } from "wagmi";
 import Head from "next/head";
 import { pulsechain } from "viem/chains";
 import { Alert, AlertTitle, Button, Snackbar, Typography } from "@mui/material";
@@ -12,8 +7,6 @@ import { Alert, AlertTitle, Button, Snackbar, Typography } from "@mui/material";
 import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
-import stores from "../../stores";
-import { ACTIONS } from "../../stores/constants/constants";
 
 import classes from "./layout.module.css";
 
@@ -24,19 +17,10 @@ export default function Layout({
   children: React.ReactNode;
   configure?: boolean;
 }) {
-  const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({ chainId: pulsechain.id });
-  const { data: walletClient } = useWalletClient({
-    chainId: pulsechain.id,
-  });
 
   const [alert, setAlert] = useState(true);
-  useEffect(() => {
-    if (walletClient && address) {
-      stores.dispatcher.dispatch({ type: ACTIONS.CONFIGURE_SS });
-    }
-  }, [walletClient, address]);
 
   return (
     <div className={classes.container}>

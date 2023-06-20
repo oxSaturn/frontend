@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import { pulsechain } from "wagmi/chains";
 
 import * as contracts from "./contracts";
-import * as actions from "./actions";
+import * as queryKeys from "./queryKeys";
 
 const config = {
   [pulsechain.id]: {
@@ -15,6 +15,8 @@ const config = {
       name: contracts.ETH_NAME,
       symbol: contracts.ETH_SYMBOL,
       chainId: 7700,
+      local: false,
+      balance: "0",
     },
     wNativeAddress: contracts.WETH_ADDRESS,
     wNativeSymbol: contracts.WETH_SYMBOL,
@@ -25,7 +27,6 @@ const config = {
 export const ETHERSCAN_URL = config[pulsechain.id].scan;
 
 export const CONTRACTS = config[pulsechain.id].contracts;
-export const ACTIONS = actions;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -36,3 +37,4 @@ export const W_NATIVE_SYMBOL = config[pulsechain.id].wNativeSymbol;
 export const W_NATIVE_ABI = config[pulsechain.id].wNativeABI;
 
 export const PAIR_DECIMALS = 18;
+export const QUERY_KEYS = queryKeys;

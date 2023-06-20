@@ -10,9 +10,11 @@ import { lockOptions } from "./lockDuration";
 
 dayjs.extend(relativeTime);
 
+dayjs.extend(relativeTime);
+
 interface VestingInfoProps {
-  veToken: VeToken | null;
-  govToken: GovToken | null;
+  veToken: VeToken | undefined;
+  govToken: GovToken | undefined;
   currentNFT?: VestNFT;
   futureNFT?: VestNFT;
   showVestingStructure?: boolean;

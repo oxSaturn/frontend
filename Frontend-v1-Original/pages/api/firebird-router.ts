@@ -10,9 +10,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const {
-    payload: {
-      content: { fromAsset, toAsset, fromAmount, slippage },
-    },
+    options: { fromAsset, toAsset, fromAmount, slippage },
     address,
   }: QuoteSwapPayload = JSON.parse(req.body);
 
