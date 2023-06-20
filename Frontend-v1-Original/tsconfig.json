@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -21,6 +25,9 @@
     "**/*.tsx",
     "theme/coreTheme.ts",
     "mainnet-arb-token-list.json"
-  ],
-  "exclude": ["node_modules", "legacy"]
+, "scripts/env-setup.ts"  ],
+  "exclude": [
+    "node_modules",
+    "legacy"
+  ]
 }
