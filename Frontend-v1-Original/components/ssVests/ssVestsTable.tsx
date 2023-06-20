@@ -41,7 +41,6 @@ import { useResetVest } from "../ssVest/lib/mutations";
 
 dayjs.extend(relativeTime);
 
-dayjs.extend(relativeTime);
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
