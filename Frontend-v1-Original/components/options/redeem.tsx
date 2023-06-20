@@ -328,9 +328,10 @@ export function Redeem() {
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div
+              data-content={optionTokenSymbol}
               className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
                 areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${optionTokenSymbol}"]`}
+              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
             >
               <input
                 value={option}
@@ -349,9 +350,10 @@ export function Redeem() {
           </div>
           <div className="flex items-center justify-between">
             <div
+              data-content={paymentTokenSymbol}
               className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
                 areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${paymentTokenSymbol}"]`}
+              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
             >
               <input
                 value={payment}
@@ -369,9 +371,10 @@ export function Redeem() {
             </button>
           </div>
           <div
+            data-content={underlyingTokenSymbol}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-["${underlyingTokenSymbol}"]`}
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               readOnly
