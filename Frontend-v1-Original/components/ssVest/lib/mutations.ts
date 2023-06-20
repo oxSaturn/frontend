@@ -131,6 +131,19 @@ export function useMergeVest(onSuccess?: () => void) {
   });
 }
 
+export function useTransferVest(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  return useMutation({
+    mutationFn: (options: Parameters<typeof transferNft>[1]) =>
+      transferNft(address, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.VEST_NFTS]);
+      onSuccess?.();
+    },
+  });
+}
+
 // --- functions ---
 
 const createVest = async (
@@ -637,7 +650,51 @@ const withdrawVest = async (
 
   await writeContractWrapper(vestTXID, writeWithdrawLock);
 };
+const transferNft = async (
+  account: Address | undefined,
+  options: {
+    nftId: string;
+    to: `0x${string}`;
+  }
+) => {
+  if (!account) {
+    console.warn("account not found");
+    throw new Error("account not found");
+  }
+  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  if (!walletClient) {
+    console.warn("wallet");
+    throw new Error("wallet not found");
+  }
 
+  const { nftId, to } = options;
+
+  let transferTXID = getTXUUID();
+
+  useTransactionStore.getState().updateTransactionQueue({
+    transactions: [
+      {
+        uuid: transferTXID,
+        description: `Transferring NFT #${nftId} to ${to}`,
+        status: TransactionStatus.WAITING,
+      },
+    ],
+  });
+
+  const writeTransfer = async () => {
+    const { request } = await viemClient.simulateContract({
+      account,
+      address: CONTRACTS.VE_TOKEN_ADDRESS,
+    abi: CONTRACTS.VE_TOKEN_ABI,
+      functionName: "safeTransferFrom",
+      args: [account, to, BigInt(nftId)],
+    });
+    const txHash = await walletClient.writeContract(request);
+    return txHash;
+  };
+
+  await writeContractWrapper(transferTXID, writeTransfer);
+};
 const mergeNft = async (
   account: Address | undefined,
   options: {

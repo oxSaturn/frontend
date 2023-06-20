@@ -42,11 +42,7 @@ export function MergeNFT() {
     <div className={classes.vestContainer}>
       <Paper elevation={0} className={classes.container2}>
         <div className="relative flex flex-row items-center justify-center rounded-lg border border-deepBlue py-5">
-          <Link
-            href={`/vest`}
-            title="back to vest"
-            className="absolute left-[5px]"
-          >
+          <Link className="absolute left-[5px]" href={`/vest`} title="back to vest">
             <IconButton>
               <ArrowBack className={classes.backIcon} />
             </IconButton>
