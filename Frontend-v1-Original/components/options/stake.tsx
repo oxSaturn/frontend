@@ -32,7 +32,7 @@ import { isValidInput } from "./lib/useInputs";
 const ACTION = {
   STAKE: "STAKE",
   WITHDRAW: "WITHDRAW",
-};
+} as const;
 
 export function Stake() {
   const { address } = useAccount();
@@ -186,7 +186,7 @@ export function Stake() {
 
   return (
     <>
-      <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+      <div className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex cursor-pointer items-center">
           <label
             className="pr-[15px] text-[15px] leading-none text-white"

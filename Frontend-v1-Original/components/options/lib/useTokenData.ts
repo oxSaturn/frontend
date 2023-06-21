@@ -10,7 +10,6 @@ import {
   useOAggGetTimeWeightedAveragePrice,
   useErc20Symbol,
 } from "../../../lib/wagmiGen";
-import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
 export function useTokenData() {
   const { address } = useAccount();
@@ -31,7 +30,8 @@ export function useTokenData() {
     refetch: refetchPaymentBalance,
   } = useBalance({
     address,
-    token: PRO_OPTIONS.oAGG.paymentTokenAddress,
+    token: paymentTokenAddress,
+    enabled: !!paymentTokenAddress,
   });
 
   const {

@@ -9,7 +9,7 @@ function Rewards() {
   const { address } = useAccount();
 
   return (
-    <div className="relative mt-0 flex h-full w-full flex-col pt-8">
+    <div className="relative my-3 flex h-full w-full flex-col pt-8">
       {address ? (
         <div className="flex flex-wrap items-start justify-center gap-5">
           <Redeem />

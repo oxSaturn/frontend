@@ -24,7 +24,7 @@ import {
 } from "../../lib/wagmiGen";
 
 import { Slider } from "./slider";
-import { useAmountToPayLiquid } from "./lib/useAmountToPayLiquid";
+import { useAmountToPayLiquid, useAmountToPayLP } from "./lib/useAmountToPay";
 import { INPUT, INPUT_TYPE, useInputs, isValidInput } from "./lib/useInputs";
 import { useTokenData } from "./lib/useTokenData";
 import { useNow } from "./lib/useNow";
@@ -32,41 +32,68 @@ import { useDiscountsData } from "./lib/useDiscountsData";
 import { useDiscountTimer } from "./lib/useDiscountTimer";
 import { useAllowance } from "./lib/useAllowance";
 
+const TABS = {
+  LP: "LP",
+  VEST: "VEST",
+  LIQUID: "LIQUID",
+} as const;
+
 export function Redeem() {
   const now = useNow();
+  const [tab, setTab] = useState<(typeof TABS)[keyof typeof TABS]>(TABS.LP);
+
+  const { setActiveInput, setOption, setPayment } = useInputs();
+
+  const handleTabChange = (value: string) => {
+    setOption("");
+    setPayment("");
+    setActiveInput(INPUT.OPTION);
+    switch (value) {
+      case TABS.LP:
+        setTab(TABS.LP);
+        break;
+      case TABS.VEST:
+        setTab(TABS.VEST);
+        break;
+      case TABS.LIQUID:
+        setTab(TABS.LIQUID);
+        break;
+    }
+  };
 
   return (
     <Tabs.Root
-      className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]"
-      defaultValue="LP"
+      className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]"
+      value={tab}
+      onValueChange={handleTabChange}
     >
       <Tabs.List className="flex shrink-0" aria-label="Manage your account">
         <Tabs.Trigger
-          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 data-[state=active]:text-violet-100 data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
-          value="LP"
+          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
+          value={TABS.LP}
         >
           Redeem LP
         </Tabs.Trigger>
         <Tabs.Trigger
-          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 data-[state=active]:text-violet-100 data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
-          value="VEST"
+          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
+          value={TABS.VEST}
         >
           Redeem Vest
         </Tabs.Trigger>
         <Tabs.Trigger
-          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 data-[state=active]:text-violet-100 data-[state=active]:focus:relative data-[state=active]:focus:shadow-[0_0_0_2px] data-[state=active]:focus:shadow-black"
-          value="LIQUID"
+          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
+          value={TABS.LIQUID}
         >
           Redeem Liquid
         </Tabs.Trigger>
       </Tabs.List>
-      <Tabs.Content className="mt-3 grow" value="LP">
+      <Tabs.Content className="mt-3 grow" value={TABS.LP}>
         <RedeemLP now={now} />
       </Tabs.Content>
-      <Tabs.Content className="mt-3 grow" value="VEST">
+      <Tabs.Content className="mt-3 grow" value={TABS.VEST}>
         {null}
       </Tabs.Content>
-      <Tabs.Content className="mt-3 grow" value="LIQUID">
+      <Tabs.Content className="mt-3 grow" value={TABS.LIQUID}>
         <RedeemLiquid now={now} />
       </Tabs.Content>
     </Tabs.Root>
@@ -113,7 +140,7 @@ function RedeemLiquid({ now }: { now: number }) {
     isApprovalNeeded,
     approve,
     isFetching: isFetchingAllowanceOrApproving,
-  } = useAllowance();
+  } = useAllowance(maxPayment);
 
   const { config: exerciseOptionConfig } = usePrepareOAggExercise({
     args: [
@@ -170,9 +197,9 @@ function RedeemLiquid({ now }: { now: number }) {
   };
 
   const areInputsEmpty = option === "";
-  const insufficientOFlow =
+  const insufficientOption =
     optionBalance && parseFloat(option) > parseFloat(optionBalance);
-  const insufficientWpls =
+  const insufficientPayment =
     paymentBalance &&
     parseFloat(payment) > parseFloat(paymentBalance?.formatted);
   return (
@@ -217,7 +244,7 @@ function RedeemLiquid({ now }: { now: number }) {
               value={option}
               onChange={onOptionInputChange}
               className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                (!isValidInput(option) && option !== "") || insufficientOFlow
+                (!isValidInput(option) && option !== "") || insufficientOption
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
@@ -239,7 +266,8 @@ function RedeemLiquid({ now }: { now: number }) {
               value={payment}
               onChange={onPaymentInputChange}
               className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                (!isValidInput(payment) && payment !== "") || insufficientWpls
+                (!isValidInput(payment) && payment !== "") ||
+                insufficientPayment
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
@@ -334,7 +362,7 @@ function RedeemLP({ now }: { now: number }) {
     setOption,
     setPayment,
   } = useInputs();
-  const maxPaymentWpls = (parseFloat(payment) * 1.01).toString();
+  const maxPayment = (parseFloat(payment) * 1.01).toString();
 
   const [lpDiscount, setLpDiscount] = useState(50);
 
@@ -372,19 +400,26 @@ function RedeemLP({ now }: { now: number }) {
     underlyingTokenSymbol,
   } = useTokenData();
 
-  const { isFetching: isFetchingAmounts } = useAmountToPayLiquid();
+  const {
+    isFetching: isFetchingAmounts,
+    paymentAmount,
+    addLiquidityAmount,
+  } = useAmountToPayLP(lpDiscount);
 
+  const approveAmount = (
+    parseFloat(paymentAmount ?? "0") + parseFloat(addLiquidityAmount ?? "0")
+  ).toString();
   const {
     isApprovalNeeded,
     approve,
     isFetching: isFetchingAllowanceOrApproving,
-  } = useAllowance();
+  } = useAllowance(approveAmount);
 
   const { config: exerciseLPOptionConfig } = usePrepareOAggExerciseLp({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
-      isValidInput(payment) && isValidInput(maxPaymentWpls)
-        ? parseEther(maxPaymentWpls as `${number}`)
+      isValidInput(payment) && isValidInput(maxPayment)
+        ? parseEther(maxPayment as `${number}`)
         : 0n,
       address!,
       BigInt(100 - lpDiscount),
@@ -393,7 +428,7 @@ function RedeemLP({ now }: { now: number }) {
     enabled:
       !!address &&
       isValidInput(payment) &&
-      isValidInput(maxPaymentWpls) &&
+      isValidInput(maxPayment) &&
       isValidInput(option) &&
       !isApprovalNeeded,
   });
@@ -430,16 +465,10 @@ function RedeemLP({ now }: { now: number }) {
     if (e.target.value === "") setPayment("");
   };
 
-  const onPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setActiveInput(INPUT.PAYMENT);
-    setPayment(e.target.value);
-    if (e.target.value === "") setOption("");
-  };
-
   const areInputsEmpty = option === "";
-  const insufficientOFlow =
+  const insufficientOption =
     optionBalance && parseFloat(option) > parseFloat(optionBalance);
-  const insufficientWpls =
+  const insufficientPayment =
     paymentBalance &&
     parseFloat(payment) > parseFloat(paymentBalance?.formatted);
 
@@ -502,7 +531,7 @@ function RedeemLP({ now }: { now: number }) {
               value={option}
               onChange={onOptionInputChange}
               className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                (!isValidInput(option) && option !== "") || insufficientOFlow
+                (!isValidInput(option) && option !== "") || insufficientOption
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
@@ -522,18 +551,16 @@ function RedeemLP({ now }: { now: number }) {
           >
             <input
               value={payment}
-              onChange={onPaymentInputChange}
+              readOnly
               className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                (!isValidInput(payment) && payment !== "") || insufficientWpls
+                (!isValidInput(payment) && payment !== "") ||
+                insufficientPayment
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
               placeholder={`0.00 ${paymentTokenSymbol}`}
             />
           </div>
-          <button className="p-4" onClick={() => setMax(INPUT.PAYMENT)}>
-            MAX
-          </button>
         </div>
         <div
           data-content={underlyingTokenSymbol}
@@ -580,6 +607,25 @@ function RedeemLP({ now }: { now: number }) {
               : "Redeem into LP"}
           </button>
         )}
+        <div className="flex flex-col items-start justify-center text-sm">
+          <div className="underline">Breakdown</div>
+          <div>
+            You get {lpDiscount}% discount. There is additional token transfer
+            for LP creation.
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>To redeem option</div>
+          <div>
+            {formatCurrency(paymentAmount)} {paymentTokenSymbol}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>To create LP</div>
+          <div>
+            {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
+          </div>
+        </div>
       </div>
     </>
   );
