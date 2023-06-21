@@ -8,10 +8,13 @@ import {
 } from "../../../lib/wagmiGen";
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
-import { isValidInput } from "./useInputs";
+import { isValidInput, useInputs } from "./useInputs";
 
-export function useAllowance(approveAmount: string) {
+export function useAllowance() {
   const { address } = useAccount();
+
+  const { payment } = useInputs();
+  const maxPayment = (parseFloat(payment) * 1.01).toString();
 
   const {
     data: isApprovalNeeded,
@@ -23,19 +26,23 @@ export function useAllowance(approveAmount: string) {
     enabled: !!address,
     select: (allowance) => {
       const formattedAllowance = formatEther(allowance);
-      if (!approveAmount) return;
-      return parseFloat(formattedAllowance) < parseFloat(approveAmount);
+      if (!maxPayment) return;
+      return parseFloat(formattedAllowance) < parseFloat(maxPayment);
     },
   });
   const { config: approveConfig } = usePrepareErc20Approve({
     address: PRO_OPTIONS.oAGG.paymentTokenAddress,
     args: [
       PRO_OPTIONS.oAGG.tokenAddress,
-      isValidInput(approveAmount)
-        ? parseEther(approveAmount as `${number}`)
+      isValidInput(maxPayment) && isValidInput(payment)
+        ? parseEther(maxPayment as `${number}`)
         : 0n,
     ],
-    enabled: !!address && isApprovalNeeded && isValidInput(approveAmount),
+    enabled:
+      !!address &&
+      isApprovalNeeded &&
+      isValidInput(maxPayment) &&
+      isValidInput(payment),
   });
   const {
     write: approve,

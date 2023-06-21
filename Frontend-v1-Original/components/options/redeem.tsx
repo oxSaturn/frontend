@@ -140,7 +140,7 @@ function RedeemLiquid({ now }: { now: number }) {
     isApprovalNeeded,
     approve,
     isFetching: isFetchingAllowanceOrApproving,
-  } = useAllowance(maxPayment);
+  } = useAllowance();
 
   const { config: exerciseOptionConfig } = usePrepareOAggExercise({
     args: [
@@ -405,20 +405,20 @@ function RedeemLP({ now }: { now: number }) {
     paymentAmount,
     addLiquidityAmount,
   } = useAmountToPayLP(lpDiscount);
-
-  const approveAmount = (
-    parseFloat(paymentAmount ?? "0") + parseFloat(addLiquidityAmount ?? "0")
+  const maxPaymentAmountForExercise = (
+    parseFloat(paymentAmount ?? "0") * 1.01
   ).toString();
+
   const {
     isApprovalNeeded,
     approve,
     isFetching: isFetchingAllowanceOrApproving,
-  } = useAllowance(approveAmount);
+  } = useAllowance();
 
   const { config: exerciseLPOptionConfig } = usePrepareOAggExerciseLp({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
-      isValidInput(payment) && isValidInput(maxPayment)
+      isValidInput(paymentAmount!) && isValidInput(maxPaymentAmountForExercise)
         ? parseEther(maxPayment as `${number}`)
         : 0n,
       address!,
@@ -427,8 +427,9 @@ function RedeemLP({ now }: { now: number }) {
     ],
     enabled:
       !!address &&
-      isValidInput(payment) &&
-      isValidInput(maxPayment) &&
+      !!paymentAmount &&
+      isValidInput(paymentAmount) &&
+      isValidInput(maxPaymentAmountForExercise) &&
       isValidInput(option) &&
       !isApprovalNeeded,
   });
