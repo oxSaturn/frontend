@@ -510,18 +510,18 @@ export const getPairsWithGauges = async (
         bribe.rewardAmount = bribe.rewardAmmount;
         return bribe;
       });
-      pair.gauge.x_bribes.forEach((x_bribe) => {
+      pair.gauge.xx_bribes.forEach((xx_bribe) => {
         const bribe = bribes.find(
-          (b) => b.token.address === x_bribe.token.address
+          (b) => b.token.address === xx_bribe.token.address
         );
         if (bribe) {
-          bribe.rewardAmount = bribe.rewardAmmount + x_bribe.rewardAmmount;
+          bribe.rewardAmount = bribe.rewardAmmount + xx_bribe.rewardAmmount;
         } else {
           bribes.push({
-            token: x_bribe.token,
-            rewardAmount: x_bribe.rewardAmmount,
-            reward_ammount: x_bribe.rewardAmmount,
-            rewardAmmount: x_bribe.rewardAmmount,
+            token: xx_bribe.token,
+            rewardAmount: xx_bribe.rewardAmmount,
+            reward_ammount: xx_bribe.rewardAmmount,
+            rewardAmmount: xx_bribe.rewardAmmount,
           });
         }
       });

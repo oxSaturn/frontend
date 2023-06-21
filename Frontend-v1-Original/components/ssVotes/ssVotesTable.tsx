@@ -467,7 +467,6 @@ const VotesRow = memo(function VotesRow({
           </Typography>
         </TableCell>
         <TableCell align="right">
-          {/* NOTE: instead of row.gauge.bribes from api show aggregated gaugebribes which accounts pair.gauge.bribes and pair.gauge.x_bribes */}
           {row.gaugebribes ? (
             row.gaugebribes.map((bribe) => {
               return bribe.rewardAmount !== undefined ? (
