@@ -84,6 +84,15 @@ export const useDomain = (address: `0x${string}` | undefined) => {
     enabled: !!address,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      if (
+        error instanceof Error &&
+        error?.message === "No domain in response"
+      ) {
+        return false;
+      }
+      return failureCount < 4;
+    },
   });
 };
 
