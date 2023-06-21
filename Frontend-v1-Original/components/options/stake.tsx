@@ -27,7 +27,7 @@ import {
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
-import { isValidInput } from "./lib/useAmountToPay";
+import { isValidInput } from "./lib/useInputs";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -81,7 +81,7 @@ export function Stake() {
     isFetching: isFetchingAllowance,
   } = useErc20Allowance({
     address: pair,
-    args: [address!, PRO_OPTIONS.oAGG.gauge],
+    args: [address!, PRO_OPTIONS.oAGG.gaugeAddress],
     enabled: !!address,
     select: (allowance) => {
       const formattedAllowance = formatEther(allowance);
@@ -93,7 +93,7 @@ export function Stake() {
   const { config: approveConfig } = usePrepareErc20Approve({
     address: pair,
     args: [
-      PRO_OPTIONS.oAGG.gauge,
+      PRO_OPTIONS.oAGG.gaugeAddress,
       isValidInput(amount) ? parseEther(amount as `${number}`) : 0n,
     ],
     enabled: !!pair && !!address && isApprovalNeeded && isValidInput(amount),

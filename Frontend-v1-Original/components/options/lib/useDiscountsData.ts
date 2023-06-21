@@ -10,11 +10,11 @@ import {
  * @returns {(minLpDiscount: number, maxLpDiscount: number)}
  */
 export function useDiscountsData() {
-  const { data: maxLpDiscount } = useOAggMinLpDiscount({
-    select: (data) => Number(data),
+  const { data: minLpDiscount } = useOAggMinLpDiscount({
+    select: (data) => Number(100n - data),
   });
-  const { data: minLpDiscount } = useOAggMaxLpDiscount({
-    select: (data) => Number(data),
+  const { data: maxLpDiscount } = useOAggMaxLpDiscount({
+    select: (data) => Number(100n - data),
   });
   return {
     minLpDiscount: minLpDiscount ?? 0,

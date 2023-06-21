@@ -1,35 +1,11 @@
 import { formatEther, parseEther } from "viem";
 import { pulsechain } from "wagmi/chains";
-import { create } from "zustand";
 
 import { useOAggGetDiscountedPrice } from "../../../lib/wagmiGen";
 
-export const INPUT = {
-  OPTION: "0",
-  PAYMENT: "1",
-} as const;
+import { INPUT, isValidInput, useInputs } from "./useInputs";
 
-export type INPUT_TYPE = (typeof INPUT)[keyof typeof INPUT];
-
-interface UseInputs {
-  option: string;
-  payment: string;
-  activeInput: INPUT_TYPE;
-  setOption: (_oFlow: string) => void;
-  setPayment: (_WPLS: string) => void;
-  setActiveInput: (_activeInput: INPUT_TYPE) => void;
-}
-
-export const useInputs = create<UseInputs>((set) => ({
-  option: "",
-  payment: "",
-  activeInput: INPUT.OPTION,
-  setOption: (option) => set({ option }),
-  setPayment: (payment) => set({ payment }),
-  setActiveInput: (activeInput) => set({ activeInput }),
-}));
-
-export function useAmountToPay() {
+export function useAmountToPayLiquid() {
   const { option, payment, activeInput, setOption, setPayment } = useInputs();
   const maxPaymentSCanto = (parseFloat(payment) * 1.01).toString();
 
@@ -75,18 +51,3 @@ export function useAmountToPay() {
     isFetching: isFetchingSCantoForOBlotr || isFetchingOBlotrDiscountedPrice,
   };
 }
-
-export const isValidInput = (input: string) => {
-  if (input !== "" && !isNaN(+input) && parseFloat(input) !== 0) {
-    try {
-      const parsed = parseEther(input as `${number}`);
-      if (parsed === 0n) {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-    return true;
-  }
-  return false;
-};

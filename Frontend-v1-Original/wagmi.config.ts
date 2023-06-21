@@ -15,12 +15,12 @@ export default defineConfig({
     {
       name: "oAGG",
       abi: oAggABI,
-      address: PRO_OPTIONS.oAGG.token,
+      address: PRO_OPTIONS.oAGG.tokenAddress,
     },
     {
       name: "AggMaxxing",
       abi: aggMaxxingABI,
-      address: PRO_OPTIONS.oAGG.gauge,
+      address: PRO_OPTIONS.oAGG.gaugeAddress,
     },
   ],
   plugins: [react()],

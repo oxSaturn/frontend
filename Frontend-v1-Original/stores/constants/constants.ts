@@ -66,8 +66,9 @@ const config = {
 
 export const PRO_OPTIONS = {
   oAGG: {
-    token: "0x29f9BF5e35Eb456b8b39580e66Aea73D5a988b04",
-    gauge: "0xD43Ca05886068D20a3757B8bD4380a635911Dbf0",
+    tokenAddress: "0x29f9BF5e35Eb456b8b39580e66Aea73D5a988b04",
+    gaugeAddress: "0xD43Ca05886068D20a3757B8bD4380a635911Dbf0",
+    paymentTokenAddress: "0x9f823d534954fc119e31257b3ddba0db9e2ff4ed",
   },
 } as const;
 
