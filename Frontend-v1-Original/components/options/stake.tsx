@@ -9,12 +9,16 @@ import {
 import { canto } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
   useAggMaxxingBalanceOf,
+  useAggMaxxingBalanceWithLock,
   useAggMaxxingDeposit,
+  useAggMaxxingLockEnd,
   useAggMaxxingStake,
   useAggMaxxingWithdraw,
   useErc20Allowance,
@@ -25,6 +29,8 @@ import {
 } from "../../lib/wagmiGen";
 
 import { isValidInput } from "./lib/useAmountToPay";
+
+dayjs.extend(relativeTime);
 
 const ACTION = {
   STAKE: "STAKE",
@@ -55,6 +61,22 @@ export function Stake() {
       enabled: !!address,
       select: (data) => formatEther(data),
     });
+
+  const { data: stakedBalanceWithLock, refetch: refetchStakedBalanceWithLock } =
+    useAggMaxxingBalanceWithLock({
+      args: [address!],
+      enabled: !!address,
+      select: (data) => formatEther(data),
+    });
+
+  const { data: stakedLockEnd } = useAggMaxxingLockEnd({
+    args: [address!],
+    enabled:
+      !!address &&
+      !!stakedBalanceWithLock &&
+      parseFloat(stakedBalanceWithLock) > 0,
+    select: (data) => Number(data),
+  });
 
   const {
     data: isApprovalNeeded,
@@ -136,6 +158,7 @@ export function Stake() {
     onSuccess: () => {
       refetchPooledBalance();
       refetchStakedBalance();
+      refetchStakedBalanceWithLock();
     },
   });
 
@@ -185,6 +208,16 @@ export function Stake() {
           <div>Staked balance</div>
           <div>{formatCurrency(stakedBalance)}</div>
         </div>
+        <div className="flex items-center justify-between">
+          <div>Staked with lock</div>
+          <div>{formatCurrency(stakedBalanceWithLock)}</div>
+        </div>
+        {stakedLockEnd && (
+          <div className="flex items-center justify-between">
+            <div>Lock end</div>
+            <div>{dayjs(stakedLockEnd).fromNow()}</div>
+          </div>
+        )}
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="w-full border border-[rgb(46,45,45)]">

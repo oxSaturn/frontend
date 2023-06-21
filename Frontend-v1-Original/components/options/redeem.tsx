@@ -113,7 +113,7 @@ export function Redeem() {
   });
 
   const { data: discount } = useOAggDiscount({
-    select: (discount) => (100n - discount).toString(),
+    select: (asianDiscount) => (100n - asianDiscount).toString(),
   });
 
   const { isFetching: isFetchingAmounts } = useAmountToPay();
