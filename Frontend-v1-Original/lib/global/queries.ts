@@ -701,5 +701,6 @@ export const useVestNfts = () => {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 1,
+    keepPreviousData: true,
   });
 };

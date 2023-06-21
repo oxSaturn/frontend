@@ -34,10 +34,12 @@ import {
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 import Link from "next/link";
+import { LoadingButton } from "@mui/lab";
 
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 import { useResetVest } from "../ssVest/lib/mutations";
+import { useVestNfts } from "../../lib/global/queries";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -165,15 +167,14 @@ const EnhancedTableToolbar = () => {
 };
 
 export default function EnhancedTable({
-  vestNFTs,
   govToken,
   veToken,
 }: {
-  vestNFTs: VestNFT[] | undefined;
   govToken: GovToken | undefined;
   veToken: VeToken | undefined;
 }) {
   const router = useRouter();
+  const { data: vestNFTs, isLoading, isSuccess, isRefetching } = useVestNfts();
   const { mutate: resetNft } = useResetVest();
   const [order, setOrder] = React.useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = React.useState<OrderBy>("Lock Value");
@@ -216,51 +217,10 @@ export default function EnhancedTable({
     resetNft(nft.id);
   };
 
+  console.log(isLoading, isSuccess, isRefetching, vestNFTs);
+
   // const emptyRows =
   //   rowsPerPage - Math.min(rowsPerPage, vestNFTs.length - page * rowsPerPage);
-
-  if (!vestNFTs) {
-    return (
-      <div className="w-full">
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="mb-3 mt-6"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-        <Skeleton
-          variant="rectangular"
-          width={"100%"}
-          height={40}
-          className="my-3"
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="w-full">
@@ -276,7 +236,31 @@ export default function EnhancedTable({
           You can either vote or reset in the same epoch, but not both. NFTs
           voted in the past will have to be reset first to merge.
         </Alert>
-        <TableContainer>
+        <TableContainer className="relative">
+          {true ? (
+            <div className="absolute left-0 right-0 top-0 bottom-0 z-50 flex items-center justify-center bg-black/80">
+              <svg
+                className="-ml-1 mr-3 h-10 w-10 animate-spin text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75 text-cyan"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </div>
+          ) : null}
           <Table
             aria-labelledby="tableTitle"
             size={"medium"}
@@ -288,36 +272,83 @@ export default function EnhancedTable({
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {stableSort(vestNFTs, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  if (!row) {
-                    return null;
-                  }
-                  return (
-                    <MyTableRow
-                      key={row.id}
-                      row={row}
-                      index={index}
-                      govToken={govToken}
-                      veToken={veToken}
-                      onReset={onReset}
-                      onView={onView}
-                    />
-                  );
-                })}
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8}>
+                    <div className="w-full">
+                      <Skeleton
+                        variant="rectangular"
+                        width={"100%"}
+                        height={40}
+                        className="mb-3 mt-6"
+                      />
+                      <Skeleton
+                        variant="rectangular"
+                        width={"100%"}
+                        height={40}
+                        className="my-3"
+                      />
+                      <Skeleton
+                        variant="rectangular"
+                        width={"100%"}
+                        height={40}
+                        className="my-3"
+                      />
+                      <Skeleton
+                        variant="rectangular"
+                        width={"100%"}
+                        height={40}
+                        className="my-3"
+                      />
+                      <Skeleton
+                        variant="rectangular"
+                        width={"100%"}
+                        height={40}
+                        className="my-3"
+                      />
+                      <Skeleton
+                        variant="rectangular"
+                        width={"100%"}
+                        height={40}
+                        className="my-3"
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {isSuccess &&
+                stableSort(vestNFTs, getComparator(order, orderBy))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => {
+                    if (!row) {
+                      return null;
+                    }
+                    return (
+                      <MyTableRow
+                        key={row.id}
+                        row={row}
+                        index={index}
+                        govToken={govToken}
+                        veToken={veToken}
+                        onReset={onReset}
+                        onView={onView}
+                      />
+                    );
+                  })}
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={vestNFTs.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {isSuccess ? (
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={vestNFTs.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        ) : null}
       </Paper>
     </div>
   );
