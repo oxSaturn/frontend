@@ -1,16 +1,11 @@
 import { Typography } from "@mui/material";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 
 import classes from "./ssVest.module.css";
 import { lockOptions } from "./lockDuration";
-
-dayjs.extend(relativeTime);
-
-dayjs.extend(relativeTime);
 
 interface VestingInfoProps {
   veToken: VeToken | undefined;

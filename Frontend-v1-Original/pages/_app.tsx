@@ -12,6 +12,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import * as Toast from "@radix-ui/react-toast";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 // import lightTheme from "../theme/light";
 import darkTheme from "../theme/dark";
@@ -23,6 +25,8 @@ import Configure from "./configure";
 
 import "../styles/global.css";
 import "@rainbow-me/rainbowkit/styles.css";
+
+dayjs.extend(relativeTime);
 
 export const queryClient = new QueryClient();
 
