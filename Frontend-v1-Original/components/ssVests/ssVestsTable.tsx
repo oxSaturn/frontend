@@ -32,15 +32,12 @@ import {
   Send,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import BigNumber from "bignumber.js";
 import Link from "next/link";
 
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
 import { useResetVest } from "../ssVest/lib/mutations";
-
-dayjs.extend(relativeTime);
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
