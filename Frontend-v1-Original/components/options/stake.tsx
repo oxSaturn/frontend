@@ -10,7 +10,6 @@ import { canto } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
@@ -29,8 +28,6 @@ import {
 } from "../../lib/wagmiGen";
 
 import { isValidInput } from "./lib/useAmountToPay";
-
-dayjs.extend(relativeTime);
 
 const ACTION = {
   STAKE: "STAKE",
