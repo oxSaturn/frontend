@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "yarn wagmi generate",
-    "dev": "next dev",
+    "dev": "yarn wagmi generate && next dev",
     "build": "next build",
     "fetch-tokens": "node scripts/fetch-tokens.mjs",
     "start": "next start",

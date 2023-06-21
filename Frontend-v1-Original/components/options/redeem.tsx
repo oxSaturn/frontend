@@ -57,7 +57,7 @@ export function Redeem() {
   } = useInputs();
   const maxPaymentWpls = (parseFloat(payment) * 1.01).toString();
 
-  const [lpDiscount, setLpDiscount] = useState(80);
+  const [lpDiscount, setLpDiscount] = useState(50);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastHash, setToastHash] = useState("");

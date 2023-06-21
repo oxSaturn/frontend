@@ -266,6 +266,45 @@ export const oAggABI = [
   },
   {
     type: "event",
+    name: "SetLockDurationForMinLpDiscount",
+    inputs: [
+      {
+        type: "uint256",
+        name: "lockDurationForMinLpDiscount",
+        internalType: "uint256",
+        indexed: false,
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "SetMaxLPDiscount",
+    inputs: [
+      {
+        type: "uint256",
+        name: "lpMaxDiscount",
+        internalType: "uint256",
+        indexed: false,
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "SetMinLPDiscount",
+    inputs: [
+      {
+        type: "uint256",
+        name: "lpMinDiscount",
+        internalType: "uint256",
+        indexed: false,
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
     name: "SetPairAndPaymentToken",
     inputs: [
       {
@@ -402,13 +441,6 @@ export const oAggABI = [
     type: "function",
     stateMutability: "view",
     outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
-    name: "MAX_LP_DISCOUNT",
-    inputs: [],
-  },
-  {
-    type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
     name: "MAX_TEAM_FEE",
     inputs: [],
   },
@@ -431,20 +463,6 @@ export const oAggABI = [
     stateMutability: "view",
     outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
     name: "MIN_DISCOUNT",
-    inputs: [],
-  },
-  {
-    type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
-    name: "MIN_LOCK",
-    inputs: [],
-  },
-  {
-    type: "function",
-    stateMutability: "view",
-    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
-    name: "MIN_LP_DISCOUNT",
     inputs: [],
   },
   {
@@ -590,6 +608,23 @@ export const oAggABI = [
   {
     type: "function",
     stateMutability: "view",
+    outputs: [
+      { type: "uint256", name: "paymentAmount", internalType: "uint256" },
+      {
+        type: "uint256",
+        name: "paymentAmountToAddLiquidity",
+        internalType: "uint256",
+      },
+    ],
+    name: "getPaymentTokenAmountForExerciseLp",
+    inputs: [
+      { type: "uint256", name: "_amount", internalType: "uint256" },
+      { type: "uint256", name: "_discount", internalType: "uint256" },
+    ],
+  },
+  {
+    type: "function",
+    stateMutability: "view",
     outputs: [{ type: "bytes32", name: "", internalType: "bytes32" }],
     name: "getRoleAdmin",
     inputs: [{ type: "bytes32", name: "role", internalType: "bytes32" }],
@@ -650,6 +685,27 @@ export const oAggABI = [
     stateMutability: "view",
     outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
     name: "lockDurationForMaxLpDiscount",
+    inputs: [],
+  },
+  {
+    type: "function",
+    stateMutability: "view",
+    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
+    name: "lockDurationForMinLpDiscount",
+    inputs: [],
+  },
+  {
+    type: "function",
+    stateMutability: "view",
+    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
+    name: "maxLPDiscount",
+    inputs: [],
+  },
+  {
+    type: "function",
+    stateMutability: "view",
+    outputs: [{ type: "uint256", name: "", internalType: "uint256" }],
+    name: "minLPDiscount",
     inputs: [],
   },
   {
@@ -759,6 +815,31 @@ export const oAggABI = [
     outputs: [],
     name: "setLockDurationForMaxLpDiscount",
     inputs: [{ type: "uint256", name: "_duration", internalType: "uint256" }],
+  },
+  {
+    type: "function",
+    stateMutability: "nonpayable",
+    outputs: [],
+    name: "setLockDurationForMinLpDiscount",
+    inputs: [{ type: "uint256", name: "_duration", internalType: "uint256" }],
+  },
+  {
+    type: "function",
+    stateMutability: "nonpayable",
+    outputs: [],
+    name: "setMaxLPDiscount",
+    inputs: [
+      { type: "uint256", name: "_lpMaxDiscount", internalType: "uint256" },
+    ],
+  },
+  {
+    type: "function",
+    stateMutability: "nonpayable",
+    outputs: [],
+    name: "setMinLPDiscount",
+    inputs: [
+      { type: "uint256", name: "_lpMinDiscount", internalType: "uint256" },
+    ],
   },
   {
     type: "function",
