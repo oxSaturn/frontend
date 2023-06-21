@@ -8,6 +8,7 @@ import {
 } from "wagmi";
 import { canto } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
+import * as Switch from "@radix-ui/react-switch";
 
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
@@ -15,13 +16,20 @@ import {
   useAggMaxxingBalanceOf,
   useAggMaxxingDeposit,
   useAggMaxxingStake,
+  useAggMaxxingWithdraw,
   useErc20Allowance,
   useErc20Approve,
   usePrepareAggMaxxingDeposit,
+  usePrepareAggMaxxingWithdraw,
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
 import { isValidInput } from "./lib/useAmountToPay";
+
+const ACTION = {
+  STAKE: "STAKE",
+  WITHDRAW: "WITHDRAW",
+};
 
 export function Stake() {
   const { address } = useAccount();
@@ -31,6 +39,9 @@ export function Stake() {
   });
 
   const [amount, setAmount] = useState("");
+  const [action, setAction] = useState<(typeof ACTION)[keyof typeof ACTION]>(
+    ACTION.STAKE
+  );
 
   const { data: pair } = useAggMaxxingStake();
   const { data: pooledBalance, refetch: refetchPooledBalance } = useBalance({
@@ -84,7 +95,11 @@ export function Stake() {
 
   const { config: depositConfig } = usePrepareAggMaxxingDeposit({
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n, 0n],
-    enabled: !!address && !isApprovalNeeded && isValidInput(amount),
+    enabled:
+      !!address &&
+      !isApprovalNeeded &&
+      isValidInput(amount) &&
+      action === ACTION.STAKE,
   });
   const {
     write: deposit,
@@ -95,6 +110,29 @@ export function Stake() {
   });
   const { isFetching: waitingDepositReceipt } = useWaitForTransaction({
     hash: txDepositResponse?.hash,
+    onSuccess: () => {
+      refetchPooledBalance();
+      refetchStakedBalance();
+    },
+  });
+
+  const { config: withdrawConfig } = usePrepareAggMaxxingWithdraw({
+    args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n],
+    enabled:
+      !!address &&
+      !isApprovalNeeded &&
+      isValidInput(amount) &&
+      action === ACTION.WITHDRAW,
+  });
+  const {
+    write: withdraw,
+    data: txWithdrawResponse,
+    isLoading: writingWithdraw,
+  } = useAggMaxxingWithdraw({
+    ...withdrawConfig,
+  });
+  const { isFetching: waitingWithdrawReceipt } = useWaitForTransaction({
+    hash: txWithdrawResponse?.hash,
     onSuccess: () => {
       refetchPooledBalance();
       refetchStakedBalance();
@@ -113,6 +151,32 @@ export function Stake() {
   return (
     <>
       <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+        <div className="flex cursor-pointer items-center">
+          <label
+            className="pr-[15px] text-[15px] leading-none text-white"
+            htmlFor="airplane-mode"
+          >
+            Stake
+          </label>
+          <Switch.Root
+            className="relative h-[25px] w-[42px] cursor-default rounded-full bg-black shadow-[0_2px_10px] shadow-black outline-none focus:shadow-[0_0_0_2px] focus:shadow-black data-[state=checked]:bg-black"
+            id="airplane-mode"
+            checked={action === ACTION.WITHDRAW}
+            onCheckedChange={() =>
+              setAction((prevAction) =>
+                prevAction === ACTION.STAKE ? ACTION.WITHDRAW : ACTION.STAKE
+              )
+            }
+          >
+            <Switch.Thumb className="block h-[21px] w-[21px] translate-x-0.5 rounded-full bg-white shadow-[0_2px_2px] shadow-black transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[19px]" />
+          </Switch.Root>
+          <label
+            className="pl-[15px] text-[15px] leading-none text-white"
+            htmlFor="airplane-mode"
+          >
+            Withdraw
+          </label>
+        </div>
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
           <div>{formatCurrency(pooledBalance?.formatted)}</div>
@@ -155,13 +219,20 @@ export function Stake() {
                 writingApprove ||
                 waitingApprovalReceipt ||
                 writingDeposit ||
-                waitingDepositReceipt
+                waitingDepositReceipt ||
+                writingWithdraw ||
+                waitingWithdrawReceipt ||
+                (isApprovalNeeded
+                  ? !approve
+                  : ACTION.WITHDRAW
+                  ? !withdraw
+                  : !deposit)
               }
               onClick={
                 isApprovalNeeded
                   ? () => approve?.()
-                  : false
-                  ? () => {} // withdraw
+                  : action === ACTION.WITHDRAW
+                  ? () => withdraw?.()
                   : () => deposit?.()
               }
               className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
@@ -170,11 +241,13 @@ export function Stake() {
               isFetchingAllowance ||
               waitingApprovalReceipt ||
               writingDeposit ||
-              waitingDepositReceipt
+              waitingDepositReceipt ||
+              writingWithdraw ||
+              waitingWithdrawReceipt
                 ? "Loading..."
                 : isApprovalNeeded
                 ? "Approve"
-                : false
+                : action === ACTION.WITHDRAW
                 ? "Withdraw"
                 : "Stake"}
             </button>

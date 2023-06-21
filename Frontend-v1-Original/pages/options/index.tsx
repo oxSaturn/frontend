@@ -11,7 +11,7 @@ function Rewards() {
   return (
     <div className="relative mt-0 flex h-full w-full flex-col pt-8">
       {address ? (
-        <div className="flex flex-wrap items-center justify-center gap-5">
+        <div className="flex flex-wrap items-start justify-center gap-5">
           <Redeem />
           <Stake />
         </div>
