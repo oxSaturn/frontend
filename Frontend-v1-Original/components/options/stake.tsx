@@ -160,13 +160,29 @@ export function Stake() {
   });
 
   const setMax = () => {
-    if (pooledBalance && pooledBalance.value > 0n) {
-      setAmount(pooledBalance.formatted);
+    if (action === ACTION.STAKE) {
+      if (pooledBalance && pooledBalance.value > 0n) {
+        setAmount(pooledBalance.formatted);
+      }
+    } else {
+      if (stakedBalance && parseFloat(stakedBalance) > 0) {
+        setAmount(stakedBalance);
+      }
     }
   };
 
+  const handleSwitch = () => {
+    setAction((prevAction) =>
+      prevAction === ACTION.STAKE ? ACTION.WITHDRAW : ACTION.STAKE
+    );
+    setAmount("");
+  };
+
   const insufficientAmount =
-    pooledBalance && parseFloat(amount) > parseFloat(pooledBalance.formatted);
+    action === ACTION.STAKE
+      ? pooledBalance &&
+        parseFloat(amount) > parseFloat(pooledBalance.formatted)
+      : stakedBalance && parseFloat(amount) > parseFloat(stakedBalance);
 
   return (
     <>
@@ -182,11 +198,7 @@ export function Stake() {
             className="relative h-[25px] w-[42px] cursor-default rounded-full bg-black shadow-[0_2px_10px] shadow-black outline-none focus:shadow-[0_0_0_2px] focus:shadow-black data-[state=checked]:bg-black"
             id="airplane-mode"
             checked={action === ACTION.WITHDRAW}
-            onCheckedChange={() =>
-              setAction((prevAction) =>
-                prevAction === ACTION.STAKE ? ACTION.WITHDRAW : ACTION.STAKE
-              )
-            }
+            onCheckedChange={handleSwitch}
           >
             <Switch.Thumb className="block h-[21px] w-[21px] translate-x-0.5 rounded-full bg-white shadow-[0_2px_2px] shadow-black transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[19px]" />
           </Switch.Root>
@@ -199,7 +211,7 @@ export function Stake() {
         </div>
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
-          <div>{formatCurrency(pooledBalance?.formatted)}</div>
+          <div>{pooledBalance?.formatted}</div>
         </div>
         <div className="flex items-center justify-between">
           <div>Staked balance</div>
