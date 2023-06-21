@@ -29,6 +29,7 @@ import {
   RestartAlt,
   Merge,
   TrendingUp,
+  Send,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
@@ -523,11 +524,26 @@ function MyTableRow(props: {
               )
             }
           >
+            <Link href={`/vest/${row.id}/merge`} className="flex items-center">
+              <Merge className="mr-2" />
+              <span>Merge</span>
+            </Link>
+          </MenuItem>
+          <MenuItem
+            disableRipple
+            disabled={
+              !(
+                Number(row.lastVoted) === 0 ||
+                (row.actionedInCurrentEpoch && row.reset)
+              )
+            }
+          >
             <Link
-              href={`/vest/${row.id}/merge`}
+              href={`/vest/${row.id}/transfer`}
               className="flex items-center"
             >
-              <Merge className="mr-2" /> <span>Merge</span>
+              <Send className="mr-2" />
+              <span>Transfer</span>
             </Link>
           </MenuItem>
           <MenuItem disableRipple onClick={() => onView(row)}>
