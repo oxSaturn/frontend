@@ -212,7 +212,7 @@ export function Stake() {
         {stakedLockEnd && (
           <div className="flex items-center justify-between">
             <div>Lock end</div>
-            <div>{dayjs(stakedLockEnd).fromNow()}</div>
+            <div>{dayjs.unix(stakedLockEnd).fromNow()}</div>
           </div>
         )}
         <div className="my-5 flex flex-col gap-3">
