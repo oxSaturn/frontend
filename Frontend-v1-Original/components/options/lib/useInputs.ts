@@ -1,4 +1,4 @@
-import { parseEther } from "viem";
+import { parseUnits } from "viem";
 import { create } from "zustand";
 
 export const INPUT = {
@@ -26,10 +26,10 @@ export const useInputs = create<UseInputs>((set) => ({
   setActiveInput: (activeInput) => set({ activeInput }),
 }));
 
-export const isValidInput = (input: string) => {
+export const isValidInput = (input: string, decimals = 18) => {
   if (input !== "" && !isNaN(+input) && parseFloat(input) !== 0) {
     try {
-      const parsed = parseEther(input as `${number}`);
+      const parsed = parseUnits(input, decimals);
       if (parsed === 0n) {
         return false;
       }

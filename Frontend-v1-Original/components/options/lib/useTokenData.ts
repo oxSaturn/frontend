@@ -9,6 +9,7 @@ import {
   useOptionTokenUnderlyingToken,
   useOptionTokenGetTimeWeightedAveragePrice,
   useErc20Symbol,
+  useErc20Decimals,
 } from "../../../lib/wagmiGen";
 
 export function useTokenData() {
@@ -17,6 +18,10 @@ export function useTokenData() {
   const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
   const { data: underlyingTokenAddress } = useOptionTokenUnderlyingToken();
   const { data: paymentTokenSymbol } = useErc20Symbol({
+    address: paymentTokenAddress,
+    enabled: !!paymentTokenAddress,
+  });
+  const { data: paymentTokenDecimals } = useErc20Decimals({
     address: paymentTokenAddress,
     enabled: !!paymentTokenAddress,
   });
@@ -56,6 +61,7 @@ export function useTokenData() {
   return {
     optionTokenSymbol: optionTokenSymbol ?? "oFLOW",
     paymentTokenSymbol: paymentTokenSymbol ?? "WPLS",
+    paymentTokenDecimals: paymentTokenDecimals ?? 18,
     underlyingTokenSymbol: underlyingTokenSymbol ?? "FLOW",
     paymentBalance,
     optionBalance,

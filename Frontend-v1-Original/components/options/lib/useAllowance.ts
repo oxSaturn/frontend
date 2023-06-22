@@ -1,5 +1,5 @@
 import { useAccount, useWaitForTransaction } from "wagmi";
-import { formatEther, parseEther } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 import {
   useErc20Allowance,
@@ -10,6 +10,7 @@ import {
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
 import { isValidInput, useInputs } from "./useInputs";
+import { useTokenData } from "./useTokenData";
 
 export function useAllowance() {
   const { address } = useAccount();
@@ -18,6 +19,7 @@ export function useAllowance() {
   const maxPayment = (parseFloat(payment) * 1.01).toString();
 
   const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
+  const { paymentTokenDecimals } = useTokenData();
   const {
     data: isApprovalNeeded,
     refetch: refetchAllowance,
@@ -27,7 +29,7 @@ export function useAllowance() {
     args: [address!, PRO_OPTIONS.oFLOW.tokenAddress],
     enabled: !!address && !!paymentTokenAddress,
     select: (allowance) => {
-      const formattedAllowance = formatEther(allowance);
+      const formattedAllowance = formatUnits(allowance, paymentTokenDecimals);
       if (!maxPayment) return;
       return parseFloat(formattedAllowance) < parseFloat(maxPayment);
     },
@@ -36,16 +38,17 @@ export function useAllowance() {
     address: paymentTokenAddress,
     args: [
       PRO_OPTIONS.oFLOW.tokenAddress,
-      isValidInput(maxPayment) && isValidInput(payment)
-        ? parseEther(maxPayment as `${number}`)
+      isValidInput(maxPayment, paymentTokenDecimals) &&
+      isValidInput(payment, paymentTokenDecimals)
+        ? parseUnits(maxPayment, paymentTokenDecimals)
         : 0n,
     ],
     enabled:
       !!address &&
       !!paymentTokenAddress &&
       isApprovalNeeded &&
-      isValidInput(maxPayment) &&
-      isValidInput(payment),
+      isValidInput(maxPayment, paymentTokenDecimals) &&
+      isValidInput(payment, paymentTokenDecimals),
   });
   const {
     write: approve,

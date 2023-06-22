@@ -5,7 +5,7 @@ import {
   useNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { parseEther } from "viem";
+import { parseEther, parseUnits } from "viem";
 import { canto } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
@@ -137,6 +137,7 @@ function RedeemLiquid({ now }: { now: number }) {
     refetchBalances,
     optionTokenSymbol,
     paymentTokenSymbol,
+    paymentTokenDecimals,
     underlyingTokenSymbol,
   } = useTokenData();
 
@@ -155,16 +156,17 @@ function RedeemLiquid({ now }: { now: number }) {
   const { config: exerciseOptionConfig } = usePrepareOptionTokenExercise({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
-      isValidInput(payment) && isValidInput(maxPayment)
-        ? parseEther(maxPayment as `${number}`)
+      isValidInput(payment, paymentTokenDecimals) &&
+      isValidInput(maxPayment, paymentTokenDecimals)
+        ? parseUnits(maxPayment, paymentTokenDecimals)
         : 0n,
       address!,
       BigInt(now + 1e3 * 60 * 5),
     ],
     enabled:
       !!address &&
-      isValidInput(payment) &&
-      isValidInput(maxPayment) &&
+      isValidInput(payment, paymentTokenDecimals) &&
+      isValidInput(maxPayment, paymentTokenDecimals) &&
       isValidInput(option) &&
       !isApprovalNeeded,
   });
@@ -276,7 +278,8 @@ function RedeemLiquid({ now }: { now: number }) {
               value={payment}
               onChange={onPaymentInputChange}
               className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                (!isValidInput(payment) && payment !== "") ||
+                (!isValidInput(payment, paymentTokenDecimals) &&
+                  payment !== "") ||
                 insufficientPayment
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
@@ -313,7 +316,8 @@ function RedeemLiquid({ now }: { now: number }) {
             <button
               disabled={
                 (activeInput === INPUT.OPTION && !isValidInput(option)) ||
-                (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
+                (activeInput === INPUT.PAYMENT &&
+                  !isValidInput(payment, paymentTokenDecimals)) ||
                 (isApprovalNeeded ? !approve : !redeem) ||
                 isFetchingAmounts ||
                 isFetchingBalances ||
@@ -409,6 +413,7 @@ function RedeemLP({ now }: { now: number }) {
     refetchBalances,
     optionTokenSymbol,
     paymentTokenSymbol,
+    paymentTokenDecimals,
     underlyingTokenSymbol,
   } = useTokenData();
   const { refetch: refetchStakedData, stakedLockEnd } = useStakeData();
@@ -439,8 +444,9 @@ function RedeemLP({ now }: { now: number }) {
   const { config: exerciseLPOptionConfig } = usePrepareOptionTokenExerciseLp({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
-      isValidInput(paymentAmount!) && isValidInput(maxPaymentAmountForExercise)
-        ? parseEther(maxPayment as `${number}`)
+      isValidInput(paymentAmount!, paymentTokenDecimals) &&
+      isValidInput(maxPaymentAmountForExercise, paymentTokenDecimals)
+        ? parseUnits(maxPayment, paymentTokenDecimals)
         : 0n,
       address!,
       BigInt(100 - lpDiscount),
@@ -449,8 +455,8 @@ function RedeemLP({ now }: { now: number }) {
     enabled:
       !!address &&
       !!paymentAmount &&
-      isValidInput(paymentAmount) &&
-      isValidInput(maxPaymentAmountForExercise) &&
+      isValidInput(paymentAmount, paymentTokenDecimals) &&
+      isValidInput(maxPaymentAmountForExercise, paymentTokenDecimals) &&
       isValidInput(option) &&
       !isApprovalNeeded,
   });
@@ -576,7 +582,8 @@ function RedeemLP({ now }: { now: number }) {
               value={payment}
               readOnly
               className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
-                (!isValidInput(payment) && payment !== "") ||
+                (!isValidInput(payment, paymentTokenDecimals) &&
+                  payment !== "") ||
                 insufficientPayment
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
@@ -609,7 +616,8 @@ function RedeemLP({ now }: { now: number }) {
           <button
             disabled={
               (activeInput === INPUT.OPTION && !isValidInput(option)) ||
-              (activeInput === INPUT.PAYMENT && !isValidInput(payment)) ||
+              (activeInput === INPUT.PAYMENT &&
+                !isValidInput(payment, paymentTokenDecimals)) ||
               (isApprovalNeeded ? !approve : !redeemLP) ||
               isFetchingAmounts ||
               isFetchingBalances ||
@@ -700,6 +708,29 @@ function RedeemLP({ now }: { now: number }) {
           </div>
         </div>
       </div>
+      <Tooltip.Root>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            Max payment{" "}
+            <Tooltip.Trigger>
+              <InfoOutlined />
+            </Tooltip.Trigger>
+          </div>
+          <div>
+            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+            {paymentTokenSymbol}
+          </div>
+        </div>
+        <Tooltip.Portal>
+          <Tooltip.Content
+            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
+            sideOffset={5}
+          >
+            We take into account 1% slippage
+            <Tooltip.Arrow className="fill-accent" />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
     </>
   );
 }

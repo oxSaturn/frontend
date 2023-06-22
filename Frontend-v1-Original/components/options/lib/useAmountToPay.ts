@@ -1,4 +1,4 @@
-import { formatEther, parseEther } from "viem";
+import { formatEther, formatUnits, parseEther } from "viem";
 
 import {
   useOptionTokenGetDiscountedPrice,
@@ -6,10 +6,13 @@ import {
 } from "../../../lib/wagmiGen";
 
 import { INPUT, isValidInput, useInputs } from "./useInputs";
+import { useTokenData } from "./useTokenData";
 
 export function useAmountToPayLiquid() {
   const { option, payment, activeInput, setOption, setPayment } = useInputs();
   const maxPayment = (parseFloat(payment) * 1.01).toString();
+
+  const { paymentTokenDecimals } = useTokenData();
 
   const { isFetching: isFetchingPaymentForOption } =
     useOptionTokenGetDiscountedPrice({
@@ -17,7 +20,7 @@ export function useAmountToPayLiquid() {
       enabled: activeInput === INPUT.OPTION && isValidInput(option),
       onSuccess: (amountPaymentForOption) => {
         if (isValidInput(option) && activeInput === INPUT.OPTION) {
-          setPayment(formatEther(amountPaymentForOption));
+          setPayment(formatUnits(amountPaymentForOption, paymentTokenDecimals));
         }
       },
     });
@@ -27,13 +30,13 @@ export function useAmountToPayLiquid() {
       args: [parseEther("1")],
       enabled:
         activeInput === INPUT.PAYMENT &&
-        isValidInput(payment) &&
-        isValidInput(maxPayment),
+        isValidInput(payment, paymentTokenDecimals) &&
+        isValidInput(maxPayment, paymentTokenDecimals),
       scopeKey: `oneOptionPrice-${INPUT.PAYMENT}-${payment}`,
       onSuccess: (oneOptionPrice) => {
         if (
-          isValidInput(payment) &&
-          isValidInput(maxPayment) &&
+          isValidInput(payment, paymentTokenDecimals) &&
+          isValidInput(maxPayment, paymentTokenDecimals) &&
           activeInput === INPUT.PAYMENT
         ) {
           const amountOptionForPayment =
@@ -50,7 +53,7 @@ export function useAmountToPayLiquid() {
 
 export function useAmountToPayLP(lpDiscount: number) {
   const { option, activeInput, setPayment } = useInputs();
-
+  const { paymentTokenDecimals } = useTokenData();
   const {
     isFetching: isFetchingPaymentTokenAmountForOption,
     data: paymentAndAddLiquidityAmounts,
@@ -62,7 +65,9 @@ export function useAmountToPayLP(lpDiscount: number) {
     enabled: activeInput === INPUT.OPTION && isValidInput(option),
     onSuccess: ([paymentAmount, addLiquidityAmount]) => {
       if (isValidInput(option) && activeInput === INPUT.OPTION) {
-        setPayment(formatEther(paymentAmount + addLiquidityAmount));
+        setPayment(
+          formatUnits(paymentAmount + addLiquidityAmount, paymentTokenDecimals)
+        );
       }
     },
     cacheTime: 0,
@@ -71,10 +76,10 @@ export function useAmountToPayLP(lpDiscount: number) {
   return {
     isFetching: isFetchingPaymentTokenAmountForOption,
     paymentAmount: paymentAndAddLiquidityAmounts
-      ? formatEther(paymentAndAddLiquidityAmounts[0])
+      ? formatUnits(paymentAndAddLiquidityAmounts[0], paymentTokenDecimals)
       : undefined,
     addLiquidityAmount: paymentAndAddLiquidityAmounts
-      ? formatEther(paymentAndAddLiquidityAmounts[1])
+      ? formatUnits(paymentAndAddLiquidityAmounts[1], paymentTokenDecimals)
       : undefined,
   };
 }
