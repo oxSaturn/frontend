@@ -16,6 +16,9 @@ import { fairAuctionABI } from "./fairAuctionABI";
 export { oFlowABI } from "./oFlowABI";
 export { airdropClaimABI } from "./airdropClaimABI";
 
+export { optionTokenABI } from "./optionTokenABI";
+export { maxxingGaugeABI } from "./maxxingGaugeABI";
+
 export default {
   erc20ABI,
   veTokenABI,

@@ -64,13 +64,13 @@ interface Pair {
   decimals: number;
   stable: boolean;
   total_supply: number;
-  reserve0: number | string; // gets reassigned to string in frontend store
-  reserve1: number | string; // gets reassigned to string in frontend store
+  reserve0: number;
+  reserve1: number;
   token0_address: `0x${string}`;
   token1_address: `0x${string}`;
   gauge_address: string; // if no,  set to :""
   isStable: boolean;
-  totalSupply: number | string; // gets reassigned to string in frontend store
+  totalSupply: number;
   token0: RouteAsset | BaseAsset; //TODO check if this is correct
   token1: RouteAsset | BaseAsset;
   rewardType?: string;
@@ -89,7 +89,7 @@ interface Pair {
     bribe_address: `0x${string}`;
     reward: number;
     bribeAddress: `0x${string}`;
-    totalSupply: number | string; //gets reassigned to string in frontend store
+    totalSupply: number;
     bribes: Bribe[];
     // following gets assigned in frontend store
     balance?: string;

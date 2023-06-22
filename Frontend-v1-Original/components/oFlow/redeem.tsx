@@ -27,7 +27,7 @@ import {
   usePrepareWplsApprove,
   useWplsAllowance,
   useWplsApprove,
-} from "./lib/wagmiGen";
+} from "../../lib/wagmiGen";
 
 import {
   INPUT,

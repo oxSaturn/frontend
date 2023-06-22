@@ -17,7 +17,7 @@ import {
   useAirdropClaimClaimable,
   useAirdropClaimUserClaimed,
   usePrepareAirdropClaimClaim,
-} from "../oFlow/lib/wagmiGen";
+} from "../../lib/wagmiGen";
 
 export function Claim() {
   const [toastOpen, setToastOpen] = useState(false);

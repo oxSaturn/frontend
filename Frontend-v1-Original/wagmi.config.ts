@@ -3,9 +3,10 @@ import { react } from "@wagmi/cli/plugins";
 import { erc20ABI } from "wagmi";
 
 import { airdropClaimABI, oFlowABI } from "./stores/abis/abis";
+import { PRO_OPTIONS } from "./stores/constants/constants";
 
 export default defineConfig({
-  out: "components/oFlow/lib/wagmiGen.ts",
+  out: "./lib/wagmiGen.ts",
   contracts: [
     {
       name: "WPLS",
@@ -21,6 +22,20 @@ export default defineConfig({
       name: "AirdropClaim",
       abi: airdropClaimABI,
       address: "0x3339ab188839C31a9763352A5a0B7Fb05876BC44",
+    },
+    {
+      name: "ERC20",
+      abi: erc20ABI,
+    },
+    {
+      name: "OptionToken",
+      abi: PRO_OPTIONS.optionTokenABI,
+      address: PRO_OPTIONS.oAGG.tokenAddress,
+    },
+    {
+      name: "MaxxingGauge",
+      abi: PRO_OPTIONS.maxxingGaugeABI,
+      address: PRO_OPTIONS.oAGG.gaugeAddress,
     },
   ],
   plugins: [react()],
