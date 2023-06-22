@@ -478,5 +478,13 @@
     "logoURI": "https://cre8r.vip/wp-content/uploads/2023/05/Sheet_WIP.png",
     "name": "Option to buy BLOTR",
     "symbol": "oBLOTR"
+  },
+  {
+    "address": "0x37A95c04450785Fb59c35dFd58c9897e9D9A4232",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29137/small/original-icon-transparent.png",
+    "name": "Option to buy AGG",
+    "symbol": "oAGG"
   }
 ]
