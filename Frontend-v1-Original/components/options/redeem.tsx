@@ -444,9 +444,8 @@ function RedeemLP({ now }: { now: number }) {
   const { config: exerciseLPOptionConfig } = usePrepareOptionTokenExerciseLp({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
-      isValidInput(paymentAmount!, paymentTokenDecimals) &&
       isValidInput(maxPaymentAmountForExercise, paymentTokenDecimals)
-        ? parseUnits(maxPayment, paymentTokenDecimals)
+        ? parseUnits(maxPaymentAmountForExercise, paymentTokenDecimals)
         : 0n,
       address!,
       BigInt(100 - lpDiscount),
@@ -455,7 +454,6 @@ function RedeemLP({ now }: { now: number }) {
     enabled:
       !!address &&
       !!paymentAmount &&
-      isValidInput(paymentAmount, paymentTokenDecimals) &&
       isValidInput(maxPaymentAmountForExercise, paymentTokenDecimals) &&
       isValidInput(option) &&
       !isApprovalNeeded,
@@ -717,8 +715,7 @@ function RedeemLP({ now }: { now: number }) {
             </Tooltip.Trigger>
           </div>
           <div>
-            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
-            {paymentTokenSymbol}
+            {formatCurrency(maxPayment)} {paymentTokenSymbol}
           </div>
         </div>
         <Tooltip.Portal>
