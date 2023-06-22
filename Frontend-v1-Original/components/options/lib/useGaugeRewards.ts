@@ -71,7 +71,7 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
       abi: erc20ABI,
     } as const;
 
-    const [symbol, decimals, rewardRate] = await viemClient.multicall({
+    const [symbol, decimals, rewardRate, left] = await viemClient.multicall({
       allowFailure: false,
       contracts: [
         {
@@ -87,13 +87,19 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
           functionName: "rewardRate",
           args: [rewardTokenAddress],
         },
+        {
+          ...gaugeContract,
+          functionName: "left",
+          args: [rewardTokenAddress],
+        },
       ],
     });
     rewardsTokens.push({
       address: rewardTokenAddress,
       symbol,
       decimals,
-      reward: +formatUnits(rewardRate, decimals) * 24 * 60 * 60,
+      reward:
+        left === 0n ? 0 : +formatUnits(rewardRate, decimals) * 24 * 60 * 60,
     });
   }
 
