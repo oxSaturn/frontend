@@ -1,5 +1,7 @@
 import BigNumber from "bignumber.js";
 
+import { optionTokenABI, maxxingGaugeABI } from "../abis/abis";
+
 import * as contractsTestnet from "./contractsGoerli";
 import * as contractsCanto from "./contractsCanto";
 import * as contracts from "./contracts";
@@ -65,6 +67,8 @@ const config = {
 };
 
 export const PRO_OPTIONS = {
+  optionTokenABI: optionTokenABI,
+  maxxingGaugeABI: maxxingGaugeABI,
   oAGG: {
     tokenAddress: "0x37A95c04450785Fb59c35dFd58c9897e9D9A4232",
     gaugeAddress: "0xeEbE0be893fa3F98A045969BacC13846d1bc795A",

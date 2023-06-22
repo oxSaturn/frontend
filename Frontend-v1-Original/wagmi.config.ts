@@ -2,7 +2,6 @@ import { defineConfig } from "@wagmi/cli";
 import { react } from "@wagmi/cli/plugins";
 import { erc20ABI } from "wagmi";
 
-import { oAggABI, aggMaxxingABI } from "./stores/abis/abis";
 import { PRO_OPTIONS } from "./stores/constants/constants";
 
 export default defineConfig({
@@ -14,12 +13,12 @@ export default defineConfig({
     },
     {
       name: "OptionToken",
-      abi: oAggABI,
+      abi: PRO_OPTIONS.optionTokenABI,
       address: PRO_OPTIONS.oAGG.tokenAddress,
     },
     {
       name: "MaxxingGauge",
-      abi: aggMaxxingABI,
+      abi: PRO_OPTIONS.maxxingGaugeABI,
       address: PRO_OPTIONS.oAGG.gaugeAddress,
     },
   ],

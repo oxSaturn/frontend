@@ -15,8 +15,8 @@ import { flowConvertorABI } from "./flowConvertorABI";
 import { autoBribeABI } from "./autoBribeABI";
 import { fairAuctionABI } from "./fairAuctionABI";
 
-export { oAggABI } from "./oAggABI";
-export { aggMaxxingABI } from "./aggMaxxingABI";
+export { optionTokenABI } from "./optionTokenABI";
+export { maxxingGaugeABI } from "./maxxingGaugeABI";
 
 export default {
   erc20ABI,

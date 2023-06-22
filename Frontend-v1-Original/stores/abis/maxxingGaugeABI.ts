@@ -1,4 +1,4 @@
-export const aggMaxxingABI = [
+export const maxxingGaugeABI = [
   {
     inputs: [
       {

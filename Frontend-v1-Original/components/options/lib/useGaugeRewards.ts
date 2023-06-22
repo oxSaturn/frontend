@@ -6,7 +6,6 @@ import viemClient from "../../../stores/connectors/viem";
 
 import { useMaxxingGaugeRewardsListLength } from "../../../lib/wagmiGen";
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
-import { aggMaxxingABI } from "../../../stores/abis/aggMaxxingABI";
 
 const QUERY_KEYS = {
   TOKEN_ADDRESSES: "TOKEN_ADDRESSES",
@@ -52,7 +51,7 @@ async function getGaugeRewardsTokenAddresses(
 
   const gaugeContract = {
     address: PRO_OPTIONS.oAGG.gaugeAddress,
-    abi: aggMaxxingABI,
+    abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 
   const rewardsTokenAddresses: Token[] = [];
@@ -96,7 +95,7 @@ async function getEarned(
 
   const gaugeContract = {
     address: PRO_OPTIONS.oAGG.gaugeAddress,
-    abi: aggMaxxingABI,
+    abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 
   const earned: Earned[] = [];
