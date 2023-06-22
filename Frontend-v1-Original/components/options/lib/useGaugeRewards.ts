@@ -53,7 +53,7 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
   }
 
   const gaugeContract = {
-    address: PRO_OPTIONS.oAGG.gaugeAddress,
+    address: PRO_OPTIONS.oFLOW.gaugeAddress,
     abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 
@@ -112,7 +112,7 @@ async function getEarned(
   }
 
   const gaugeContract = {
-    address: PRO_OPTIONS.oAGG.gaugeAddress,
+    address: PRO_OPTIONS.oFLOW.gaugeAddress,
     abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 

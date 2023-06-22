@@ -32,10 +32,9 @@ export const CONTRACTS = config[pulsechain.id].contracts;
 export const PRO_OPTIONS = {
   optionTokenABI: optionTokenABI,
   maxxingGaugeABI: maxxingGaugeABI,
-  oAGG: {
-    tokenAddress: "0x37A95c04450785Fb59c35dFd58c9897e9D9A4232",
-    gaugeAddress: "0xeEbE0be893fa3F98A045969BacC13846d1bc795A",
-    paymentTokenAddress: "0x9f823d534954fc119e31257b3ddba0db9e2ff4ed",
+  oFLOW: {
+    tokenAddress: "0x767D9ad09e4E148e0Ae23Ea1F2dB04e5F0Cd2EdA",
+    gaugeAddress: "0x80D1006427c5f6EB662412aeb027d383C5e069cB",
   },
 } as const;
 

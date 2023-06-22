@@ -30,12 +30,12 @@ export default defineConfig({
     {
       name: "OptionToken",
       abi: PRO_OPTIONS.optionTokenABI,
-      address: PRO_OPTIONS.oAGG.tokenAddress,
+      address: PRO_OPTIONS.oFLOW.tokenAddress,
     },
     {
       name: "MaxxingGauge",
       abi: PRO_OPTIONS.maxxingGaugeABI,
-      address: PRO_OPTIONS.oAGG.gaugeAddress,
+      address: PRO_OPTIONS.oFLOW.gaugeAddress,
     },
   ],
   plugins: [react()],
