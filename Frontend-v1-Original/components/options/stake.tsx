@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   useAccount,
-  useBalance,
   useNetwork,
   useSwitchNetwork,
   useWaitForTransaction,
@@ -14,11 +13,7 @@ import dayjs from "dayjs";
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
-  useAggMaxxingBalanceOf,
-  useAggMaxxingBalanceWithLock,
   useAggMaxxingDeposit,
-  useAggMaxxingLockEnd,
-  useAggMaxxingStake,
   useAggMaxxingWithdraw,
   useErc20Allowance,
   useErc20Approve,
@@ -28,6 +23,7 @@ import {
 } from "../../lib/wagmiGen";
 
 import { isValidInput } from "./lib/useInputs";
+import { useStakeData } from "./lib/useStakeData";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -46,34 +42,14 @@ export function Stake() {
     ACTION.STAKE
   );
 
-  const { data: pair } = useAggMaxxingStake();
-  const { data: pooledBalance, refetch: refetchPooledBalance } = useBalance({
-    address,
-    token: pair,
-  });
-
-  const { data: stakedBalance, refetch: refetchStakedBalance } =
-    useAggMaxxingBalanceOf({
-      args: [address!],
-      enabled: !!address,
-      select: (data) => formatEther(data),
-    });
-
-  const { data: stakedBalanceWithLock, refetch: refetchStakedBalanceWithLock } =
-    useAggMaxxingBalanceWithLock({
-      args: [address!],
-      enabled: !!address,
-      select: (data) => formatEther(data),
-    });
-
-  const { data: stakedLockEnd } = useAggMaxxingLockEnd({
-    args: [address!],
-    enabled:
-      !!address &&
-      !!stakedBalanceWithLock &&
-      parseFloat(stakedBalanceWithLock) > 0,
-    select: (data) => Number(data),
-  });
+  const {
+    pair,
+    refetch: refetchStakedData,
+    pooledBalance,
+    stakedBalance,
+    stakedBalanceWithLock,
+    stakedLockEnd,
+  } = useStakeData();
 
   const {
     data: isApprovalNeeded,
@@ -85,7 +61,7 @@ export function Stake() {
     enabled: !!address,
     select: (allowance) => {
       const formattedAllowance = formatEther(allowance);
-      if (!amount) return;
+      if (!amount) return false;
       return parseFloat(formattedAllowance) < parseFloat(amount);
     },
   });
@@ -130,8 +106,7 @@ export function Stake() {
   const { isFetching: waitingDepositReceipt } = useWaitForTransaction({
     hash: txDepositResponse?.hash,
     onSuccess: () => {
-      refetchPooledBalance();
-      refetchStakedBalance();
+      refetchStakedData();
     },
   });
 
@@ -153,9 +128,7 @@ export function Stake() {
   const { isFetching: waitingWithdrawReceipt } = useWaitForTransaction({
     hash: txWithdrawResponse?.hash,
     onSuccess: () => {
-      refetchPooledBalance();
-      refetchStakedBalance();
-      refetchStakedBalanceWithLock();
+      refetchStakedData();
     },
   });
 
@@ -264,14 +237,14 @@ export function Stake() {
                 waitingDepositReceipt ||
                 writingWithdraw ||
                 waitingWithdrawReceipt ||
-                (isApprovalNeeded
+                (isApprovalNeeded && action === ACTION.STAKE
                   ? !approve
                   : ACTION.WITHDRAW
                   ? !withdraw
                   : !deposit)
               }
               onClick={
-                isApprovalNeeded
+                isApprovalNeeded && action === ACTION.STAKE
                   ? () => approve?.()
                   : action === ACTION.WITHDRAW
                   ? () => withdraw?.()
@@ -287,7 +260,7 @@ export function Stake() {
               writingWithdraw ||
               waitingWithdrawReceipt
                 ? "Loading..."
-                : isApprovalNeeded
+                : isApprovalNeeded && action === ACTION.STAKE
                 ? "Approve"
                 : action === ACTION.WITHDRAW
                 ? "Withdraw"

@@ -7,10 +7,13 @@ import {
 } from "wagmi";
 import { parseEther } from "viem";
 import { canto } from "viem/chains";
-import { InfoOutlined } from "@mui/icons-material";
+import { InfoOutlined, Check } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 import * as Tooltip from "@radix-ui/react-tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
+import * as Checkbox from "@radix-ui/react-checkbox";
+import * as Separator from "@radix-ui/react-separator";
 
 import { formatCurrency } from "../../utils/utils";
 
@@ -31,6 +34,7 @@ import { useNow } from "./lib/useNow";
 import { useDiscountsData } from "./lib/useDiscountsData";
 import { useDiscountTimer } from "./lib/useDiscountTimer";
 import { useAllowance } from "./lib/useAllowance";
+import { useStakeData } from "./lib/useStakeData";
 
 const TABS = {
   LP: "LP",
@@ -69,19 +73,19 @@ export function Redeem() {
     >
       <Tabs.List className="flex shrink-0" aria-label="Manage your account">
         <Tabs.Trigger
-          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
+          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondary outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
           value={TABS.LP}
         >
           Redeem LP
         </Tabs.Trigger>
         <Tabs.Trigger
-          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
+          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondary outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
           value={TABS.VEST}
         >
           Redeem Vest
         </Tabs.Trigger>
         <Tabs.Trigger
-          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondaryGray outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
+          className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-[15px] leading-none text-secondary outline-none hover:text-violet-100 radix-state-active:text-violet-100 radix-state-active:focus:relative radix-state-active:focus:shadow-[0_0_0_2px] radix-state-active:focus:shadow-black"
           value={TABS.LIQUID}
         >
           Redeem Liquid
@@ -354,6 +358,8 @@ function RedeemLiquid({ now }: { now: number }) {
 }
 
 function RedeemLP({ now }: { now: number }) {
+  const [increaseAccepted, setIncreaseAccepted] = useState(false);
+
   const {
     option,
     payment,
@@ -399,6 +405,15 @@ function RedeemLP({ now }: { now: number }) {
     paymentTokenSymbol,
     underlyingTokenSymbol,
   } = useTokenData();
+  const { refetch: refetchStakedData, stakedLockEnd } = useStakeData();
+  const isSelectedDurationLessThanLockEnd =
+    !!stakedLockEnd &&
+    !!durationForDiscount &&
+    stakedLockEnd > dayjs().second(durationForDiscount).unix();
+  const isSelectedDurationMoreThanLockEnd =
+    !!stakedLockEnd &&
+    !!durationForDiscount &&
+    stakedLockEnd < dayjs().second(durationForDiscount).unix();
 
   const {
     isFetching: isFetchingAmounts,
@@ -445,6 +460,7 @@ function RedeemLP({ now }: { now: number }) {
       refetchBalances();
       setOption("");
       setPayment("");
+      refetchStakedData();
     },
   });
 
@@ -593,7 +609,9 @@ function RedeemLP({ now }: { now: number }) {
               isFetchingBalances ||
               isFetchingAllowanceOrApproving ||
               writingExerciseLP ||
-              waitingRedeemReceipt
+              waitingRedeemReceipt ||
+              isSelectedDurationLessThanLockEnd ||
+              (isSelectedDurationMoreThanLockEnd && !increaseAccepted)
             }
             onClick={isApprovalNeeded ? () => approve?.() : () => redeemLP?.()}
             className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
@@ -607,6 +625,54 @@ function RedeemLP({ now }: { now: number }) {
               ? "Approve"
               : "Redeem into LP"}
           </button>
+        )}
+        {isSelectedDurationLessThanLockEnd && (
+          <div className="flex flex-col items-start justify-center text-error">
+            <div className="underline">STOP</div>
+            <div>
+              You already have a staked position expires{" "}
+              {dayjs.unix(stakedLockEnd).fromNow()}. Redeeming with less lock
+              duration will take into account longest lock.
+            </div>
+          </div>
+        )}
+        {isSelectedDurationMoreThanLockEnd && (
+          <div className="flex flex-col items-start justify-center text-warning">
+            <div className="underline">WARNING</div>
+            <div>
+              You are going to increase your lock end from{" "}
+              <span className="tracking-tighter">
+                {dayjs.unix(stakedLockEnd).format("HH[h]mm[m] MM/DD")}
+              </span>{" "}
+              to{" "}
+              <span className="tracking-tighter">
+                {dayjs().second(durationForDiscount).format("HH[h]mm[m] MM/DD")}
+              </span>
+              .
+            </div>
+            <Separator.Root className="my-[15px] bg-warning radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full" />
+            <div className="flex items-center">
+              <Checkbox.Root
+                className="flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-secondary outline-none"
+                checked={increaseAccepted}
+                onCheckedChange={() =>
+                  setIncreaseAccepted((prevChecked) => !prevChecked)
+                }
+                id="increaseAcceptance"
+              >
+                <Checkbox.Indicator className="text-lime-50">
+                  <Check />
+                </Checkbox.Indicator>
+              </Checkbox.Root>
+              <label
+                className="cursor-pointer pl-[15px] text-[15px] leading-none text-white"
+                htmlFor="increaseAcceptance"
+              >
+                Accept lock duration increase
+              </label>
+            </div>
+            <Separator.Root className="my-[15px] bg-warning radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full" />
+          </div>
         )}
         <div className="flex flex-col items-start justify-center text-sm">
           <div className="underline">Breakdown</div>

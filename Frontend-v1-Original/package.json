@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "yarn wagmi generate",
-    "dev": "yarn wagmi generate && next dev",
+    "dev": "next dev",
     "build": "next build",
     "fetch-tokens": "node scripts/fetch-tokens.mjs",
     "start": "next start",
@@ -21,6 +21,8 @@
     "@mui/icons-material": "^5.11.0",
     "@mui/lab": "^5.0.0-alpha.116",
     "@mui/material": "^5.11.5",
+    "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tabs": "^1.0.4",
