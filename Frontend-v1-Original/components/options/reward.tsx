@@ -7,7 +7,7 @@ import {
   usePrepareMaxxingGaugeGetReward,
 } from "../../lib/wagmiGen";
 
-import { useGaugeRewards } from "./lib/useGaugeRewards";
+import { useGaugeRewards } from "./lib";
 
 export function Reward() {
   const { address } = useAccount();

@@ -12,10 +12,11 @@ const QUERY_KEYS = {
   EARNED: "EARNED",
 };
 
-interface Token {
+export interface Token {
   address: Address;
   symbol: string;
   decimals: number;
+  reward: number;
 }
 
 interface Earned {
@@ -26,25 +27,27 @@ interface Earned {
 
 export function useGaugeRewards() {
   const { address } = useAccount();
-  const { data: rewardsListLength } = useMaxxingGaugeRewardsListLength({
-    select: (data) => Number(data),
-  });
-  const { data: rewardsTokens } = useQuery({
-    queryKey: [QUERY_KEYS.TOKEN_ADDRESSES, rewardsListLength],
-    queryFn: () => getGaugeRewardsTokenAddresses(rewardsListLength),
-    enabled: !!rewardsListLength,
-  });
+  const { data: rewardTokens } = useGaugeRewardTokens();
   return useQuery({
-    queryKey: [QUERY_KEYS.EARNED, rewardsTokens, address],
-    queryFn: () => getEarned(address, rewardsTokens),
-    enabled: !!rewardsTokens && !!address,
+    queryKey: [QUERY_KEYS.EARNED, rewardTokens, address],
+    queryFn: () => getEarned(address, rewardTokens),
+    enabled: !!rewardTokens && !!address,
     select: filterEarned,
   });
 }
 
-async function getGaugeRewardsTokenAddresses(
-  rewardsListLength: number | undefined
-) {
+export function useGaugeRewardTokens() {
+  const { data: rewardsListLength } = useMaxxingGaugeRewardsListLength({
+    select: (data) => Number(data),
+  });
+  return useQuery({
+    queryKey: [QUERY_KEYS.TOKEN_ADDRESSES, rewardsListLength],
+    queryFn: () => getGaugeRewardTokens(rewardsListLength),
+    enabled: !!rewardsListLength,
+  });
+}
+
+async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
   if (!rewardsListLength) {
     throw new Error("rewardsListLength is undefined or zero");
   }
@@ -54,7 +57,7 @@ async function getGaugeRewardsTokenAddresses(
     abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 
-  const rewardsTokenAddresses: Token[] = [];
+  const rewardsTokens: Token[] = [];
 
   for (let i = 0; i < rewardsListLength; i++) {
     const rewardTokenAddress = await viemClient.readContract({
@@ -62,24 +65,39 @@ async function getGaugeRewardsTokenAddresses(
       functionName: "rewards",
       args: [BigInt(i)],
     });
-    const symbol = await viemClient.readContract({
+
+    const rewardTokenContract = {
       address: rewardTokenAddress,
       abi: erc20ABI,
-      functionName: "symbol",
+    } as const;
+
+    const [symbol, decimals, rewardRate] = await viemClient.multicall({
+      allowFailure: false,
+      contracts: [
+        {
+          ...rewardTokenContract,
+          functionName: "symbol",
+        },
+        {
+          ...rewardTokenContract,
+          functionName: "decimals",
+        },
+        {
+          ...gaugeContract,
+          functionName: "rewardRate",
+          args: [rewardTokenAddress],
+        },
+      ],
     });
-    const decimals = await viemClient.readContract({
-      address: rewardTokenAddress,
-      abi: erc20ABI,
-      functionName: "decimals",
-    });
-    rewardsTokenAddresses.push({
+    rewardsTokens.push({
       address: rewardTokenAddress,
       symbol,
       decimals,
+      reward: +formatUnits(rewardRate, decimals) * 24 * 60 * 60,
     });
   }
 
-  return rewardsTokenAddresses;
+  return rewardsTokens;
 }
 
 async function getEarned(

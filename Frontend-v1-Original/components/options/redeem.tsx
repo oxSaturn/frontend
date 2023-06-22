@@ -27,14 +27,20 @@ import {
 } from "../../lib/wagmiGen";
 
 import { Slider } from "./slider";
-import { useAmountToPayLiquid, useAmountToPayLP } from "./lib/useAmountToPay";
-import { INPUT, INPUT_TYPE, useInputs, isValidInput } from "./lib/useInputs";
-import { useTokenData } from "./lib/useTokenData";
-import { useNow } from "./lib/useNow";
-import { useDiscountsData } from "./lib/useDiscountsData";
-import { useDiscountTimer } from "./lib/useDiscountTimer";
-import { useAllowance } from "./lib/useAllowance";
-import { useStakeData } from "./lib/useStakeData";
+import {
+  useAmountToPayLiquid,
+  useAmountToPayLP,
+  INPUT,
+  INPUT_TYPE,
+  useInputs,
+  isValidInput,
+  useTokenData,
+  useNow,
+  useDiscountsData,
+  useDiscountTimer,
+  useAllowance,
+  useStakeData,
+} from "./lib";
 
 const TABS = {
   LP: "LP",

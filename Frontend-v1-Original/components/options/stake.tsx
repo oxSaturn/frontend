@@ -22,8 +22,7 @@ import {
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
-import { isValidInput } from "./lib/useInputs";
-import { useStakeData } from "./lib/useStakeData";
+import { isValidInput, useStakeData, useGaugeApr } from "./lib";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -49,7 +48,9 @@ export function Stake() {
     stakedBalance,
     stakedBalanceWithLock,
     stakedLockEnd,
+    totalStakedValue,
   } = useStakeData();
+  const { data: apr } = useGaugeApr();
 
   const {
     data: isApprovalNeeded,
@@ -181,6 +182,14 @@ export function Stake() {
           >
             Withdraw
           </label>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>Total staked</div>
+          <div>${formatCurrency(totalStakedValue)}</div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>APR</div>
+          <div>{formatCurrency(apr)} %</div>
         </div>
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
