@@ -2,36 +2,36 @@ import { useAccount, useBalance } from "wagmi";
 import { formatEther } from "viem";
 
 import {
-  useAggMaxxingBalanceOf,
-  useAggMaxxingBalanceWithLock,
-  useAggMaxxingLockEnd,
-  useAggMaxxingStake,
+  useMaxxingGaugeBalanceOf,
+  useMaxxingGaugeBalanceWithLock,
+  useMaxxingGaugeLockEnd,
+  useMaxxingGaugeStake,
 } from "../../../lib/wagmiGen";
 
 export function useStakeData() {
   const { address } = useAccount();
 
-  const { data: pair } = useAggMaxxingStake();
+  const { data: pair } = useMaxxingGaugeStake();
   const { data: pooledBalance, refetch: refetchPooledBalance } = useBalance({
     address,
     token: pair,
   });
 
   const { data: stakedBalance, refetch: refetchStakedBalance } =
-    useAggMaxxingBalanceOf({
+    useMaxxingGaugeBalanceOf({
       args: [address!],
       enabled: !!address,
       select: (data) => formatEther(data),
     });
 
   const { data: stakedBalanceWithLock, refetch: refetchStakedBalanceWithLock } =
-    useAggMaxxingBalanceWithLock({
+    useMaxxingGaugeBalanceWithLock({
       args: [address!],
       enabled: !!address,
       select: (data) => formatEther(data),
     });
 
-  const { data: stakedLockEnd } = useAggMaxxingLockEnd({
+  const { data: stakedLockEnd } = useMaxxingGaugeLockEnd({
     args: [address!],
     enabled:
       !!address &&

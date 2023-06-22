@@ -13,12 +13,12 @@ export default defineConfig({
       abi: erc20ABI,
     },
     {
-      name: "oAGG",
+      name: "OptionToken",
       abi: oAggABI,
       address: PRO_OPTIONS.oAGG.tokenAddress,
     },
     {
-      name: "AggMaxxing",
+      name: "MaxxingGauge",
       abi: aggMaxxingABI,
       address: PRO_OPTIONS.oAGG.gaugeAddress,
     },

@@ -13,12 +13,12 @@ import dayjs from "dayjs";
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
-  useAggMaxxingDeposit,
-  useAggMaxxingWithdraw,
+  useMaxxingGaugeDeposit,
+  useMaxxingGaugeWithdraw,
   useErc20Allowance,
   useErc20Approve,
-  usePrepareAggMaxxingDeposit,
-  usePrepareAggMaxxingWithdraw,
+  usePrepareMaxxingGaugeDeposit,
+  usePrepareMaxxingGaugeWithdraw,
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
@@ -88,7 +88,7 @@ export function Stake() {
     },
   });
 
-  const { config: depositConfig } = usePrepareAggMaxxingDeposit({
+  const { config: depositConfig } = usePrepareMaxxingGaugeDeposit({
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n, 0n],
     enabled:
       !!address &&
@@ -100,7 +100,7 @@ export function Stake() {
     write: deposit,
     data: txDepositResponse,
     isLoading: writingDeposit,
-  } = useAggMaxxingDeposit({
+  } = useMaxxingGaugeDeposit({
     ...depositConfig,
   });
   const { isFetching: waitingDepositReceipt } = useWaitForTransaction({
@@ -110,7 +110,7 @@ export function Stake() {
     },
   });
 
-  const { config: withdrawConfig } = usePrepareAggMaxxingWithdraw({
+  const { config: withdrawConfig } = usePrepareMaxxingGaugeWithdraw({
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n],
     enabled:
       !!address &&
@@ -122,7 +122,7 @@ export function Stake() {
     write: withdraw,
     data: txWithdrawResponse,
     isLoading: writingWithdraw,
-  } = useAggMaxxingWithdraw({
+  } = useMaxxingGaugeWithdraw({
     ...withdrawConfig,
   });
   const { isFetching: waitingWithdrawReceipt } = useWaitForTransaction({

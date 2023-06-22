@@ -4,6 +4,7 @@ import { useAccount } from "wagmi";
 
 import { Redeem } from "../../components/options/redeem";
 import { Stake } from "../../components/options/stake";
+import { Reward } from "../../components/options/reward";
 
 function Rewards() {
   const { address } = useAccount();
@@ -13,7 +14,10 @@ function Rewards() {
       {address ? (
         <div className="flex flex-wrap items-start justify-center gap-5">
           <Redeem />
-          <Stake />
+          <div className="flex h-full flex-col items-start justify-start gap-5">
+            <Stake />
+            <Reward />
+          </div>
         </div>
       ) : (
         <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-full flex-col flex-wrap items-center justify-center bg-[rgba(17,23,41,0.2)] p-12 text-center shadow-none max-lg:my-auto max-lg:mt-24 max-lg:mb-0 lg:h-[100vh] lg:w-full">

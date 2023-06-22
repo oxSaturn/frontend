@@ -18,12 +18,12 @@ import * as Separator from "@radix-ui/react-separator";
 import { formatCurrency } from "../../utils/utils";
 
 import {
-  useOAggDiscount,
-  useOAggExercise,
-  usePrepareOAggExercise,
-  usePrepareOAggExerciseLp,
-  useOAggExerciseLp,
-  useOAggGetLockDurationForLpDiscount,
+  useOptionTokenDiscount,
+  useOptionTokenExercise,
+  usePrepareOptionTokenExercise,
+  usePrepareOptionTokenExerciseLp,
+  useOptionTokenExerciseLp,
+  useOptionTokenGetLockDurationForLpDiscount,
 } from "../../lib/wagmiGen";
 
 import { Slider } from "./slider";
@@ -134,7 +134,7 @@ function RedeemLiquid({ now }: { now: number }) {
     underlyingTokenSymbol,
   } = useTokenData();
 
-  const { data: discount } = useOAggDiscount({
+  const { data: discount } = useOptionTokenDiscount({
     select: (asianDiscount) => (100n - asianDiscount).toString(),
   });
 
@@ -146,7 +146,7 @@ function RedeemLiquid({ now }: { now: number }) {
     isFetching: isFetchingAllowanceOrApproving,
   } = useAllowance();
 
-  const { config: exerciseOptionConfig } = usePrepareOAggExercise({
+  const { config: exerciseOptionConfig } = usePrepareOptionTokenExercise({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(payment) && isValidInput(maxPayment)
@@ -166,7 +166,7 @@ function RedeemLiquid({ now }: { now: number }) {
     write: redeem,
     data: txResponse,
     isLoading: writingExercise,
-  } = useOAggExercise(exerciseOptionConfig);
+  } = useOptionTokenExercise(exerciseOptionConfig);
   const { isFetching: waitingRedeemReceipt } = useWaitForTransaction({
     hash: txResponse?.hash,
     onSuccess() {
@@ -384,7 +384,7 @@ function RedeemLP({ now }: { now: number }) {
   const {
     data: durationForDiscount,
     isFetching: isFetchingDurationForDiscount,
-  } = useOAggGetLockDurationForLpDiscount({
+  } = useOptionTokenGetLockDurationForLpDiscount({
     args: [BigInt(100 - lpDiscount)],
     cacheTime: 0,
     select(data) {
@@ -430,7 +430,7 @@ function RedeemLP({ now }: { now: number }) {
     isFetching: isFetchingAllowanceOrApproving,
   } = useAllowance();
 
-  const { config: exerciseLPOptionConfig } = usePrepareOAggExerciseLp({
+  const { config: exerciseLPOptionConfig } = usePrepareOptionTokenExerciseLp({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(paymentAmount!) && isValidInput(maxPaymentAmountForExercise)
@@ -452,7 +452,7 @@ function RedeemLP({ now }: { now: number }) {
     write: redeemLP,
     data: txResponseLP,
     isLoading: writingExerciseLP,
-  } = useOAggExerciseLp(exerciseLPOptionConfig);
+  } = useOptionTokenExerciseLp(exerciseLPOptionConfig);
 
   const { isFetching: waitingRedeemReceipt } = useWaitForTransaction({
     hash: txResponseLP?.hash,

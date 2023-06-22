@@ -11,7 +11,7 @@ export const Slider = forwardRef(function Slider(
         <SliderPrimitive.Range className="absolute h-full rounded-full bg-white" />
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
-        className="block h-5 w-5 rounded-[10px] bg-white hover:bg-violet-100 focus:outline focus:outline-secondary"
+        className="block h-5 w-5 cursor-pointer rounded-[10px] bg-white hover:bg-violet-100 focus:outline focus:outline-secondary"
         aria-label="Discount"
       />
     </SliderPrimitive.Root>

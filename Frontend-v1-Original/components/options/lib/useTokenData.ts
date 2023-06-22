@@ -2,20 +2,20 @@ import { useBalance, useAccount } from "wagmi";
 import { formatEther, parseEther } from "viem";
 
 import {
-  useOAggSymbol,
-  useOAggPaymentToken,
-  useOAggBalanceOf,
-  useOAggGetDiscountedPrice,
-  useOAggUnderlyingToken,
-  useOAggGetTimeWeightedAveragePrice,
+  useOptionTokenSymbol,
+  useOptionTokenPaymentToken,
+  useOptionTokenBalanceOf,
+  useOptionTokenGetDiscountedPrice,
+  useOptionTokenUnderlyingToken,
+  useOptionTokenGetTimeWeightedAveragePrice,
   useErc20Symbol,
 } from "../../../lib/wagmiGen";
 
 export function useTokenData() {
   const { address } = useAccount();
-  const { data: optionTokenSymbol } = useOAggSymbol();
-  const { data: paymentTokenAddress } = useOAggPaymentToken();
-  const { data: underlyingTokenAddress } = useOAggUnderlyingToken();
+  const { data: optionTokenSymbol } = useOptionTokenSymbol();
+  const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
+  const { data: underlyingTokenAddress } = useOptionTokenUnderlyingToken();
   const { data: paymentTokenSymbol } = useErc20Symbol({
     address: paymentTokenAddress,
     enabled: !!paymentTokenAddress,
@@ -38,18 +38,18 @@ export function useTokenData() {
     data: optionBalance,
     refetch: refetchOptionBalance,
     isFetching: isFetchingOptionBalance,
-  } = useOAggBalanceOf({
+  } = useOptionTokenBalanceOf({
     args: [address!],
     enabled: !!address,
     select: (data) => formatEther(data),
   });
 
-  const { data: optionPrice } = useOAggGetTimeWeightedAveragePrice({
+  const { data: optionPrice } = useOptionTokenGetTimeWeightedAveragePrice({
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
 
-  const { data: discountedPrice } = useOAggGetDiscountedPrice({
+  const { data: discountedPrice } = useOptionTokenGetDiscountedPrice({
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });

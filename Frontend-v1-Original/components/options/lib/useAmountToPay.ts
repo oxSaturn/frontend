@@ -1,8 +1,8 @@
 import { formatEther, parseEther } from "viem";
 
 import {
-  useOAggGetDiscountedPrice,
-  useOAggGetPaymentTokenAmountForExerciseLp,
+  useOptionTokenGetDiscountedPrice,
+  useOptionTokenGetPaymentTokenAmountForExerciseLp,
 } from "../../../lib/wagmiGen";
 
 import { INPUT, isValidInput, useInputs } from "./useInputs";
@@ -11,18 +11,19 @@ export function useAmountToPayLiquid() {
   const { option, payment, activeInput, setOption, setPayment } = useInputs();
   const maxPayment = (parseFloat(payment) * 1.01).toString();
 
-  const { isFetching: isFetchingPaymentForOption } = useOAggGetDiscountedPrice({
-    args: [isValidInput(option) ? parseEther(option as `${number}`) : 0n],
-    enabled: activeInput === INPUT.OPTION && isValidInput(option),
-    onSuccess: (amountPaymentForOption) => {
-      if (isValidInput(option) && activeInput === INPUT.OPTION) {
-        setPayment(formatEther(amountPaymentForOption));
-      }
-    },
-  });
+  const { isFetching: isFetchingPaymentForOption } =
+    useOptionTokenGetDiscountedPrice({
+      args: [isValidInput(option) ? parseEther(option as `${number}`) : 0n],
+      enabled: activeInput === INPUT.OPTION && isValidInput(option),
+      onSuccess: (amountPaymentForOption) => {
+        if (isValidInput(option) && activeInput === INPUT.OPTION) {
+          setPayment(formatEther(amountPaymentForOption));
+        }
+      },
+    });
 
   const { isFetching: isFetchingOptionDiscountedPrice } =
-    useOAggGetDiscountedPrice({
+    useOptionTokenGetDiscountedPrice({
       args: [parseEther("1")],
       enabled:
         activeInput === INPUT.PAYMENT &&
@@ -53,7 +54,7 @@ export function useAmountToPayLP(lpDiscount: number) {
   const {
     isFetching: isFetchingPaymentTokenAmountForOption,
     data: paymentAndAddLiquidityAmounts,
-  } = useOAggGetPaymentTokenAmountForExerciseLp({
+  } = useOptionTokenGetPaymentTokenAmountForExerciseLp({
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       BigInt(100 - lpDiscount),

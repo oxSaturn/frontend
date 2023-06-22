@@ -1,6 +1,6 @@
 import {
-  useOAggMaxLpDiscount,
-  useOAggMinLpDiscount,
+  useOptionTokenMaxLpDiscount,
+  useOptionTokenMinLpDiscount,
 } from "../../../lib/wagmiGen";
 
 /**
@@ -10,10 +10,10 @@ import {
  * @returns {(minLpDiscount: number, maxLpDiscount: number)}
  */
 export function useDiscountsData() {
-  const { data: minLpDiscount } = useOAggMinLpDiscount({
+  const { data: minLpDiscount } = useOptionTokenMinLpDiscount({
     select: (data) => Number(100n - data),
   });
-  const { data: maxLpDiscount } = useOAggMaxLpDiscount({
+  const { data: maxLpDiscount } = useOptionTokenMaxLpDiscount({
     select: (data) => Number(100n - data),
   });
   return {
