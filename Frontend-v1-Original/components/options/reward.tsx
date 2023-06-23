@@ -9,7 +9,7 @@ import {
   usePrepareMaxxingGaugeGetReward,
 } from "../../lib/wagmiGen";
 
-import { useGaugeRewards } from "./lib";
+import { useGaugeRewards, useTokenData } from "./lib";
 
 export function Reward() {
   const queryClient = useQueryClient();
@@ -24,6 +24,8 @@ export function Reward() {
   const earnedTokenAddresses = useMemo(() => {
     return earnedRewards?.map((reward) => reward.address);
   }, [earnedRewards]);
+
+  const { underlyingTokenSymbol } = useTokenData();
 
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
     args: [address!, earnedTokenAddresses!],
@@ -57,7 +59,9 @@ export function Reward() {
             key={earnedReward.address}
           >
             {formatCurrency(earnedReward.earnedAmount)}{" "}
-            {earnedReward.symbol === "FLOW" ? "oFLOW" : earnedReward.symbol}
+            {earnedReward.symbol === underlyingTokenSymbol
+              ? `o${underlyingTokenSymbol}`
+              : earnedReward.symbol}
           </div>
         ))}
       {earnedRewards && earnedRewards.length === 0 && (

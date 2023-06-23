@@ -57,8 +57,8 @@ function Navigation() {
     if (activePath.includes("rewards")) {
       setActive("rewards");
     }
-    if (activePath.includes("oflow")) {
-      setActive("oflow");
+    if (activePath.includes("options")) {
+      setActive("options");
     }
   }, [router.asPath]);
 
@@ -71,7 +71,7 @@ function Navigation() {
         {renderSubNav("Vest", "vest")}
         {renderSubNav("Vote", "vote")}
         {renderSubNav("Rewards", "rewards")}
-        {renderSubNav("oFLOW", "oflow")}
+        {renderSubNav("Options", "options")}
         {renderSubNav("Bribe", "bribe")}
         {renderMoreTab()}
       </>

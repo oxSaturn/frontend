@@ -18,7 +18,7 @@ import {
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
 
-import { isValidInput } from "./lib";
+import { isValidInput, useTokenData } from "./lib";
 
 export function Convert() {
   const { address } = useAccount();
@@ -28,6 +28,7 @@ export function Convert() {
   });
 
   const [amount, setAmount] = useState("");
+  const { refetchBalances } = useTokenData();
 
   const { data: optionV1Balance, refetch: refetchOptionV1Balance } = useBalance(
     {
@@ -88,6 +89,7 @@ export function Convert() {
     onSuccess: () => {
       refetchOptionV1Balance();
       refetchAllowance();
+      refetchBalances();
     },
   });
 
