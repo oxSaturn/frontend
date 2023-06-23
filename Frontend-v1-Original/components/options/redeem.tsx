@@ -27,10 +27,6 @@ import {
   useOptionTokenGetLockDurationForLpDiscount,
   usePrepareOptionTokenExerciseVe,
   useOptionTokenExerciseVe,
-  useOptionTokenPaymentToken,
-  useOptionTokenUnderlyingToken,
-  useErc20Symbol,
-  useOptionTokenSymbol,
 } from "../../lib/wagmiGen";
 
 import { Slider } from "./slider";
@@ -645,8 +641,8 @@ function RedeemLP({ now }: { now: number }) {
           </button>
         )}
         {isSelectedDurationLessThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-error">
-            <div className="underline">STOP</div>
+          <div className="flex flex-col items-start justify-center text-warning">
+            <div className="underline">WARNING</div>
             <div>
               You already have a staked position expires{" "}
               {dayjs.unix(stakedLockEnd).fromNow()}. You can only redeem with
