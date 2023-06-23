@@ -6,7 +6,7 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { parseEther, parseUnits } from "viem";
-import { canto } from "viem/chains";
+import { pulsechain } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -127,7 +127,7 @@ function RedeemLiquid({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const { address } = useAccount();
@@ -388,7 +388,7 @@ function RedeemLP({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const { address } = useAccount();
@@ -749,7 +749,7 @@ function RedeemVest({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const { address } = useAccount();

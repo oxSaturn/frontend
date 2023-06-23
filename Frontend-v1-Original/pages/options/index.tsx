@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 import { Redeem } from "../../components/options/redeem";
 import { Stake } from "../../components/options/stake";
 import { Reward } from "../../components/options/reward";
+import { Convert } from "../../components/options/convert";
 
 function Rewards() {
   const { address } = useAccount();
@@ -12,11 +13,12 @@ function Rewards() {
   return (
     <div className="relative my-3 flex h-full w-full flex-col pt-8">
       {address ? (
-        <div className="flex flex-wrap items-start justify-center gap-5">
+        <div className="flex flex-wrap items-stretch justify-center gap-5">
           <Redeem />
-          <div className="flex h-full flex-col items-start justify-start gap-5">
+          <div className="flex flex-col items-center justify-between gap-1">
             <Stake />
             <Reward />
+            <Convert />
           </div>
         </div>
       ) : (

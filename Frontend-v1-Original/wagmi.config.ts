@@ -4,6 +4,7 @@ import { erc20ABI } from "wagmi";
 
 import { airdropClaimABI, oFlowABI } from "./stores/abis/abis";
 import { PRO_OPTIONS } from "./stores/constants/constants";
+import { flowConvertorABI } from "./stores/abis/flowConvertorABI";
 
 export default defineConfig({
   out: "./lib/wagmiGen.ts",
@@ -36,6 +37,10 @@ export default defineConfig({
       name: "MaxxingGauge",
       abi: PRO_OPTIONS.maxxingGaugeABI,
       address: PRO_OPTIONS.oFLOW.gaugeAddress,
+    },
+    {
+      name: "Convertor",
+      abi: flowConvertorABI,
     },
   ],
   plugins: [react()],
