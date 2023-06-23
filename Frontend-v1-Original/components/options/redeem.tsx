@@ -658,11 +658,11 @@ function RedeemLP({ now }: { now: number }) {
             <div>
               You are going to increase your lock end from{" "}
               <span className="tracking-tighter">
-                {dayjs.unix(stakedLockEnd).format("HH[h]mm[m] MM/DD")}
+                {dayjs.unix(stakedLockEnd).format("HH[:]mm MM/DD")}
               </span>{" "}
               to{" "}
               <span className="tracking-tighter">
-                {dayjs().second(durationForDiscount).format("HH[h]mm[m] MM/DD")}
+                {dayjs().second(durationForDiscount).format("HH[:]mm MM/DD")}
               </span>
               .
             </div>

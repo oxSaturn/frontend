@@ -45,12 +45,19 @@ export function useStakeData() {
     select: (data) => Number(data),
   });
 
+  const stakedBalanceWithoutLock =
+    stakedBalance && stakedBalanceWithLock
+      ? parseFloat(stakedBalance) - parseFloat(stakedBalanceWithLock)
+      : undefined;
+
   const { data: gaugeTotalStakedData } = useTotalStaked();
+
   return {
     ...gaugeTotalStakedData,
     pair,
     pooledBalance,
     stakedBalance,
+    stakedBalanceWithoutLock: stakedBalanceWithoutLock?.toString(),
     stakedBalanceWithLock,
     stakedLockEnd,
     refetch: () => {

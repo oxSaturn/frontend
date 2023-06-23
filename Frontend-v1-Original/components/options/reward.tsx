@@ -25,7 +25,7 @@ export function Reward() {
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
     args: [address!, earnedTokenAddresses!],
     enabled:
-      !!address && earnedTokenAddresses && earnedTokenAddresses.length > 0,
+      !!address && !!earnedTokenAddresses && earnedTokenAddresses.length > 0,
   });
   const {
     write: getReward,
@@ -44,14 +44,21 @@ export function Reward() {
         {isRefetchingGaugeRewards && <div>Updating...</div>}
       </div>
       {earnedRewards &&
+        earnedRewards.length > 0 &&
         earnedRewards.map((earnedReward) => (
           <div
             className="flex items-center justify-between"
             key={earnedReward.address}
           >
-            {formatCurrency(earnedReward.earnedAmount)} {earnedReward.symbol}
+            {formatCurrency(earnedReward.earnedAmount)}{" "}
+            {earnedReward.symbol === "FLOW" ? "oFLOW" : earnedReward.symbol}
           </div>
         ))}
+      {earnedRewards && earnedRewards.length === 0 && (
+        <div className="flex items-center justify-between">
+          Nothing earned yet
+        </div>
+      )}
       <button
         disabled={
           isFetchingGaugeRewards ||

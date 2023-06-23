@@ -46,6 +46,7 @@ export function Stake() {
     refetch: refetchStakedData,
     pooledBalance,
     stakedBalance,
+    stakedBalanceWithoutLock,
     stakedBalanceWithLock,
     stakedLockEnd,
     totalStakedValue,
@@ -142,6 +143,22 @@ export function Stake() {
     }
   };
 
+  const pickWithdrawAmount = (type: "locked" | "notLocked") => {
+    if (action === ACTION.STAKE) return;
+    if (type === "notLocked") {
+      if (
+        stakedBalanceWithoutLock &&
+        parseFloat(stakedBalanceWithoutLock) > 0
+      ) {
+        setAmount(stakedBalanceWithoutLock);
+      }
+    } else if (type === "locked") {
+      if (stakedBalanceWithLock && parseFloat(stakedBalanceWithLock) > 0) {
+        setAmount(stakedBalanceWithLock);
+      }
+    }
+  };
+
   const handleSwitch = () => {
     setAction((prevAction) =>
       prevAction === ACTION.STAKE ? ACTION.WITHDRAW : ACTION.STAKE
@@ -193,12 +210,22 @@ export function Stake() {
           <div>{pooledBalance?.formatted}</div>
         </div>
         <div className="flex items-center justify-between">
-          <div>Staked balance</div>
-          <div>{formatCurrency(stakedBalance)}</div>
+          <div>Staked without lock</div>
+          <div
+            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+            onClick={() => pickWithdrawAmount("notLocked")}
+          >
+            {formatCurrency(stakedBalanceWithoutLock)}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Staked with lock</div>
-          <div>{formatCurrency(stakedBalanceWithLock)}</div>
+          <div
+            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+            onClick={() => pickWithdrawAmount("locked")}
+          >
+            {formatCurrency(stakedBalanceWithLock)}
+          </div>
         </div>
         {stakedLockEnd && (
           <div className="flex items-center justify-between">
