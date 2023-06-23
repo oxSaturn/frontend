@@ -251,7 +251,7 @@ function RedeemLiquid({ now }: { now: number }) {
       <div className="my-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div
-            data-content={optionTokenSymbol}
+            data-content={`${optionTokenSymbol} to redeem`}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
             } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -264,7 +264,7 @@ function RedeemLiquid({ now }: { now: number }) {
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
-              placeholder={`0.00 ${optionTokenSymbol}`}
+              placeholder={`You redeem 0.00 ${optionTokenSymbol}`}
             />
           </div>
           <button className="p-4" onClick={() => setMax(INPUT.OPTION)}>
@@ -273,7 +273,7 @@ function RedeemLiquid({ now }: { now: number }) {
         </div>
         <div className="flex items-center justify-between">
           <div
-            data-content={paymentTokenSymbol}
+            data-content={`${paymentTokenSymbol} to pay`}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
             } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -288,7 +288,7 @@ function RedeemLiquid({ now }: { now: number }) {
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
-              placeholder={`0.00 ${paymentTokenSymbol}`}
+              placeholder={`You pay 0.00 ${paymentTokenSymbol}`}
             />
           </div>
           <button className="p-4" onClick={() => setMax(INPUT.PAYMENT)}>
@@ -296,7 +296,7 @@ function RedeemLiquid({ now }: { now: number }) {
           </button>
         </div>
         <div
-          data-content={underlyingTokenSymbol}
+          data-content={`${underlyingTokenSymbol} to receive`}
           className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
             areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
           } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -305,7 +305,7 @@ function RedeemLiquid({ now }: { now: number }) {
             readOnly
             value={option}
             className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
-            placeholder={`0.00 ${underlyingTokenSymbol}`}
+            placeholder={`You get 0.00 ${underlyingTokenSymbol}`}
           />
         </div>
         {chain?.unsupported ? (
@@ -555,7 +555,7 @@ function RedeemLP({ now }: { now: number }) {
       <div className="my-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div
-            data-content={optionTokenSymbol}
+            data-content={`${optionTokenSymbol} to redeem`}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
             } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -568,7 +568,7 @@ function RedeemLP({ now }: { now: number }) {
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
-              placeholder={`0.00 ${optionTokenSymbol}`}
+              placeholder={`You redeem 0.00 ${optionTokenSymbol}`}
             />
           </div>
           <button className="p-4" onClick={() => setMax(INPUT.OPTION)}>
@@ -577,7 +577,7 @@ function RedeemLP({ now }: { now: number }) {
         </div>
         <div className="flex items-center justify-between">
           <div
-            data-content={paymentTokenSymbol}
+            data-content={`${paymentTokenSymbol} to pay`}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
             } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -592,12 +592,12 @@ function RedeemLP({ now }: { now: number }) {
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
-              placeholder={`0.00 ${paymentTokenSymbol}`}
+              placeholder={`You pay 0.00 ${paymentTokenSymbol}`}
             />
           </div>
         </div>
         <div
-          data-content={underlyingTokenSymbol}
+          data-content={`${underlyingTokenSymbol} to receive`}
           className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
             areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
           } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -606,7 +606,7 @@ function RedeemLP({ now }: { now: number }) {
             readOnly
             value={option}
             className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
-            placeholder={`0.00 ${underlyingTokenSymbol}`}
+            placeholder={`You get 0.00 ${underlyingTokenSymbol}`}
           />
         </div>
         {chain?.unsupported ? (
@@ -875,7 +875,7 @@ function RedeemVest({ now }: { now: number }) {
       <div className="my-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div
-            data-content={optionTokenSymbol}
+            data-content={`${optionTokenSymbol} to redeem`}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
             } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -888,7 +888,7 @@ function RedeemVest({ now }: { now: number }) {
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
-              placeholder={`0.00 ${optionTokenSymbol}`}
+              placeholder={`You redeem 0.00 ${optionTokenSymbol}`}
             />
           </div>
           <button className="p-4" onClick={() => setMax(INPUT.OPTION)}>
@@ -897,7 +897,7 @@ function RedeemVest({ now }: { now: number }) {
         </div>
         <div className="flex items-center justify-between">
           <div
-            data-content={paymentTokenSymbol}
+            data-content={`${paymentTokenSymbol} to pay`}
             className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
               areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
             } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -912,7 +912,7 @@ function RedeemVest({ now }: { now: number }) {
                   ? "text-error focus:outline-error focus-visible:outline-error"
                   : "focus:outline-secondary focus-visible:outline-secondary"
               }`}
-              placeholder={`0.00 ${paymentTokenSymbol}`}
+              placeholder={`You pay 0.00 ${paymentTokenSymbol}`}
             />
           </div>
           <button className="p-4" onClick={() => setMax(INPUT.PAYMENT)}>
@@ -920,7 +920,7 @@ function RedeemVest({ now }: { now: number }) {
           </button>
         </div>
         <div
-          data-content={`ve${underlyingTokenSymbol}`}
+          data-content={`ve${underlyingTokenSymbol} to receive`}
           className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
             areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
           } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
@@ -929,7 +929,7 @@ function RedeemVest({ now }: { now: number }) {
             readOnly
             value={option}
             className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
-            placeholder={`0.00 ve${underlyingTokenSymbol}`}
+            placeholder={`You get 0.00 ve${underlyingTokenSymbol}`}
           />
         </div>
         {chain?.unsupported ? (
