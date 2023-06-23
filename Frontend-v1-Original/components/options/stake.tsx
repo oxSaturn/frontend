@@ -278,7 +278,7 @@ export function Stake() {
                 waitingWithdrawReceipt ||
                 (isApprovalNeeded && action === ACTION.STAKE
                   ? !approve
-                  : ACTION.WITHDRAW
+                  : action === ACTION.WITHDRAW
                   ? !withdraw
                   : !deposit)
               }
