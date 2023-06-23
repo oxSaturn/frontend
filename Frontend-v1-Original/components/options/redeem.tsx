@@ -67,7 +67,7 @@ export function Redeem() {
     LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
     VEST: `ve${underlyingTokenSymbol}`,
     LIQUID: `${underlyingTokenSymbol}`,
-  }
+  };
   const now = useNow();
   const [tab, setTab] = useState<(typeof TABS)[keyof typeof TABS]>(TABS.LP);
 
@@ -96,19 +96,19 @@ export function Redeem() {
       value={tab}
       onValueChange={handleTabChange}
     >
-      <h1 className="text-xl text-center mb-5">Redeem {optionTokenSymbol} Into</h1>
+      <h1 className="mb-5 text-center text-xl">
+        Redeem {optionTokenSymbol} Into
+      </h1>
       <Tabs.List className="flex shrink-0" aria-label="Manage your account">
-        {
-          Object.keys(TABS).map((tab) => (
-            <Tabs.Trigger
-              key={tab}
-              value={TABS[tab as keyof typeof TABS]}
-              className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-sm leading-none text-secondary outline-none hover:text-violet-100 data-[state=active]:relative data-[state=active]:shadow-[0_0_0_2px] data-[state=active]:shadow-black data-[state=active]:text-cyan"
-            >
-              {TABS[tab as keyof typeof TABS]}
-            </Tabs.Trigger>
-          ))
-        }
+        {Object.keys(TABS).map((tab) => (
+          <Tabs.Trigger
+            key={tab}
+            value={TABS[tab as keyof typeof TABS]}
+            className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-sm leading-none text-secondary outline-none hover:text-violet-100 data-[state=active]:relative data-[state=active]:text-cyan data-[state=active]:shadow-[0_0_0_2px] data-[state=active]:shadow-black"
+          >
+            {TABS[tab as keyof typeof TABS]}
+          </Tabs.Trigger>
+        ))}
       </Tabs.List>
       <Tabs.Content className="mt-3 grow" value={TABS.LP}>
         <RedeemLP now={now} />
@@ -169,7 +169,7 @@ function RedeemLiquid({ now }: { now: number }) {
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(payment, paymentTokenDecimals) &&
-        isValidInput(maxPayment, paymentTokenDecimals)
+      isValidInput(maxPayment, paymentTokenDecimals)
         ? parseUnits(maxPayment, paymentTokenDecimals)
         : 0n,
       address!,
@@ -261,16 +261,18 @@ function RedeemLiquid({ now }: { now: number }) {
         <div className="flex items-center justify-between">
           <div
             data-content={optionTokenSymbol}
-            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               value={option}
               onChange={onOptionInputChange}
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(option) && option !== "") || insufficientOption
-                ? "text-error focus:outline-error focus-visible:outline-error"
-                : "focus:outline-secondary focus-visible:outline-secondary"
-                }`}
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(option) && option !== "") || insufficientOption
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
               placeholder={`0.00 ${optionTokenSymbol}`}
             />
           </div>
@@ -281,18 +283,20 @@ function RedeemLiquid({ now }: { now: number }) {
         <div className="flex items-center justify-between">
           <div
             data-content={paymentTokenSymbol}
-            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               value={payment}
               onChange={onPaymentInputChange}
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(payment, paymentTokenDecimals) &&
-                payment !== "") ||
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(payment, paymentTokenDecimals) &&
+                  payment !== "") ||
                 insufficientPayment
-                ? "text-error focus:outline-error focus-visible:outline-error"
-                : "focus:outline-secondary focus-visible:outline-secondary"
-                }`}
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
               placeholder={`0.00 ${paymentTokenSymbol}`}
             />
           </div>
@@ -302,8 +306,9 @@ function RedeemLiquid({ now }: { now: number }) {
         </div>
         <div
           data-content={underlyingTokenSymbol}
-          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+            areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+          } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
         >
           <input
             readOnly
@@ -337,13 +342,13 @@ function RedeemLiquid({ now }: { now: number }) {
               className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
-                waitingRedeemReceipt ||
-                writingExercise ||
-                isFetchingAmounts
+              waitingRedeemReceipt ||
+              writingExercise ||
+              isFetchingAmounts
                 ? "Loading..."
                 : isApprovalNeeded
-                  ? "Approve"
-                  : "Redeem"}
+                ? "Approve"
+                : "Redeem"}
             </button>
           </>
         )}
@@ -540,8 +545,9 @@ function RedeemLP({ now }: { now: number }) {
         <div>{formatCurrency(lpDiscount)} %</div>
       </div>
       <div
-        className={`flex items-center justify-between ${isFetchingDurationForDiscount && "animate-pulse"
-          }`}
+        className={`flex items-center justify-between ${
+          isFetchingDurationForDiscount && "animate-pulse"
+        }`}
       >
         <div>Stake duration for {lpDiscount}% discount</div>
         <div>
@@ -559,16 +565,18 @@ function RedeemLP({ now }: { now: number }) {
         <div className="flex items-center justify-between">
           <div
             data-content={optionTokenSymbol}
-            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               value={option}
               onChange={onOptionInputChange}
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(option) && option !== "") || insufficientOption
-                ? "text-error focus:outline-error focus-visible:outline-error"
-                : "focus:outline-secondary focus-visible:outline-secondary"
-                }`}
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(option) && option !== "") || insufficientOption
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
               placeholder={`0.00 ${optionTokenSymbol}`}
             />
           </div>
@@ -579,26 +587,29 @@ function RedeemLP({ now }: { now: number }) {
         <div className="flex items-center justify-between">
           <div
             data-content={paymentTokenSymbol}
-            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               value={payment}
               readOnly
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(payment, paymentTokenDecimals) &&
-                payment !== "") ||
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(payment, paymentTokenDecimals) &&
+                  payment !== "") ||
                 insufficientPayment
-                ? "text-error focus:outline-error focus-visible:outline-error"
-                : "focus:outline-secondary focus-visible:outline-secondary"
-                }`}
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
               placeholder={`0.00 ${paymentTokenSymbol}`}
             />
           </div>
         </div>
         <div
           data-content={underlyingTokenSymbol}
-          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+            areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+          } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
         >
           <input
             readOnly
@@ -633,13 +644,13 @@ function RedeemLP({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
           >
             {waitingRedeemReceipt ||
-              writingExerciseLP ||
-              isFetchingAmounts ||
-              isFetchingAllowanceOrApproving
+            writingExerciseLP ||
+            isFetchingAmounts ||
+            isFetchingAllowanceOrApproving
               ? "Loading..."
               : isApprovalNeeded
-                ? "Approve"
-                : "Redeem into LP"}
+              ? "Approve"
+              : "Redeem into LP"}
           </button>
         )}
         {isSelectedDurationLessThanLockEnd && (
@@ -782,7 +793,7 @@ function RedeemVest({ now }: { now: number }) {
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(payment, paymentTokenDecimals) &&
-        isValidInput(maxPayment, paymentTokenDecimals)
+      isValidInput(maxPayment, paymentTokenDecimals)
         ? parseUnits(maxPayment, paymentTokenDecimals)
         : 0n,
       address!,
@@ -874,16 +885,18 @@ function RedeemVest({ now }: { now: number }) {
         <div className="flex items-center justify-between">
           <div
             data-content={optionTokenSymbol}
-            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               value={option}
               onChange={onOptionInputChange}
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(option) && option !== "") || insufficientOption
-                ? "text-error focus:outline-error focus-visible:outline-error"
-                : "focus:outline-secondary focus-visible:outline-secondary"
-                }`}
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(option) && option !== "") || insufficientOption
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
               placeholder={`0.00 ${optionTokenSymbol}`}
             />
           </div>
@@ -894,18 +907,20 @@ function RedeemVest({ now }: { now: number }) {
         <div className="flex items-center justify-between">
           <div
             data-content={paymentTokenSymbol}
-            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-              } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
           >
             <input
               value={payment}
               onChange={onPaymentInputChange}
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(payment, paymentTokenDecimals) &&
-                payment !== "") ||
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(payment, paymentTokenDecimals) &&
+                  payment !== "") ||
                 insufficientPayment
-                ? "text-error focus:outline-error focus-visible:outline-error"
-                : "focus:outline-secondary focus-visible:outline-secondary"
-                }`}
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
               placeholder={`0.00 ${paymentTokenSymbol}`}
             />
           </div>
@@ -915,8 +930,9 @@ function RedeemVest({ now }: { now: number }) {
         </div>
         <div
           data-content={`ve${underlyingTokenSymbol}`}
-          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
-            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+            areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+          } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
         >
           <input
             readOnly
@@ -952,13 +968,13 @@ function RedeemVest({ now }: { now: number }) {
               className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
-                waitingRedeemReceipt ||
-                writingExercise ||
-                isFetchingAmounts
+              waitingRedeemReceipt ||
+              writingExercise ||
+              isFetchingAmounts
                 ? "Loading..."
                 : isApprovalNeeded
-                  ? "Approve"
-                  : "Redeem into Vest"}
+                ? "Approve"
+                : "Redeem into Vest"}
             </button>
           </>
         )}
