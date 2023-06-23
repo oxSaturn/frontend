@@ -155,7 +155,11 @@ export function Convert() {
               waitingApprovalReceipt ||
               writingConvert ||
               waitingConvertReceipt
-                ? "Loading..."
+                ? waitingApprovalReceipt
+                  ? "Approving"
+                  : waitingConvertReceipt
+                  ? "Converting"
+                  : "Loading"
                 : isApprovalNeeded
                 ? "Approve"
                 : "Convert"}
