@@ -20,6 +20,7 @@ export function Reward() {
     isLoading: isLoadingGaugeRewards,
     isRefetching: isRefetchingGaugeRewards,
     isFetching: isFetchingGaugeRewards,
+    refetch: refetchEarnedReward,
   } = useGaugeRewards();
   const earnedTokenAddresses = useMemo(() => {
     return earnedRewards?.map((reward) => reward.address);
@@ -41,6 +42,7 @@ export function Reward() {
     hash: getRewardTx?.hash,
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      refetchEarnedReward();
     },
   });
 
