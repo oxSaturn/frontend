@@ -304,7 +304,7 @@ function RedeemLiquid({ now }: { now: number }) {
           <input
             readOnly
             value={option}
-            className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
+            className="w-full border-none bg-transparent p-4 text-left text-base read-only:cursor-not-allowed focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
             placeholder={`You get 0.00 ${underlyingTokenSymbol}`}
           />
         </div>
@@ -585,7 +585,7 @@ function RedeemLP({ now }: { now: number }) {
             <input
               value={payment}
               readOnly
-              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+              className={`w-full border-none bg-transparent p-4 text-left text-base read-only:cursor-not-allowed focus:outline focus:outline-1 ${
                 (!isValidInput(payment, paymentTokenDecimals) &&
                   payment !== "") ||
                 insufficientPayment
@@ -605,7 +605,7 @@ function RedeemLP({ now }: { now: number }) {
           <input
             readOnly
             value={option}
-            className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
+            className="w-full border-none bg-transparent p-4 text-left text-base read-only:cursor-not-allowed focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
             placeholder={`You get 0.00 ${underlyingTokenSymbol}`}
           />
         </div>
@@ -928,7 +928,7 @@ function RedeemVest({ now }: { now: number }) {
           <input
             readOnly
             value={option}
-            className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
+            className="w-full border-none bg-transparent p-4 text-left text-base read-only:cursor-not-allowed focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
             placeholder={`You get 0.00 ve${underlyingTokenSymbol}`}
           />
         </div>
