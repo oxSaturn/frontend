@@ -128,7 +128,7 @@ export function Convert() {
           </div>
           {chain?.unsupported ? (
             <button
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               onClick={() => switchNetwork?.()}
             >
               Switch to Pulse
@@ -146,7 +146,7 @@ export function Convert() {
                 (isApprovalNeeded ? !approve : !convert)
               }
               onClick={isApprovalNeeded ? () => approve?.() : () => convert?.()}
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {writingApprove ||
               isFetchingAllowance ||
