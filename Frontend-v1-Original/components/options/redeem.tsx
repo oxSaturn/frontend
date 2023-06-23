@@ -540,7 +540,7 @@ function RedeemLP({ now }: { now: number }) {
           isFetchingDurationForDiscount && "animate-pulse"
         }`}
       >
-        <div>Duration for this discount</div>
+        <div>LP lock duration for discount</div>
         <div>
           {days}d {hours}h {minutes}m
         </div>
