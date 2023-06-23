@@ -51,17 +51,8 @@ import {
 } from "./lib";
 
 export function Redeem() {
-  const { data: optionTokenSymbol } = useOptionTokenSymbol();
-  const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
-  const { data: underlyingTokenAddress } = useOptionTokenUnderlyingToken();
-  const { data: paymentTokenSymbol } = useErc20Symbol({
-    address: paymentTokenAddress,
-    enabled: !!paymentTokenAddress,
-  });
-  const { data: underlyingTokenSymbol } = useErc20Symbol({
-    address: underlyingTokenAddress,
-    enabled: !!underlyingTokenAddress,
-  });
+  const { optionTokenSymbol, paymentTokenSymbol, underlyingTokenSymbol } =
+    useTokenData();
 
   const TABS = {
     LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
