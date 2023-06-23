@@ -103,7 +103,7 @@ export function Redeem() {
             <Tabs.Trigger
               key={tab}
               value={TABS[tab as keyof typeof TABS]}
-              className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-sm leading-none text-secondary outline-none hover:text-violet-100 data-[state=active]:text-violet-100 data-[state=active]:relative data-[state=active]:shadow-[0_0_0_2px] data-[state=active]:shadow-black data-[state=active]:text-cyan"
+              className="flex h-[45px] flex-1 cursor-pointer select-none items-center justify-center bg-primaryBg px-5 text-sm leading-none text-secondary outline-none hover:text-violet-100 data-[state=active]:relative data-[state=active]:shadow-[0_0_0_2px] data-[state=active]:shadow-black data-[state=active]:text-cyan"
             >
               {TABS[tab as keyof typeof TABS]}
             </Tabs.Trigger>
