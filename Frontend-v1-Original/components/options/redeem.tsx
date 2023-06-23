@@ -970,6 +970,10 @@ function RedeemVest({ now }: { now: number }) {
           </>
         )}
       </div>
+      <div className="mb-2 flex flex-col items-start justify-center">
+        Redeeming into vest will create you a new max locked veNFT. It is
+        possible to merge it into single veNFT on Vest page after.
+      </div>
       <Tooltip.Root>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
