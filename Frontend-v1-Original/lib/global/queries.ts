@@ -486,7 +486,7 @@ export const getPairsWithGauges = async (
         address: pair.gauge.address,
         abi: CONTRACTS.GAUGE_ABI,
         functionName: "left",
-        args: [CONTRACTS.OPTION_TOKEN],
+        args: [CONTRACTS.OPTION_TOKEN_ADDRESS],
       },
     ] as const;
   });

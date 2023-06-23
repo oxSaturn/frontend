@@ -165,7 +165,7 @@ export const getRewardBalances = async (
       address: pair.gauge.address,
       abi: CONTRACTS.GAUGE_ABI,
       functionName: "earned",
-      args: [CONTRACTS.OPTION_TOKEN, address],
+      args: [CONTRACTS.OPTION_TOKEN_ADDRESS, address],
     } as const;
   });
 
