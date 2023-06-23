@@ -54,6 +54,9 @@ module.exports = {
         success: "#07bc0c",
         warning: "#ffda58",
         error: "#ff4141",
+        cyan: {
+          DEFAULT: '#00E8CA',
+        }
       },
       boxShadow: {
         glow: "0 0 10px 0 #06fc99",
