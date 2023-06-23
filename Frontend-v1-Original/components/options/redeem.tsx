@@ -54,11 +54,11 @@ export function Redeem() {
   const { optionTokenSymbol, paymentTokenSymbol, underlyingTokenSymbol } =
     useTokenData();
 
-  const TABS = {
+  const [TABS] = useState({
     LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
     VEST: `ve${underlyingTokenSymbol}`,
     LIQUID: `${underlyingTokenSymbol}`,
-  };
+  });
   const now = useNow();
   const [tab, setTab] = useState<(typeof TABS)[keyof typeof TABS]>(TABS.LP);
 
