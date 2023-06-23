@@ -649,8 +649,8 @@ function RedeemLP({ now }: { now: number }) {
             <div className="underline">STOP</div>
             <div>
               You already have a staked position expires{" "}
-              {dayjs.unix(stakedLockEnd).fromNow()}. Redeeming with less lock
-              duration will take into account longest lock.
+              {dayjs.unix(stakedLockEnd).fromNow()}. You can only redeem with
+              same lock or longer.
             </div>
           </div>
         )}
