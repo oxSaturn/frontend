@@ -385,8 +385,6 @@ function RedeemLP({ now }: { now: number }) {
   } = useInputs();
   const maxPayment = (parseFloat(payment) * 1.01).toString();
 
-  const [lpDiscount, setLpDiscount] = useState(50);
-
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
     chainId: pulsechain.id,
@@ -395,6 +393,8 @@ function RedeemLP({ now }: { now: number }) {
   const { address } = useAccount();
 
   const { maxLpDiscount, minLpDiscount } = useDiscountsData();
+
+  const [lpDiscount, setLpDiscount] = useState(maxLpDiscount ?? 50);
 
   const {
     data: durationForDiscount,
