@@ -87,9 +87,7 @@ export function TransferNFT() {
           </Link>
           <Typography>Transfer NFT {id}</Typography>
         </div>
-        {(
-         data?.votedInCurrentEpoch || data?.reset === false 
-        ) ? (
+        {data?.votedInCurrentEpoch || data?.reset === false ? (
           <Alert severity="error" className="bg-transparent">
             Please reset NFT {id} first.
           </Alert>

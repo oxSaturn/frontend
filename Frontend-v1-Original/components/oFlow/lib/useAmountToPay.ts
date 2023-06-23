@@ -2,7 +2,7 @@ import { formatEther, parseEther } from "viem";
 import { pulsechain } from "wagmi/chains";
 import { create } from "zustand";
 
-import { useOFlowGetDiscountedPrice } from "./wagmiGen";
+import { useOFlowGetDiscountedPrice } from "../../../lib/wagmiGen";
 
 export const INPUT = {
   OFLOW: "0",

@@ -1,6 +1,8 @@
 import BigNumber from "bignumber.js";
 import { pulsechain } from "wagmi/chains";
 
+import { maxxingGaugeABI, optionTokenABI } from "../abis/abis";
+
 import * as contracts from "./contracts";
 import * as queryKeys from "./queryKeys";
 
@@ -27,6 +29,14 @@ const config = {
 export const ETHERSCAN_URL = config[pulsechain.id].scan;
 
 export const CONTRACTS = config[pulsechain.id].contracts;
+export const PRO_OPTIONS = {
+  optionTokenABI: optionTokenABI,
+  maxxingGaugeABI: maxxingGaugeABI,
+  oFLOW: {
+    tokenAddress: "0x767D9ad09e4E148e0Ae23Ea1F2dB04e5F0Cd2EdA",
+    gaugeAddress: "0x80D1006427c5f6EB662412aeb027d383C5e069cB",
+  },
+} as const;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

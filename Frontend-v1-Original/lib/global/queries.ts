@@ -404,9 +404,9 @@ const getPairsWithoutGauges = async (
       pair.token0 = token0 != null ? token0 : pair.token0;
       pair.token1 = token1 != null ? token1 : pair.token1;
       pair.balance = formatUnits(balanceOf, PAIR_DECIMALS);
-      pair.totalSupply = formatUnits(totalSupply, PAIR_DECIMALS);
-      pair.reserve0 = formatUnits(reserve0, pair.token0.decimals);
-      pair.reserve1 = formatUnits(reserve1, pair.token1.decimals);
+      pair.totalSupply = +formatUnits(totalSupply, PAIR_DECIMALS);
+      pair.reserve0 = +formatUnits(reserve0, pair.token0.decimals);
+      pair.reserve1 = +formatUnits(reserve1, pair.token1.decimals);
 
       return pair;
     })
@@ -503,11 +503,11 @@ export const getPairsWithGauges = async (
         gaugesData.slice(outerIndex * 5, outerIndex * 5 + 5);
 
       pair.gauge.balance = formatEther(gaugeBalance);
-      pair.gauge.totalSupply = formatEther(totalSupply);
+      pair.gauge.totalSupply = +formatEther(totalSupply);
 
       // in ps totalSupply for reassgined to string from number (api sends number)
       pair.gauge.reserve0 =
-        parseFloat(pair.totalSupply as `${number}`) > 0
+        pair.totalSupply > 0
           ? BigNumber(pair.reserve0)
               .times(pair.gauge.totalSupply)
               .div(pair.totalSupply)
@@ -515,7 +515,7 @@ export const getPairsWithGauges = async (
           : "0";
       // in ps totalSupply for reassgined to string from number (api sends number)
       pair.gauge.reserve1 =
-        parseFloat(pair.totalSupply as `${number}`) > 0
+        pair.totalSupply > 0
           ? BigNumber(pair.reserve1)
               .times(pair.gauge.totalSupply)
               .div(pair.totalSupply)

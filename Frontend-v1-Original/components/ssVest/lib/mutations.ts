@@ -685,7 +685,7 @@ const transferNft = async (
     const { request } = await viemClient.simulateContract({
       account,
       address: CONTRACTS.VE_TOKEN_ADDRESS,
-    abi: CONTRACTS.VE_TOKEN_ABI,
+      abi: CONTRACTS.VE_TOKEN_ABI,
       functionName: "safeTransferFrom",
       args: [account, to, BigInt(nftId)],
     });
