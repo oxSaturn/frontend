@@ -1,7 +1,9 @@
 import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useWaitForTransaction } from "wagmi";
 
 import { formatCurrency } from "../../utils/utils";
+import { QUERY_KEYS } from "../../stores/constants/constants";
 import {
   useMaxxingGaugeGetReward,
   usePrepareMaxxingGaugeGetReward,
@@ -10,6 +12,7 @@ import {
 import { useGaugeRewards } from "./lib";
 
 export function Reward() {
+  const queryClient = useQueryClient();
   const { address } = useAccount();
 
   const {
@@ -25,7 +28,7 @@ export function Reward() {
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
     args: [address!, earnedTokenAddresses!],
     enabled:
-      !!address && earnedTokenAddresses && earnedTokenAddresses.length > 0,
+      !!address && !!earnedTokenAddresses && earnedTokenAddresses.length > 0,
   });
   const {
     write: getReward,
@@ -34,6 +37,9 @@ export function Reward() {
   } = useMaxxingGaugeGetReward(getRewardConfig);
   const { isFetching: waitingGetRewardReceipt } = useWaitForTransaction({
     hash: getRewardTx?.hash,
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+    },
   });
 
   return (
@@ -44,14 +50,21 @@ export function Reward() {
         {isRefetchingGaugeRewards && <div>Updating...</div>}
       </div>
       {earnedRewards &&
+        earnedRewards.length > 0 &&
         earnedRewards.map((earnedReward) => (
           <div
             className="flex items-center justify-between"
             key={earnedReward.address}
           >
-            {formatCurrency(earnedReward.earnedAmount)} {earnedReward.symbol}
+            {formatCurrency(earnedReward.earnedAmount)}{" "}
+            {earnedReward.symbol === "FLOW" ? "oFLOW" : earnedReward.symbol}
           </div>
         ))}
+      {earnedRewards && earnedRewards.length === 0 && (
+        <div className="flex items-center justify-between">
+          Nothing earned yet
+        </div>
+      )}
       <button
         disabled={
           isFetchingGaugeRewards ||
@@ -60,7 +73,7 @@ export function Reward() {
           !getReward
         }
         onClick={() => getReward?.()}
-        className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+        className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
       >
         {isWritingGetReward || waitingGetRewardReceipt
           ? "Loading..."

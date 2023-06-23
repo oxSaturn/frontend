@@ -176,7 +176,9 @@ const claimRewards = async (
   });
 
   const targetReward =
-    type === "gov" ? CONTRACTS.GOV_TOKEN_ADDRESS : CONTRACTS.OPTION_TOKEN;
+    type === "gov"
+      ? CONTRACTS.GOV_TOKEN_ADDRESS
+      : CONTRACTS.OPTION_TOKEN_ADDRESS;
 
   const writeGetReward = async () => {
     const { request } = await viemClient.simulateContract({
@@ -387,7 +389,7 @@ const claimAllRewards = async (
           address: oBlotrRewardPairs[i].gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
-          args: [account, [CONTRACTS.OPTION_TOKEN]],
+          args: [account, [CONTRACTS.OPTION_TOKEN_ADDRESS]],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;

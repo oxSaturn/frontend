@@ -45,12 +45,19 @@ export function useStakeData() {
     select: (data) => Number(data),
   });
 
+  const stakedBalanceWithoutLock =
+    stakedBalance && stakedBalanceWithLock
+      ? parseFloat(stakedBalance) - parseFloat(stakedBalanceWithLock)
+      : undefined;
+
   const { data: gaugeTotalStakedData } = useTotalStaked();
+
   return {
     ...gaugeTotalStakedData,
     pair,
     pooledBalance,
     stakedBalance,
+    stakedBalanceWithoutLock: stakedBalanceWithoutLock?.toString(),
     stakedBalanceWithLock,
     stakedLockEnd,
     refetch: () => {
@@ -73,6 +80,7 @@ export function useTotalStaked() {
     queryKey: ["totalStaked", tokenPrices, pair, totalSupply, pairData],
     queryFn: () => getTotalStaked(pairData, totalSupply, tokenPrices),
     enabled: !!pair && !!totalSupply && !!pairData && !!tokenPrices,
+    keepPreviousData: true,
   });
 }
 
@@ -99,5 +107,5 @@ function getTotalStaked(
 
   const totalStakedValue = reserve0 * price0 + reserve1 * price1;
 
-  return { reserve0, reserve1, totalStakedValue, tvl: pairData.tvl };
+  return { reserve0, reserve1, totalStakedValue };
 }

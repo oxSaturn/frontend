@@ -33,6 +33,7 @@ export function useGaugeRewards() {
     queryFn: () => getEarned(address, rewardTokens),
     enabled: !!rewardTokens && !!address,
     select: filterEarned,
+    keepPreviousData: true,
   });
 }
 

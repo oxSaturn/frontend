@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useAccount,
   useSwitchNetwork,
@@ -6,7 +7,7 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { parseEther, parseUnits } from "viem";
-import { canto } from "viem/chains";
+import { pulsechain } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -16,15 +17,14 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Separator from "@radix-ui/react-separator";
 
 import { formatCurrency } from "../../utils/utils";
+import { QUERY_KEYS } from "../../stores/constants/constants";
 
 import {
-  useOptionTokenDiscount,
   useOptionTokenExercise,
   usePrepareOptionTokenExercise,
   usePrepareOptionTokenExerciseLp,
   useOptionTokenExerciseLp,
   useOptionTokenGetLockDurationForLpDiscount,
-  useOptionTokenVeDiscount,
   usePrepareOptionTokenExerciseVe,
   useOptionTokenExerciseVe,
   useOptionTokenPaymentToken,
@@ -124,6 +124,7 @@ export function Redeem() {
 }
 
 function RedeemLiquid({ now }: { now: number }) {
+  const queryClient = useQueryClient();
   const {
     option,
     payment,
@@ -136,7 +137,7 @@ function RedeemLiquid({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const { address } = useAccount();
@@ -154,9 +155,7 @@ function RedeemLiquid({ now }: { now: number }) {
     underlyingTokenSymbol,
   } = useTokenData();
 
-  const { data: discount } = useOptionTokenDiscount({
-    select: (asianDiscount) => (100n - asianDiscount).toString(),
-  });
+  const { discount } = useDiscountsData();
 
   const { isFetching: isFetchingAmounts } = useAmountToPayLiquid();
 
@@ -194,6 +193,7 @@ function RedeemLiquid({ now }: { now: number }) {
       refetchBalances();
       setOption("");
       setPayment("");
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
 
@@ -314,7 +314,7 @@ function RedeemLiquid({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -334,7 +334,7 @@ function RedeemLiquid({ now }: { now: number }) {
                 waitingRedeemReceipt
               }
               onClick={isApprovalNeeded ? () => approve?.() : () => redeem?.()}
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
                 waitingRedeemReceipt ||
@@ -376,6 +376,7 @@ function RedeemLiquid({ now }: { now: number }) {
 }
 
 function RedeemLP({ now }: { now: number }) {
+  const queryClient = useQueryClient();
   const [increaseAccepted, setIncreaseAccepted] = useState(false);
 
   const {
@@ -392,7 +393,7 @@ function RedeemLP({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const { address } = useAccount();
@@ -479,6 +480,7 @@ function RedeemLP({ now }: { now: number }) {
       setOption("");
       setPayment("");
       refetchStakedData();
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
 
@@ -549,8 +551,8 @@ function RedeemLP({ now }: { now: number }) {
       <Slider
         value={[lpDiscount]}
         onValueChange={(e) => setLpDiscount(e[0])}
-        min={minLpDiscount}
-        max={maxLpDiscount}
+        min={minLpDiscount ?? 0}
+        max={maxLpDiscount ?? 100}
         className="relative flex h-5 touch-none select-none items-center"
       />
       <div className="my-5 flex flex-col gap-3">
@@ -607,7 +609,7 @@ function RedeemLP({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -628,7 +630,7 @@ function RedeemLP({ now }: { now: number }) {
               (isSelectedDurationMoreThanLockEnd && !increaseAccepted)
             }
             onClick={isApprovalNeeded ? () => approve?.() : () => redeemLP?.()}
-            className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
           >
             {waitingRedeemReceipt ||
               writingExerciseLP ||
@@ -656,11 +658,11 @@ function RedeemLP({ now }: { now: number }) {
             <div>
               You are going to increase your lock end from{" "}
               <span className="tracking-tighter">
-                {dayjs.unix(stakedLockEnd).format("HH[h]mm[m] MM/DD")}
+                {dayjs.unix(stakedLockEnd).format("HH[:]mm MM/DD")}
               </span>{" "}
               to{" "}
               <span className="tracking-tighter">
-                {dayjs().second(durationForDiscount).format("HH[h]mm[m] MM/DD")}
+                {dayjs().second(durationForDiscount).format("HH[:]mm MM/DD")}
               </span>
               .
             </div>
@@ -735,6 +737,7 @@ function RedeemLP({ now }: { now: number }) {
 }
 
 function RedeemVest({ now }: { now: number }) {
+  const queryClient = useQueryClient();
   const {
     option,
     payment,
@@ -747,7 +750,7 @@ function RedeemVest({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const { address } = useAccount();
@@ -765,9 +768,7 @@ function RedeemVest({ now }: { now: number }) {
     underlyingTokenSymbol,
   } = useTokenData();
 
-  const { data: veDiscount } = useOptionTokenVeDiscount({
-    select: (asianDiscount) => (100n - asianDiscount).toString(),
-  });
+  const { veDiscount } = useDiscountsData();
 
   const { isFetching: isFetchingAmounts } = useAmountToPayVest();
 
@@ -805,6 +806,7 @@ function RedeemVest({ now }: { now: number }) {
       refetchBalances();
       setOption("");
       setPayment("");
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
 
@@ -925,7 +927,7 @@ function RedeemVest({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -947,7 +949,7 @@ function RedeemVest({ now }: { now: number }) {
               onClick={
                 isApprovalNeeded ? () => approve?.() : () => redeemVe?.()
               }
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
                 waitingRedeemReceipt ||

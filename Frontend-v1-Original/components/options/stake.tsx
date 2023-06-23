@@ -5,7 +5,7 @@ import {
   useSwitchNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { canto } from "wagmi/chains";
+import { pulsechain } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
 import dayjs from "dayjs";
@@ -33,7 +33,7 @@ export function Stake() {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: canto.id,
+    chainId: pulsechain.id,
   });
 
   const [amount, setAmount] = useState("");
@@ -46,11 +46,12 @@ export function Stake() {
     refetch: refetchStakedData,
     pooledBalance,
     stakedBalance,
+    stakedBalanceWithoutLock,
     stakedBalanceWithLock,
     stakedLockEnd,
     totalStakedValue,
   } = useStakeData();
-  const { data: apr } = useGaugeApr();
+  const { data: aprRange } = useGaugeApr();
 
   const {
     data: isApprovalNeeded,
@@ -108,16 +109,13 @@ export function Stake() {
     hash: txDepositResponse?.hash,
     onSuccess: () => {
       refetchStakedData();
+      refetchAllowance();
     },
   });
 
   const { config: withdrawConfig } = usePrepareMaxxingGaugeWithdraw({
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n],
-    enabled:
-      !!address &&
-      !isApprovalNeeded &&
-      isValidInput(amount) &&
-      action === ACTION.WITHDRAW,
+    enabled: !!address && isValidInput(amount) && action === ACTION.WITHDRAW,
   });
   const {
     write: withdraw,
@@ -141,6 +139,22 @@ export function Stake() {
     } else {
       if (stakedBalance && parseFloat(stakedBalance) > 0) {
         setAmount(stakedBalance);
+      }
+    }
+  };
+
+  const pickWithdrawAmount = (type: "locked" | "notLocked") => {
+    if (action === ACTION.STAKE) return;
+    if (type === "notLocked") {
+      if (
+        stakedBalanceWithoutLock &&
+        parseFloat(stakedBalanceWithoutLock) > 0
+      ) {
+        setAmount(stakedBalanceWithoutLock);
+      }
+    } else if (type === "locked") {
+      if (stakedBalanceWithLock && parseFloat(stakedBalanceWithLock) > 0) {
+        setAmount(stakedBalanceWithLock);
       }
     }
   };
@@ -189,19 +203,35 @@ export function Stake() {
         </div>
         <div className="flex items-center justify-between">
           <div>APR</div>
-          <div>{formatCurrency(apr)} %</div>
+          <div>
+            {aprRange
+              ? `${formatCurrency(aprRange[0])} % - ${formatCurrency(
+                  aprRange[1]
+                )} %`
+              : `0 % - 0 %`}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
           <div>{pooledBalance?.formatted}</div>
         </div>
         <div className="flex items-center justify-between">
-          <div>Staked balance</div>
-          <div>{formatCurrency(stakedBalance)}</div>
+          <div>Staked without lock</div>
+          <div
+            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+            onClick={() => pickWithdrawAmount("notLocked")}
+          >
+            {formatCurrency(stakedBalanceWithoutLock)}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Staked with lock</div>
-          <div>{formatCurrency(stakedBalanceWithLock)}</div>
+          <div
+            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+            onClick={() => pickWithdrawAmount("locked")}
+          >
+            {formatCurrency(stakedBalanceWithLock)}
+          </div>
         </div>
         {stakedLockEnd && (
           <div className="flex items-center justify-between">
@@ -229,10 +259,10 @@ export function Stake() {
           </div>
           {chain?.unsupported ? (
             <button
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               onClick={() => switchNetwork?.()}
             >
-              Switch to Canto
+              Switch to Pulse
             </button>
           ) : (
             <button
@@ -259,7 +289,7 @@ export function Stake() {
                   ? () => withdraw?.()
                   : () => deposit?.()
               }
-              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {writingApprove ||
               isFetchingAllowance ||
