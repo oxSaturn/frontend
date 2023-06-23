@@ -3,6 +3,7 @@ import { formatEther, formatUnits, parseEther } from "viem";
 import {
   useOptionTokenGetDiscountedPrice,
   useOptionTokenGetPaymentTokenAmountForExerciseLp,
+  useOptionTokenGetVeDiscountedPrice,
 } from "../../../lib/wagmiGen";
 
 import { INPUT, isValidInput, useInputs } from "./useInputs";
@@ -33,6 +34,49 @@ export function useAmountToPayLiquid() {
         isValidInput(payment, paymentTokenDecimals) &&
         isValidInput(maxPayment, paymentTokenDecimals),
       scopeKey: `oneOptionPrice-${INPUT.PAYMENT}-${payment}`,
+      onSuccess: (oneOptionPrice) => {
+        if (
+          isValidInput(payment, paymentTokenDecimals) &&
+          isValidInput(maxPayment, paymentTokenDecimals) &&
+          activeInput === INPUT.PAYMENT
+        ) {
+          const amountOptionForPayment =
+            parseFloat(payment) / parseFloat(formatEther(oneOptionPrice));
+          setOption(amountOptionForPayment.toString());
+        }
+      },
+    });
+
+  return {
+    isFetching: isFetchingPaymentForOption || isFetchingOptionDiscountedPrice,
+  };
+}
+
+export function useAmountToPayVest() {
+  const { option, payment, activeInput, setOption, setPayment } = useInputs();
+  const maxPayment = (parseFloat(payment) * 1.01).toString();
+
+  const { paymentTokenDecimals } = useTokenData();
+
+  const { isFetching: isFetchingPaymentForOption } =
+    useOptionTokenGetVeDiscountedPrice({
+      args: [isValidInput(option) ? parseEther(option as `${number}`) : 0n],
+      enabled: activeInput === INPUT.OPTION && isValidInput(option),
+      onSuccess: (amountPaymentForOption) => {
+        if (isValidInput(option) && activeInput === INPUT.OPTION) {
+          setPayment(formatUnits(amountPaymentForOption, paymentTokenDecimals));
+        }
+      },
+    });
+
+  const { isFetching: isFetchingOptionDiscountedPrice } =
+    useOptionTokenGetVeDiscountedPrice({
+      args: [parseEther("1")],
+      enabled:
+        activeInput === INPUT.PAYMENT &&
+        isValidInput(payment, paymentTokenDecimals) &&
+        isValidInput(maxPayment, paymentTokenDecimals),
+      scopeKey: `oneOptionPriceVe-${INPUT.PAYMENT}-${payment}`,
       onSuccess: (oneOptionPrice) => {
         if (
           isValidInput(payment, paymentTokenDecimals) &&

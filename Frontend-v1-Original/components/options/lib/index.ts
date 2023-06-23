@@ -1,5 +1,9 @@
 export { useAllowance } from "./useAllowance";
-export { useAmountToPayLP, useAmountToPayLiquid } from "./useAmountToPay";
+export {
+  useAmountToPayLP,
+  useAmountToPayLiquid,
+  useAmountToPayVest,
+} from "./useAmountToPay";
 export { useDiscountsData } from "./useDiscountsData";
 export { useDiscountTimer } from "./useDiscountTimer";
 export { useGaugeApr } from "./useGaugeApr";

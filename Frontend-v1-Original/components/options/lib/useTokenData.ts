@@ -10,9 +10,11 @@ import {
   useOptionTokenGetTimeWeightedAveragePrice,
   useErc20Symbol,
   useErc20Decimals,
+  useOptionTokenGetLpDiscountedPrice,
+  useOptionTokenGetVeDiscountedPrice,
 } from "../../../lib/wagmiGen";
 
-export function useTokenData() {
+export function useTokenData(lpDiscount?: number) {
   const { address } = useAccount();
   const { data: optionTokenSymbol } = useOptionTokenSymbol();
   const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
@@ -58,6 +60,19 @@ export function useTokenData() {
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
+  const { data: discountedLpPrice } = useOptionTokenGetLpDiscountedPrice({
+    args: [
+      parseEther("1"),
+      lpDiscount === undefined ? 100n : BigInt(100 - lpDiscount),
+    ],
+    select: (data) => formatEther(data),
+    enabled: !!lpDiscount,
+    cacheTime: 0,
+  });
+  const { data: discountedVePrice } = useOptionTokenGetVeDiscountedPrice({
+    args: [parseEther("1")],
+    select: (data) => formatEther(data),
+  });
   return {
     optionTokenSymbol: optionTokenSymbol ?? "oFLOW",
     paymentTokenSymbol: paymentTokenSymbol ?? "WPLS",
@@ -67,6 +82,8 @@ export function useTokenData() {
     optionBalance,
     optionPrice,
     discountedPrice,
+    discountedLpPrice,
+    discountedVePrice,
     refetchBalances: () => {
       refetchPaymentBalance();
       refetchOptionBalance();

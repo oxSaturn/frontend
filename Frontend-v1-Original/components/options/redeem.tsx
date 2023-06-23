@@ -24,11 +24,15 @@ import {
   usePrepareOptionTokenExerciseLp,
   useOptionTokenExerciseLp,
   useOptionTokenGetLockDurationForLpDiscount,
+  useOptionTokenVeDiscount,
+  usePrepareOptionTokenExerciseVe,
+  useOptionTokenExerciseVe,
 } from "../../lib/wagmiGen";
 
 import { Slider } from "./slider";
 import {
   useAmountToPayLiquid,
+  useAmountToPayVest,
   useAmountToPayLP,
   INPUT,
   INPUT_TYPE,
@@ -101,7 +105,7 @@ export function Redeem() {
         <RedeemLP now={now} />
       </Tabs.Content>
       <Tabs.Content className="mt-3 grow" value={TABS.VEST}>
-        {null}
+        <RedeemVest now={now} />
       </Tabs.Content>
       <Tabs.Content className="mt-3 grow" value={TABS.LIQUID}>
         <RedeemLiquid now={now} />
@@ -408,14 +412,14 @@ function RedeemLP({ now }: { now: number }) {
     paymentBalance,
     optionBalance,
     optionPrice,
-    discountedPrice,
+    discountedLpPrice,
     isFetchingBalances,
     refetchBalances,
     optionTokenSymbol,
     paymentTokenSymbol,
     paymentTokenDecimals,
     underlyingTokenSymbol,
-  } = useTokenData();
+  } = useTokenData(lpDiscount);
   const { refetch: refetchStakedData, stakedLockEnd } = useStakeData();
   const isSelectedDurationLessThanLockEnd =
     !!stakedLockEnd &&
@@ -516,7 +520,7 @@ function RedeemLP({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>Strike price</div>
         <div>
-          {formatCurrency(discountedPrice)} {paymentTokenSymbol}
+          {formatCurrency(discountedLpPrice)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -716,6 +720,265 @@ function RedeemLP({ now }: { now: number }) {
           </div>
           <div>
             {formatCurrency(maxPayment)} {paymentTokenSymbol}
+          </div>
+        </div>
+        <Tooltip.Portal>
+          <Tooltip.Content
+            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
+            sideOffset={5}
+          >
+            We take into account 1% slippage
+            <Tooltip.Arrow className="fill-accent" />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </>
+  );
+}
+
+function RedeemVest({ now }: { now: number }) {
+  const {
+    option,
+    payment,
+    activeInput,
+    setActiveInput,
+    setOption,
+    setPayment,
+  } = useInputs();
+  const maxPayment = (parseFloat(payment) * 1.01).toString();
+
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork({
+    chainId: canto.id,
+  });
+
+  const { address } = useAccount();
+
+  const {
+    paymentBalance,
+    optionBalance,
+    optionPrice,
+    discountedVePrice,
+    isFetchingBalances,
+    refetchBalances,
+    optionTokenSymbol,
+    paymentTokenSymbol,
+    paymentTokenDecimals,
+    underlyingTokenSymbol,
+  } = useTokenData();
+
+  const { data: veDiscount } = useOptionTokenVeDiscount({
+    select: (asianDiscount) => (100n - asianDiscount).toString(),
+  });
+
+  const { isFetching: isFetchingAmounts } = useAmountToPayVest();
+
+  const {
+    isApprovalNeeded,
+    approve,
+    isFetching: isFetchingAllowanceOrApproving,
+  } = useAllowance();
+
+  const { config: exerciseVeOptionConfig } = usePrepareOptionTokenExerciseVe({
+    args: [
+      isValidInput(option) ? parseEther(option as `${number}`) : 0n,
+      isValidInput(payment, paymentTokenDecimals) &&
+      isValidInput(maxPayment, paymentTokenDecimals)
+        ? parseUnits(maxPayment, paymentTokenDecimals)
+        : 0n,
+      address!,
+      BigInt(now + 1e3 * 60 * 5),
+    ],
+    enabled:
+      !!address &&
+      isValidInput(payment, paymentTokenDecimals) &&
+      isValidInput(maxPayment, paymentTokenDecimals) &&
+      isValidInput(option) &&
+      !isApprovalNeeded,
+  });
+  const {
+    write: redeemVe,
+    data: txResponse,
+    isLoading: writingExercise,
+  } = useOptionTokenExerciseVe(exerciseVeOptionConfig);
+  const { isFetching: waitingRedeemReceipt } = useWaitForTransaction({
+    hash: txResponse?.hash,
+    onSuccess() {
+      refetchBalances();
+      setOption("");
+      setPayment("");
+    },
+  });
+
+  const setMax = (input: INPUT_TYPE) => {
+    if (input === INPUT.OPTION) {
+      if (!optionBalance || parseFloat(optionBalance) === 0) return;
+      setActiveInput(INPUT.OPTION);
+      return setOption(optionBalance);
+    } else if (input === INPUT.PAYMENT) {
+      if (!paymentBalance || parseFloat(paymentBalance.formatted) === 0) return;
+      setActiveInput(INPUT.PAYMENT);
+      return setPayment(paymentBalance.formatted);
+    }
+  };
+
+  const onOptionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setActiveInput(INPUT.OPTION);
+    setOption(e.target.value);
+    if (e.target.value === "") setPayment("");
+  };
+
+  const onPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setActiveInput(INPUT.PAYMENT);
+    setPayment(e.target.value);
+    if (e.target.value === "") setOption("");
+  };
+
+  const areInputsEmpty = option === "";
+  const insufficientOption =
+    optionBalance && parseFloat(option) > parseFloat(optionBalance);
+  const insufficientPayment =
+    paymentBalance &&
+    parseFloat(payment) > parseFloat(paymentBalance?.formatted);
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>{paymentTokenSymbol} balance</div>
+        <div>
+          {formatCurrency(paymentBalance?.formatted)} {paymentTokenSymbol}
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <div>{optionTokenSymbol} balance</div>
+        <div>
+          {formatCurrency(optionBalance)} {optionTokenSymbol}
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <div>Strike price</div>
+        <div>
+          {formatCurrency(discountedVePrice)} {paymentTokenSymbol}
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <div>{underlyingTokenSymbol} price</div>
+        <div>
+          {formatCurrency(optionPrice)} {paymentTokenSymbol}
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <div>Discount</div>
+        <div>{formatCurrency(veDiscount)} %</div>
+      </div>
+      <div className="my-5 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div
+            data-content={optionTokenSymbol}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+          >
+            <input
+              value={option}
+              onChange={onOptionInputChange}
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(option) && option !== "") || insufficientOption
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
+              placeholder={`0.00 ${optionTokenSymbol}`}
+            />
+          </div>
+          <button className="p-4" onClick={() => setMax(INPUT.OPTION)}>
+            MAX
+          </button>
+        </div>
+        <div className="flex items-center justify-between">
+          <div
+            data-content={paymentTokenSymbol}
+            className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+              areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+            } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+          >
+            <input
+              value={payment}
+              onChange={onPaymentInputChange}
+              className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                (!isValidInput(payment, paymentTokenDecimals) &&
+                  payment !== "") ||
+                insufficientPayment
+                  ? "text-error focus:outline-error focus-visible:outline-error"
+                  : "focus:outline-secondary focus-visible:outline-secondary"
+              }`}
+              placeholder={`0.00 ${paymentTokenSymbol}`}
+            />
+          </div>
+          <button className="p-4" onClick={() => setMax(INPUT.PAYMENT)}>
+            MAX
+          </button>
+        </div>
+        <div
+          data-content={`ve${underlyingTokenSymbol}`}
+          className={`relative w-full border border-[rgb(46,45,45)] after:absolute after:transition-opacity ${
+            areInputsEmpty ? "after:opacity-0" : "after:opacity-100"
+          } after:right-2 after:top-2 after:text-xs after:text-secondary after:content-[attr(data-content)]`}
+        >
+          <input
+            readOnly
+            value={option}
+            className="w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 focus:outline-secondary focus-visible:outline-secondary"
+            placeholder={`0.00 ve${underlyingTokenSymbol}`}
+          />
+        </div>
+        {chain?.unsupported ? (
+          <button
+            className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            onClick={() => switchNetwork?.()}
+          >
+            Switch to pulse
+          </button>
+        ) : (
+          <>
+            <button
+              disabled={
+                (activeInput === INPUT.OPTION && !isValidInput(option)) ||
+                (activeInput === INPUT.PAYMENT &&
+                  !isValidInput(payment, paymentTokenDecimals)) ||
+                (isApprovalNeeded ? !approve : !redeemVe) ||
+                isFetchingAmounts ||
+                isFetchingBalances ||
+                isFetchingAllowanceOrApproving ||
+                writingExercise ||
+                waitingRedeemReceipt
+              }
+              onClick={
+                isApprovalNeeded ? () => approve?.() : () => redeemVe?.()
+              }
+              className="text-extendedBlack flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            >
+              {isFetchingAllowanceOrApproving ||
+              waitingRedeemReceipt ||
+              writingExercise ||
+              isFetchingAmounts
+                ? "Loading..."
+                : isApprovalNeeded
+                ? "Approve"
+                : "Redeem into Vest"}
+            </button>
+          </>
+        )}
+      </div>
+      <Tooltip.Root>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            Max payment{" "}
+            <Tooltip.Trigger>
+              <InfoOutlined />
+            </Tooltip.Trigger>
+          </div>
+          <div>
+            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+            {paymentTokenSymbol}
           </div>
         </div>
         <Tooltip.Portal>
