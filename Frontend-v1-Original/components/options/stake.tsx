@@ -22,7 +22,7 @@ import {
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
-import { isValidInput, useStakeData, useGaugeApr } from "./lib";
+import { isValidInput, useStakeData, useGaugeApr, useTokenData } from "./lib";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -41,6 +41,7 @@ export function Stake() {
     ACTION.STAKE
   );
 
+  const { paymentTokenSymbol } = useTokenData();
   const {
     pair,
     refetch: refetchStakedData,
@@ -50,6 +51,7 @@ export function Stake() {
     stakedBalanceWithLock,
     stakedLockEnd,
     totalStakedValue,
+    paymentTokenBalanceInGauge,
   } = useStakeData();
   const { data: aprRange } = useGaugeApr();
 
@@ -209,6 +211,12 @@ export function Stake() {
                   aprRange[1]
                 )} %`
               : `0 % - 0 %`}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>{paymentTokenSymbol} reward in gauge</div>
+          <div>
+            ${formatCurrency(paymentTokenBalanceInGauge?.formatted ?? 0)}
           </div>
         </div>
         <div className="flex items-center justify-between">

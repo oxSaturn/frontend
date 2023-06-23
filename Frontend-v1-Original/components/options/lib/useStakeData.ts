@@ -8,10 +8,12 @@ import {
   useMaxxingGaugeLockEnd,
   useMaxxingGaugeStake,
   useMaxxingGaugeTotalSupply,
+  useOptionTokenPaymentToken,
 } from "../../../lib/wagmiGen";
 import { useGetPair } from "../../liquidityManage/lib/queries";
 import { Pair } from "../../../stores/types/types";
 import { useTokenPrices } from "../../header/lib/queries";
+import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
 export function useStakeData() {
   const { address } = useAccount();
@@ -45,6 +47,13 @@ export function useStakeData() {
     select: (data) => Number(data),
   });
 
+  const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
+  const { data: paymentTokenBalanceInGauge } = useBalance({
+    address: PRO_OPTIONS.oFLOW.gaugeAddress,
+    token: paymentTokenAddress,
+    enabled: !!paymentTokenAddress,
+  });
+
   const stakedBalanceWithoutLock =
     stakedBalance && stakedBalanceWithLock
       ? parseFloat(stakedBalance) - parseFloat(stakedBalanceWithLock)
@@ -60,6 +69,7 @@ export function useStakeData() {
     stakedBalanceWithoutLock: stakedBalanceWithoutLock?.toString(),
     stakedBalanceWithLock,
     stakedLockEnd,
+    paymentTokenBalanceInGauge,
     refetch: () => {
       refetchPooledBalance();
       refetchStakedBalance();
