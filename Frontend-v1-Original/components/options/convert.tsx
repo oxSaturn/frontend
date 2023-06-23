@@ -114,10 +114,11 @@ export function Convert() {
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${(!isValidInput(amount) && amount !== "") || insufficientAmount
-                  ? "text-error focus:outline-error focus-visible:outline-error"
-                  : "focus:outline-secondary focus-visible:outline-secondary"
-                  }`}
+                className={`w-full border-none bg-transparent p-4 text-left text-base focus:outline focus:outline-1 ${
+                  (!isValidInput(amount) && amount !== "") || insufficientAmount
+                    ? "text-error focus:outline-error focus-visible:outline-error"
+                    : "focus:outline-secondary focus-visible:outline-secondary"
+                }`}
                 placeholder="0.00"
               />
             </div>
@@ -148,20 +149,18 @@ export function Convert() {
               className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {writingApprove ||
-                isFetchingAllowance ||
-                waitingApprovalReceipt ||
-                writingConvert ||
-                waitingConvertReceipt
-                ? (
-                  (
-                    waitingApprovalReceipt
-                  ) ? "Approving" : (
-                    waitingConvertReceipt
-                  ) ? "Converting" : "Loading"
-                )
+              isFetchingAllowance ||
+              waitingApprovalReceipt ||
+              writingConvert ||
+              waitingConvertReceipt
+                ? waitingApprovalReceipt
+                  ? "Approving"
+                  : waitingConvertReceipt
+                  ? "Converting"
+                  : "Loading"
                 : isApprovalNeeded
-                  ? "Approve"
-                  : "Convert"}
+                ? "Approve"
+                : "Convert"}
             </button>
           )}
         </div>
