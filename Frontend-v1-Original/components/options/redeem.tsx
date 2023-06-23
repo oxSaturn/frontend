@@ -20,13 +20,11 @@ import { formatCurrency } from "../../utils/utils";
 import { QUERY_KEYS } from "../../stores/constants/constants";
 
 import {
-  useOptionTokenDiscount,
   useOptionTokenExercise,
   usePrepareOptionTokenExercise,
   usePrepareOptionTokenExerciseLp,
   useOptionTokenExerciseLp,
   useOptionTokenGetLockDurationForLpDiscount,
-  useOptionTokenVeDiscount,
   usePrepareOptionTokenExerciseVe,
   useOptionTokenExerciseVe,
 } from "../../lib/wagmiGen";
@@ -148,9 +146,7 @@ function RedeemLiquid({ now }: { now: number }) {
     underlyingTokenSymbol,
   } = useTokenData();
 
-  const { data: discount } = useOptionTokenDiscount({
-    select: (asianDiscount) => (100n - asianDiscount).toString(),
-  });
+  const { discount } = useDiscountsData();
 
   const { isFetching: isFetchingAmounts } = useAmountToPayLiquid();
 
@@ -552,8 +548,8 @@ function RedeemLP({ now }: { now: number }) {
       <Slider
         value={[lpDiscount]}
         onValueChange={(e) => setLpDiscount(e[0])}
-        min={minLpDiscount}
-        max={maxLpDiscount}
+        min={minLpDiscount ?? 0}
+        max={maxLpDiscount ?? 100}
         className="relative flex h-5 touch-none select-none items-center"
       />
       <div className="my-5 flex flex-col gap-3">
@@ -774,9 +770,7 @@ function RedeemVest({ now }: { now: number }) {
     underlyingTokenSymbol,
   } = useTokenData();
 
-  const { data: veDiscount } = useOptionTokenVeDiscount({
-    select: (asianDiscount) => (100n - asianDiscount).toString(),
-  });
+  const { veDiscount } = useDiscountsData();
 
   const { isFetching: isFetchingAmounts } = useAmountToPayVest();
 

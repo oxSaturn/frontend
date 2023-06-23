@@ -1,6 +1,8 @@
 import {
+  useOptionTokenDiscount,
   useOptionTokenMaxLpDiscount,
   useOptionTokenMinLpDiscount,
+  useOptionTokenVeDiscount,
 } from "../../../lib/wagmiGen";
 
 /**
@@ -10,6 +12,12 @@ import {
  * @returns {(minLpDiscount: number, maxLpDiscount: number)}
  */
 export function useDiscountsData() {
+  const { data: discount } = useOptionTokenDiscount({
+    select: (asianDiscount) => (100n - asianDiscount).toString(),
+  });
+  const { data: veDiscount } = useOptionTokenVeDiscount({
+    select: (asianDiscount) => (100n - asianDiscount).toString(),
+  });
   const { data: minLpDiscount } = useOptionTokenMinLpDiscount({
     select: (data) => Number(100n - data),
   });
@@ -17,7 +25,9 @@ export function useDiscountsData() {
     select: (data) => Number(100n - data),
   });
   return {
-    minLpDiscount: minLpDiscount ?? 0,
-    maxLpDiscount: maxLpDiscount ?? 100,
+    minLpDiscount,
+    maxLpDiscount,
+    veDiscount,
+    discount,
   };
 }

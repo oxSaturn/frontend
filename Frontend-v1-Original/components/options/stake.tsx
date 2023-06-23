@@ -51,7 +51,7 @@ export function Stake() {
     stakedLockEnd,
     totalStakedValue,
   } = useStakeData();
-  const { data: apr } = useGaugeApr();
+  const { data: aprRange } = useGaugeApr();
 
   const {
     data: isApprovalNeeded,
@@ -203,7 +203,13 @@ export function Stake() {
         </div>
         <div className="flex items-center justify-between">
           <div>APR</div>
-          <div>{formatCurrency(apr)} %</div>
+          <div>
+            {aprRange
+              ? `${formatCurrency(aprRange[0])} % - ${formatCurrency(
+                  aprRange[1]
+                )} %`
+              : `0 % - 0 %`}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>

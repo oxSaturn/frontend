@@ -80,6 +80,7 @@ export function useTotalStaked() {
     queryKey: ["totalStaked", tokenPrices, pair, totalSupply, pairData],
     queryFn: () => getTotalStaked(pairData, totalSupply, tokenPrices),
     enabled: !!pair && !!totalSupply && !!pairData && !!tokenPrices,
+    keepPreviousData: true,
   });
 }
 
