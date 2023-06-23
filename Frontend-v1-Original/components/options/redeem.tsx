@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useAccount,
   useSwitchNetwork,
@@ -16,6 +17,7 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Separator from "@radix-ui/react-separator";
 
 import { formatCurrency } from "../../utils/utils";
+import { QUERY_KEYS } from "../../stores/constants/constants";
 
 import {
   useOptionTokenDiscount,
@@ -115,6 +117,7 @@ export function Redeem() {
 }
 
 function RedeemLiquid({ now }: { now: number }) {
+  const queryClient = useQueryClient();
   const {
     option,
     payment,
@@ -185,6 +188,7 @@ function RedeemLiquid({ now }: { now: number }) {
       refetchBalances();
       setOption("");
       setPayment("");
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
 
@@ -372,6 +376,7 @@ function RedeemLiquid({ now }: { now: number }) {
 }
 
 function RedeemLP({ now }: { now: number }) {
+  const queryClient = useQueryClient();
   const [increaseAccepted, setIncreaseAccepted] = useState(false);
 
   const {
@@ -475,6 +480,7 @@ function RedeemLP({ now }: { now: number }) {
       setOption("");
       setPayment("");
       refetchStakedData();
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
 
@@ -737,6 +743,7 @@ function RedeemLP({ now }: { now: number }) {
 }
 
 function RedeemVest({ now }: { now: number }) {
+  const queryClient = useQueryClient();
   const {
     option,
     payment,
@@ -807,6 +814,7 @@ function RedeemVest({ now }: { now: number }) {
       refetchBalances();
       setOption("");
       setPayment("");
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
   });
 

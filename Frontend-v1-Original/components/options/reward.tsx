@@ -1,7 +1,9 @@
 import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useWaitForTransaction } from "wagmi";
 
 import { formatCurrency } from "../../utils/utils";
+import { QUERY_KEYS } from "../../stores/constants/constants";
 import {
   useMaxxingGaugeGetReward,
   usePrepareMaxxingGaugeGetReward,
@@ -10,6 +12,7 @@ import {
 import { useGaugeRewards } from "./lib";
 
 export function Reward() {
+  const queryClient = useQueryClient();
   const { address } = useAccount();
 
   const {
@@ -34,6 +37,9 @@ export function Reward() {
   } = useMaxxingGaugeGetReward(getRewardConfig);
   const { isFetching: waitingGetRewardReceipt } = useWaitForTransaction({
     hash: getRewardTx?.hash,
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+    },
   });
 
   return (

@@ -8,20 +8,20 @@ import { useStakeData } from "./useStakeData";
 export function useGaugeApr() {
   const { data: rewardTokens } = useGaugeRewardTokens();
   const { data: tokenPrices } = useTokenPrices();
-  const { tvl } = useStakeData();
+  const { totalStakedValue } = useStakeData();
   return useQuery({
-    queryKey: ["GAUGE-APR", rewardTokens, tokenPrices, tvl],
-    queryFn: () => getGaugeApr(rewardTokens, tokenPrices, tvl),
-    enabled: !!rewardTokens && !!tokenPrices && tvl !== undefined,
+    queryKey: ["GAUGE-APR", rewardTokens, tokenPrices, totalStakedValue],
+    queryFn: () => getGaugeApr(rewardTokens, tokenPrices, totalStakedValue),
+    enabled: !!rewardTokens && !!tokenPrices && totalStakedValue !== undefined,
   });
 }
 
 function getGaugeApr(
   rewardTokens: Token[] | undefined,
   tokenPrices: Map<string, number> | undefined,
-  tvl: number | undefined
+  totalStakedValue: number | undefined
 ) {
-  if (!rewardTokens || !tokenPrices || tvl === undefined) {
+  if (!rewardTokens || !tokenPrices || totalStakedValue === undefined) {
     throw new Error("rewardTokens or tokenPrices is undefined");
   }
 
@@ -30,7 +30,7 @@ function getGaugeApr(
   for (const rewardToken of rewardTokens) {
     const price = tokenPrices?.get(rewardToken.address.toLowerCase());
     if (price) {
-      apr += ((rewardToken.reward * price) / tvl) * 100 * 365;
+      apr += ((rewardToken.reward * price) / totalStakedValue) * 100 * 365;
     }
   }
 

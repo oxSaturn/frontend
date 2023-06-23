@@ -106,5 +106,5 @@ function getTotalStaked(
 
   const totalStakedValue = reserve0 * price0 + reserve1 * price1;
 
-  return { reserve0, reserve1, totalStakedValue, tvl: pairData.tvl };
+  return { reserve0, reserve1, totalStakedValue };
 }
