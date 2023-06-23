@@ -339,7 +339,7 @@ function RedeemLiquid({ now }: { now: number }) {
                 ? "Loading..."
                 : isApprovalNeeded
                 ? "Approve"
-                : "Redeem"}
+                : `Redeem into ${underlyingTokenSymbol}`}
             </button>
           </>
         )}
@@ -641,7 +641,7 @@ function RedeemLP({ now }: { now: number }) {
               ? "Loading..."
               : isApprovalNeeded
               ? "Approve"
-              : "Redeem into LP"}
+              : `Redeem into ${paymentTokenSymbol}/${underlyingTokenSymbol} LP`}
           </button>
         )}
         {isSelectedDurationLessThanLockEnd && (
@@ -965,7 +965,7 @@ function RedeemVest({ now }: { now: number }) {
                 ? "Loading..."
                 : isApprovalNeeded
                 ? "Approve"
-                : "Redeem into Vest"}
+                : `Redeem into ve${underlyingTokenSymbol}`}
             </button>
           </>
         )}
