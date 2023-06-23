@@ -114,11 +114,7 @@ export function Stake() {
 
   const { config: withdrawConfig } = usePrepareMaxxingGaugeWithdraw({
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n],
-    enabled:
-      !!address &&
-      !isApprovalNeeded &&
-      isValidInput(amount) &&
-      action === ACTION.WITHDRAW,
+    enabled: !!address && isValidInput(amount) && action === ACTION.WITHDRAW,
   });
   const {
     write: withdraw,
