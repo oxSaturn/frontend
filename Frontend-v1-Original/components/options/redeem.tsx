@@ -698,49 +698,51 @@ function RedeemLP({ now }: { now: number }) {
               : `Redeem into ${paymentTokenSymbol}/${underlyingTokenSymbol} LP`}
           </button>
         )}
-
-        <div className="flex flex-col items-start justify-center text-sm">
-          <div className="underline">Breakdown</div>
-          <div>
+        <div className="h-1" />
+        <div className="flex flex-col items-start justify-center space-y-2">
+          <div className="uppercase">Breakdown</div>
+          <div className="text-sm">
             You get {lpDiscount}% discount. There is additional token transfer
             for LP creation.
           </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>To redeem option</div>
-          <div>
-            {formatCurrency(paymentAmount)} {paymentTokenSymbol}
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>To create LP</div>
-          <div>
-            {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
+          <div className="w-full">
+            <div className="flex w-full items-center justify-between text-sm">
+              <div>To redeem option</div>
+              <div>
+                {formatCurrency(paymentAmount)} {paymentTokenSymbol}
+              </div>
+            </div>
+            <div className="flex w-full items-center justify-between text-sm">
+              <div>To create LP</div>
+              <div>
+                {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
+              </div>
+            </div>
+            <Tooltip.Root>
+              <div className="flex w-full items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  Max payment{" "}
+                  <Tooltip.Trigger>
+                    <InfoOutlined className="w-5" />
+                  </Tooltip.Trigger>
+                </div>
+                <div>
+                  {formatCurrency(maxPayment)} {paymentTokenSymbol}
+                </div>
+              </div>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 text-sm leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
+                  sideOffset={5}
+                >
+                  We take into account 1% slippage
+                  <Tooltip.Arrow className="fill-accent" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
           </div>
         </div>
       </div>
-      <Tooltip.Root>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            Max payment{" "}
-            <Tooltip.Trigger>
-              <InfoOutlined />
-            </Tooltip.Trigger>
-          </div>
-          <div>
-            {formatCurrency(maxPayment)} {paymentTokenSymbol}
-          </div>
-        </div>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-            sideOffset={5}
-          >
-            We take into account 1% slippage
-            <Tooltip.Arrow className="fill-accent" />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
     </>
   );
 }
