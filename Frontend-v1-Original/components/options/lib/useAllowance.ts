@@ -29,18 +29,9 @@ export function useAllowance() {
     args: [address!, PRO_OPTIONS.oFLOW.tokenAddress],
     enabled: !!address && !!paymentTokenAddress,
     select: (allowance) => {
+      const formattedAllowance = formatUnits(allowance, paymentTokenDecimals);
       if (!maxPayment) return;
-
-      const multiplier = 1_000_000_000;
-      // this is sort of a hack that we scale up the payment first to avoid rounding errors
-      const maxPaymentBigint =
-        (BigInt(parseFloat(payment) * multiplier) *
-          10n ** BigInt(paymentTokenDecimals) *
-          101n) /
-        100n /
-        BigInt(multiplier);
-
-      return allowance < maxPaymentBigint;
+      return parseFloat(formattedAllowance) < parseFloat(maxPayment);
     },
   });
   const { config: approveConfig } = usePrepareErc20Approve({
