@@ -29,9 +29,8 @@ export function useAllowance() {
     args: [address!, PRO_OPTIONS.oFLOW.tokenAddress],
     enabled: !!address && !!paymentTokenAddress,
     select: (allowance) => {
-      const formattedAllowance = formatUnits(allowance, paymentTokenDecimals);
       if (!maxPayment) return;
-      return parseFloat(formattedAllowance) < parseFloat(maxPayment);
+      return allowance < parseUnits(maxPayment, paymentTokenDecimals);
     },
   });
   const { config: approveConfig } = usePrepareErc20Approve({
