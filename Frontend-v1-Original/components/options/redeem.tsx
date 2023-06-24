@@ -547,13 +547,17 @@ function RedeemLP({ now }: { now: number }) {
           {days}d {hours}h {minutes}m
         </div>
       </div>
-      <Slider
-        value={[lpDiscount]}
-        onValueChange={(e) => setLpDiscount(e[0])}
-        min={minLpDiscount ?? 0}
-        max={maxLpDiscount ?? 100}
-        className="relative flex h-5 touch-none select-none items-center"
-      />
+      <div className="flex items-center space-x-2">
+        <span>{minLpDiscount}%(min)</span>
+        <Slider
+          value={[lpDiscount]}
+          onValueChange={(e) => setLpDiscount(e[0])}
+          min={minLpDiscount ?? 0}
+          max={maxLpDiscount ?? 100}
+          className="relative flex h-5 flex-grow touch-none select-none items-center"
+        />
+        <span>{maxLpDiscount}%(max)</span>
+      </div>
       <div className="my-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div
