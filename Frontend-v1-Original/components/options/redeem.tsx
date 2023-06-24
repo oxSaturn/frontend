@@ -615,6 +615,54 @@ function RedeemLP({ now }: { now: number }) {
             placeholder={`You get 0.00 ${underlyingTokenSymbol}`}
           />
         </div>
+        {isSelectedDurationLessThanLockEnd && (
+          <div className="flex flex-col items-start justify-center text-warning">
+            <div className="uppercase">WARNING</div>
+            <div className="text-sm">
+              You already have a staked position expires on{" "}
+              {dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH[:]mm")}. You can
+              only redeem with same lock or longer.
+            </div>
+          </div>
+        )}
+        {isSelectedDurationMoreThanLockEnd && (
+          <div className="flex flex-col items-start justify-center text-warning">
+            <div className="uppercase">WARNING</div>
+            <div className="text-sm">
+              You are going to increase your lock end from{" "}
+              <span className="tracking-tighter">
+                {dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH[:]mm")}
+              </span>{" "}
+              to{" "}
+              <span className="tracking-tighter">
+                {dayjs()
+                  .second(durationForDiscount)
+                  .format("YYYY-MM-DD HH[:]mm")}
+              </span>
+              .
+            </div>
+            <div className="my-3 flex items-center">
+              <Checkbox.Root
+                className="flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] border-2 border-solid border-secondary outline-none radix-state-checked:bg-secondary"
+                checked={increaseAccepted}
+                onCheckedChange={() =>
+                  setIncreaseAccepted((prevChecked) => !prevChecked)
+                }
+                id="increaseAcceptance"
+              >
+                <Checkbox.Indicator className="text-lime-50">
+                  <Check />
+                </Checkbox.Indicator>
+              </Checkbox.Root>
+              <label
+                className="cursor-pointer pl-[15px] text-[15px] leading-none text-white"
+                htmlFor="increaseAcceptance"
+              >
+                Accept lock duration increase
+              </label>
+            </div>
+          </div>
+        )}
         {chain?.unsupported ? (
           <button
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
@@ -650,54 +698,7 @@ function RedeemLP({ now }: { now: number }) {
               : `Redeem into ${paymentTokenSymbol}/${underlyingTokenSymbol} LP`}
           </button>
         )}
-        {isSelectedDurationLessThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-warning">
-            <div className="underline">WARNING</div>
-            <div>
-              You already have a staked position expires{" "}
-              {dayjs.unix(stakedLockEnd).fromNow()}. You can only redeem with
-              same lock or longer.
-            </div>
-          </div>
-        )}
-        {isSelectedDurationMoreThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-warning">
-            <div className="underline">WARNING</div>
-            <div>
-              You are going to increase your lock end from{" "}
-              <span className="tracking-tighter">
-                {dayjs.unix(stakedLockEnd).format("HH[:]mm MM/DD")}
-              </span>{" "}
-              to{" "}
-              <span className="tracking-tighter">
-                {dayjs().second(durationForDiscount).format("HH[:]mm MM/DD")}
-              </span>
-              .
-            </div>
-            <Separator.Root className="my-[15px] bg-warning radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full" />
-            <div className="flex items-center">
-              <Checkbox.Root
-                className="flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-secondary outline-none"
-                checked={increaseAccepted}
-                onCheckedChange={() =>
-                  setIncreaseAccepted((prevChecked) => !prevChecked)
-                }
-                id="increaseAcceptance"
-              >
-                <Checkbox.Indicator className="text-lime-50">
-                  <Check />
-                </Checkbox.Indicator>
-              </Checkbox.Root>
-              <label
-                className="cursor-pointer pl-[15px] text-[15px] leading-none text-white"
-                htmlFor="increaseAcceptance"
-              >
-                Accept lock duration increase
-              </label>
-            </div>
-            <Separator.Root className="my-[15px] bg-warning radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full" />
-          </div>
-        )}
+
         <div className="flex flex-col items-start justify-center text-sm">
           <div className="underline">Breakdown</div>
           <div>
