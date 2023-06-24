@@ -694,7 +694,7 @@ function RedeemLP({ now }: { now: number }) {
             isFetchingAllowanceOrApproving
               ? "Loading..."
               : isApprovalNeeded
-              ? "Approve"
+              ? `Approve ${paymentTokenSymbol}`
               : `Redeem into ${paymentTokenSymbol}/${underlyingTokenSymbol} LP`}
           </button>
         )}
