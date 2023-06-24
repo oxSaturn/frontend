@@ -105,7 +105,7 @@ export function Convert() {
 
   return (
     <>
-      <div className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+      <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex items-center justify-between">
           <div>oFLOW v1 balance</div>
           <div>{formatCurrency(optionV1Balance?.formatted)}</div>

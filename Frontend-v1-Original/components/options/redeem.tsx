@@ -79,7 +79,7 @@ export function Redeem() {
 
   return (
     <Tabs.Root
-      className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]"
+      className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]"
       value={tab}
       onValueChange={handleTabChange}
     >

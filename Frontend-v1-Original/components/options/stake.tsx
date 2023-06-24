@@ -176,7 +176,7 @@ export function Stake() {
 
   return (
     <>
-      <div className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+      <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex cursor-pointer items-center">
           <label
             className="pr-[15px] text-[15px] leading-none text-white"
