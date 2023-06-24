@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useAccount,
@@ -390,7 +390,13 @@ function RedeemLP({ now }: { now: number }) {
 
   const { maxLpDiscount, minLpDiscount } = useDiscountsData();
 
-  const [lpDiscount, setLpDiscount] = useState(maxLpDiscount ?? 50);
+  const [lpDiscount, setLpDiscount] = useState(100);
+
+  useEffect(() => {
+    if (maxLpDiscount) {
+      setLpDiscount(maxLpDiscount);
+    }
+  }, [maxLpDiscount]);
 
   const {
     data: durationForDiscount,
