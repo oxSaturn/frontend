@@ -549,17 +549,13 @@ function RedeemLP({ now }: { now: number }) {
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <span>
-          {minLpDiscount}%(
-          <span
-            className="cursor-pointer"
-            onClick={() => {
-              if (minLpDiscount) setLpDiscount(minLpDiscount);
-            }}
-          >
-            min
-          </span>
-          )
+        <span
+          className="cursor-pointer"
+          onClick={() => {
+            if (minLpDiscount) setLpDiscount(minLpDiscount);
+          }}
+        >
+          {minLpDiscount}%
         </span>
         <Slider
           value={[lpDiscount]}
@@ -568,17 +564,14 @@ function RedeemLP({ now }: { now: number }) {
           max={maxLpDiscount ?? 100}
           className="relative flex h-5 flex-grow touch-none select-none items-center"
         />
-        <span>
-          {maxLpDiscount}%(
-          <span
-            className="cursor-pointer"
-            onClick={() => {
-              if (maxLpDiscount) setLpDiscount(maxLpDiscount);
-            }}
-          >
-            max
-          </span>
-          )
+
+        <span
+          className="cursor-pointer"
+          onClick={() => {
+            if (maxLpDiscount) setLpDiscount(maxLpDiscount);
+          }}
+        >
+          {maxLpDiscount}%
         </span>
       </div>
       <div className="my-5 flex flex-col gap-3">
