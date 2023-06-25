@@ -1,19 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, useBalance } from "wagmi";
-import { formatEther } from "viem";
+import { formatEther, formatUnits } from "viem";
 
 import {
   useMaxxingGaugeBalanceOf,
   useMaxxingGaugeBalanceWithLock,
+  useMaxxingGaugeLeft,
   useMaxxingGaugeLockEnd,
   useMaxxingGaugeStake,
   useMaxxingGaugeTotalSupply,
-  useOptionTokenPaymentToken,
 } from "../../../lib/wagmiGen";
 import { useGetPair } from "../../liquidityManage/lib/queries";
 import { Pair } from "../../../stores/types/types";
 import { useTokenPrices } from "../../header/lib/queries";
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
+
+import { useTokenData } from "./useTokenData";
 
 export function useStakeData() {
   const { address } = useAccount();
@@ -47,9 +49,14 @@ export function useStakeData() {
     select: (data) => Number(data),
   });
 
-  const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
-  const { data: paymentTokenBalanceInGauge } = useBalance({
-    address: PRO_OPTIONS.oFLOW.gaugeAddress,
+  const { paymentTokenDecimals, paymentTokenAddress } = useTokenData();
+  const { data: paymentTokenLeftInGauge } = useMaxxingGaugeLeft({
+    args: [paymentTokenAddress!],
+    enabled: !!paymentTokenAddress,
+    select: (data) => formatUnits(data, paymentTokenDecimals),
+  });
+  const { data: paymentTokenBalanceInOption } = useBalance({
+    address: PRO_OPTIONS.oFLOW.tokenAddress,
     token: paymentTokenAddress,
     enabled: !!paymentTokenAddress,
   });
@@ -69,7 +76,11 @@ export function useStakeData() {
     stakedBalanceWithoutLock: stakedBalanceWithoutLock?.toString(),
     stakedBalanceWithLock,
     stakedLockEnd,
-    paymentTokenBalanceInGauge,
+    paymentTokenBalanceToDistribute:
+      paymentTokenBalanceInOption && paymentTokenLeftInGauge
+        ? parseFloat(paymentTokenLeftInGauge) +
+          parseFloat(paymentTokenBalanceInOption.formatted)
+        : undefined,
     refetch: () => {
       refetchPooledBalance();
       refetchStakedBalance();

@@ -51,7 +51,7 @@ export function Stake() {
     stakedBalanceWithLock,
     stakedLockEnd,
     totalStakedValue,
-    paymentTokenBalanceInGauge,
+    paymentTokenBalanceToDistribute,
   } = useStakeData();
   const { data: aprRange } = useGaugeApr();
 
@@ -215,9 +215,7 @@ export function Stake() {
         </div>
         <div className="flex items-center justify-between">
           <div>{paymentTokenSymbol} reward in gauge</div>
-          <div>
-            ${formatCurrency(paymentTokenBalanceInGauge?.formatted ?? 0)}
-          </div>
+          <div>${formatCurrency(paymentTokenBalanceToDistribute ?? 0)}</div>
         </div>
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
