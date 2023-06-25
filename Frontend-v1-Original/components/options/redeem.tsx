@@ -334,7 +334,7 @@ function RedeemLiquid({ now }: { now: number }) {
               isFetchingAmounts
                 ? "Loading..."
                 : isApprovalNeeded
-                ? "Approve"
+                ? `Approve ${paymentTokenSymbol}`
                 : `Redeem into ${underlyingTokenSymbol}`}
             </button>
           </>
@@ -990,7 +990,7 @@ function RedeemVest({ now }: { now: number }) {
               isFetchingAmounts
                 ? "Loading..."
                 : isApprovalNeeded
-                ? "Approve"
+                ? `Approve ${paymentTokenSymbol}`
                 : `Redeem into ve${underlyingTokenSymbol}`}
             </button>
           </>
