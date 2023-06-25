@@ -86,7 +86,7 @@ export function Redeem() {
       <h1 className="mb-5 text-center text-xl">
         Redeem {optionTokenSymbol} Into
       </h1>
-      <Tabs.List className="flex shrink-0" aria-label="Manage your account">
+      <Tabs.List className="flex shrink-0" aria-label={`Redeem options`}>
         {Object.values(TABS).map((tab) => (
           <Tabs.Trigger
             key={tab}
