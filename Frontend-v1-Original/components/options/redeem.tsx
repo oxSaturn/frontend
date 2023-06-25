@@ -616,7 +616,7 @@ function RedeemLP({ now }: { now: number }) {
           />
         </div>
         {isSelectedDurationLessThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-warning">
+          <div className="flex flex-col items-start justify-center space-y-2 text-warning">
             <div className="uppercase">WARNING</div>
             <div className="text-sm">
               You already have a staked position expires on{" "}
@@ -626,7 +626,7 @@ function RedeemLP({ now }: { now: number }) {
           </div>
         )}
         {isSelectedDurationMoreThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-warning">
+          <div className="flex flex-col items-start justify-center space-y-2 text-warning">
             <div className="uppercase">WARNING</div>
             <div className="text-sm">
               You are going to increase your lock end from{" "}
@@ -641,7 +641,7 @@ function RedeemLP({ now }: { now: number }) {
               </span>
               .
             </div>
-            <div className="my-3 flex items-center">
+            <div className="flex items-center">
               <Checkbox.Root
                 className="flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] border-2 border-solid border-secondary outline-none radix-state-checked:bg-secondary"
                 checked={increaseAccepted}
