@@ -1,4 +1,4 @@
-import { formatEther, formatUnits, parseEther } from "viem";
+import { formatUnits, parseEther } from "viem";
 
 import {
   useOptionTokenGetDiscountedPrice,
@@ -41,7 +41,8 @@ export function useAmountToPayLiquid() {
           activeInput === INPUT.PAYMENT
         ) {
           const amountOptionForPayment =
-            parseFloat(payment) / parseFloat(formatEther(oneOptionPrice));
+            parseFloat(payment) /
+            parseFloat(formatUnits(oneOptionPrice, paymentTokenDecimals));
           setOption(amountOptionForPayment.toString());
         }
       },
@@ -84,7 +85,8 @@ export function useAmountToPayVest() {
           activeInput === INPUT.PAYMENT
         ) {
           const amountOptionForPayment =
-            parseFloat(payment) / parseFloat(formatEther(oneOptionPrice));
+            parseFloat(payment) /
+            parseFloat(formatUnits(oneOptionPrice, paymentTokenDecimals));
           setOption(amountOptionForPayment.toString());
         }
       },
