@@ -341,11 +341,11 @@ function RedeemLiquid({ now }: { now: number }) {
         )}
       </div>
       <Tooltip.Root>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             Max payment{" "}
             <Tooltip.Trigger>
-              <InfoOutlined />
+              <InfoOutlined className="w-5" />
             </Tooltip.Trigger>
           </div>
           <div>
@@ -996,33 +996,36 @@ function RedeemVest({ now }: { now: number }) {
           </>
         )}
       </div>
-      <div className="mb-2 flex flex-col items-start justify-center">
-        Redeeming into vest will create you a new max locked veNFT. It is
-        possible to merge it into single veNFT on Vest page after.
-      </div>
-      <Tooltip.Root>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            Max payment{" "}
-            <Tooltip.Trigger>
-              <InfoOutlined />
-            </Tooltip.Trigger>
-          </div>
-          <div>
-            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
-            {paymentTokenSymbol}
-          </div>
+      <div className="space-y-2">
+        <div className="flex flex-col items-start justify-center text-sm">
+          Redeeming into ve{underlyingTokenSymbol} will create you a new max
+          locked veNFT. It is possible to merge it into single veNFT on Vest
+          page after.
         </div>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-            sideOffset={5}
-          >
-            We take into account 1% slippage
-            <Tooltip.Arrow className="fill-accent" />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
+        <Tooltip.Root>
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              Max payment{" "}
+              <Tooltip.Trigger>
+                <InfoOutlined className="w-5" />
+              </Tooltip.Trigger>
+            </div>
+            <div>
+              {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+              {paymentTokenSymbol}
+            </div>
+          </div>
+          <Tooltip.Portal>
+            <Tooltip.Content
+              className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
+              sideOffset={5}
+            >
+              We take into account 1% slippage
+              <Tooltip.Arrow className="fill-accent" />
+            </Tooltip.Content>
+          </Tooltip.Portal>
+        </Tooltip.Root>
+      </div>
     </>
   );
 }
