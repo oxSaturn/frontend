@@ -50,7 +50,7 @@ export function useStakeData() {
   });
 
   const { paymentTokenDecimals, paymentTokenAddress } = useTokenData();
-  const { data: paymentTokenBalanceInGauge } = useMaxxingGaugeLeft({
+  const { data: paymentTokenLeftInGauge } = useMaxxingGaugeLeft({
     args: [paymentTokenAddress!],
     enabled: !!paymentTokenAddress,
     select: (data) => formatUnits(data, paymentTokenDecimals),
@@ -77,8 +77,8 @@ export function useStakeData() {
     stakedBalanceWithLock,
     stakedLockEnd,
     paymentTokenBalanceToDistribute:
-      paymentTokenBalanceInOption && paymentTokenBalanceInGauge
-        ? parseFloat(paymentTokenBalanceInGauge) +
+      paymentTokenBalanceInOption && paymentTokenLeftInGauge
+        ? parseFloat(paymentTokenLeftInGauge) +
           parseFloat(paymentTokenBalanceInOption.formatted)
         : undefined,
     refetch: () => {
