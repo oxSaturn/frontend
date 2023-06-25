@@ -306,7 +306,7 @@ function RedeemLiquid({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -326,7 +326,7 @@ function RedeemLiquid({ now }: { now: number }) {
                 waitingRedeemReceipt
               }
               onClick={isApprovalNeeded ? () => approve?.() : () => redeem?.()}
-              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
               waitingRedeemReceipt ||
@@ -681,7 +681,7 @@ function RedeemLP({ now }: { now: number }) {
         )}
         {chain?.unsupported ? (
           <button
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -703,7 +703,7 @@ function RedeemLP({ now }: { now: number }) {
               (isSelectedDurationMoreThanLockEnd && !increaseAccepted)
             }
             onClick={isApprovalNeeded ? () => approve?.() : () => redeemLP?.()}
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
           >
             {waitingRedeemReceipt ||
             writingExerciseLP ||
@@ -960,7 +960,7 @@ function RedeemVest({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -982,7 +982,7 @@ function RedeemVest({ now }: { now: number }) {
               onClick={
                 isApprovalNeeded ? () => approve?.() : () => redeemVe?.()
               }
-              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
               waitingRedeemReceipt ||
