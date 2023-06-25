@@ -401,6 +401,7 @@ function RedeemLP({ now }: { now: number }) {
     select(data) {
       return Number(data);
     },
+    keepPreviousData: true,
   });
 
   const { days, hours, minutes } = useDiscountTimer(durationForDiscount ?? 0);
@@ -622,6 +623,7 @@ function RedeemLP({ now }: { now: number }) {
               isFetchingAmounts ||
               isFetchingBalances ||
               isFetchingAllowanceOrApproving ||
+              isFetchingDurationForDiscount ||
               writingExerciseLP ||
               waitingRedeemReceipt ||
               isSelectedDurationLessThanLockEnd ||
