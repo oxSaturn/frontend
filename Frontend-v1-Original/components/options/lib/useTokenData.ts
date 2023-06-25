@@ -78,6 +78,7 @@ export function useTokenData(lpDiscount?: number) {
     paymentTokenSymbol: paymentTokenSymbol ?? "WPLS",
     paymentTokenDecimals: paymentTokenDecimals ?? 18,
     underlyingTokenSymbol: underlyingTokenSymbol ?? "FLOW",
+    paymentTokenAddress,
     paymentBalance,
     optionBalance,
     optionPrice,
