@@ -176,7 +176,7 @@ export function Stake() {
 
   return (
     <>
-      <div className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+      <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex cursor-pointer items-center">
           <label
             className="pr-[15px] text-[15px] leading-none text-white"
@@ -265,7 +265,7 @@ export function Stake() {
           </div>
           {chain?.unsupported ? (
             <button
-              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               onClick={() => switchNetwork?.()}
             >
               Switch to Pulse
@@ -295,7 +295,7 @@ export function Stake() {
                   ? () => withdraw?.()
                   : () => deposit?.()
               }
-              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {writingApprove ||
               isFetchingAllowance ||

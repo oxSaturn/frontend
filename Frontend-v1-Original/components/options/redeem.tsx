@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useAccount,
@@ -79,14 +79,14 @@ export function Redeem() {
 
   return (
     <Tabs.Root
-      className="flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]"
+      className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]"
       value={tab}
       onValueChange={handleTabChange}
     >
       <h1 className="mb-5 text-center text-xl">
         Redeem {optionTokenSymbol} Into
       </h1>
-      <Tabs.List className="flex shrink-0" aria-label="Manage your account">
+      <Tabs.List className="flex shrink-0" aria-label="Redeem options">
         {Object.values(TABS).map((tab) => (
           <Tabs.Trigger
             key={tab}
@@ -306,7 +306,7 @@ function RedeemLiquid({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -326,7 +326,7 @@ function RedeemLiquid({ now }: { now: number }) {
                 waitingRedeemReceipt
               }
               onClick={isApprovalNeeded ? () => approve?.() : () => redeem?.()}
-              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
               waitingRedeemReceipt ||
@@ -334,18 +334,18 @@ function RedeemLiquid({ now }: { now: number }) {
               isFetchingAmounts
                 ? "Loading..."
                 : isApprovalNeeded
-                ? "Approve"
+                ? `Approve ${paymentTokenSymbol}`
                 : `Redeem into ${underlyingTokenSymbol}`}
             </button>
           </>
         )}
       </div>
       <Tooltip.Root>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             Max payment{" "}
             <Tooltip.Trigger>
-              <InfoOutlined />
+              <InfoOutlined className="w-5" />
             </Tooltip.Trigger>
           </div>
           <div>
@@ -390,7 +390,13 @@ function RedeemLP({ now }: { now: number }) {
 
   const { maxLpDiscount, minLpDiscount } = useDiscountsData();
 
-  const [lpDiscount, setLpDiscount] = useState(maxLpDiscount ?? 50);
+  const [lpDiscount, setLpDiscount] = useState(100);
+
+  useEffect(() => {
+    if (maxLpDiscount) {
+      setLpDiscount(maxLpDiscount);
+    }
+  }, [maxLpDiscount]);
 
   const {
     data: durationForDiscount,
@@ -542,13 +548,32 @@ function RedeemLP({ now }: { now: number }) {
           {days}d {hours}h {minutes}m
         </div>
       </div>
-      <Slider
-        value={[lpDiscount]}
-        onValueChange={(e) => setLpDiscount(e[0])}
-        min={minLpDiscount ?? 0}
-        max={maxLpDiscount ?? 100}
-        className="relative flex h-5 touch-none select-none items-center"
-      />
+      <div className="flex items-center space-x-2">
+        <span
+          className="cursor-pointer"
+          onClick={() => {
+            if (minLpDiscount) setLpDiscount(minLpDiscount);
+          }}
+        >
+          {minLpDiscount}%
+        </span>
+        <Slider
+          value={[lpDiscount]}
+          onValueChange={(e) => setLpDiscount(e[0])}
+          min={minLpDiscount ?? 0}
+          max={maxLpDiscount ?? 100}
+          className="relative flex h-5 flex-grow touch-none select-none items-center"
+        />
+
+        <span
+          className="cursor-pointer"
+          onClick={() => {
+            if (maxLpDiscount) setLpDiscount(maxLpDiscount);
+          }}
+        >
+          {maxLpDiscount}%
+        </span>
+      </div>
       <div className="my-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div
@@ -606,9 +631,57 @@ function RedeemLP({ now }: { now: number }) {
             placeholder={`You get 0.00 ${underlyingTokenSymbol}`}
           />
         </div>
+        {isSelectedDurationLessThanLockEnd && (
+          <div className="flex flex-col items-start justify-center space-y-2 text-warning">
+            <div className="uppercase">WARNING</div>
+            <div className="text-sm">
+              You already have a staked position expires on{" "}
+              {dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH[:]mm")}. You can
+              only redeem with same lock or longer.
+            </div>
+          </div>
+        )}
+        {isSelectedDurationMoreThanLockEnd && (
+          <div className="flex flex-col items-start justify-center space-y-2 text-warning">
+            <div className="uppercase">WARNING</div>
+            <div className="text-sm">
+              You are going to increase your lock end from{" "}
+              <span className="tracking-tighter">
+                {dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH[:]mm")}
+              </span>{" "}
+              to{" "}
+              <span className="tracking-tighter">
+                {dayjs()
+                  .second(durationForDiscount)
+                  .format("YYYY-MM-DD HH[:]mm")}
+              </span>
+              .
+            </div>
+            <div className="flex items-center">
+              <Checkbox.Root
+                className="flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] border-2 border-solid border-secondary outline-none radix-state-checked:bg-secondary"
+                checked={increaseAccepted}
+                onCheckedChange={() =>
+                  setIncreaseAccepted((prevChecked) => !prevChecked)
+                }
+                id="increaseAcceptance"
+              >
+                <Checkbox.Indicator className="text-lime-50">
+                  <Check />
+                </Checkbox.Indicator>
+              </Checkbox.Root>
+              <label
+                className="cursor-pointer pl-[15px] text-[15px] leading-none text-white"
+                htmlFor="increaseAcceptance"
+              >
+                Accept lock duration increase
+              </label>
+            </div>
+          </div>
+        )}
         {chain?.unsupported ? (
           <button
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -630,7 +703,7 @@ function RedeemLP({ now }: { now: number }) {
               (isSelectedDurationMoreThanLockEnd && !increaseAccepted)
             }
             onClick={isApprovalNeeded ? () => approve?.() : () => redeemLP?.()}
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
           >
             {waitingRedeemReceipt ||
             writingExerciseLP ||
@@ -638,100 +711,55 @@ function RedeemLP({ now }: { now: number }) {
             isFetchingAllowanceOrApproving
               ? "Loading..."
               : isApprovalNeeded
-              ? "Approve"
+              ? `Approve ${paymentTokenSymbol}`
               : `Redeem into ${paymentTokenSymbol}/${underlyingTokenSymbol} LP`}
           </button>
         )}
-        {isSelectedDurationLessThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-warning">
-            <div className="underline">WARNING</div>
-            <div>
-              You already have a staked position expires{" "}
-              {dayjs.unix(stakedLockEnd).fromNow()}. You can only redeem with
-              same lock or longer.
-            </div>
-          </div>
-        )}
-        {isSelectedDurationMoreThanLockEnd && (
-          <div className="flex flex-col items-start justify-center text-warning">
-            <div className="underline">WARNING</div>
-            <div>
-              You are going to increase your lock end from{" "}
-              <span className="tracking-tighter">
-                {dayjs.unix(stakedLockEnd).format("HH[:]mm MM/DD")}
-              </span>{" "}
-              to{" "}
-              <span className="tracking-tighter">
-                {dayjs().second(durationForDiscount).format("HH[:]mm MM/DD")}
-              </span>
-              .
-            </div>
-            <Separator.Root className="my-[15px] bg-warning radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full" />
-            <div className="flex items-center">
-              <Checkbox.Root
-                className="flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-secondary outline-none"
-                checked={increaseAccepted}
-                onCheckedChange={() =>
-                  setIncreaseAccepted((prevChecked) => !prevChecked)
-                }
-                id="increaseAcceptance"
-              >
-                <Checkbox.Indicator className="text-lime-50">
-                  <Check />
-                </Checkbox.Indicator>
-              </Checkbox.Root>
-              <label
-                className="cursor-pointer pl-[15px] text-[15px] leading-none text-white"
-                htmlFor="increaseAcceptance"
-              >
-                Accept lock duration increase
-              </label>
-            </div>
-            <Separator.Root className="my-[15px] bg-warning radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full" />
-          </div>
-        )}
-        <div className="flex flex-col items-start justify-center text-sm">
-          <div className="underline">Breakdown</div>
-          <div>
+        <div className="h-1" />
+        <div className="flex flex-col items-start justify-center space-y-2">
+          <div className="uppercase">Breakdown</div>
+          <div className="text-sm">
             You get {lpDiscount}% discount. There is additional token transfer
             for LP creation.
           </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>To redeem option</div>
-          <div>
-            {formatCurrency(paymentAmount)} {paymentTokenSymbol}
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>To create LP</div>
-          <div>
-            {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
+          <div className="w-full">
+            <div className="flex w-full items-center justify-between text-sm">
+              <div>To redeem option</div>
+              <div>
+                {formatCurrency(paymentAmount)} {paymentTokenSymbol}
+              </div>
+            </div>
+            <div className="flex w-full items-center justify-between text-sm">
+              <div>To create LP</div>
+              <div>
+                {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
+              </div>
+            </div>
+            <Tooltip.Root>
+              <div className="flex w-full items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  Max payment{" "}
+                  <Tooltip.Trigger>
+                    <InfoOutlined className="w-5" />
+                  </Tooltip.Trigger>
+                </div>
+                <div>
+                  {formatCurrency(maxPayment)} {paymentTokenSymbol}
+                </div>
+              </div>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 text-sm leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
+                  sideOffset={5}
+                >
+                  We take into account 1% slippage
+                  <Tooltip.Arrow className="fill-accent" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
           </div>
         </div>
       </div>
-      <Tooltip.Root>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            Max payment{" "}
-            <Tooltip.Trigger>
-              <InfoOutlined />
-            </Tooltip.Trigger>
-          </div>
-          <div>
-            {formatCurrency(maxPayment)} {paymentTokenSymbol}
-          </div>
-        </div>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-            sideOffset={5}
-          >
-            We take into account 1% slippage
-            <Tooltip.Arrow className="fill-accent" />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
     </>
   );
 }
@@ -932,7 +960,7 @@ function RedeemVest({ now }: { now: number }) {
         </div>
         {chain?.unsupported ? (
           <button
-            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
             Switch to pulse
@@ -954,7 +982,7 @@ function RedeemVest({ now }: { now: number }) {
               onClick={
                 isApprovalNeeded ? () => approve?.() : () => redeemVe?.()
               }
-              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             >
               {isFetchingAllowanceOrApproving ||
               waitingRedeemReceipt ||
@@ -962,39 +990,42 @@ function RedeemVest({ now }: { now: number }) {
               isFetchingAmounts
                 ? "Loading..."
                 : isApprovalNeeded
-                ? "Approve"
+                ? `Approve ${paymentTokenSymbol}`
                 : `Redeem into ve${underlyingTokenSymbol}`}
             </button>
           </>
         )}
       </div>
-      <div className="mb-2 flex flex-col items-start justify-center">
-        Redeeming into vest will create you a new max locked veNFT. It is
-        possible to merge it into single veNFT on Vest page after.
-      </div>
-      <Tooltip.Root>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            Max payment{" "}
-            <Tooltip.Trigger>
-              <InfoOutlined />
-            </Tooltip.Trigger>
-          </div>
-          <div>
-            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
-            {paymentTokenSymbol}
-          </div>
+      <div className="space-y-2">
+        <div className="flex flex-col items-start justify-center text-sm">
+          Redeeming into ve{underlyingTokenSymbol} will create you a new max
+          locked veNFT. It is possible to merge it into single veNFT on Vest
+          page after.
         </div>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-            sideOffset={5}
-          >
-            We take into account 1% slippage
-            <Tooltip.Arrow className="fill-accent" />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
+        <Tooltip.Root>
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              Max payment{" "}
+              <Tooltip.Trigger>
+                <InfoOutlined className="w-5" />
+              </Tooltip.Trigger>
+            </div>
+            <div>
+              {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+              {paymentTokenSymbol}
+            </div>
+          </div>
+          <Tooltip.Portal>
+            <Tooltip.Content
+              className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-primaryBg px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
+              sideOffset={5}
+            >
+              We take into account 1% slippage
+              <Tooltip.Arrow className="fill-accent" />
+            </Tooltip.Content>
+          </Tooltip.Portal>
+        </Tooltip.Root>
+      </div>
     </>
   );
 }
