@@ -1,5 +1,5 @@
 import { useAccount, useWaitForTransaction } from "wagmi";
-import { formatUnits, parseUnits } from "viem";
+import { parseUnits } from "viem";
 
 import {
   useErc20Allowance,
@@ -27,9 +27,10 @@ export function useAllowance() {
   } = useErc20Allowance({
     address: paymentTokenAddress,
     args: [address!, PRO_OPTIONS.oFLOW.tokenAddress],
-    enabled: !!address && !!paymentTokenAddress,
+    enabled: !!address && !!paymentTokenAddress && !!paymentTokenDecimals,
     select: (allowance) => {
       if (!maxPayment) return;
+      if (!isValidInput(maxPayment, paymentTokenDecimals)) return;
       return allowance < parseUnits(maxPayment, paymentTokenDecimals);
     },
   });
