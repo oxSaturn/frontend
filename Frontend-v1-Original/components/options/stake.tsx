@@ -177,9 +177,9 @@ export function Stake() {
   return (
     <>
       <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
-        <div className="flex cursor-pointer items-center">
+        <h2 className="mb-5 flex cursor-pointer items-center text-xl">
           <label
-            className="pr-[15px] text-[15px] leading-none text-white"
+            className="pr-[15px] leading-none text-white"
             htmlFor="airplane-mode"
           >
             Stake
@@ -193,12 +193,12 @@ export function Stake() {
             <Switch.Thumb className="block h-[21px] w-[21px] translate-x-0.5 rounded-full bg-white shadow-[0_2px_2px] shadow-black transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[19px]" />
           </Switch.Root>
           <label
-            className="pl-[15px] text-[15px] leading-none text-white"
+            className="pl-[15px] leading-none text-white"
             htmlFor="airplane-mode"
           >
             Withdraw
           </label>
-        </div>
+        </h2>
         <div className="flex items-center justify-between">
           <div>Total staked</div>
           <div>${formatCurrency(totalStakedValue)}</div>
@@ -217,34 +217,36 @@ export function Stake() {
           <div>{paymentTokenSymbol} reward in gauge</div>
           <div>${formatCurrency(paymentTokenBalanceToDistribute ?? 0)}</div>
         </div>
-        <div className="flex items-center justify-between">
-          <div>Pooled balance</div>
-          <div>{pooledBalance?.formatted}</div>
-        </div>
+
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>
           <div
             className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
             onClick={() => pickWithdrawAmount("notLocked")}
           >
-            {formatCurrency(stakedBalanceWithoutLock)}
+            {stakedBalanceWithoutLock}
           </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between">
+            <div>Staked with lock</div>
+            <div
+              className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+              onClick={() => pickWithdrawAmount("locked")}
+            >
+              {stakedBalanceWithLock}
+            </div>
+          </div>
+          {stakedLockEnd && (
+            <div className="text-right">
+              {dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH:mm:ss")}
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-between">
-          <div>Staked with lock</div>
-          <div
-            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
-            onClick={() => pickWithdrawAmount("locked")}
-          >
-            {formatCurrency(stakedBalanceWithLock)}
-          </div>
+          <div>Pooled balance</div>
+          <div>{pooledBalance?.formatted}</div>
         </div>
-        {stakedLockEnd && (
-          <div className="flex items-center justify-between">
-            <div>Lock end</div>
-            <div>{dayjs.unix(stakedLockEnd).fromNow()}</div>
-          </div>
-        )}
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="w-full border border-[rgb(46,45,45)]">
