@@ -227,22 +227,21 @@ export function Stake() {
             {stakedBalanceWithoutLock}
           </div>
         </div>
-        <div className="flex flex-col">
-          <div className="flex items-center justify-between">
-            <div>Staked with lock</div>
-            <div
-              className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
-              onClick={() => pickWithdrawAmount("locked")}
-            >
-              {stakedBalanceWithLock}
-            </div>
+        <div className="flex items-center justify-between">
+          <div>Staked with lock</div>
+          <div
+            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+            onClick={() => pickWithdrawAmount("locked")}
+          >
+            {stakedBalanceWithLock}
           </div>
-          {stakedLockEnd && (
-            <div className="text-right">
-              {dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH:mm:ss")}
-            </div>
-          )}
         </div>
+        {stakedLockEnd ? (
+          <div className="flex items-center justify-between">
+            <div>Lock end</div>
+            <div>{dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH:mm:ss")}</div>
+          </div>
+        ) : null}
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
           <div>{pooledBalance?.formatted}</div>
