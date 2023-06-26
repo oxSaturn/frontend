@@ -48,7 +48,9 @@ export function Stake() {
     pooledBalance,
     stakedBalance,
     stakedBalanceWithoutLock,
+    stakedWithoutLockValue,
     stakedBalanceWithLock,
+    stakedWithLockValue,
     stakedLockEnd,
     totalStakedValue,
     paymentTokenBalanceToDistribute,
@@ -224,7 +226,7 @@ export function Stake() {
             className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
             onClick={() => pickWithdrawAmount("notLocked")}
           >
-            {stakedBalanceWithoutLock}
+            ${formatCurrency(stakedWithoutLockValue)}
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -233,7 +235,7 @@ export function Stake() {
             className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
             onClick={() => pickWithdrawAmount("locked")}
           >
-            {stakedBalanceWithLock}
+            ${formatCurrency(stakedWithLockValue)}
           </div>
         </div>
         {stakedLockEnd ? (
