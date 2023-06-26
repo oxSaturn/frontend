@@ -63,17 +63,22 @@ export function useStakeData() {
 
   const stakedBalanceWithoutLock =
     stakedBalance && stakedBalanceWithLock
-      ? parseFloat(stakedBalance) - parseFloat(stakedBalanceWithLock)
+      ? (
+          parseFloat(stakedBalance) - parseFloat(stakedBalanceWithLock)
+        ).toString()
       : undefined;
 
-  const { data: gaugeTotalStakedData } = useTotalStaked();
+  const { data: gaugeTotalStakedData } = useTotalStaked(
+    stakedBalanceWithoutLock,
+    stakedBalanceWithLock
+  );
 
   return {
     ...gaugeTotalStakedData,
     pair,
     pooledBalance,
     stakedBalance,
-    stakedBalanceWithoutLock: stakedBalanceWithoutLock?.toString(),
+    stakedBalanceWithoutLock,
     stakedBalanceWithLock,
     stakedLockEnd,
     paymentTokenBalanceToDistribute:
@@ -89,7 +94,10 @@ export function useStakeData() {
   };
 }
 
-export function useTotalStaked() {
+export function useTotalStaked(
+  stakedBalanceWithoutLock: string | undefined,
+  stakedBalanceWithLock: string | undefined
+) {
   const { data: pair } = useMaxxingGaugeStake();
   const { data: totalSupply } = useMaxxingGaugeTotalSupply({
     select: (data) => formatEther(data),
@@ -98,9 +106,30 @@ export function useTotalStaked() {
   const { data: tokenPrices } = useTokenPrices();
 
   return useQuery({
-    queryKey: ["totalStaked", tokenPrices, pair, totalSupply, pairData],
-    queryFn: () => getTotalStaked(pairData, totalSupply, tokenPrices),
-    enabled: !!pair && !!totalSupply && !!pairData && !!tokenPrices,
+    queryKey: [
+      "totalStaked",
+      tokenPrices,
+      pair,
+      totalSupply,
+      pairData,
+      stakedBalanceWithoutLock,
+      stakedBalanceWithLock,
+    ],
+    queryFn: () =>
+      getTotalStaked(
+        pairData,
+        totalSupply,
+        tokenPrices,
+        stakedBalanceWithoutLock,
+        stakedBalanceWithLock
+      ),
+    enabled:
+      !!pair &&
+      !!totalSupply &&
+      !!pairData &&
+      !!tokenPrices &&
+      !!stakedBalanceWithoutLock &&
+      !!stakedBalanceWithLock,
     keepPreviousData: true,
   });
 }
@@ -108,10 +137,18 @@ export function useTotalStaked() {
 function getTotalStaked(
   pairData: Pair | undefined,
   totalSupply: string | undefined,
-  tokenPrices: Map<string, number> | undefined
+  tokenPrices: Map<string, number> | undefined,
+  stakedWithoutLock: string | undefined,
+  stakedWithLock: string | undefined
 ) {
-  if (!pairData || !totalSupply) {
-    throw new Error("Pair data or total supply is undefined");
+  if (
+    !pairData ||
+    !totalSupply ||
+    !tokenPrices ||
+    !stakedWithoutLock ||
+    !stakedWithLock
+  ) {
+    throw new Error("Total staked error");
   }
 
   const reserve0 =
@@ -123,10 +160,21 @@ function getTotalStaked(
       ? (pairData.reserve1 * parseFloat(totalSupply)) / pairData.totalSupply
       : 0;
 
-  const price0 = tokenPrices?.get(pairData.token0.address.toLowerCase()) ?? 0;
-  const price1 = tokenPrices?.get(pairData.token1.address.toLowerCase()) ?? 0;
+  const price0 = tokenPrices.get(pairData.token0.address.toLowerCase()) ?? 0;
+  const price1 = tokenPrices.get(pairData.token1.address.toLowerCase()) ?? 0;
 
   const totalStakedValue = reserve0 * price0 + reserve1 * price1;
+  const stakedWithoutLockValue =
+    (+stakedWithoutLock / +totalSupply) *
+    (reserve0 * price0 + reserve1 * price1);
+  const stakedWithLockValue =
+    (+stakedWithLock / +totalSupply) * (reserve0 * price0 + reserve1 * price1);
 
-  return { reserve0, reserve1, totalStakedValue };
+  return {
+    reserve0,
+    reserve1,
+    totalStakedValue,
+    stakedWithoutLockValue,
+    stakedWithLockValue,
+  };
 }
