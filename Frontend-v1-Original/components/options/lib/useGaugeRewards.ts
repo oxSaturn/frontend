@@ -3,9 +3,9 @@ import { Address, erc20ABI, useAccount } from "wagmi";
 import { formatUnits } from "viem";
 
 import viemClient from "../../../stores/connectors/viem";
-
+import { getInitBaseAssets } from "../../../lib/global/queries";
 import { useMaxxingGaugeRewardsListLength } from "../../../lib/wagmiGen";
-import { PRO_OPTIONS } from "../../../stores/constants/constants";
+import { CONTRACTS, PRO_OPTIONS } from "../../../stores/constants/constants";
 
 const QUERY_KEYS = {
   TOKEN_ADDRESSES: "TOKEN_ADDRESSES",
@@ -17,12 +17,14 @@ export interface Token {
   symbol: string;
   decimals: number;
   reward: number;
+  logoUrl: string | undefined;
 }
 
 interface Earned {
   address: Address;
   earnedAmount: string;
   symbol: string;
+  logoUrl: string | undefined;
 }
 
 export function useGaugeRewards() {
@@ -52,6 +54,8 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
   if (!rewardsListLength) {
     throw new Error("rewardsListLength is undefined or zero");
   }
+
+  const initBaseAssets = getInitBaseAssets();
 
   const gaugeContract = {
     address: PRO_OPTIONS.oFLOW.gaugeAddress,
@@ -95,10 +99,24 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
         },
       ],
     });
+
+    const asset = initBaseAssets.find((asset) => {
+      return asset.address.toLowerCase() === rewardTokenAddress.toLowerCase();
+    });
+
+    let logoUrl = asset?.logoURI ? asset.logoURI : undefined;
+    if (
+      asset?.address.toLowerCase() === CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+    ) {
+      logoUrl =
+        "https://cre8r.vip/wp-content/uploads/2023/06/VEFlow-token-icon3.png";
+    }
+
     rewardsTokens.push({
       address: rewardTokenAddress,
       symbol,
       decimals,
+      logoUrl,
       reward:
         left === 0n ? 0 : +formatUnits(rewardRate, decimals) * 24 * 60 * 60,
     });
@@ -126,7 +144,7 @@ async function getEarned(
   const earned: Earned[] = [];
 
   for (const token of rewardsTokens) {
-    const { address, symbol, decimals } = token;
+    const { address, symbol, decimals, logoUrl } = token;
 
     const earnedAmount = await viemClient.readContract({
       ...gaugeContract,
@@ -137,6 +155,7 @@ async function getEarned(
       address,
       earnedAmount: formatUnits(earnedAmount, decimals),
       symbol,
+      logoUrl,
     });
   }
 
