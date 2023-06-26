@@ -153,9 +153,7 @@ export default function Lock({
               onChange={amountChanged}
               disabled={lockLoading}
               inputProps={{
-                min: dayjs()
-                  .add(lockOptions["6.5 weeks"], "days")
-                  .format("YYYY-MM-DD"),
+                min: dayjs().add(3, "days").format("YYYY-MM-DD"),
                 max: dayjs()
                   .add(lockOptions["26 weeks"], "days")
                   .format("YYYY-MM-DD"),
