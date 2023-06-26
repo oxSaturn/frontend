@@ -106,9 +106,11 @@ export function Convert() {
   return (
     <>
       <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
-        <div className="flex items-center justify-between">
-          <div>oFLOW v1 balance</div>
-          <div>{formatCurrency(optionV1Balance?.formatted)}</div>
+        <div className="relative mb-5 flex items-center justify-between">
+          <h2 className="text-xl">oFLOW v1 balance</h2>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 text-sm">
+            {formatCurrency(optionV1Balance?.formatted)}
+          </div>
         </div>
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">

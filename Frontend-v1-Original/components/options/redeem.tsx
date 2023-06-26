@@ -83,9 +83,7 @@ export function Redeem() {
       value={tab}
       onValueChange={handleTabChange}
     >
-      <h1 className="mb-5 text-center text-xl">
-        Redeem {optionTokenSymbol} Into
-      </h1>
+      <h2 className="mb-5 text-xl">Redeem {optionTokenSymbol} Into</h2>
       <Tabs.List className="flex shrink-0" aria-label="Redeem options">
         {Object.values(TABS).map((tab) => (
           <Tabs.Trigger
