@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useAccount,
   useNetwork,
@@ -22,7 +22,13 @@ import {
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
-import { isValidInput, useStakeData, useGaugeApr, useTokenData } from "./lib";
+import {
+  isValidInput,
+  useStakeData,
+  useGaugeApr,
+  useTokenData,
+  useGaugeRewardTokens,
+} from "./lib";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -56,6 +62,22 @@ export function Stake() {
     paymentTokenBalanceToDistribute,
   } = useStakeData();
   const { data: aprRange } = useGaugeApr();
+  const { data: rewardTokens } = useGaugeRewardTokens();
+  const displayedRewardTokens = useMemo(() => {
+    if (!rewardTokens) return undefined;
+    const tokenLogosSet = new Set<string>();
+    const arr = [];
+    for (const token of rewardTokens) {
+      if (token.logoUrl !== undefined && tokenLogosSet.has(token.logoUrl)) {
+        continue;
+      } else if (token.logoUrl !== undefined) {
+        tokenLogosSet.add(token.logoUrl);
+      }
+      arr.push(token);
+    }
+
+    return arr;
+  }, [rewardTokens]);
 
   const {
     data: isApprovalNeeded,
@@ -206,7 +228,21 @@ export function Stake() {
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
         <div className="flex items-center justify-between">
-          <div>APR</div>
+          <div className="flex items-center justify-start gap-2">
+            <div>APR</div>
+            {displayedRewardTokens && displayedRewardTokens.length > 0 && (
+              <div className="flex items-center justify-center gap-1">
+                {displayedRewardTokens.map((token) => (
+                  <img
+                    key={token.address}
+                    src={token.logoUrl ?? "/tokens/unknown-logo.png"}
+                    alt={`${token.symbol} logo`}
+                    className="h-5 w-5 rounded-full"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           <div>
             {aprRange
               ? `${formatCurrency(aprRange[0])} % - ${formatCurrency(
@@ -216,7 +252,7 @@ export function Stake() {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>{paymentTokenSymbol} reward in gauge</div>
+          <div>{paymentTokenSymbol} reward</div>
           <div>${formatCurrency(paymentTokenBalanceToDistribute ?? 0)}</div>
         </div>
 
