@@ -65,7 +65,7 @@ export function Stake() {
     if (!rewardTokens) return undefined;
     const tokenLogosSet = new Set<string>();
     const arr = [];
-    for (const token of rewardTokens || []) {
+    for (const token of rewardTokens) {
       if (token.logoUrl !== undefined && tokenLogosSet.has(token.logoUrl)) {
         continue;
       } else if (token.logoUrl !== undefined) {
@@ -226,7 +226,7 @@ export function Stake() {
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
         <div className="flex items-center justify-between">
-          <div className="flex items-center justify-start gap-5">
+          <div className="flex items-center justify-start gap-2">
             <div>APR</div>
             {displayedRewardTokens && displayedRewardTokens.length > 0 && (
               <div className="flex items-center justify-center gap-1">
@@ -235,7 +235,7 @@ export function Stake() {
                     key={token.address}
                     src={token.logoUrl ?? "/tokens/unknown-logo.png"}
                     alt={`${token.symbol} logo`}
-                    className="h-8 w-8 rounded-full"
+                    className="h-5 w-5 rounded-full"
                   />
                 ))}
               </div>
