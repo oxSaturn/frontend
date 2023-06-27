@@ -101,15 +101,9 @@ function getGaugeApr(
     +veDiscount
   );
 
-  let minApr = 0;
-  let maxApr = 0;
-  let apr = 0;
+  const map = new Map<Token, readonly [number, number]>(); // [minApr, maxApr]
 
   for (const rewardToken of rewardTokens) {
-    let minPrice: number | undefined;
-    let maxPrice: number | undefined;
-    let price: number | undefined;
-
     if (
       rewardToken.address.toLowerCase() ===
         underlyingTokenAddress.toLowerCase() ||
@@ -118,21 +112,21 @@ function getGaugeApr(
       const fullUnderlyingTokenPrice =
         tokenPrices.get(underlyingTokenAddress.toLowerCase()) ?? 0;
 
-      maxPrice = (fullUnderlyingTokenPrice * (100 - minDiscount)) / 100;
-      minPrice = (fullUnderlyingTokenPrice * (100 - maxDiscount)) / 100;
+      const maxPrice = (fullUnderlyingTokenPrice * (100 - minDiscount)) / 100;
+      const minPrice = (fullUnderlyingTokenPrice * (100 - maxDiscount)) / 100;
 
-      maxApr +=
+      const maxApr =
         ((rewardToken.reward * maxPrice) / totalStakedValue) * 100 * 365;
-      minApr +=
+      const minApr =
         ((rewardToken.reward * minPrice) / totalStakedValue) * 100 * 365;
+
+      map.set(rewardToken, [minApr, maxApr] as const);
     } else {
-      price = tokenPrices.get(rewardToken.address.toLowerCase()) ?? 0;
-      apr += ((rewardToken.reward * price) / totalStakedValue) * 100 * 365;
+      const price = tokenPrices.get(rewardToken.address.toLowerCase()) ?? 0;
+      const apr = ((rewardToken.reward * price) / totalStakedValue) * 100 * 365;
+      map.set(rewardToken, [apr, apr] as const);
     }
   }
-
-  minApr += apr;
-  maxApr += apr;
-
-  return [minApr, maxApr] as const;
+  console.log(map);
+  return map;
 }

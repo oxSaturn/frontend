@@ -22,13 +22,7 @@ import {
   usePrepareErc20Approve,
 } from "../../lib/wagmiGen";
 
-import {
-  isValidInput,
-  useStakeData,
-  useGaugeApr,
-  useTokenData,
-  useGaugeRewardTokens,
-} from "./lib";
+import { isValidInput, useStakeData, useGaugeApr, useTokenData } from "./lib";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -61,23 +55,25 @@ export function Stake() {
     totalStakedValue,
     paymentTokenBalanceToDistribute,
   } = useStakeData();
-  const { data: aprRange } = useGaugeApr();
-  const { data: rewardTokens } = useGaugeRewardTokens();
+
+  const { data: aprMap } = useGaugeApr();
+
   const displayedRewardTokens = useMemo(() => {
-    if (!rewardTokens) return undefined;
-    const tokenLogosSet = new Set<string>();
+    if (!aprMap) return undefined;
+
     const arr = [];
-    for (const token of rewardTokens) {
-      if (token.logoUrl !== undefined && tokenLogosSet.has(token.logoUrl)) {
-        continue;
-      } else if (token.logoUrl !== undefined) {
-        tokenLogosSet.add(token.logoUrl);
+
+    for (const [token, aprRange] of aprMap.entries()) {
+      console.log(token, aprRange);
+      if (aprRange[0] === aprRange[1]) {
+        arr.push({ ...token, apr: aprRange[0] });
+      } else {
+        arr.push({ ...token, aprRange });
       }
-      arr.push(token);
     }
 
     return arr;
-  }, [rewardTokens]);
+  }, [aprMap]);
 
   const {
     data: isApprovalNeeded,
@@ -227,35 +223,40 @@ export function Stake() {
           <div>Total staked</div>
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center justify-start gap-2">
-            <div>APR</div>
-            {displayedRewardTokens && displayedRewardTokens.length > 0 && (
-              <div className="flex items-center justify-center gap-1">
-                {displayedRewardTokens.map((token) => (
+        <div className="my-1 flex items-center justify-between">
+          <div>APR</div>
+          <div className="flex flex-col">
+            {displayedRewardTokens && displayedRewardTokens.length > 0 ? (
+              displayedRewardTokens.map((token) => (
+                <div
+                  key={token.address}
+                  className="flex items-center justify-end gap-2"
+                >
+                  <div>
+                    {"aprRange" in token
+                      ? `${formatCurrency(
+                          token.aprRange[0]
+                        )} % - ${formatCurrency(token.aprRange[1])} %`
+                      : `
+                  ${formatCurrency(token.apr)} %
+                  `}
+                  </div>
                   <img
-                    key={token.address}
                     src={token.logoUrl ?? "/tokens/unknown-logo.png"}
                     alt={`${token.symbol} logo`}
-                    className="h-5 w-5 rounded-full"
+                    className="block h-5 w-5 rounded-full"
                   />
-                ))}
-              </div>
+                </div>
+              ))
+            ) : (
+              <div>0.00</div>
             )}
-          </div>
-          <div>
-            {aprRange
-              ? `${formatCurrency(aprRange[0])} % - ${formatCurrency(
-                  aprRange[1]
-                )} %`
-              : `0 % - 0 %`}
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div>{paymentTokenSymbol} reward</div>
           <div>${formatCurrency(paymentTokenBalanceToDistribute ?? 0)}</div>
         </div>
-
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>
           <div
