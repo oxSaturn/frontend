@@ -16,7 +16,7 @@ function Navigation() {
     setAnchorEl(null);
   };
   const handleDocsClick = () => {
-    window.open("https://docs.velocimeter.xyz/", "_blank");
+    window.open("https://docs.velocimeter.xyz/FVMtokenomics", "_blank");
     handleClose();
   };
   const handleScantoClick = () => {
@@ -24,10 +24,7 @@ function Navigation() {
     handleClose();
   };
   const handleGeckoClick = () => {
-    window.open(
-      "https://www.geckoterminal.com/pulsechain/velocimeter-pulsechain/pools",
-      "_blank"
-    );
+    window.open("https://www.geckoterminal.com/pulsechain/fvm/pools", "_blank");
     handleClose();
   };
 

@@ -25,9 +25,9 @@ export default function Layout({
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
           name="description"
-          content="Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on pulsechain."
+          content="FVM by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on pulsechain."
         />
-        <meta name="og:title" content="Velocimeter" />
+        <meta name="og:title" content="FVM" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
       <div className={classes.background} />

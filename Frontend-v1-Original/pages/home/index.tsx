@@ -35,16 +35,6 @@ function Home() {
             <Grid container spacing={2}>
               <Grid item lg={6} md={6} sm={12} xs={12}>
                 <Button
-                  className="relative bottom-0 min-w-full animate-titleAnim bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-cantoGreen transition-colors delay-[600ms] max-md:float-none max-md:m-0 max-md:w-full"
-                  onClick={() =>
-                    window.open("http://launch.velocimeter.xyz/", "_blank")
-                  }
-                >
-                  Launchpad
-                </Button>
-              </Grid>
-              <Grid item lg={6} md={6} sm={12} xs={12}>
-                <Button
                   className="relative bottom-0 min-w-full animate-titleAnim bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-cantoGreen delay-[600ms] max-md:float-none max-md:m-0 max-md:w-full"
                   onClick={() => router.push("/swap")}
                 >
@@ -77,7 +67,7 @@ function Home() {
               variant="h1"
               className="mb-5 text-center font-['Monument'] text-lg sm:text-3xl"
             >
-              Welcome to Velocimeter
+              Welcome to FVM
             </Typography>
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -85,11 +75,11 @@ function Home() {
               variant="body1"
               className="mb-5 text-sm text-white sm:text-base md:text-lg"
             >
-              Velocimeter officially launched in June 2023 with a collective
-              goal of fair and balanced access to DeFi. Velocimeter is a
-              decentralized exchange that has launched on the Pulse network with
-              low fees, near 0 slippage on correlated assets and a strong focus
-              on secondary markets for tokenized locks as NFTs.
+              FVM officially launched in June 2023 with a collective goal of
+              fair and balanced access to DeFi. FVM is a decentralized exchange
+              that has launched on the Pulse network with low fees, near 0
+              slippage on correlated assets and a strong focus on secondary
+              markets for tokenized locks as NFTs.
             </Typography>
             <Typography
               variant="body2"
@@ -97,7 +87,7 @@ function Home() {
             >
               One segment of the cryptocurrency landscape that has shown
               incredible potential is the swapping of stablecoins and volatile
-              assets. Velocimeter Swap offers users quick, seamless and cheap
+              assets. FVM Swap offers users quick, seamless and cheap
               transactions while utilizing strategies to maximize their yield.
             </Typography>
           </Grid>

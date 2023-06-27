@@ -63,7 +63,7 @@ export default function MyApp({
     <CacheProvider value={emotionCache}>
       <QueryClientProvider client={queryClient}>
         <Head>
-          <title>Velocimeter</title>
+          <title>FVM</title>
           <meta
             name="viewport"
             content="minimum-scale=1, initial-scale=1, width=device-width"
