@@ -238,6 +238,7 @@ export function Stake() {
                     src={token.logoUrl ?? "/tokens/unknown-logo.png"}
                     alt={`${token.symbol} logo`}
                     className="h-5 w-5 rounded-full"
+                    title={token.symbol}
                   />
                 ))}
               </div>
