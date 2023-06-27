@@ -64,8 +64,9 @@ export function Stake() {
     const arr = [];
 
     for (const [token, aprRange] of aprMap.entries()) {
-      console.log(token, aprRange);
       if (aprRange[0] === aprRange[1]) {
+        arr.push({ ...token, apr: aprRange[0] });
+      } else if (aprRange[0] < 0.01 && aprRange[1] < 0.01) {
         arr.push({ ...token, apr: aprRange[0] });
       } else {
         arr.push({ ...token, aprRange });
