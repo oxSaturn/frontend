@@ -134,9 +134,7 @@ function getGaugeApr(
   const arr = [];
 
   for (const [token, aprRange] of map) {
-    if (aprRange[0] === aprRange[1]) {
-      arr.push({ ...token, apr: aprRange[0] });
-    } else if (aprRange[1] < 0.01) {
+    if (aprRange[0] === aprRange[1] || aprRange[1] < 0.01) {
       arr.push({ ...token, apr: aprRange[0] });
     } else {
       arr.push({ ...token, aprRange });
