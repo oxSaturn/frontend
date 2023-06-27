@@ -127,6 +127,5 @@ function getGaugeApr(
       map.set(rewardToken, [apr, apr] as const);
     }
   }
-  console.log(map);
   return map;
 }
