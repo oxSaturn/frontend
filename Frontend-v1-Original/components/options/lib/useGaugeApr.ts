@@ -101,6 +101,9 @@ function getGaugeApr(
     +veDiscount
   );
 
+  const minDiscountFactor = (100 - minDiscount) / 100;
+  const maxDiscountFactor = (100 - maxDiscount) / 100;
+
   const map = new Map<Token, readonly [number, number]>(); // [minApr, maxApr]
 
   for (const rewardToken of rewardTokens) {
@@ -112,8 +115,8 @@ function getGaugeApr(
       const fullUnderlyingTokenPrice =
         tokenPrices.get(underlyingTokenAddress.toLowerCase()) ?? 0;
 
-      const maxPrice = (fullUnderlyingTokenPrice * (100 - minDiscount)) / 100;
-      const minPrice = (fullUnderlyingTokenPrice * (100 - maxDiscount)) / 100;
+      const maxPrice = fullUnderlyingTokenPrice * minDiscountFactor;
+      const minPrice = fullUnderlyingTokenPrice * maxDiscountFactor;
 
       const maxApr =
         ((rewardToken.reward * maxPrice) / totalStakedValue) * 100 * 365;
@@ -127,5 +130,18 @@ function getGaugeApr(
       map.set(rewardToken, [apr, apr] as const);
     }
   }
-  return map;
+
+  const arr = [];
+
+  for (const [token, aprRange] of map) {
+    if (aprRange[0] === aprRange[1]) {
+      arr.push({ ...token, apr: aprRange[0] });
+    } else if (aprRange[1] < 0.01) {
+      arr.push({ ...token, apr: aprRange[0] });
+    } else {
+      arr.push({ ...token, aprRange });
+    }
+  }
+
+  return arr;
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   useAccount,
   useNetwork,
@@ -56,25 +56,7 @@ export function Stake() {
     paymentTokenBalanceToDistribute,
   } = useStakeData();
 
-  const { data: aprMap } = useGaugeApr();
-
-  const displayedRewardTokens = useMemo(() => {
-    if (!aprMap) return undefined;
-
-    const arr = [];
-
-    for (const [token, aprRange] of aprMap.entries()) {
-      if (aprRange[0] === aprRange[1]) {
-        arr.push({ ...token, apr: aprRange[0] });
-      } else if (aprRange[0] < 0.01 && aprRange[1] < 0.01) {
-        arr.push({ ...token, apr: aprRange[0] });
-      } else {
-        arr.push({ ...token, aprRange });
-      }
-    }
-
-    return arr;
-  }, [aprMap]);
+  const { data: tokenAprs } = useGaugeApr();
 
   const {
     data: isApprovalNeeded,
@@ -224,11 +206,11 @@ export function Stake() {
           <div>Total staked</div>
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
-        <div className="my-1 flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <div>APR</div>
           <div className="flex flex-col">
-            {displayedRewardTokens && displayedRewardTokens.length > 0 ? (
-              displayedRewardTokens.map((token) => (
+            {tokenAprs && tokenAprs.length > 0 ? (
+              tokenAprs.map((token) => (
                 <div
                   key={token.address}
                   className="flex items-center justify-end gap-2"
@@ -244,6 +226,7 @@ export function Stake() {
                   </div>
                   <img
                     src={token.logoUrl ?? "/tokens/unknown-logo.png"}
+                    title={token.symbol}
                     alt={`${token.symbol} logo`}
                     className="block h-5 w-5 rounded-full"
                   />

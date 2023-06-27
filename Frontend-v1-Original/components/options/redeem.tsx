@@ -14,7 +14,6 @@ import dayjs from "dayjs";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Checkbox from "@radix-ui/react-checkbox";
-import * as Separator from "@radix-ui/react-separator";
 
 import { formatCurrency } from "../../utils/utils";
 import { QUERY_KEYS } from "../../stores/constants/constants";
