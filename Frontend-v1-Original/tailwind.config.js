@@ -49,7 +49,7 @@ module.exports = {
         success: "#07bc0c",
         warning: "#ffda58",
         error: "#ff4141",
-        appBg: "#004449",
+        appBg: "#032120",
         cyan: {
           DEFAULT: "#00E8CA",
         },
@@ -57,6 +57,9 @@ module.exports = {
       boxShadow: ({ theme }) => ({
         glow: `0 0 10px 0 ${theme("colors.cyan.DEFAULT")}`,
       }),
+      backgroundImage: {
+        waves: 'url("/images/waves2.png")',
+      },
     },
   },
   plugins: [require("tailwindcss-radix")()],

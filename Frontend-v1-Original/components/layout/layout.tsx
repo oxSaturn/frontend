@@ -29,6 +29,7 @@ export default function Layout({
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
       <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-appBg" />
+      <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-waves bg-cover bg-no-repeat" />
       <div className="flex h-full min-h-screen flex-[1] flex-col">
         {!configure && (
           <>
