@@ -3,8 +3,9 @@ import {
   http,
   ContractFunctionConfig,
   MulticallParameters,
+  fallback,
 } from "viem";
-import { pulsechain } from "wagmi/chains";
+import { fantom } from "wagmi/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
@@ -14,30 +15,63 @@ import {
   metaMaskWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 
-const pulsechainRpc = http("https://rpc.pulsechain.com");
+const publicNodeRpc = http("https://fantom.publicnode.com");
+const blastApiRpc = http("https://fantom-mainnet.public.blastapi.io");
+const OneRpc = http("https://1rpc.io/ftm");
+const ftmToolsRpc = http("https://rpc.ftm.tools");
+const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
+const ankrRpc = http("https://rpc.ankr.com/fantom");
 
 // used in store for reading blockchain
 const client = createPublicClient({
-  chain: pulsechain,
-  transport: pulsechainRpc,
+  chain: fantom,
+  transport: fallback([
+    publicNodeRpc,
+    blastApiRpc,
+    OneRpc,
+    ftmToolsRpc,
+    blockPiRpc,
+    ankrRpc,
+  ]),
 });
 
 // rainbow kit set up
 const { chains, publicClient } = configureChains(
-  [pulsechain],
+  [fantom],
   [
     jsonRpcProvider({
       rpc: () => ({
-        http: "https://rpc.pulsechain.com",
+        http: "https://fantom.publicnode.com",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://fantom-mainnet.public.blastapi.io",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://1rpc.io/ftm",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://rpc.ftm.tools",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://fantom.blockpi.network/v1/rpc/public",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://rpc.ankr.com/fantom",
       }),
     }),
   ]
 );
-// const { connectors } = getDefaultWallets({
-//   appName: "Velocimeter DEX",
-//   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-//   chains,
-// });
+
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
 const connectors = connectorsForWallets([
   {
