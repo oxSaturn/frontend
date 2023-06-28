@@ -436,7 +436,7 @@ function Swap() {
     <div className="mt-32 flex h-full min-h-[calc(100vh-432px)] w-full flex-col items-center justify-evenly sm:mt-0 lg:flex-row">
       <Paper
         elevation={0}
-        className="flex w-full max-w-[485px] flex-col bg-transparent p-3 shadow-glow lg:p-6"
+        className="flex w-full max-w-[485px] flex-col bg-transparent p-3 shadow-glow backdrop-blur-sm lg:p-6"
       >
         <div className="relative flex w-full flex-col">
           <div

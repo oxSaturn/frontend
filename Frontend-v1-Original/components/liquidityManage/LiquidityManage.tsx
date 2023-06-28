@@ -889,7 +889,7 @@ export default function LiquidityManage() {
     <div className="relative">
       <Paper
         elevation={0}
-        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow"
+        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow backdrop-blur-sm"
       >
         <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-primary">
           <Grid container spacing={0}>

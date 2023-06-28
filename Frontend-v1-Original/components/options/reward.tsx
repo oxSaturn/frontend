@@ -47,7 +47,7 @@ export function Reward() {
   });
 
   return (
-    <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+    <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 backdrop-blur-sm md:w-[512px] md:min-w-[512px]">
       <div className="relative mb-5 flex items-center justify-between">
         <h2 className="text-xl">Earned</h2>
         {isLoadingGaugeRewards && (

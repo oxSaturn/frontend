@@ -43,7 +43,7 @@ module.exports = {
         primary: "#00E8CA",
         secondary: "#7e99b0",
         background: "#232323",
-        appBackground: "#032120",
+        appBackground: "#021716",
         accent: "#ffda58",
         success: "#07bc0c",
         warning: "#ffda58",
