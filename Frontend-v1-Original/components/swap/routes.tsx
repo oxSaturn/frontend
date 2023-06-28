@@ -74,7 +74,7 @@ export function RoutesDialog({
             {paths.map((path, idx) => (
               <div
                 key={path.amountFrom + idx}
-                className="relative flex border-cantoGreen py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-cantoGreen after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
+                className="relative flex border-primary py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-primary after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
               >
                 <div className="relative flex flex-grow">
                   <div className="flex flex-grow justify-between gap-4">

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAccount, type Address, type WalletClient } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
-import { pulsechain } from "wagmi/chains";
+import { fantom } from "wagmi/chains";
 import { formatEther, formatUnits } from "viem";
 import BigNumber from "bignumber.js";
 import dayjs from "dayjs";
@@ -215,7 +215,7 @@ const createPairStake = async (
     throw new Error("tokens not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -482,7 +482,7 @@ const createPairDeposit = async (
     throw new Error("tokens not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -845,7 +845,7 @@ const addLiquidity = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("walletClient not found");
     throw new Error("walletClient not found");
@@ -997,7 +997,7 @@ const stakeLiquidity = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -1082,7 +1082,7 @@ const addLiquidityAndStake = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -1287,7 +1287,7 @@ const createGauge = async (
     throw new Error("pair not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -1322,7 +1322,7 @@ const removeLiquidity = async (
     throw new Error("account not foundva");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -1476,7 +1476,7 @@ const unstakeAndRemoveLiquidity = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -1596,7 +1596,7 @@ const unstakeLiquidity = async (
     return null;
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     return null;

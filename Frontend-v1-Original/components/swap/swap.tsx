@@ -334,7 +334,7 @@ function Swap() {
   const renderSwapInformation = () => {
     if (quoteLoading) {
       return (
-        <div className="flex min-h-full items-center justify-center text-cantoGreen">
+        <div className="flex min-h-full items-center justify-center text-primary">
           <CircularProgress size={20} className="ml-2" color="inherit" />
         </div>
       );
@@ -343,7 +343,7 @@ function Swap() {
     if (!quote) {
       return (
         <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
-          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-primary">
             Price Info
           </Typography>
           <div className="grid w-full grid-cols-2 gap-3">
@@ -382,7 +382,7 @@ function Swap() {
       : BigNumber(0);
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
-        <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
+        <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-primary">
           Price Info
         </Typography>
         <div className="grid w-full grid-cols-2 gap-3">
@@ -424,7 +424,7 @@ function Swap() {
           className="flex w-full cursor-pointer items-center justify-between"
           onClick={() => setRoutesOpen(true)}
         >
-          <div className="text-sm font-bold text-cantoGreen underline transition-all hover:text-green-300 hover:no-underline">
+          <div className="text-sm font-bold text-primary underline transition-all hover:text-green-300 hover:no-underline">
             Show Routes
           </div>
         </div>
@@ -460,10 +460,10 @@ function Swap() {
           </div>
           <div className="mb-4 flex items-center justify-end space-x-2">
             <button onClick={() => refetchQuote()}>
-              <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+              <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-primary" />
             </button>
             <button onClick={() => setSettingsOpen(true)}>
-              <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-cantoGreen" />
+              <SettingsOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-primary" />
             </button>
           </div>
           <MassiveInput
@@ -509,7 +509,7 @@ function Swap() {
               variant="contained"
               size="large"
               color="primary"
-              className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+              className="bg-primaryBg font-bold text-primary hover:bg-green-900"
               disabled={
                 loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)
               }

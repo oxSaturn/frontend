@@ -1,0 +1,66 @@
+[
+  {
+    "address": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/16036/large/Fantom.png",
+    "name": "Wrapped FTM",
+    "symbol": "WFTM"
+  },
+  {
+    "address": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+    "chainId": 250,
+    "decimals": 6,
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
+    "name": "Circle USD Coin",
+    "symbol": "USDC"
+  },
+  {
+    "address": "0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/9956/large/4943.png",
+    "name": "Maker DAO DAI",
+    "symbol": "DAI"
+  },
+  {
+    "address": "0x74b23882a30290451A17c44f4F05243b6b58C76d",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
+    "name": "Wrapped ETH",
+    "symbol": "WETH"
+  },
+  {
+    "address": "0x321162Cd933E2Be498Cd2267a90534A804051b11",
+    "chainId": 250,
+    "decimals": 8,
+    "logoURI": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png",
+    "name": "Wrapped BTC",
+    "symbol": "WBTC"
+  },
+  {
+    "address": "0x2823D10DA533d9Ee873FEd7B16f4A962B2B7f181",
+    "chainId": 250,
+    "decimals": 6,
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
+    "name": "Multichain Frapped USDT",
+    "symbol": "anyUSDT"
+  },
+  {
+    "address": "0x39b9D781dAD0810D07E24426c876217218Ad353D",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
+    "name": "Velocimeter FLOW",
+    "symbol": "FLOW"
+  },
+  {
+    "address": "0x767D9ad09e4E148e0Ae23Ea1F2dB04e5F0Cd2EdA",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/06/VEFlow-token-icon3.png",
+    "name": "Velocimeter option FLOW",
+    "symbol": "oFLOW"
+  }
+]

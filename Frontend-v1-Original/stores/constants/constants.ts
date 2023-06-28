@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { pulsechain } from "wagmi/chains";
+import { fantom } from "wagmi/chains";
 
 import { maxxingGaugeABI, optionTokenABI } from "../abis/abis";
 
@@ -7,8 +7,8 @@ import * as contracts from "./contracts";
 import * as queryKeys from "./queryKeys";
 
 const config = {
-  [pulsechain.id]: {
-    scan: "https://scan.pulsechain.com/",
+  [fantom.id]: {
+    scan: "https://ftm.scan/",
     contracts: contracts,
     nativeETH: {
       address: contracts.ETH_ADDRESS,
@@ -16,7 +16,7 @@ const config = {
       logoURI: contracts.ETH_LOGO,
       name: contracts.ETH_NAME,
       symbol: contracts.ETH_SYMBOL,
-      chainId: 7700,
+      chainId: fantom.id,
       local: false,
       balance: "0",
     },
@@ -26,9 +26,9 @@ const config = {
   },
 };
 
-export const ETHERSCAN_URL = config[pulsechain.id].scan;
+export const ETHERSCAN_URL = config[fantom.id].scan;
 
-export const CONTRACTS = config[pulsechain.id].contracts;
+export const CONTRACTS = config[fantom.id].contracts;
 export const PRO_OPTIONS = {
   optionTokenABI: optionTokenABI,
   maxxingGaugeABI: maxxingGaugeABI,
@@ -41,10 +41,10 @@ export const PRO_OPTIONS = {
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-export const NATIVE_TOKEN = config[pulsechain.id].nativeETH;
-export const W_NATIVE_ADDRESS = config[pulsechain.id].wNativeAddress;
-export const W_NATIVE_SYMBOL = config[pulsechain.id].wNativeSymbol;
-export const W_NATIVE_ABI = config[pulsechain.id].wNativeABI;
+export const NATIVE_TOKEN = config[fantom.id].nativeETH;
+export const W_NATIVE_ADDRESS = config[fantom.id].wNativeAddress;
+export const W_NATIVE_SYMBOL = config[fantom.id].wNativeSymbol;
+export const W_NATIVE_ABI = config[fantom.id].wNativeABI;
 
 export const PAIR_DECIMALS = 18;
 export const QUERY_KEYS = queryKeys;

@@ -1,6 +1,6 @@
 import { useNetwork, useSwitchNetwork } from "wagmi";
 import Head from "next/head";
-import { pulsechain } from "viem/chains";
+import { fantom } from "viem/chains";
 import { Button, Typography } from "@mui/material";
 
 import Header from "../header/header";
@@ -17,7 +17,7 @@ export default function Layout({
   configure?: boolean;
 }) {
   const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork({ chainId: pulsechain.id });
+  const { switchNetwork } = useSwitchNetwork({ chainId: fantom.id });
 
   return (
     <div className={classes.container}>
@@ -25,7 +25,7 @@ export default function Layout({
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
           name="description"
-          content="FVM by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on pulsechain."
+          content="FVM by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on fantom."
         />
         <meta name="og:title" content="FVM" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -52,14 +52,14 @@ export default function Layout({
             <div className="space-y-2">
               <Typography className="max-w-md text-2xl text-white">
                 {`The chain you're connected to isn't supported. Please
-                check that your wallet is connected to pulsechain Mainnet.`}
+                check that your wallet is connected to fantom Mainnet.`}
               </Typography>
               <Button
                 className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
                 variant="contained"
                 onClick={() => switchNetwork?.()}
               >
-                Switch to Pulse
+                Switch to fantom
               </Button>
             </div>
           </div>

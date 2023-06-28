@@ -90,7 +90,7 @@ export function MergeNFT() {
             color="primary"
             fullWidth
             size="large"
-            className="bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+            className="bg-primaryBg font-bold text-primary hover:bg-green-900"
             onClick={() => onMergeNFT(id as string, selectedNFTId)}
           >
             Merge

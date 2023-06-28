@@ -166,7 +166,7 @@ export default function Rewards() {
           </Grid>
           <Grid item lg={true} md={true} sm={false} xs={false}>
             <div className="flex items-center justify-center">
-              <Typography className="rounded-lg border border-cantoGreen bg-primaryBg p-5 text-xs font-extralight">
+              <Typography className="rounded-lg border border-primary bg-primaryBg p-5 text-xs font-extralight">
                 Rewards are an estimation that aren&apos;t exact till the supply
                 -{">"} rewardPerToken calculations have run
               </Typography>
@@ -178,7 +178,7 @@ export default function Rewards() {
               color="secondary"
               startIcon={<AddCircleOutline />}
               size="large"
-              className="w-full min-w-[200px] bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)]"
+              className="w-full min-w-[200px] bg-primaryBg font-bold text-primary hover:bg-[rgb(19,44,60)]"
               onClick={onClaimAll}
               disabled={loading}
             >

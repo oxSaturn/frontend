@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWalletClient, getAccount } from "@wagmi/core";
-import { pulsechain } from "wagmi/chains";
+import { fantom } from "wagmi/chains";
 
 import viemClient from "../../stores/connectors/viem";
 
@@ -17,7 +17,7 @@ const bribeAutoBribe = async (autoBribeAddress: `0x${string}`) => {
     return null;
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     console.warn("wallet");
     return null;

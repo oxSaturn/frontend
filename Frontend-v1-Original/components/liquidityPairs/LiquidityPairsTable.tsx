@@ -197,7 +197,7 @@ const EnhancedTableToolbar = ({
           color="secondary"
           startIcon={<AddCircleOutline />}
           size="large"
-          className="flex w-full bg-primaryBg font-bold text-cantoGreen hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
+          className="flex w-full bg-primaryBg font-bold text-primary hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
           onClick={onCreate}
         >
           <Typography className="text-base font-bold">Add Liquidity</Typography>
@@ -535,7 +535,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 noWrap
               >
                 <a
-                  href={`https://dexscreener.com/pulsechain/${row.address}`}
+                  href={`https://dexscreener.com/fantom/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"
@@ -922,7 +922,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                         <>
                           <div className="flex items-center">
                             <a
-                              href={`https://scan.pulsechain.com/address/${token.address}`}
+                              href={`https://ftm.scan/address/${token.address}`}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"

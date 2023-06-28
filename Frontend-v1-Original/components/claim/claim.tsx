@@ -5,7 +5,7 @@ import {
   useNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { pulsechain } from "wagmi/chains";
+import { fantom } from "wagmi/chains";
 import { formatEther } from "viem";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 
@@ -28,7 +28,7 @@ export function Claim() {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
   });
 
   const { address } = useAccount();
@@ -38,7 +38,7 @@ export function Claim() {
     isFetching: isLoadingClaimable,
     refetch: refetchClaimable,
   } = useAirdropClaimClaimable({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
     args: [address!],
     enabled: !!address,
     select: (claimable) => formatEther(claimable),
@@ -46,14 +46,14 @@ export function Claim() {
 
   const { data: claimed, refetch: refetchClaimed } = useAirdropClaimUserClaimed(
     {
-      chainId: pulsechain.id,
+      chainId: fantom.id,
       args: [address!],
       enabled: !!address,
     }
   );
 
   const { config, isFetching: isPreparingClaim } = usePrepareAirdropClaimClaim({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
     enabled: !!claimable && parseFloat(claimable) > 0,
   });
 
@@ -71,7 +71,7 @@ export function Claim() {
   });
 
   const { isFetching: isWaitingClaim } = useWaitForTransaction({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
     hash: txHash?.hash,
     onSuccess(data) {
       setToastMessage("Transaction confirmed!");
@@ -111,7 +111,7 @@ export function Claim() {
                 className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-primary p-5 text-center font-medium text-black transition-colors hover:bg-secondary focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
                 onClick={() => switchNetwork?.()}
               >
-                Switch to pulse
+                Switch to fantom
               </button>
             ) : (
               <button
@@ -151,15 +151,15 @@ export function Claim() {
         <Toast.Action
           className="[grid-area:_action]"
           asChild
-          altText="Look on pulsechain explorer"
+          altText="Look on ftmscan"
         >
           <a
-            href={`https://scan.pulsechain.com/tx/${toastHash}`}
+            href={`https://ftmscan.com/tx/${toastHash}`}
             target="_blank"
             rel="noreferrer noopener"
             className="text-sm text-secondary underline transition-colors hover:text-primary hover:no-underline"
           >
-            Look on pulsechain explorer
+            Look on ftmscan
           </a>
         </Toast.Action>
       </Toast.Root>

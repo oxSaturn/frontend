@@ -18,7 +18,7 @@ export default function WarningModal({
   };
   return (
     <Dialog open={true} onClose={onClose} className="fixed z-[10030]">
-      <div className="flex max-w-lg flex-col items-center justify-center rounded-[10px] border border-cantoGreen p-10">
+      <div className="flex max-w-lg flex-col items-center justify-center rounded-[10px] border border-primary p-10">
         <img
           src="/images/icon-warning.svg"
           className="mb-4 h-10"
@@ -45,7 +45,7 @@ export default function WarningModal({
           </div>
           <button
             onClick={onClose}
-            className="mr-2 mb-2 rounded-lg border border-cantoGreen px-5 py-2.5 text-center text-sm font-medium text-cantoGreen transition-colors hover:bg-green-900 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            className="mr-2 mb-2 rounded-lg border border-primary px-5 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-green-900 focus:outline-none focus:ring-4 focus:ring-blue-300"
           >
             Close
           </button>

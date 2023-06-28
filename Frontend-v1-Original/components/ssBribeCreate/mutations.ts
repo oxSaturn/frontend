@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatUnits } from "viem";
 import { getAccount, getWalletClient } from "@wagmi/core";
-import { pulsechain } from "wagmi/chains";
+import { fantom } from "wagmi/chains";
 import BigNumber from "bignumber.js";
 
 import viemClient from "../../stores/connectors/viem";
@@ -50,7 +50,7 @@ const createBribe = async (options: {
     throw new Error("No account found");
   }
 
-  const walletClient = await getWalletClient({ chainId: pulsechain.id });
+  const walletClient = await getWalletClient({ chainId: fantom.id });
   if (!walletClient) {
     throw new Error("No wallet client found");
   }

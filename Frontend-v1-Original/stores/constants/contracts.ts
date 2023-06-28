@@ -4,8 +4,8 @@ export const OPTION_TOKEN_ADDRESS =
   "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621"; // pulse
 
 export const GOV_TOKEN_ADDRESS = "0x39b9D781dAD0810D07E24426c876217218Ad353D"; // pulse
-export const GOV_TOKEN_NAME = "FLOW";
-export const GOV_TOKEN_SYMBOL = "FLOW";
+export const GOV_TOKEN_NAME = "FVM";
+export const GOV_TOKEN_SYMBOL = "FVM";
 export const GOV_TOKEN_DECIMALS = 18;
 export const GOV_TOKEN_LOGO =
   "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
@@ -20,19 +20,18 @@ export const VE_TOKEN_LOGO =
 export const VE_TOKEN_ABI = abis.veTokenABI;
 
 export const WETH_ADDRESS = "0xA1077a294dDE1B09bB078844df40758a5D0f9a27"; // pulse
-export const WETH_NAME = "Wrapped PLS";
-export const WETH_SYMBOL = "WPLS";
+export const WETH_NAME = "Wrapped FTM";
+export const WETH_SYMBOL = "WFTM";
 export const WETH_DECIMALS = 18;
 export const WETH_ABI = abis.wethABI;
 
-export const ETH_ADDRESS = "PLS";
-export const ETH_NAME = "PLS";
-export const ETH_SYMBOL = "PLS";
+export const ETH_ADDRESS = "FTM";
+export const ETH_NAME = "FTM";
+export const ETH_SYMBOL = "FTM";
 export const ETH_DECIMALS = 18;
 export const ETH_LOGO =
-  "https://assets.coingecko.com/coins/images/25666/large/11145.png";
+  "https://assets.coingecko.com/coins/images/4001/large/Fantom_round.png";
 
-// BaseV1Factory checked here: https://ftmscan.com/address/0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28#code
 export const FACTORY_ADDRESS = "0x6B4449C74a9aF269A5f72B88B2B7B8604685D9B9"; // pulse
 export const FACTORY_ABI = abis.factoryABI;
 

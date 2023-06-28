@@ -35,7 +35,7 @@ function Header() {
   return (
     <>
       <div
-        className={`grid w-full grid-flow-row border-cantoGreen border-opacity-50 transition-all duration-200 ${
+        className={`grid w-full grid-flow-row border-primary border-opacity-50 transition-all duration-200 ${
           scrollPosition > 0
             ? "border-b-[0.25px] bg-[rgba(0,0,0,0.973)] opacity-90 backdrop-blur-2xl"
             : "border-b-0 border-none"
@@ -53,7 +53,7 @@ function Header() {
           <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
             {process.env.NEXT_PUBLIC_CHAINID === "740" && (
               <div>
-                <Typography className="rounded-xl border border-cantoGreen bg-[#0e110c] p-4 text-sm">
+                <Typography className="rounded-xl border border-primary bg-[#0e110c] p-4 text-sm">
                   Testnet
                 </Typography>
               </div>

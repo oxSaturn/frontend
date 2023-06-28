@@ -17,7 +17,7 @@ export function ConnectButton() {
   return address && !chain?.unsupported && domain ? (
     <Button
       disableElevation
-      className="flex min-h-[40px] items-center rounded-3xl border border-solid border-cantoGreen border-opacity-60 bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
+      className="flex min-h-[40px] items-center rounded-3xl border border-solid border-primary border-opacity-60 bg-deepPurple px-4 text-[rgba(255,255,255,0.87)] opacity-90 sm:min-h-[50px]"
       variant="contained"
       color="primary"
       aria-controls="simple-menu"

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, http, formatUnits } from "viem";
-import { pulsechain } from "viem/chains";
+import { fantom } from "viem/chains";
 import Cors from "cors";
 
 import { CONTRACTS } from "../../../stores/constants/constants";
@@ -9,11 +9,9 @@ const cors = Cors({
   methods: ["GET"],
 });
 
-const pulsechainRpc = http("https://rpc.pulsechain.com");
-
 const publicClient = createPublicClient({
-  chain: pulsechain,
-  transport: pulsechainRpc,
+  chain: fantom,
+  transport: http(),
 });
 
 function runMiddleware(

@@ -407,7 +407,7 @@ const VotesRow = memo(function VotesRow({
             <div>
               <Typography variant="h2" className="text-xs font-extralight">
                 <a
-                  href={`https://dexscreener.com/pulsechain/${row.address}`}
+                  href={`https://dexscreener.com/fantom/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"
@@ -629,7 +629,7 @@ const VotesRow = memo(function VotesRow({
                         <>
                           <div className="flex items-center">
                             <a
-                              href={`https://scan.pulsechain.com/address/${token.address}`}
+                              href={`https://ftm.scan/address/${token.address}`}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"

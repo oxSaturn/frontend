@@ -7,7 +7,7 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { parseEther, parseUnits } from "viem";
-import { pulsechain } from "viem/chains";
+import { fantom } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -121,7 +121,7 @@ function RedeemLiquid({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
   });
 
   const { address } = useAccount();
@@ -306,7 +306,7 @@ function RedeemLiquid({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
-            Switch to pulse
+            Switch to fantom
           </button>
         ) : (
           <>
@@ -380,7 +380,7 @@ function RedeemLP({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
   });
 
   const { address } = useAccount();
@@ -681,7 +681,7 @@ function RedeemLP({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
-            Switch to pulse
+            Switch to fantom
           </button>
         ) : (
           <button
@@ -775,7 +775,7 @@ function RedeemVest({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: pulsechain.id,
+    chainId: fantom.id,
   });
 
   const { address } = useAccount();
@@ -960,7 +960,7 @@ function RedeemVest({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
-            Switch to pulse
+            Switch to fantom
           </button>
         ) : (
           <>

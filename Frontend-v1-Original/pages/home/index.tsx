@@ -18,9 +18,9 @@ function Home() {
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <Typography
               variant="h1"
-              className="relative bottom-0 mb-5 animate-titleAnim font-['Monument'] text-lg font-thin uppercase tracking-wider text-cantoGreen delay-[0s]"
+              className="relative bottom-0 mb-5 animate-titleAnim font-['Monument'] text-lg font-thin uppercase tracking-wider text-primary delay-[0s]"
             >
-              Pulse Liquidity Layer
+              Fantom Liquidity Layer
             </Typography>
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -35,7 +35,7 @@ function Home() {
             <Grid container spacing={2}>
               <Grid item lg={6} md={6} sm={12} xs={12}>
                 <Button
-                  className="relative bottom-0 min-w-full animate-titleAnim bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-cantoGreen delay-[600ms] max-md:float-none max-md:m-0 max-md:w-full"
+                  className="relative bottom-0 min-w-full animate-titleAnim bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-primary delay-[600ms] max-md:float-none max-md:m-0 max-md:w-full"
                   onClick={() => router.push("/swap")}
                 >
                   Enter App
@@ -77,7 +77,7 @@ function Home() {
             >
               FVM officially launched in June 2023 with a collective goal of
               fair and balanced access to DeFi. FVM is a decentralized exchange
-              that has launched on the Pulse network with low fees, near 0
+              that has launched on the Fantom network with low fees, near 0
               slippage on correlated assets and a strong focus on secondary
               markets for tokenized locks as NFTs.
             </Typography>
@@ -93,7 +93,7 @@ function Home() {
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <Button
-              className="min-w-full bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-cantoGreen max-md:w-full"
+              className="min-w-full bg-[#06d3d71a] pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-primary max-md:w-full"
               onClick={() => router.push("/swap")}
             >
               Enter App

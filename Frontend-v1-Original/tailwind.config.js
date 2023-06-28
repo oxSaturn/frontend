@@ -43,7 +43,6 @@ module.exports = {
           "slideLeftAndFade 300ms cubic-bezier(0.16, 1, 0.3, 1)",
       },
       colors: {
-        cantoGreen: "#06fc99",
         primary: "#06fc99",
         secondaryGray: "#7e99b0",
         secondary: "#7e99b0",
@@ -55,8 +54,8 @@ module.exports = {
         warning: "#ffda58",
         error: "#ff4141",
         cyan: {
-          DEFAULT: '#00E8CA',
-        }
+          DEFAULT: "#00E8CA",
+        },
       },
       boxShadow: {
         glow: "0 0 10px 0 #06fc99",

@@ -180,7 +180,7 @@ export default function LiquidityManage() {
         elevation={0}
         className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow"
       >
-        <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-cantoGreen">
+        <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-primary">
           <Paper className="flex cursor-pointer items-center justify-center rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent py-6 font-medium text-secondaryGray outline-0">
             <Typography variant="h5">Deposit</Typography>
           </Paper>
@@ -188,7 +188,7 @@ export default function LiquidityManage() {
         <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-deepBlue bg-none">
           <Tooltip title="Back to Liquidity" placement="top">
             <IconButton className="absolute left-1" onClick={onBack}>
-              <ArrowBack className="text-cantoGreen" />
+              <ArrowBack className="text-primary" />
             </IconButton>
           </Tooltip>
           <Typography className="text-lg font-bold">
@@ -205,7 +205,7 @@ export default function LiquidityManage() {
                 className="absolute right-1"
                 onClick={goToExistingPair}
               >
-                <ArrowForward className="text-cantoGreen" />
+                <ArrowForward className="text-primary" />
               </IconButton>
             </Tooltip>
             <Typography className="text-lg font-bold">
@@ -252,9 +252,9 @@ export default function LiquidityManage() {
               <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
                 <div className="grid w-full grid-cols-[1fr_1fr] p-1">
                   <div
-                    className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-cantoGreen ${
+                    className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-primary ${
                       stable &&
-                      "border border-cantoGreen bg-[rgb(23,52,72)] text-cantoGreen"
+                      "border border-primary bg-[rgb(23,52,72)] text-primary"
                     }`}
                     onClick={() => {
                       setStab(true);
@@ -263,9 +263,9 @@ export default function LiquidityManage() {
                     <Typography className="text-center">Stable</Typography>
                   </div>
                   <div
-                    className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-cantoGreen ${
+                    className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-primary ${
                       !stable &&
-                      "border border-cantoGreen bg-[rgb(23,52,72)] text-cantoGreen"
+                      "border border-primary bg-[rgb(23,52,72)] text-primary"
                     }`}
                     onClick={() => {
                       setStab(false);
@@ -277,7 +277,7 @@ export default function LiquidityManage() {
               </div>
             </div>
             <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
-              <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-cantoGreen">
+              <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-primary">
                 Starting Liquidity Info
               </Typography>
               <div className="grid w-full grid-cols-2 gap-3">
@@ -312,7 +312,7 @@ export default function LiquidityManage() {
                     className={
                       createPairStakeLoading || createPairDepositLoading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={
@@ -337,7 +337,7 @@ export default function LiquidityManage() {
                     className={
                       createPairStakeLoading || createPairDepositLoading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={
@@ -371,7 +371,7 @@ export default function LiquidityManage() {
                   className={
                     createPairStakeLoading || createPairDepositLoading
                       ? "min-w-[auto]"
-                      : "bg-primaryBg font-bold text-cantoGreen hover:bg-green-900"
+                      : "bg-primaryBg font-bold text-primary hover:bg-green-900"
                   }
                   color="primary"
                   disabled={

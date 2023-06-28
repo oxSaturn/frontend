@@ -267,9 +267,7 @@ export default function Votes() {
         <Typography variant="body2">
           Select your veNFT and use 100% of your votes for one or more pools to
           earn bribes and trading fees (
-          <span className="text-cantoGreen">
-            ${formatCurrency(bribesAccrued)}
-          </span>{" "}
+          <span className="text-primary">${formatCurrency(bribesAccrued)}</span>{" "}
           in total).
         </Typography>
       </div>
@@ -337,7 +335,7 @@ export default function Votes() {
           </div>
           <div>
             <Button
-              className="bg-primaryBg py-4 font-bold text-cantoGreen hover:bg-green-900"
+              className="bg-primaryBg py-4 font-bold text-primary hover:bg-green-900"
               variant="contained"
               size="large"
               color="primary"

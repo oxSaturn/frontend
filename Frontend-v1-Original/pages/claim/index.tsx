@@ -16,7 +16,7 @@ function Rewards() {
           className="my-7 mx-auto max-w-3xl text-center text-base text-secondaryGray sm:text-lg"
           variant="body2"
         >
-          Claim your veNFT for 3+ years locked veFLOW on Pulse
+          Claim your veNFT for 3+ years locked veFLOW on Fantom
         </Typography>
       </div>
       <div className="flex items-center justify-center">

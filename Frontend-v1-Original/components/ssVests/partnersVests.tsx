@@ -49,7 +49,7 @@ const PartnerVestCard = ({ partner }: { partner: PartnerCardProps }) => {
           <div className="text-lg font-semibold">{partner.title}</div>
           <div className="font-light">{partner.description}</div>
         </div>
-        <div className="w-fit text-sm font-bold text-cantoGreen underline transition-all hover:text-green-300 hover:no-underline">
+        <div className="w-fit text-sm font-bold text-primary underline transition-all hover:text-green-300 hover:no-underline">
           Check it out
         </div>
       </div>
