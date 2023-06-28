@@ -42,14 +42,14 @@ module.exports = {
       colors: {
         primary: "#00E8CA",
         secondary: "#7e99b0",
-        primaryBg: "#272826",
+        primaryBg: "#232323",
         deepBlue: "#212b48",
         deepPurple: "#040105",
         accent: "#ffda58",
         success: "#07bc0c",
         warning: "#ffda58",
         error: "#ff4141",
-        appBg: "#032120",
+        appBg: "#004449",
         cyan: {
           DEFAULT: "#00E8CA",
         },
