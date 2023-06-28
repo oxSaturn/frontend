@@ -43,7 +43,7 @@ function Home() {
               </Grid>
               <Grid item lg={6} md={6} sm={12} xs={12}>
                 <Button
-                  className="relative bottom-0 min-w-full animate-titleAnim bg-deepBlue pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-secondaryGray delay-[400ms] max-md:float-none max-md:m-0 max-md:w-full"
+                  className="relative bottom-0 min-w-full animate-titleAnim bg-deepBlue pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-secondary delay-[400ms] max-md:float-none max-md:m-0 max-md:w-full"
                   onClick={() =>
                     scrollTo({ top: 1000, left: 0, behavior: "smooth" })
                   }
@@ -56,7 +56,7 @@ function Home() {
         </Grid>
       </div>
       <div id="info" className="relative h-screen w-full">
-        <div className="hidden md:absolute md:top-[5%] md:left-1/2 md:z-[1] md:block md:h-[600px] md:w-[600px] md:-translate-x-1/2 md:-translate-y-1/2 md:bg-homePage md:bg-cover md:bg-no-repeat md:opacity-50 md:mix-blend-lighten"></div>
+        <div className="md:bg-homePage hidden md:absolute md:top-[5%] md:left-1/2 md:z-[1] md:block md:h-[600px] md:w-[600px] md:-translate-x-1/2 md:-translate-y-1/2 md:bg-cover md:bg-no-repeat md:opacity-50 md:mix-blend-lighten"></div>
         <Grid
           container
           spacing={3}

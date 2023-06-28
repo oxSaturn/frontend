@@ -128,7 +128,7 @@ export default function Votes() {
             <Grid item lg="auto" md="auto" sm={12} xs={12}>
               <Typography
                 variant="body2"
-                className="mr-4 py-5 px-0 text-secondaryGray"
+                className="mr-4 py-5 px-0 text-secondary"
               >
                 Please select your veNFT:
               </Typography>

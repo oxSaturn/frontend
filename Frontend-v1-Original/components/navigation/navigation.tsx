@@ -78,7 +78,7 @@ function Navigation() {
     return (
       <Link
         href={"/" + link}
-        className={`relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 ${
+        className={`relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondary no-underline outline-0 ${
           active === link ? "border-primary text-white" : "border-transparent"
         } inline-flex items-center justify-center hover:bg-[hsla(0,0%,100%,.04)]`}
       >
@@ -96,7 +96,7 @@ function Navigation() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
           onClick={handleClick}
-          className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+          className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondary no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         >
           <div className="m-0 pl-0 text-center text-xs xs:text-base">More</div>
         </button>
@@ -119,7 +119,7 @@ function Navigation() {
           }}
         >
           <MenuItem
-            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center gap-1 rounded-lg border border-transparent bg-transparent p-1 text-sm font-medium text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
+            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center gap-1 rounded-lg border border-transparent bg-transparent p-1 text-sm font-medium text-secondary no-underline outline-0 hover:bg-secondary hover:text-black"
             onClick={handleScantoClick}
           >
             <Image
@@ -133,7 +133,7 @@ function Navigation() {
             </div>
           </MenuItem>
           <MenuItem
-            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
+            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondary no-underline outline-0 hover:bg-secondary hover:text-black"
             onClick={handleDocsClick}
           >
             <div className="m-0 pl-0 text-center text-xs xs:text-base">
@@ -141,7 +141,7 @@ function Navigation() {
             </div>
           </MenuItem>
           <MenuItem
-            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
+            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondary no-underline outline-0 hover:bg-secondary hover:text-black"
             onClick={handleGeckoClick}
           >
             <div className="m-0 pl-0 text-center text-xs xs:text-base">

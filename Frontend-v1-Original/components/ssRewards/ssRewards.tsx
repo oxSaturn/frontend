@@ -96,7 +96,7 @@ export default function Rewards() {
             <Grid item lg="auto" md="auto" sm={12} xs={12}>
               <Typography
                 variant="body2"
-                className="mr-4 px-0 py-4 text-secondaryGray"
+                className="mr-4 px-0 py-4 text-secondary"
               >
                 Please select your veNFT:
               </Typography>

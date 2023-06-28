@@ -181,7 +181,7 @@ export default function LiquidityManage() {
         className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow"
       >
         <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-primary">
-          <Paper className="flex cursor-pointer items-center justify-center rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent py-6 font-medium text-secondaryGray outline-0">
+          <Paper className="flex cursor-pointer items-center justify-center rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent py-6 font-medium text-secondary outline-0">
             <Typography variant="h5">Deposit</Typography>
           </Paper>
         </div>
@@ -252,7 +252,7 @@ export default function LiquidityManage() {
               <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
                 <div className="grid w-full grid-cols-[1fr_1fr] p-1">
                   <div
-                    className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-primary ${
+                    className={`cursor-pointer rounded-lg p-5 text-secondary hover:bg-[rgb(23,52,72)] hover:text-primary ${
                       stable &&
                       "border border-primary bg-[rgb(23,52,72)] text-primary"
                     }`}
@@ -263,7 +263,7 @@ export default function LiquidityManage() {
                     <Typography className="text-center">Stable</Typography>
                   </div>
                   <div
-                    className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-primary ${
+                    className={`cursor-pointer rounded-lg p-5 text-secondary hover:bg-[rgb(23,52,72)] hover:text-primary ${
                       !stable &&
                       "border border-primary bg-[rgb(23,52,72)] text-primary"
                     }`}
@@ -287,7 +287,7 @@ export default function LiquidityManage() {
                       ? formatCurrency(BigNumber(amount0).div(amount1))
                       : "0.00"}
                   </Typography>
-                  <Typography className="text-xs text-secondaryGray">{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
+                  <Typography className="text-xs text-secondary">{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
                 </div>
                 <div className="flex flex-col items-center justify-center py-6 px-0">
                   <Typography className="pb-[6px] text-sm font-bold">
@@ -295,7 +295,7 @@ export default function LiquidityManage() {
                       ? formatCurrency(BigNumber(amount1).div(amount0))
                       : "0.00"}
                   </Typography>
-                  <Typography className="text-xs text-secondaryGray">{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
+                  <Typography className="text-xs text-secondary">{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
                 </div>
               </div>
             </div>

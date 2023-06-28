@@ -7,8 +7,6 @@ import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
 
-import classes from "./layout.module.css";
-
 export default function Layout({
   children,
   configure,
@@ -20,7 +18,7 @@ export default function Layout({
   const { switchNetwork } = useSwitchNetwork({ chainId: fantom.id });
 
   return (
-    <div className={classes.container}>
+    <div className="relative flex h-full min-h-screen w-full max-w-[100vw] flex-col overflow-x-hidden md:overflow-x-auto lg:flex-row">
       <Head>
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
@@ -30,10 +28,8 @@ export default function Layout({
         <meta name="og:title" content="FVM" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
-      <div className={classes.background} />
-      <div className={classes.greyGlow} />
-      <div className={classes.greenGlow} />
-      <div className={classes.content}>
+      <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-appBg" />
+      <div className="flex h-full min-h-screen flex-[1] flex-col">
         {!configure && (
           <>
             <div className="block md:hidden">

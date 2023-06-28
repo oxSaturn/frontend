@@ -4,7 +4,6 @@ import VestsNFTs from "../../components/ssVests/ssVests";
 import { PageWrapper } from "../../components/common/PageWrapper";
 
 function Vesting() {
-
   return (
     <PageWrapper
       placeholder={
@@ -16,7 +15,7 @@ function Vesting() {
             Vesting NFTs
           </Typography>
           <Typography
-            className="my-7 mx-auto max-w-3xl text-center text-base text-secondaryGray sm:text-lg"
+            className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
             variant="body2"
           >
             Lock your FLOW to earn rewards and governance rights. Each locked

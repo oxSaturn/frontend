@@ -18,9 +18,6 @@ module.exports = {
       fontFamily: {
         sono: ["Sono", ...defaultTheme.fontFamily.sans],
       },
-      backgroundImage: {
-        homePage: 'url("/images/s.png")',
-      },
       keyframes: {
         titleAnim: {
           "0%": {
@@ -43,8 +40,7 @@ module.exports = {
           "slideLeftAndFade 300ms cubic-bezier(0.16, 1, 0.3, 1)",
       },
       colors: {
-        primary: "#06fc99",
-        secondaryGray: "#7e99b0",
+        primary: "#00E8CA",
         secondary: "#7e99b0",
         primaryBg: "#272826",
         deepBlue: "#212b48",
@@ -53,13 +49,14 @@ module.exports = {
         success: "#07bc0c",
         warning: "#ffda58",
         error: "#ff4141",
+        appBg: "#032120",
         cyan: {
           DEFAULT: "#00E8CA",
         },
       },
-      boxShadow: {
-        glow: "0 0 10px 0 #06fc99",
-      },
+      boxShadow: ({ theme }) => ({
+        glow: `0 0 10px 0 ${theme("colors.cyan.DEFAULT")}`,
+      }),
     },
   },
   plugins: [require("tailwindcss-radix")()],
