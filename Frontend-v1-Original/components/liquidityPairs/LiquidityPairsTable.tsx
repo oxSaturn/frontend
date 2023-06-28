@@ -197,7 +197,7 @@ const EnhancedTableToolbar = ({
           color="secondary"
           startIcon={<AddCircleOutline />}
           size="large"
-          className="flex w-full bg-primaryBg font-bold text-primary hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
+          className="flex w-full bg-background font-bold text-primary hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
           onClick={onCreate}
         >
           <Typography className="text-base font-bold">Add Liquidity</Typography>
@@ -233,7 +233,7 @@ const EnhancedTableToolbar = ({
               />
               <label
                 htmlFor={filterOption}
-                className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-primaryBg peer-checked:font-semibold peer-checked:text-lime-50"
+                className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
               >
                 <div className="uppercase">{filterOption}</div>
               </label>

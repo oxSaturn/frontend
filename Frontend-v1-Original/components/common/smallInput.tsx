@@ -12,7 +12,7 @@ export const SmallInput = ({
   return (
     <div className="mb-1">
       <label htmlFor="slippage">Slippage</label>
-      <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-primaryBg">
+      <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-background">
         <TextField
           id="slippage"
           placeholder="0.00"

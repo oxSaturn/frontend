@@ -443,7 +443,7 @@ function Swap() {
             className={`${
               !settingsOpen
                 ? "hidden"
-                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-deepPurple p-4"
+                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-background p-4"
             }`}
           >
             <div
@@ -509,7 +509,7 @@ function Swap() {
               variant="contained"
               size="large"
               color="primary"
-              className="bg-primaryBg font-bold text-primary hover:bg-green-900"
+              className="bg-background font-bold text-primary hover:bg-green-900"
               disabled={
                 loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)
               }

@@ -43,7 +43,7 @@ function Home() {
               </Grid>
               <Grid item lg={6} md={6} sm={12} xs={12}>
                 <Button
-                  className="relative bottom-0 min-w-full animate-titleAnim bg-deepBlue pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-secondary delay-[400ms] max-md:float-none max-md:m-0 max-md:w-full"
+                  className="relative bottom-0 min-w-full animate-titleAnim bg-background pl-3 pt-5 pr-[10px] pb-5 font-['Monument'] capitalize text-secondary delay-[400ms] max-md:float-none max-md:m-0 max-md:w-full"
                   onClick={() =>
                     scrollTo({ top: 1000, left: 0, behavior: "smooth" })
                   }

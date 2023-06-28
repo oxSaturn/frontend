@@ -582,7 +582,7 @@ export default function LiquidityManage() {
   ) => {
     return (
       <div className="relative mb-1">
-        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
+        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-background">
           <div className="w-20">
             <div className="h-20 p-3">
               <div className="relative w-12">
@@ -684,7 +684,7 @@ export default function LiquidityManage() {
           </div>
         </div>
         <div
-          className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
+          className={`flex w-full flex-wrap items-center rounded-[10px] bg-background ${
             amountError && "border border-red-500"
           }`}
         >
@@ -855,7 +855,7 @@ export default function LiquidityManage() {
   const renderMediumInputToggle = () => {
     return (
       <div className="relative mb-1">
-        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
+        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-background">
           <div className="grid w-full grid-cols-[1fr_1fr] p-1">
             <div
               className={`cursor-pointer rounded-lg p-5 text-secondary hover:bg-[rgb(23,52,72)] hover:text-primary ${
@@ -919,7 +919,7 @@ export default function LiquidityManage() {
             </Grid>
           </Grid>
         </div>
-        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-deepBlue bg-none">
+        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-background bg-none">
           <Tooltip title="Back to Liquidity" placement="top">
             <IconButton className="absolute left-1" onClick={onBack}>
               <ArrowBack className="text-primary" />
@@ -1013,7 +1013,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={(amount0 === "" && amount1 === "") || loading}
@@ -1039,7 +1039,7 @@ export default function LiquidityManage() {
                           className={
                             loading
                               ? "min-w-[auto]"
-                              : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                              : "bg-background font-bold text-primary hover:bg-green-900"
                           }
                           color="primary"
                           disabled={loading}
@@ -1069,7 +1069,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={(amount0 === "" && amount1 === "") || loading}
@@ -1093,7 +1093,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={(amount0 === "" && amount1 === "") || loading}
@@ -1116,7 +1116,7 @@ export default function LiquidityManage() {
                         (pair.balance && BigNumber(pair.balance).eq(0)) ||
                         loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={
@@ -1154,7 +1154,7 @@ export default function LiquidityManage() {
                   className={
                     loading || withdrawAmount === ""
                       ? "min-w-[auto]"
-                      : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                      : "bg-background font-bold text-primary hover:bg-green-900"
                   }
                   disabled={loading || withdrawAmount === ""}
                   onClick={onWithdraw}
@@ -1176,7 +1176,7 @@ export default function LiquidityManage() {
                     className={
                       loading || withdrawAmount === ""
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     disabled={loading || withdrawAmount === ""}
                     onClick={onUnstakeAndWithdraw}
@@ -1196,7 +1196,7 @@ export default function LiquidityManage() {
                     className={
                       withdrawAmount === "" || loading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={withdrawAmount === "" || loading}
@@ -1215,7 +1215,7 @@ export default function LiquidityManage() {
                     className={
                       (pair.balance && BigNumber(pair.balance).eq(0)) || loading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={

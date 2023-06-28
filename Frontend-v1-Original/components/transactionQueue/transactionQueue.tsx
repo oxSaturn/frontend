@@ -175,7 +175,7 @@ export default function TransactionQueue() {
           >
             Clear all
           </button>
-          <div className="mb-3 w-full divide-y rounded-xl border border-secondary bg-primaryBg p-6">
+          <div className="mb-3 w-full divide-y rounded-xl border border-secondary bg-background p-6">
             {transactions.length > 0 ? (
               transactions.map((tx, idx) => {
                 return <Transaction transaction={tx} key={`${tx}${idx}`} />;

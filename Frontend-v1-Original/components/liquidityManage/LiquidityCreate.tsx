@@ -185,7 +185,7 @@ export default function LiquidityManage() {
             <Typography variant="h5">Deposit</Typography>
           </Paper>
         </div>
-        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-deepBlue bg-none">
+        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-background bg-none">
           <Tooltip title="Back to Liquidity" placement="top">
             <IconButton className="absolute left-1" onClick={onBack}>
               <ArrowBack className="text-primary" />
@@ -199,7 +199,7 @@ export default function LiquidityManage() {
           )}
         </div>
         {pairExistanceData?.pairExists && (
-          <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-deepBlue bg-none">
+          <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-background bg-none">
             <Tooltip title="Manage existing pair" placement="top">
               <IconButton
                 className="absolute right-1"
@@ -249,7 +249,7 @@ export default function LiquidityManage() {
               diffUsd=""
             />
             <div className="relative mb-1">
-              <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
+              <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-background">
                 <div className="grid w-full grid-cols-[1fr_1fr] p-1">
                   <div
                     className={`cursor-pointer rounded-lg p-5 text-secondary hover:bg-[rgb(23,52,72)] hover:text-primary ${
@@ -312,7 +312,7 @@ export default function LiquidityManage() {
                     className={
                       createPairStakeLoading || createPairDepositLoading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={
@@ -337,7 +337,7 @@ export default function LiquidityManage() {
                     className={
                       createPairStakeLoading || createPairDepositLoading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={
@@ -371,7 +371,7 @@ export default function LiquidityManage() {
                   className={
                     createPairStakeLoading || createPairDepositLoading
                       ? "min-w-[auto]"
-                      : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                      : "bg-background font-bold text-primary hover:bg-green-900"
                   }
                   color="primary"
                   disabled={

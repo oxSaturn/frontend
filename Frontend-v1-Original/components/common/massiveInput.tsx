@@ -73,7 +73,7 @@ export const MassiveInput = ({
         </div>
       ) : null}
       <div
-        className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
+        className={`flex w-full flex-wrap items-center rounded-[10px] bg-background ${
           (amountError || assetError) && "border border-red-500"
         }`}
       >
