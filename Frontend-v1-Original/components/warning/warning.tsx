@@ -30,9 +30,9 @@ export default function WarningModal({
         <div className="text-left text-base font-normal text-lime-50">
           You must cast votes each epoch in order to get bribes.
           <br />
-          However, voting weights do carry over to the next epoch and direct
-          FLOW emissions. If you don&apos;t want to change your votes, just
-          press &apos;Cast&nbsp;Votes&apos; button.
+          However, voting weights do carry over to the next epoch and direct FVM
+          emissions. If you don&apos;t want to change your votes, just press
+          &apos;Cast&nbsp;Votes&apos; button.
         </div>
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-1">

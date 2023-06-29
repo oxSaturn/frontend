@@ -89,7 +89,7 @@ export function Claim() {
       <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex items-center justify-between">
           <div>Claimable amount</div>
-          <div>{formatCurrency(claimable ?? "0")} veFLOW</div>
+          <div>{formatCurrency(claimable ?? "0")} veFVM</div>
         </div>
         {claimable && parseFloat(claimable) > 0 && (
           <div className="mt-1 font-medium text-success">
