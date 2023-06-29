@@ -8,12 +8,12 @@
     "symbol": "WFTM"
   },
   {
-    "address": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+    "address": "0x00",
     "chainId": 250,
     "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
-    "name": "Circle USD Coin",
-    "symbol": "USDC"
+    "name": "Layer Zero USDC",
+    "symbol": "lzUSDC"
   },
   {
     "address": "0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E",
