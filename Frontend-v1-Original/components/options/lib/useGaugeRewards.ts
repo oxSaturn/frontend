@@ -109,7 +109,7 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
       asset?.address.toLowerCase() === CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
     ) {
       logoUrl =
-        "https://cre8r.vip/wp-content/uploads/2023/06/VEFlow-token-icon3.png";
+        "https://github.com/Velocimeter/frontend/blob/fantom/Frontend-v1-Original/public/tokens/oFvm.png?raw=true";
     }
 
     rewardsTokens.push({
