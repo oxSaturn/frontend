@@ -17,12 +17,14 @@ import { VestNFT } from "../../stores/types/types";
 import classes from "./ssVest.module.css";
 import { useIncreaseVestDuration } from "./lib/mutations";
 
-export type LockOption = "6.5 weeks" | "13 weeks" | "19.5 weeks" | "26 weeks";
+export type LockOption = "13 weeks" | "26 weeks" | "39 weeks" | "52 weeks";
+export const defaultLockDuration: LockOption = "13 weeks";
+export const maxLockDuration: LockOption = "52 weeks";
 export const lockOptions: Record<LockOption, number> = {
-  "6.5 weeks": Math.ceil(6.5 * 7),
   "13 weeks": Math.ceil(13 * 7),
-  "19.5 weeks": Math.ceil(19.5 * 7),
   "26 weeks": Math.ceil(26 * 7),
+  "39 weeks": Math.ceil(39 * 7),
+  "52 weeks": Math.ceil(52 * 7),
 };
 
 /**
@@ -47,7 +49,7 @@ export default function LockDuration({
   const inputEl = useRef<HTMLInputElement | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(
-    dayjs().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
+    dayjs().add(lockOptions[defaultLockDuration], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
@@ -142,7 +144,7 @@ export default function LockDuration({
               inputProps={{
                 min: min,
                 max: dayjs()
-                  .add(lockOptions["26 weeks"], "days")
+                  .add(lockOptions[maxLockDuration], "days")
                   .format("YYYY-MM-DD"),
               }}
               InputProps={{
@@ -155,7 +157,7 @@ export default function LockDuration({
     );
   };
 
-  const max = dayjs().add(lockOptions["26 weeks"], "days");
+  const max = dayjs().add(lockOptions[maxLockDuration], "days");
   const roundedDownMax = roundDownToWeekBoundary(max);
   const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
   return (
