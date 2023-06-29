@@ -54,7 +54,7 @@ export const MassiveInput = ({
           }
         }}
       >
-        <Typography className="text-xs font-thin text-secondaryGray" noWrap>
+        <Typography className="text-xs font-thin text-secondary" noWrap>
           Balance:
           {assetValue && (balanceInfo || assetValue.balance)
             ? " " + formatCurrency(balanceInfo?.formatted ?? assetValue.balance)
@@ -63,7 +63,7 @@ export const MassiveInput = ({
       </div>
       {assetValue && balanceInfo && amountValueUsd && amountValueUsd !== "" ? (
         <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-          <Typography className="text-xs font-thin text-secondaryGray" noWrap>
+          <Typography className="text-xs font-thin text-secondary" noWrap>
             {"~$" +
               formatCurrency(amountValueUsd) +
               (type === "To" && diffUsd && diffUsd !== ""
@@ -73,7 +73,7 @@ export const MassiveInput = ({
         </div>
       ) : null}
       <div
-        className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
+        className={`flex w-full flex-wrap items-center rounded-[10px] bg-background ${
           (amountError || assetError) && "border border-red-500"
         }`}
       >

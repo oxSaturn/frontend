@@ -351,7 +351,7 @@ function Swap() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {isWrapUnwrap ? "1.00" : "0.00"}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">
+              <Typography className="text-xs text-secondary">
                 {toAssetValue && fromAssetValue
                   ? `${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`
                   : "-"}
@@ -361,7 +361,7 @@ function Swap() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {isWrapUnwrap ? "1.00" : "0.00"}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">
+              <Typography className="text-xs text-secondary">
                 {toAssetValue && fromAssetValue
                   ? `${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`
                   : "-"}
@@ -392,7 +392,7 @@ function Swap() {
                 BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
               )}
             </Typography>
-            <Typography className="text-xs text-secondaryGray">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondary">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
@@ -400,7 +400,7 @@ function Swap() {
                 BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
               )}
             </Typography>
-            <Typography className="text-xs text-secondaryGray">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondary">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
         {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
@@ -436,14 +436,14 @@ function Swap() {
     <div className="mt-32 flex h-full min-h-[calc(100vh-432px)] w-full flex-col items-center justify-evenly sm:mt-0 lg:flex-row">
       <Paper
         elevation={0}
-        className="flex w-full max-w-[485px] flex-col bg-transparent p-3 shadow-glow lg:p-6"
+        className="flex w-full max-w-[485px] flex-col bg-transparent p-3 shadow-glow backdrop-blur-sm lg:p-6"
       >
         <div className="relative flex w-full flex-col">
           <div
             className={`${
               !settingsOpen
                 ? "hidden"
-                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-deepPurple p-4"
+                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-background p-4"
             }`}
           >
             <div
@@ -509,7 +509,7 @@ function Swap() {
               variant="contained"
               size="large"
               color="primary"
-              className="bg-primaryBg font-bold text-primary hover:bg-green-900"
+              className="bg-background font-bold text-primary hover:bg-green-900"
               disabled={
                 loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)
               }
@@ -530,7 +530,7 @@ function Swap() {
             </Button>
           </div>
           <div className="mt-2 text-end text-xs">
-            <span className="align-middle text-secondaryGray">Powered by </span>
+            <span className="align-middle text-secondary">Powered by </span>
             <a
               href="https://firebird.finance/"
               target="_blank"

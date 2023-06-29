@@ -123,12 +123,12 @@ export default function Votes() {
     );
     return (
       <div>
-        <div className="flex w-full flex-wrap items-center rounded-lg bg-primaryBg pl-5">
+        <div className="flex w-full flex-wrap items-center rounded-lg bg-background pl-5">
           <Grid container>
             <Grid item lg="auto" md="auto" sm={12} xs={12}>
               <Typography
                 variant="body2"
-                className="mr-4 py-5 px-0 text-secondaryGray"
+                className="mr-4 py-5 px-0 text-secondary"
               >
                 Please select your veNFT:
               </Typography>
@@ -335,7 +335,7 @@ export default function Votes() {
           </div>
           <div>
             <Button
-              className="bg-primaryBg py-4 font-bold text-primary hover:bg-green-900"
+              className="bg-background py-4 font-bold text-primary hover:bg-green-900"
               variant="contained"
               size="large"
               color="primary"

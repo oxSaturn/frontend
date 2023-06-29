@@ -91,12 +91,12 @@ export default function Rewards() {
   ) => {
     return (
       <div>
-        <div className="flex min-h-[60px] w-full flex-wrap items-center rounded-lg bg-primaryBg pl-5">
+        <div className="flex min-h-[60px] w-full flex-wrap items-center rounded-lg bg-background pl-5">
           <Grid container>
             <Grid item lg="auto" md="auto" sm={12} xs={12}>
               <Typography
                 variant="body2"
-                className="mr-4 px-0 py-4 text-secondaryGray"
+                className="mr-4 px-0 py-4 text-secondary"
               >
                 Please select your veNFT:
               </Typography>
@@ -166,7 +166,7 @@ export default function Rewards() {
           </Grid>
           <Grid item lg={true} md={true} sm={false} xs={false}>
             <div className="flex items-center justify-center">
-              <Typography className="rounded-lg border border-primary bg-primaryBg p-5 text-xs font-extralight">
+              <Typography className="rounded-lg border border-primary bg-background p-5 text-xs font-extralight">
                 Rewards are an estimation that aren&apos;t exact till the supply
                 -{">"} rewardPerToken calculations have run
               </Typography>
@@ -178,7 +178,7 @@ export default function Rewards() {
               color="secondary"
               startIcon={<AddCircleOutline />}
               size="large"
-              className="w-full min-w-[200px] bg-primaryBg font-bold text-primary hover:bg-[rgb(19,44,60)]"
+              className="w-full min-w-[200px] bg-background font-bold text-primary hover:bg-[rgb(19,44,60)]"
               onClick={onClaimAll}
               disabled={loading}
             >

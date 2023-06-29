@@ -72,7 +72,7 @@ const AutoBribes = () => {
                 variant="contained"
                 color="secondary"
                 size="large"
-                className="w-full rounded-md bg-primaryBg p-2 font-bold text-primary hover:bg-[rgb(19,44,60)]"
+                className="w-full rounded-md bg-background p-2 font-bold text-primary hover:bg-[rgb(19,44,60)]"
                 disabled={bribed}
               >
                 Bribe

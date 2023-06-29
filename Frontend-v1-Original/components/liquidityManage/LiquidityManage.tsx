@@ -582,7 +582,7 @@ export default function LiquidityManage() {
   ) => {
     return (
       <div className="relative mb-1">
-        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
+        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-background">
           <div className="w-20">
             <div className="h-20 p-3">
               <div className="relative w-12">
@@ -653,7 +653,7 @@ export default function LiquidityManage() {
           <div className="z-[4] flex cursor-pointer justify-end pr-3 pb-[6px]">
             {type !== "withdraw" && (
               <Typography
-                className="text-xs font-thin text-secondaryGray"
+                className="text-xs font-thin text-secondary"
                 noWrap
                 onClick={() => {
                   setAmountPercent(type, 100);
@@ -667,7 +667,7 @@ export default function LiquidityManage() {
             )}
             {type === "withdraw" && !isBaseAsset(assetValue) && (
               <Typography
-                className="text-xs font-thin text-secondaryGray"
+                className="text-xs font-thin text-secondary"
                 noWrap
                 onClick={() => {
                   setAmountPercent(type, 100);
@@ -684,7 +684,7 @@ export default function LiquidityManage() {
           </div>
         </div>
         <div
-          className={`flex w-full flex-wrap items-center rounded-[10px] bg-primaryBg ${
+          className={`flex w-full flex-wrap items-center rounded-[10px] bg-background ${
             amountError && "border border-red-500"
           }`}
         >
@@ -737,7 +737,7 @@ export default function LiquidityManage() {
                   ? formatCurrency(BigNumber(amount0).div(amount1))
                   : "0.00"}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
+              <Typography className="text-xs text-secondary">{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <Typography className="pb-[6px] text-sm font-bold">
@@ -745,7 +745,7 @@ export default function LiquidityManage() {
                   ? formatCurrency(BigNumber(amount1).div(amount0))
                   : "0.00"}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
+              <Typography className="text-xs text-secondary">{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
             </div>
           </div>
         </div>
@@ -761,13 +761,13 @@ export default function LiquidityManage() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.reserve0)}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">{`${pair?.token0?.symbol}`}</Typography>
+              <Typography className="text-xs text-secondary">{`${pair?.token0?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.reserve1)}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">{`${pair?.token1?.symbol}`}</Typography>
+              <Typography className="text-xs text-secondary">{`${pair?.token1?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <SmallInput
@@ -785,13 +785,13 @@ export default function LiquidityManage() {
               <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.balance)}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">{`Pooled ${pair?.symbol}`}</Typography>
+              <Typography className="text-xs text-secondary">{`Pooled ${pair?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <Typography className="pb-[6px] text-sm font-bold">
                 {formatCurrency(pair?.gauge?.balance)}
               </Typography>
-              <Typography className="text-xs text-secondaryGray">{`Staked ${pair?.symbol} `}</Typography>
+              <Typography className="text-xs text-secondary">{`Staked ${pair?.symbol} `}</Typography>
             </div>
           </div>
         </div>
@@ -810,13 +810,13 @@ export default function LiquidityManage() {
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.reserve0)}
             </Typography>
-            <Typography className="text-xs text-secondaryGray">{`${pair?.token0?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondary">{`${pair?.token0?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.reserve1)}
             </Typography>
-            <Typography className="text-xs text-secondaryGray">{`${pair?.token1?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondary">{`${pair?.token1?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <SmallInput
@@ -834,13 +834,13 @@ export default function LiquidityManage() {
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.balance)}
             </Typography>
-            <Typography className="text-xs text-secondaryGray">{`Pooled ${pair?.symbol}`}</Typography>
+            <Typography className="text-xs text-secondary">{`Pooled ${pair?.symbol}`}</Typography>
           </div>
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(pair?.gauge?.balance)}
             </Typography>
-            <Typography className="text-xs text-secondaryGray">{`Staked ${pair?.symbol} `}</Typography>
+            <Typography className="text-xs text-secondary">{`Staked ${pair?.symbol} `}</Typography>
           </div>
         </div>
         <div className="flex min-h-[100px] items-center justify-center">
@@ -855,10 +855,10 @@ export default function LiquidityManage() {
   const renderMediumInputToggle = () => {
     return (
       <div className="relative mb-1">
-        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-primaryBg">
+        <div className="flex min-h-[50px] w-full flex-wrap items-center rounded-[10px] bg-background">
           <div className="grid w-full grid-cols-[1fr_1fr] p-1">
             <div
-              className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-primary ${
+              className={`cursor-pointer rounded-lg p-5 text-secondary hover:bg-[rgb(23,52,72)] hover:text-primary ${
                 stable &&
                 "border border-primary bg-[rgb(23,52,72)] text-primary"
               }`}
@@ -869,7 +869,7 @@ export default function LiquidityManage() {
               <Typography className="text-center">Stable</Typography>
             </div>
             <div
-              className={`cursor-pointer rounded-lg p-5 text-secondaryGray hover:bg-[rgb(23,52,72)] hover:text-primary ${
+              className={`cursor-pointer rounded-lg p-5 text-secondary hover:bg-[rgb(23,52,72)] hover:text-primary ${
                 !stable &&
                 "border border-primary bg-[rgb(23,52,72)] text-primary"
               }`}
@@ -889,13 +889,13 @@ export default function LiquidityManage() {
     <div className="relative">
       <Paper
         elevation={0}
-        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow"
+        className="m-auto mt-0 flex w-[calc(100%-60px)] max-w-[485px] flex-col items-start bg-transparent shadow-glow backdrop-blur-sm"
       >
         <div className="flex w-full flex-col rounded-t-lg rounded-r-lg rounded-b-none rounded-l-none text-primary">
           <Grid container spacing={0}>
             <Grid item lg={6} md={6} sm={6} xs={6}>
               <Paper
-                className={`cursor-pointer rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent font-medium text-secondaryGray outline-0 ${
+                className={`cursor-pointer rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent font-medium text-secondary outline-0 ${
                   activeTab === "deposit"
                     ? " border-primary text-white"
                     : "border-transparent hover:bg-[hsla(0,0%,100%,.04)]"
@@ -907,7 +907,7 @@ export default function LiquidityManage() {
             </Grid>
             <Grid item lg={6} md={6} sm={6} xs={6}>
               <Paper
-                className={`cursor-pointer rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent font-medium text-secondaryGray outline-0 ${
+                className={`cursor-pointer rounded-t-lg rounded-r-none rounded-b-none rounded-l-none border bg-transparent font-medium text-secondary outline-0 ${
                   activeTab === "withdraw"
                     ? " border-primary text-white"
                     : "border-transparent hover:bg-[hsla(0,0%,100%,.04)]"
@@ -919,7 +919,7 @@ export default function LiquidityManage() {
             </Grid>
           </Grid>
         </div>
-        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-deepBlue bg-none">
+        <div className="relative mt-5 mr-6 mb-0 ml-6 flex min-h-[60px] w-[calc(100%-50px)] items-center justify-center rounded-[10px] border border-background bg-none">
           <Tooltip title="Back to Liquidity" placement="top">
             <IconButton className="absolute left-1" onClick={onBack}>
               <ArrowBack className="text-primary" />
@@ -1013,7 +1013,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={(amount0 === "" && amount1 === "") || loading}
@@ -1039,7 +1039,7 @@ export default function LiquidityManage() {
                           className={
                             loading
                               ? "min-w-[auto]"
-                              : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                              : "bg-background font-bold text-primary hover:bg-green-900"
                           }
                           color="primary"
                           disabled={loading}
@@ -1069,7 +1069,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={(amount0 === "" && amount1 === "") || loading}
@@ -1093,7 +1093,7 @@ export default function LiquidityManage() {
                       className={
                         (amount0 === "" && amount1 === "") || loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={(amount0 === "" && amount1 === "") || loading}
@@ -1116,7 +1116,7 @@ export default function LiquidityManage() {
                         (pair.balance && BigNumber(pair.balance).eq(0)) ||
                         loading
                           ? "min-w-[auto]"
-                          : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                          : "bg-background font-bold text-primary hover:bg-green-900"
                       }
                       color="primary"
                       disabled={
@@ -1154,7 +1154,7 @@ export default function LiquidityManage() {
                   className={
                     loading || withdrawAmount === ""
                       ? "min-w-[auto]"
-                      : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                      : "bg-background font-bold text-primary hover:bg-green-900"
                   }
                   disabled={loading || withdrawAmount === ""}
                   onClick={onWithdraw}
@@ -1176,7 +1176,7 @@ export default function LiquidityManage() {
                     className={
                       loading || withdrawAmount === ""
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     disabled={loading || withdrawAmount === ""}
                     onClick={onUnstakeAndWithdraw}
@@ -1196,7 +1196,7 @@ export default function LiquidityManage() {
                     className={
                       withdrawAmount === "" || loading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={withdrawAmount === "" || loading}
@@ -1215,7 +1215,7 @@ export default function LiquidityManage() {
                     className={
                       (pair.balance && BigNumber(pair.balance).eq(0)) || loading
                         ? "min-w-[auto]"
-                        : "bg-primaryBg font-bold text-primary hover:bg-green-900"
+                        : "bg-background font-bold text-primary hover:bg-green-900"
                     }
                     color="primary"
                     disabled={

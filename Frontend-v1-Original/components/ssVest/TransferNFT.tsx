@@ -75,7 +75,7 @@ export function TransferNFT() {
   return (
     <div className="relative my-0 mx-auto w-full md:min-w-[485px] lg:max-w-[700px]">
       <Paper elevation={0} className="mx-5 space-y-4 p-[24px] md:mx-8">
-        <div className="relative flex w-full flex-row items-center justify-center rounded-lg border border-solid border-deepBlue py-5">
+        <div className="relative flex w-full flex-row items-center justify-center rounded-lg border border-solid border-background py-5">
           <Link
             className="absolute left-[5px]"
             href={`/vest`}

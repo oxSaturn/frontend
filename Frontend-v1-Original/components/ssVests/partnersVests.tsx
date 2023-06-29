@@ -37,7 +37,7 @@ const PartnerVestCard = ({ partner }: { partner: PartnerCardProps }) => {
       href={partner.link}
       rel="noreferrer noopener"
       target="_blank"
-      className="relative flex min-h-[196px] w-96 flex-grow items-center justify-between gap-4 overflow-hidden rounded-2xl border border-gray-500 bg-deepPurple p-5 transition-colors after:pointer-events-none after:absolute after:-left-10 after:-bottom-32 after:h-full after:w-full after:bg-slate-300 after:opacity-0 after:blur-xl after:transition-all after:duration-500 hover:border-slate-400 hover:after:translate-x-10 hover:after:-translate-y-32 hover:after:opacity-10"
+      className="relative flex min-h-[196px] w-96 flex-grow items-center justify-between gap-4 overflow-hidden rounded-2xl border border-gray-500 bg-background p-5 transition-colors after:pointer-events-none after:absolute after:-left-10 after:-bottom-32 after:h-full after:w-full after:bg-slate-300 after:opacity-0 after:blur-xl after:transition-all after:duration-500 hover:border-slate-400 hover:after:translate-x-10 hover:after:-translate-y-32 hover:after:opacity-10"
     >
       <img
         src={partner.logo}
