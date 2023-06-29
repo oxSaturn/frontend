@@ -64,7 +64,7 @@ export function Stake() {
     isFetching: isFetchingAllowance,
   } = useErc20Allowance({
     address: pair,
-    args: [address!, PRO_OPTIONS.oFLOW.gaugeAddress],
+    args: [address!, PRO_OPTIONS.oFVM.gaugeAddress],
     enabled: !!address,
     select: (allowance) => {
       const formattedAllowance = formatEther(allowance);
@@ -76,7 +76,7 @@ export function Stake() {
   const { config: approveConfig } = usePrepareErc20Approve({
     address: pair,
     args: [
-      PRO_OPTIONS.oFLOW.gaugeAddress,
+      PRO_OPTIONS.oFVM.gaugeAddress,
       isValidInput(amount) ? parseEther(amount as `${number}`) : 0n,
     ],
     enabled: !!pair && !!address && isApprovalNeeded && isValidInput(amount),

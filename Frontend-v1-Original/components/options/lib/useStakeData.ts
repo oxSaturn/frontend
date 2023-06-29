@@ -56,7 +56,7 @@ export function useStakeData() {
     select: (data) => formatUnits(data, paymentTokenDecimals),
   });
   const { data: paymentTokenBalanceInOption } = useBalance({
-    address: PRO_OPTIONS.oFLOW.tokenAddress,
+    address: PRO_OPTIONS.oFVM.tokenAddress,
     token: paymentTokenAddress,
     enabled: !!paymentTokenAddress,
   });

@@ -4,7 +4,6 @@ import {
   useNetwork,
   useSwitchNetwork,
   useWaitForTransaction,
-  useBalance,
 } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { fantom } from "viem/chains";
@@ -29,13 +28,6 @@ export function Convert() {
 
   const [amount, setAmount] = useState("");
   const { refetchBalances } = useTokenData();
-
-  const { data: optionV1Balance, refetch: refetchOptionV1Balance } = useBalance(
-    {
-      address,
-      token: "0x1Fc0A9f06B6E85F023944e74F70693Ac03fDC621",
-    }
-  );
 
   const {
     data: isApprovalNeeded,
@@ -87,29 +79,21 @@ export function Convert() {
   const { isFetching: waitingConvertReceipt } = useWaitForTransaction({
     hash: txConvertResponse?.hash,
     onSuccess: () => {
-      refetchOptionV1Balance();
+      // refetchOptionV1Balance();
       refetchAllowance();
       refetchBalances();
     },
   });
 
-  const setMax = () => {
-    if (optionV1Balance && parseFloat(optionV1Balance.formatted) > 0) {
-      setAmount(optionV1Balance.formatted);
-    }
-  };
-
-  const insufficientAmount =
-    optionV1Balance &&
-    parseFloat(amount) > parseFloat(optionV1Balance.formatted);
+  const insufficientAmount = false;
 
   return (
     <>
       <div className="flex w-96 min-w-[384px] flex-col rounded-md border border-cyan/50 p-5 font-sono text-lime-50 backdrop-blur-sm md:w-[512px] md:min-w-[512px]">
         <div className="relative mb-5 flex items-center justify-between">
-          <h2 className="text-xl">oFLOW v1 balance</h2>
+          <h2 className="text-xl">Convertor</h2>
           <div className="absolute right-0 top-1/2 -translate-y-1/2 text-sm">
-            {formatCurrency(optionV1Balance?.formatted)}
+            {formatCurrency("0")}
           </div>
         </div>
         <div className="my-5 flex flex-col gap-3">
@@ -124,11 +108,10 @@ export function Convert() {
                     : "focus:outline-secondary focus-visible:outline-secondary"
                 }`}
                 placeholder="0.00"
+                disabled
               />
             </div>
-            <button className="p-4" onClick={() => setMax()}>
-              MAX
-            </button>
+            <button className="p-4">MAX</button>
           </div>
           {chain?.unsupported ? (
             <button

@@ -12,7 +12,7 @@ export default function LiquidityPairs() {
           <Typography variant="h1">Liquidity Pools</Typography>
           <Typography variant="body2">
             Pair your tokens to provide liquidity. Stake the LP tokens to earn
-            FLOW
+            FVM
           </Typography>
         </div>
         {isFetching && <CircularProgress size={20} />}

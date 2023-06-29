@@ -12,8 +12,8 @@ interface UseInputs {
   option: string;
   payment: string;
   activeInput: INPUT_TYPE;
-  setOption: (_oFlow: string) => void;
-  setPayment: (_WPLS: string) => void;
+  setOption: (_option: string) => void;
+  setPayment: (_payment: string) => void;
   setActiveInput: (_activeInput: INPUT_TYPE) => void;
 }
 

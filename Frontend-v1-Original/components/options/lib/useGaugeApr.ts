@@ -15,7 +15,7 @@ export function useGaugeApr() {
   const { discount, maxLpDiscount, minLpDiscount, veDiscount } =
     useDiscountsData();
   const { totalStakedValue } = useStakeData();
-  const optionTokenAddress = PRO_OPTIONS.oFLOW.tokenAddress;
+  const optionTokenAddress = PRO_OPTIONS.oFVM.tokenAddress;
   return useQuery({
     queryKey: [
       "GAUGE-APR",

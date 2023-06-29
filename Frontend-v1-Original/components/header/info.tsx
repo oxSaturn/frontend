@@ -34,7 +34,7 @@ export default function Info() {
         </span>
       </div>
       <div>
-        <span className="font-normal">$FLOW price: </span>
+        <span className="font-normal">$FVM price: </span>
         <span className="tracking-tighter">
           $
           {(

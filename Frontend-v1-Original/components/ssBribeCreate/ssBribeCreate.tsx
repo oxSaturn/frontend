@@ -37,10 +37,7 @@ export default function BribeCreate() {
   const { data: gaugeOptions } = useGauges();
   useEffect(() => {
     if (gaugeOptions && gaugeOptions.length > 0 && gauge == null) {
-      const noteFlowPair = gaugeOptions.filter((gauge) => {
-        return gauge.symbol === "vAMM-NOTE/FLOW";
-      });
-      setGauge(noteFlowPair[0] ?? gaugeOptions[0]);
+      setGauge(gaugeOptions[0]);
     }
   }, [gaugeOptions, gauge]);
 
