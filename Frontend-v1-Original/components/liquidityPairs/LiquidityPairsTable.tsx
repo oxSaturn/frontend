@@ -670,57 +670,43 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
         </TableCell>
         {row && hasGauge(row) && (
           <TableCell align="right">
-            {row.gauge.reserve0 &&
-              row.gauge.reserve1 &&
-              row.gauge.balance &&
-              row.gauge.totalSupply && (
-                <>
-                  <div className="flex items-center justify-end max-md:block">
-                    <Typography
-                      variant="h2"
-                      className="text-xs font-extralight"
-                    >
-                      {formatCurrency(
-                        BigNumber(row.gauge.balance)
-                          .div(row.gauge.totalSupply)
-                          .times(row.gauge.reserve0)
-                      )}
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      className={`min-w-[40xp] text-xs font-extralight`}
-                      color="textSecondary"
-                    >
-                      {row.token0.symbol}
-                    </Typography>
-                  </div>
-                  <div className="flex items-center justify-end max-md:block">
-                    <Typography
-                      variant="h5"
-                      className="text-xs font-extralight"
-                    >
-                      {formatCurrency(
-                        BigNumber(row.gauge.balance)
-                          .div(row.gauge.totalSupply)
-                          .times(row.gauge.reserve1)
-                      )}
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      className={`min-w-[40xp] text-xs font-extralight`}
-                      color="textSecondary"
-                    >
-                      {row.token1.symbol}
-                    </Typography>
-                  </div>
-                </>
-              )}
-            {!(
-              row &&
-              row.gauge &&
-              row.gauge.balance &&
-              row.gauge.totalSupply
-            ) && (
+            {row.gauge.reserve0 && row.gauge.reserve1 && row.gauge.balance && (
+              <>
+                <div className="flex items-center justify-end max-md:block">
+                  <Typography variant="h2" className="text-xs font-extralight">
+                    {formatCurrency(
+                      BigNumber(row.gauge.balance)
+                        .div(row.gauge.totalSupply)
+                        .times(row.gauge.reserve0)
+                    )}
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    className={`min-w-[40xp] text-xs font-extralight`}
+                    color="textSecondary"
+                  >
+                    {row.token0.symbol}
+                  </Typography>
+                </div>
+                <div className="flex items-center justify-end max-md:block">
+                  <Typography variant="h5" className="text-xs font-extralight">
+                    {formatCurrency(
+                      BigNumber(row.gauge.balance)
+                        .div(row.gauge.totalSupply)
+                        .times(row.gauge.reserve1)
+                    )}
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    className={`min-w-[40xp] text-xs font-extralight`}
+                    color="textSecondary"
+                  >
+                    {row.token1.symbol}
+                  </Typography>
+                </div>
+              </>
+            )}
+            {!(row && row.gauge && row.gauge.balance) && (
               <div className="flex items-center justify-end max-md:block">
                 <Skeleton
                   variant="rectangular"
