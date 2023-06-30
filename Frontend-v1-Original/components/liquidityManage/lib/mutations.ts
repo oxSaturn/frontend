@@ -31,9 +31,7 @@ import {
 import { getTXUUID } from "../../../utils/utils";
 import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
-import { getPairByAddress } from "./queries";
-
-const PAIR_BY_ADDRESS = "pairByAddress";
+import { getPairByAddress, KEYS as MANAGE_PAIR_KEYS } from "./queries";
 
 // --- hooks ---
 
@@ -52,7 +50,7 @@ export function useCreatePairStake(onSuccess?: () => void) {
     onSuccess: () => {
       onSuccess?.();
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
     },
   });
 }
@@ -72,7 +70,7 @@ export function useCreatePairDeposit(onSuccess?: () => void) {
     onSuccess: () => {
       onSuccess?.();
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
     },
   });
 }
@@ -91,7 +89,7 @@ export function useAddLiquidity(onSuccess?: () => void) {
     }) => addLiquidity(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
       onSuccess?.();
     },
   });
@@ -105,7 +103,7 @@ export function useStakeLiquidity(onSuccess?: () => void) {
       stakeLiquidity(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
       onSuccess?.();
     },
   });
@@ -126,7 +124,7 @@ export function useAddLiquidityAndStake(onSuccess?: () => void) {
     }) => addLiquidityAndStake(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
       onSuccess?.();
     },
   });
@@ -144,7 +142,7 @@ export function useRemoveLiquidity(onSuccess?: () => void) {
     }) => removeLiquidity(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
       onSuccess?.();
     },
   });
@@ -165,7 +163,7 @@ export function useUnstakeAndRemoveLiquidity(onSuccess?: () => void) {
     }) => unstakeAndRemoveLiquidity(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
       onSuccess?.();
     },
   });
@@ -179,7 +177,7 @@ export function useUnstakeLiquidity(onSuccess?: () => void) {
       unstakeLiquidity(address, options),
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
-      queryClient.invalidateQueries([PAIR_BY_ADDRESS]);
+      queryClient.invalidateQueries([MANAGE_PAIR_KEYS.PAIR_BY_ADDRESS]);
       onSuccess?.();
     },
   });
