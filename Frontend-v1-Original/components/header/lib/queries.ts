@@ -241,7 +241,7 @@ const getMarketCap = async (
     throw new Error("Missing circ supply or token prices");
 
   const price = tokenPrices.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase());
-  if (!price) throw new Error("Missing price");
+  if (price === undefined) throw new Error("Missing price");
 
   return circulatingSupply * price;
 };
