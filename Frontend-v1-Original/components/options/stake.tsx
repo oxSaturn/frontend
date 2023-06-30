@@ -10,7 +10,6 @@ import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
 import dayjs from "dayjs";
 
-import { PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
   useMaxxingGaugeDeposit,
@@ -20,6 +19,7 @@ import {
   usePrepareMaxxingGaugeDeposit,
   usePrepareMaxxingGaugeWithdraw,
   usePrepareErc20Approve,
+  useOptionTokenGauge,
 } from "../../lib/wagmiGen";
 
 import { isValidInput, useStakeData, useGaugeApr, useTokenData } from "./lib";
@@ -58,14 +58,15 @@ export function Stake() {
 
   const { data: tokenAprs } = useGaugeApr();
 
+  const { data: gaugeAddress } = useOptionTokenGauge();
   const {
     data: isApprovalNeeded,
     refetch: refetchAllowance,
     isFetching: isFetchingAllowance,
   } = useErc20Allowance({
     address: pair,
-    args: [address!, PRO_OPTIONS.oFLOW.gaugeAddress],
-    enabled: !!address,
+    args: [address!, gaugeAddress!],
+    enabled: !!address && !!gaugeAddress,
     select: (allowance) => {
       const formattedAllowance = formatEther(allowance);
       if (!amount) return false;
@@ -76,10 +77,15 @@ export function Stake() {
   const { config: approveConfig } = usePrepareErc20Approve({
     address: pair,
     args: [
-      PRO_OPTIONS.oFLOW.gaugeAddress,
+      gaugeAddress!,
       isValidInput(amount) ? parseEther(amount as `${number}`) : 0n,
     ],
-    enabled: !!pair && !!address && isApprovalNeeded && isValidInput(amount),
+    enabled:
+      !!pair &&
+      !!address &&
+      !!gaugeAddress &&
+      isApprovalNeeded &&
+      isValidInput(amount),
   });
   const {
     write: approve,
@@ -96,6 +102,7 @@ export function Stake() {
   });
 
   const { config: depositConfig } = usePrepareMaxxingGaugeDeposit({
+    address: gaugeAddress,
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n, 0n],
     enabled:
       !!address &&
@@ -119,6 +126,7 @@ export function Stake() {
   });
 
   const { config: withdrawConfig } = usePrepareMaxxingGaugeWithdraw({
+    address: gaugeAddress,
     args: [isValidInput(amount) ? parseEther(amount as `${number}`) : 0n],
     enabled: !!address && isValidInput(amount) && action === ACTION.WITHDRAW,
   });

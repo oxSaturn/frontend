@@ -36,7 +36,6 @@ export default defineConfig({
     {
       name: "MaxxingGauge",
       abi: PRO_OPTIONS.maxxingGaugeABI,
-      address: PRO_OPTIONS.oFLOW.gaugeAddress,
     },
     {
       name: "Convertor",

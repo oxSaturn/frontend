@@ -34,7 +34,6 @@ export const PRO_OPTIONS = {
   maxxingGaugeABI: maxxingGaugeABI,
   oFLOW: {
     tokenAddress: "0x767D9ad09e4E148e0Ae23Ea1F2dB04e5F0Cd2EdA",
-    gaugeAddress: "0x80D1006427c5f6EB662412aeb027d383C5e069cB",
   },
 } as const;
 

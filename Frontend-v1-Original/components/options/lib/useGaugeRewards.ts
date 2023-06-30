@@ -4,7 +4,10 @@ import { formatUnits } from "viem";
 
 import viemClient from "../../../stores/connectors/viem";
 import { getInitBaseAssets } from "../../../lib/global/queries";
-import { useMaxxingGaugeRewardsListLength } from "../../../lib/wagmiGen";
+import {
+  useMaxxingGaugeRewardsListLength,
+  useOptionTokenGauge,
+} from "../../../lib/wagmiGen";
 import { CONTRACTS, PRO_OPTIONS } from "../../../stores/constants/constants";
 
 const QUERY_KEYS = {
@@ -30,35 +33,46 @@ interface Earned {
 export function useGaugeRewards() {
   const { address } = useAccount();
   const { data: rewardTokens } = useGaugeRewardTokens();
+  const { data: gaugeAddress } = useOptionTokenGauge();
   return useQuery({
-    queryKey: [QUERY_KEYS.EARNED, rewardTokens, address],
-    queryFn: () => getEarned(address, rewardTokens),
-    enabled: !!rewardTokens && !!address,
+    queryKey: [QUERY_KEYS.EARNED, rewardTokens, address, gaugeAddress],
+    queryFn: () => getEarned(address, rewardTokens, gaugeAddress),
+    enabled: !!rewardTokens && !!address && !!gaugeAddress,
     select: filterEarned,
     keepPreviousData: true,
   });
 }
 
 export function useGaugeRewardTokens() {
+  const { data: gaugeAddress } = useOptionTokenGauge();
+
   const { data: rewardsListLength } = useMaxxingGaugeRewardsListLength({
+    address: gaugeAddress,
     select: (data) => Number(data),
   });
+
   return useQuery({
-    queryKey: [QUERY_KEYS.TOKEN_ADDRESSES, rewardsListLength],
-    queryFn: () => getGaugeRewardTokens(rewardsListLength),
-    enabled: !!rewardsListLength,
+    queryKey: [QUERY_KEYS.TOKEN_ADDRESSES, rewardsListLength, gaugeAddress],
+    queryFn: () => getGaugeRewardTokens(rewardsListLength, gaugeAddress),
+    enabled: !!rewardsListLength && !!gaugeAddress,
   });
 }
 
-async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
+async function getGaugeRewardTokens(
+  rewardsListLength: number | undefined,
+  gaugeAddress: Address | undefined
+) {
   if (!rewardsListLength) {
     throw new Error("rewardsListLength is undefined or zero");
+  }
+  if (!gaugeAddress) {
+    throw new Error("gaugeAddress is undefined");
   }
 
   const initBaseAssets = getInitBaseAssets();
 
   const gaugeContract = {
-    address: PRO_OPTIONS.oFLOW.gaugeAddress,
+    address: gaugeAddress,
     abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 
@@ -127,7 +141,8 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
 
 async function getEarned(
   account: Address | undefined,
-  rewardsTokens: Token[] | undefined
+  rewardsTokens: Token[] | undefined,
+  gaugeAddress: Address | undefined
 ) {
   if (!account) {
     throw new Error("account is undefined");
@@ -135,9 +150,12 @@ async function getEarned(
   if (!rewardsTokens) {
     throw new Error("tokenAddresses is undefined");
   }
+  if (!gaugeAddress) {
+    throw new Error("gaugeAddress is undefined");
+  }
 
   const gaugeContract = {
-    address: PRO_OPTIONS.oFLOW.gaugeAddress,
+    address: gaugeAddress,
     abi: PRO_OPTIONS.maxxingGaugeABI,
   } as const;
 
