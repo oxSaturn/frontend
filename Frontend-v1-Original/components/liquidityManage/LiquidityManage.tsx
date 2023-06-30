@@ -436,7 +436,7 @@ export default function LiquidityManage() {
   };
 
   const handleAmount0Input = (input: string) => {
-    if (!pair || !pair.token0 || !pair.token1) {
+    if (!pair || !pair.token0 || !pair.token1 || pair.totalSupply === 0) {
       return setAmount0(input);
     }
 
@@ -490,7 +490,7 @@ export default function LiquidityManage() {
   };
 
   const handleAmount1Input = (input: string) => {
-    if (!pair || !pair.token0 || !pair.token1) {
+    if (!pair || !pair.token0 || !pair.token1 || pair.totalSupply === 0) {
       return setAmount1(input);
     }
 
