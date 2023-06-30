@@ -621,7 +621,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           )}
         </TableCell>
         <TableCell className="max-md:hidden" align="right">
-          {row && row.balance && row.totalSupply && (
+          {row && row.balance && (
             <>
               <div className="flex items-center justify-end max-md:block">
                 <Typography variant="h2" className="text-xs font-extralight">
@@ -657,7 +657,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
               </div>
             </>
           )}
-          {!(row && row.balance && row.totalSupply) && (
+          {!(row && row.balance) && (
             <div className="flex items-center justify-end max-md:block">
               <Skeleton
                 variant="rectangular"
@@ -729,7 +729,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           </TableCell>
         )}
         <TableCell className="max-md:hidden" align="right">
-          {row && row.reserve0 && row.token0 && (
+          {row && row.token0 && (
             <div className="flex items-center justify-end max-md:block">
               <Typography variant="h2" className="text-xs font-extralight">
                 {formatCurrency(row.reserve0)}
@@ -743,7 +743,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
               </Typography>
             </div>
           )}
-          {!(row && row.reserve0 && row.token0) && (
+          {!(row && row.token0) && (
             <div className="flex items-center justify-end max-md:block">
               <Skeleton
                 variant="rectangular"
@@ -753,7 +753,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
               />
             </div>
           )}
-          {row && row.reserve1 && row.token1 && (
+          {row && row.token1 && (
             <div className="flex items-center justify-end max-md:block">
               <Typography variant="h2" className="text-xs font-extralight">
                 {formatCurrency(row.reserve1)}
@@ -767,7 +767,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
               </Typography>
             </div>
           )}
-          {!(row && row.reserve1 && row.token1) && (
+          {!(row && row.token1) && (
             <div className="flex items-center justify-end max-md:block">
               <Skeleton
                 variant="rectangular"
