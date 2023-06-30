@@ -91,7 +91,7 @@
     "address": "0xA187a431fC7eb96D52f972b08000b12cfF8EcC33",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
     "name": "USDC Coin",
     "symbol": "USDC"
   },
@@ -99,7 +99,7 @@
     "address": "0xE79d22C33a37EA9E0Bda0226e0Eae2f98AE0E393",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
     "name": "Tether USD",
     "symbol": "USDT"
   },
