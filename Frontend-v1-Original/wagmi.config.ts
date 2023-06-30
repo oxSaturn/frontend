@@ -26,7 +26,6 @@ export default defineConfig({
     {
       name: "MaxxingGauge",
       abi: PRO_OPTIONS.maxxingGaugeABI,
-      address: PRO_OPTIONS.oFVM.gaugeAddress,
     },
     {
       name: "Convertor",
