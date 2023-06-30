@@ -46,7 +46,8 @@ export function useNftById(id: string | string[] | undefined) {
       !!govToken &&
       !!id &&
       !Array.isArray(id) &&
-      id !== "0",
+      id !== "0" &&
+      id !== "create",
   });
 }
 
@@ -64,7 +65,7 @@ const getNFTByID = async (
 
   const vestNFTs = deserialize(serialised_vestNFTs) as VestNFT[] | undefined;
 
-  if (!id || Array.isArray(id) || id === "0") {
+  if (!id || Array.isArray(id) || id === "0" || id === "create") {
     throw new Error("id is incorrect");
   }
 
