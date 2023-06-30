@@ -94,5 +94,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
     "name": "Morphex",
     "symbol": "MPX"
+  },
+  {
+    "address": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
+    "name": "USDC Coin",
+    "symbol": "USDC"
   }
 ]
