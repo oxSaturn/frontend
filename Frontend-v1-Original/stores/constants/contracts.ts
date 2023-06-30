@@ -8,7 +8,7 @@ export const GOV_TOKEN_NAME = "FLOW";
 export const GOV_TOKEN_SYMBOL = "FLOW";
 export const GOV_TOKEN_DECIMALS = 18;
 export const GOV_TOKEN_LOGO =
-  "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
+  "https://raw.githubusercontent.com/Velocimeter/frontend/pulse/Frontend-v1-Original/public/tokens/flow.png?raw=true";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0xe7b8F4D74B7a7b681205d6A3D231d37d472d4986"; // pulse
