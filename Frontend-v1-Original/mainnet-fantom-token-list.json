@@ -16,7 +16,7 @@
     "symbol": "DAI"
   },
   {
-    "address": "0x74b23882a30290451A17c44f4F05243b6b58C76d",
+    "address": "0xdf5C2c48cf3E50417b31Da8aa7B6Afd0Ce30af8A",
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
@@ -24,20 +24,12 @@
     "symbol": "WETH"
   },
   {
-    "address": "0x321162Cd933E2Be498Cd2267a90534A804051b11",
+    "address": "0x4385588ceb7cE866F871a8fb83898DC14089f359",
     "chainId": 250,
     "decimals": 8,
     "logoURI": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png",
     "name": "Wrapped BTC",
     "symbol": "WBTC"
-  },
-  {
-    "address": "0x2823D10DA533d9Ee873FEd7B16f4A962B2B7f181",
-    "chainId": 250,
-    "decimals": 6,
-    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
-    "name": "Multichain Frapped USDT",
-    "symbol": "anyUSDT"
   },
   {
     "address": "0xE1689e9AaD6b36D91E357FAf95cd7c2C4C1b5475",
@@ -96,12 +88,20 @@
     "symbol": "MPX"
   },
   {
-    "address": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+    "address": "0xA187a431fC7eb96D52f972b08000b12cfF8EcC33",
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
     "name": "USDC Coin",
     "symbol": "USDC"
+  },
+  {
+    "address": "0xE79d22C33a37EA9E0Bda0226e0Eae2f98AE0E393",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
+    "name": "Tether USD",
+    "symbol": "USDT"
   },
   {
     "address": "0x74ccbe53F77b08632ce0CB91D3A545bF6B8E0979",
