@@ -8,14 +8,6 @@
     "symbol": "WFTM"
   },
   {
-    "address": "0x00",
-    "chainId": 250,
-    "decimals": 6,
-    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
-    "name": "Layer Zero USDC",
-    "symbol": "lzUSDC"
-  },
-  {
     "address": "0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E",
     "chainId": 250,
     "decimals": 18,
@@ -62,5 +54,45 @@
     "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/oFvm.png?raw=true",
     "name": "Option FVM",
     "symbol": "oFVM"
+  },
+  {
+    "address": "0xC5e2B037D30a390e62180970B3aa4E91868764cD",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17881/large/tarot-200px.png",
+    "name": "Tarot",
+    "symbol": "TAROT"
+  },
+  {
+    "address": "0x10b620b2dbAC4Faa7D7FFD71Da486f5D44cd86f9",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/15782/large/LQDR_Glowing_Icon.png",
+    "name": "Liquid Driver",
+    "symbol": "LQRD"
+  },
+  {
+    "address": "0xDE5ed76E7c05eC5e4572CfC88d1ACEA165109E44",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/18778/large/Black_Background_200x200.png",
+    "name": "DEUS Finance",
+    "symbol": "DEUS"
+  },
+  {
+    "address": "0xe0654C8e6fd4D733349ac7E09f6f23DA256bF475",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17509/large/output-onlinepngtools_%286%29.png",
+    "name": "Scream",
+    "symbol": "SCREAM"
+  },
+  {
+    "address": "0x66eed5ff1701e6ed8470dc391f05e27b1d0657eb",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28965/large/mpx_logo_256.png",
+    "name": "Morphex",
+    "symbol": "MPX"
   }
 ]
