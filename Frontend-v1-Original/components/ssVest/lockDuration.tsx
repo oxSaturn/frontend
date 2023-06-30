@@ -24,13 +24,15 @@ export type LockOption =
   | "2 years"
   | "3 years"
   | "4 years";
+export const defaultLockDuration: LockOption = "1 week";
+export const maxLockDuration: LockOption = "4 years";
 export const lockOptions: Record<LockOption, number> = {
-  "1 week": 8,
+  [defaultLockDuration]: 7,
   "1 month": 30,
   "1 year": 365,
-  "2 years": 730,
-  "3 years": 1095,
-  "4 years": 1460,
+  "2 years": 365 * 2,
+  "3 years": 365 * 3,
+  [maxLockDuration]: 365 * 4,
 };
 
 /**
@@ -55,7 +57,7 @@ export default function LockDuration({
   const inputEl = useRef<HTMLInputElement | null>(null);
 
   const [selectedDate, setSelectedDate] = useState(
-    dayjs().add(8, "days").format("YYYY-MM-DD")
+    dayjs().add(lockOptions[defaultLockDuration], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
@@ -149,7 +151,7 @@ export default function LockDuration({
               disabled={lockLoading}
               inputProps={{
                 min: min,
-                max: dayjs().add(1460, "days").format("YYYY-MM-DD"),
+                max: dayjs().add(lockOptions[maxLockDuration], "days").format("YYYY-MM-DD"),
               }}
               InputProps={{
                 className: classes.largeInput,
@@ -161,7 +163,7 @@ export default function LockDuration({
     );
   };
 
-  const max = dayjs().add(lockOptions["4 years"], "days");
+  const max = dayjs().add(lockOptions[maxLockDuration], "days");
   const roundedDownMax = roundDownToWeekBoundary(max);
   const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
   return (
