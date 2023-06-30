@@ -84,7 +84,7 @@
     "address": "0x39b9D781dAD0810D07E24426c876217218Ad353D",
     "chainId": 369,
     "decimals": 18,
-    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png",
+    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/pulse/Frontend-v1-Original/public/tokens/flow.png?raw=true",
     "name": "Velocimeter FLOW",
     "symbol": "FLOW"
   },
@@ -100,7 +100,7 @@
     "address": "0x767D9ad09e4E148e0Ae23Ea1F2dB04e5F0Cd2EdA",
     "chainId": 369,
     "decimals": 18,
-    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/06/VEFlow-token-icon3.png",
+    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/pulse/Frontend-v1-Original/public/tokens/oFlow.png?raw=true",
     "name": "Velocimeter option FLOW v2",
     "symbol": "oFLOW"
   }
