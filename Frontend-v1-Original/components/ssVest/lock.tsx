@@ -24,7 +24,12 @@ import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
 
-import { type LockOption, lockOptions } from "./lockDuration";
+import {
+  type LockOption,
+  lockOptions,
+  defaultLockDuration,
+  maxLockDuration,
+} from "./lockDuration";
 import { useCreateVest } from "./lib/mutations";
 
 export default function Lock({
@@ -40,10 +45,10 @@ export default function Lock({
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState<string | false>(false);
   const [selectedValue, setSelectedValue] = useState<string | null>(
-    lockOptions["6.5 weeks"] + ""
+    lockOptions[defaultLockDuration] + ""
   );
   const [selectedDate, setSelectedDate] = useState(
-    dayjs().add(lockOptions["6.5 weeks"], "days").format("YYYY-MM-DD")
+    dayjs().add(lockOptions[defaultLockDuration], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
 
@@ -155,7 +160,7 @@ export default function Lock({
               inputProps={{
                 min: dayjs().add(3, "days").format("YYYY-MM-DD"),
                 max: dayjs()
-                  .add(lockOptions["26 weeks"], "days")
+                  .add(lockOptions[maxLockDuration], "days")
                   .format("YYYY-MM-DD"),
               }}
               InputProps={{
@@ -263,7 +268,7 @@ export default function Lock({
       lockAmount: amount,
       lockValue: BigNumber(amount)
         .times(parseInt(dayToExpire.toString()) + 1)
-        .div(lockOptions["26 weeks"])
+        .div(lockOptions[maxLockDuration])
         .toFixed(18),
       lockEnds: expiry.unix().toString(),
       votedInCurrentEpoch: false,
