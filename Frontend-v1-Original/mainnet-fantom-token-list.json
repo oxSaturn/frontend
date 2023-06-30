@@ -36,7 +36,7 @@
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/fvm.png?raw=true",
-    "name": "FantomVelociMeter",
+    "name": "Velocimeter",
     "symbol": "FVM"
   },
   {
