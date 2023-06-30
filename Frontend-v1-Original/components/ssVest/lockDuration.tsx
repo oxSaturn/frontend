@@ -47,6 +47,13 @@ function roundDownToWeekBoundary(date: dayjs.Dayjs) {
   return Math.floor(timestamp / WEEK) * WEEK;
 }
 
+export function isNftMaxLocked(nft: VestNFT): boolean {
+  const max = dayjs().add(lockOptions[maxLockDuration], "days");
+  const roundedDownMax = roundDownToWeekBoundary(max);
+  const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
+  return maxLocked; 
+}
+
 export default function LockDuration({
   nft,
   updateLockDuration,
@@ -163,9 +170,7 @@ export default function LockDuration({
     );
   };
 
-  const max = dayjs().add(lockOptions[maxLockDuration], "days");
-  const roundedDownMax = roundDownToWeekBoundary(max);
-  const maxLocked = roundedDownMax === Number(nft.lockEnds) * 1000;
+  const maxLocked = isNftMaxLocked(nft);
   return (
     <div className={classes.someContainer}>
       <div className={classes.inputsContainer3}>
