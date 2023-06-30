@@ -23,7 +23,7 @@ import {
 
 import { useAmounts } from "./useAmounts";
 
-const KEYS = {
+export const KEYS = {
   PAIR_EXISTANCE: "pairExistance",
   PAIR_BY_ADDRESS: "pairByAddress",
   QUOTE_ADD_LIQUIDITY: "quoteAddLiquidity",
