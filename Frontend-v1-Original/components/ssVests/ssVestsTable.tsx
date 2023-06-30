@@ -30,6 +30,7 @@ import {
   Merge,
   TrendingUp,
   Send,
+  Lock,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
@@ -37,7 +38,8 @@ import Link from "next/link";
 
 import { formatCurrency } from "../../utils/utils";
 import { GovToken, VestNFT, VeToken } from "../../stores/types/types";
-import { useResetVest } from "../ssVest/lib/mutations";
+import { useIncreaseVestDuration, useResetVest } from "../ssVest/lib/mutations";
+import { isNftMaxLocked, lockOptions, maxLockDuration } from "../ssVest/lockDuration";
 
 const headCells = [
   { id: "NFT", numeric: false, disablePadding: false, label: "NFT" },
@@ -347,6 +349,20 @@ function MyTableRow(props: {
     setAnchorEl(null);
   };
 
+  const {
+    mutate: increateVestDuration
+  } = useIncreaseVestDuration();
+
+  const onMaxLock = (nft: VestNFT) => {
+    const now = dayjs();
+    const expiry = dayjs().add(lockOptions[maxLockDuration], 'days')
+    const diff = expiry.diff(now, 'seconds');
+    increateVestDuration({
+      tokenID: nft.id,
+      unlockTime: diff.toString()
+    });
+  }
+
   return (
     <TableRow key={labelId} className="hover:bg-[rgba(104,108,122,0.05)]">
       <TableCell>
@@ -460,7 +476,7 @@ function MyTableRow(props: {
           className="text-xs font-extralight"
           color="textSecondary"
         >
-          Expires {dayjs.unix(+row.lockEnds).fromNow()}
+          {isNftMaxLocked(row) ? ('MAX LOCKED') : `Expires ${dayjs.unix(+row.lockEnds).fromNow()}`}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -549,6 +565,15 @@ function MyTableRow(props: {
           <MenuItem disableRipple onClick={() => onView(row)}>
             <TrendingUp className="mr-2" /> Manage
           </MenuItem>
+          {
+            !isNftMaxLocked(row) ? <MenuItem disableRipple onClick={() => {
+              handleClose();
+              onMaxLock(row)
+            }}>
+              <Lock className="mr-2" /> Max Lock
+            </MenuItem> : null
+          }
+          
         </Menu>
       </TableCell>
     </TableRow>
