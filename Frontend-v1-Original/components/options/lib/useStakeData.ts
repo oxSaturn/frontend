@@ -9,6 +9,7 @@ import {
   useMaxxingGaugeLockEnd,
   useMaxxingGaugeStake,
   useMaxxingGaugeTotalSupply,
+  useOptionTokenGauge,
 } from "../../../lib/wagmiGen";
 import { useGetPair } from "../../liquidityManage/lib/queries";
 import { Pair } from "../../../stores/types/types";
@@ -19,8 +20,11 @@ import { useTokenData } from "./useTokenData";
 
 export function useStakeData() {
   const { address } = useAccount();
+  const { data: gaugeAddress } = useOptionTokenGauge();
 
-  const { data: pair } = useMaxxingGaugeStake();
+  const { data: pair } = useMaxxingGaugeStake({
+    address: gaugeAddress,
+  });
   const { data: pooledBalance, refetch: refetchPooledBalance } = useBalance({
     address,
     token: pair,
@@ -28,6 +32,7 @@ export function useStakeData() {
 
   const { data: stakedBalance, refetch: refetchStakedBalance } =
     useMaxxingGaugeBalanceOf({
+      address: gaugeAddress,
       args: [address!],
       enabled: !!address,
       select: (data) => formatEther(data),
@@ -35,12 +40,14 @@ export function useStakeData() {
 
   const { data: stakedBalanceWithLock, refetch: refetchStakedBalanceWithLock } =
     useMaxxingGaugeBalanceWithLock({
+      address: gaugeAddress,
       args: [address!],
       enabled: !!address,
       select: (data) => formatEther(data),
     });
 
   const { data: stakedLockEnd } = useMaxxingGaugeLockEnd({
+    address: gaugeAddress,
     args: [address!],
     enabled:
       !!address &&
@@ -51,6 +58,7 @@ export function useStakeData() {
 
   const { paymentTokenDecimals, paymentTokenAddress } = useTokenData();
   const { data: paymentTokenLeftInGauge } = useMaxxingGaugeLeft({
+    address: gaugeAddress,
     args: [paymentTokenAddress!],
     enabled: !!paymentTokenAddress,
     select: (data) => formatUnits(data, paymentTokenDecimals),
@@ -98,8 +106,12 @@ export function useTotalStaked(
   stakedBalanceWithoutLock: string | undefined,
   stakedBalanceWithLock: string | undefined
 ) {
-  const { data: pair } = useMaxxingGaugeStake();
+  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { data: pair } = useMaxxingGaugeStake({
+    address: gaugeAddress,
+  });
   const { data: totalSupply } = useMaxxingGaugeTotalSupply({
+    address: gaugeAddress,
     select: (data) => formatEther(data),
   });
   const { data: pairData } = useGetPair(pair);

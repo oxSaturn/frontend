@@ -6,6 +6,7 @@ import { formatCurrency } from "../../utils/utils";
 import { QUERY_KEYS } from "../../stores/constants/constants";
 import {
   useMaxxingGaugeGetReward,
+  useOptionTokenGauge,
   usePrepareMaxxingGaugeGetReward,
 } from "../../lib/wagmiGen";
 
@@ -28,7 +29,9 @@ export function Reward() {
 
   const { underlyingTokenSymbol } = useTokenData();
 
+  const { data: gaugeAddress } = useOptionTokenGauge();
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
+    address: gaugeAddress,
     args: [address!, earnedTokenAddresses!],
     enabled:
       !!address && !!earnedTokenAddresses && earnedTokenAddresses.length > 0,
