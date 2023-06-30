@@ -109,7 +109,7 @@ async function getGaugeRewardTokens(rewardsListLength: number | undefined) {
       asset?.address.toLowerCase() === CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
     ) {
       logoUrl =
-        "https://github.com/Velocimeter/frontend/blob/fantom/Frontend-v1-Original/public/tokens/oFvm.png?raw=true";
+        "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/oFvm.png?raw=true";
     }
 
     rewardsTokens.push({
