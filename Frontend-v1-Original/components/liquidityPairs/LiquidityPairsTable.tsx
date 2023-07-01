@@ -207,7 +207,7 @@ const EnhancedTableToolbar = ({
             className="flex w-full flex-[1]"
             variant="outlined"
             fullWidth
-            placeholder="PLS, HEX, 0x..."
+            placeholder="FTM, WFTM, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{

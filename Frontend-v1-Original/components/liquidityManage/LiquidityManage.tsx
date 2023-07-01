@@ -1426,7 +1426,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="PLS, HEX, 0x..."
+            placeholder="FTM, WFTM, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -1465,7 +1465,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="PLS, HEX, 0x..."
+            placeholder="FTM, WFTM, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{
