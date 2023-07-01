@@ -3,7 +3,7 @@ import abis from "../abis/abis";
 export const OPTION_TOKEN_ADDRESS =
   "0xfEFBC02930D389E624B56053E345Cd848729BF93"; // fantom
 
-export const GOV_TOKEN_ADDRESS = "0xE1689e9AaD6b36D91E357FAf95cd7c2C4C1b5475"; // fantom
+export const GOV_TOKEN_ADDRESS = "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D"; // fantom
 export const GOV_TOKEN_NAME = "FVM";
 export const GOV_TOKEN_SYMBOL = "FVM";
 export const GOV_TOKEN_DECIMALS = 18;
@@ -11,7 +11,7 @@ export const GOV_TOKEN_LOGO =
   "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/fvm.png?raw=true";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
-export const VE_TOKEN_ADDRESS = "0x34172780901eF075C67942392Ab461186d8C8cc5"; // fantom
+export const VE_TOKEN_ADDRESS = "0xAE459eE7377Fb9F67518047BBA5482C2F0963236"; // fantom
 export const VE_TOKEN_NAME = "veNFT";
 export const VE_TOKEN_SYMBOL = "veNFT";
 export const VE_TOKEN_DECIMALS = 18;
@@ -32,19 +32,19 @@ export const ETH_DECIMALS = 18;
 export const ETH_LOGO =
   "https://assets.coingecko.com/coins/images/4001/large/Fantom_round.png";
 
-export const FACTORY_ADDRESS = "0x42a0B204ae55254CdD10c562F9b101248Ea5DE08"; // fantom
+export const FACTORY_ADDRESS = "0x472f3C3c9608fe0aE8d702f3f8A2d12c410C881A"; // fantom
 export const FACTORY_ABI = abis.factoryABI;
 
-export const ROUTER_ADDRESS = "0x197b8F8185B84112dD95527ce472A55052cEE030"; // fantom
+export const ROUTER_ADDRESS = "0x2E14B53E2cB669f3A974CeaF6C735e134F3Aa9BC"; // fantom
 export const ROUTER_ABI = abis.routerABI;
 
-export const VE_DIST_ADDRESS = "0x82D862D11D4Ff392c1BaeF5502DaA57e99A9E339"; // fantom
+export const VE_DIST_ADDRESS = "0xE0B708753aab9d2Cc142ea52Cd7CD0c923A3389A"; // fantom
 export const VE_DIST_ABI = abis.veDistABI;
 
-export const VOTER_ADDRESS = "0x1E7d4DaFA8E16F90fd5B1220059607fe1f69aA0C"; // fantom
+export const VOTER_ADDRESS = "0xc9Ea7A2337f27935Cd3ccFB2f725B0428e731FBF"; // fantom
 export const VOTER_ABI = abis.voterABI;
 
-export const MINTER_ADDRESS = "0xCbC293D3fA882A5740A9fCD4670d69FD3f5Fe788"; // fantom
+export const MINTER_ADDRESS = "0xAA28F5F63a9DC90640abF7F008726460127a4Da6"; // fantom
 export const MINTER_ABI = abis.minterABI;
 
 export const ERC20_ABI = abis.erc20ABI;
