@@ -11,45 +11,13 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useReducer } from "react";
-import { type Address, isAddress } from "viem";
+import { type Address } from "viem";
 import { useAccount } from "wagmi";
 
 import { useTransferVest } from "./lib/mutations";
 import { useNftById } from "./lib/queries";
 
-export function reducer(
-  state: {
-    address: string;
-    helperText: string;
-    error: boolean;
-    currentAddress?: Address;
-  },
-  action: { type: string; payload: string }
-) {
-  switch (action.type) {
-    case "address":
-      let helperText = "";
-      let error = false;
-      const { payload } = action;
-      if (payload === "") {
-        helperText = "";
-        error = false;
-      } else {
-        if (!isAddress(payload)) {
-          helperText = "Invalid Address";
-          error = true;
-        } else if (
-          payload.toLowerCase() === state.currentAddress?.toLowerCase()
-        ) {
-          helperText = "Cannot transfer to self";
-          error = true;
-        }
-      }
-      return { ...state, address: action.payload, helperText, error };
-    default:
-      return state;
-  }
-}
+import { transferNftReducer as reducer } from "./reducers";
 
 export function TransferNFT() {
   const router = useRouter();
