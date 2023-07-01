@@ -3,7 +3,7 @@ import abis from "../abis/abis";
 export const OPTION_TOKEN_ADDRESS =
   "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D"; // fantom
 
-export const GOV_TOKEN_ADDRESS = "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D"; // fantom
+export const GOV_TOKEN_ADDRESS = "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96"; // fantom
 export const GOV_TOKEN_NAME = "FVM";
 export const GOV_TOKEN_SYMBOL = "FVM";
 export const GOV_TOKEN_DECIMALS = 18;
