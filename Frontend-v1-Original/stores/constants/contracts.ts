@@ -1,7 +1,7 @@
 import abis from "../abis/abis";
 
 export const OPTION_TOKEN_ADDRESS =
-  "0xfEFBC02930D389E624B56053E345Cd848729BF93"; // fantom
+  "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D"; // fantom
 
 export const GOV_TOKEN_ADDRESS = "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D"; // fantom
 export const GOV_TOKEN_NAME = "FVM";
