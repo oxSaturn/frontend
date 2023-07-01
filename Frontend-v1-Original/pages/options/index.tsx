@@ -6,7 +6,7 @@ import { Reward } from "../../components/options/reward";
 import { Convert } from "../../components/options/convert";
 import { PageWrapper } from "../../components/common/PageWrapper";
 
-function Rewards() {
+function Options() {
   return (
     <PageWrapper
       placeholder={
@@ -38,4 +38,4 @@ function Rewards() {
   );
 }
 
-export default Rewards;
+export default Options;
