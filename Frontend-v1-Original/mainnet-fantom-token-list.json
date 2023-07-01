@@ -110,5 +110,14 @@
     "logoURI": "https://assets.coingecko.com/coins/images/24109/large/logo-blue.png",
     "name": "Fantom Bomb",
     "symbol": "fBOMB"
+  },
+  {
+    "address": "0x21Ada0D2aC28C3A5Fa3cD2eE30882dA8812279B6",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://ftmscan.com/token/images/bytemasons_32.png",
+    "name": "OATH",
+    "symbol": "OATH"
   }
+  
 ]
