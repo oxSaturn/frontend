@@ -11,7 +11,8 @@ export function PageWrapper(props: Props) {
       {address ? (
         <div>{props.children}</div>
       ) : (
-        <Paper className="fixed top-0 flex h-[calc(100%-150px)] w-full flex-col flex-wrap items-center justify-center bg-appBackground p-12 text-center shadow-none after:absolute after:top-0 after:left-0 after:hidden after:h-full after:w-full after:bg-waves after:bg-cover after:bg-no-repeat max-lg:my-auto max-lg:mt-24 max-lg:mb-0 after:xs:block lg:h-[100vh] lg:w-full">
+        <Paper className="fixed top-0 flex h-full w-full flex-col flex-wrap items-center justify-center bg-appBackground p-12 text-center shadow-none after:absolute after:top-0 after:left-0 after:hidden after:h-full after:w-full after:bg-waves after:bg-cover after:bg-no-repeat max-lg:my-auto max-lg:mb-0 after:xs:block lg:h-[100vh] lg:w-full">
+          <div className="max-lg:mt-24"></div>
           {props.placeholder}
         </Paper>
       )}
