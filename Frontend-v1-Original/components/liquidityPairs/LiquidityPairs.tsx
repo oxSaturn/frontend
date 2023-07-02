@@ -17,7 +17,7 @@ export default function LiquidityPairs() {
             <Link href="/options" className="underline">
               oFLOW
             </Link>{" "}
-            (Option to buy FLOW)
+            (Option to buy FLOW at a discount)
           </Typography>
         </div>
         {isFetching && <CircularProgress size={20} />}
