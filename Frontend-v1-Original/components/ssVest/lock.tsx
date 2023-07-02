@@ -17,9 +17,10 @@ import BigNumber from "bignumber.js";
 import dayjs from "dayjs";
 import { ArrowBack } from "@mui/icons-material";
 
+import { useGovToken, useVeToken } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 
-import { GovToken, VeToken, VestNFT } from "../../stores/types/types";
+import { GovToken, VestNFT } from "../../stores/types/types";
 
 import VestingInfo from "./vestingInfo";
 import classes from "./ssVest.module.css";
@@ -32,13 +33,7 @@ import {
 } from "./lockDuration";
 import { useCreateVest } from "./lib/mutations";
 
-export default function Lock({
-  govToken,
-  veToken,
-}: {
-  govToken: GovToken | undefined;
-  veToken: VeToken | undefined;
-}) {
+export default function Lock() {
   const inputEl = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
 
@@ -51,6 +46,8 @@ export default function Lock({
     dayjs().add(lockOptions[defaultLockDuration], "days").format("YYYY-MM-DD")
   );
   const [selectedDateError] = useState(false);
+  const { data: govToken } = useGovToken();
+  const { data: veToken } = useVeToken();
 
   const { mutate: createVest, isLoading: lockLoading } = useCreateVest(() => {
     router.push("/vest");
@@ -292,7 +289,7 @@ export default function Lock({
   };
 
   return (
-    <>
+    <div className={classes.vestContainer}>
       <Paper elevation={0} className={classes.container3}>
         <div className={classes.titleSection}>
           <Tooltip title="Back to Vest" placement="top">
@@ -357,6 +354,6 @@ export default function Lock({
       </Paper>
       <br />
       <br />
-    </>
+    </div>
   );
 }
