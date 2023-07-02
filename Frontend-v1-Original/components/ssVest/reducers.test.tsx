@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { reducer } from "./TransferNFT";
+import { transferNftReducer as reducer } from "./reducers";
 
 const blackhole = "0x0000000000000000000000000000000000000000";
 

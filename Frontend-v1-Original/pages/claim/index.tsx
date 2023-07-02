@@ -16,7 +16,7 @@ function Rewards() {
           className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
           variant="body2"
         >
-          Claim your veNFT for 3+ years locked on Fantom
+          Claim your veNFT for 3+ years locked on Canto
         </Typography>
       </div>
       <div className="flex items-center justify-center">
