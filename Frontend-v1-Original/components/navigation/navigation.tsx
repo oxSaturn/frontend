@@ -83,8 +83,10 @@ function Navigation() {
       <Link
         href={"/" + link}
         className={`cursor-pointer select-none appearance-none rounded-lg px-[14px] py-2 text-sm capitalize no-underline outline-0 transition-colors lg:text-base ${
-          active === link ? "bg-cyan text-black hover:text-white" : ""
-        } hover:bg-[hsla(0,0%,100%,.04)]`}
+          active === link
+            ? "bg-cyan text-black"
+            : "hover:bg-[hsla(0,0%,100%,.04)]"
+        }`}
       >
         {title}
       </Link>
