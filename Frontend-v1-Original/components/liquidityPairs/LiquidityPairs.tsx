@@ -1,5 +1,7 @@
 import { Typography, CircularProgress } from "@mui/material";
 
+import Link from "next/link";
+
 import PairsTable from "./LiquidityPairsTable";
 import { useDisplayedPairs } from "./queries";
 
@@ -11,8 +13,11 @@ export default function LiquidityPairs() {
         <div className="flex flex-col gap-1 self-start text-left">
           <Typography variant="h1">Liquidity Pools</Typography>
           <Typography variant="body2">
-            Pair your tokens to provide liquidity. Stake the LP tokens to earn
-            FLOW
+            Pair your tokens to provide liquidity. Stake the LP tokens to earn{" "}
+            <Link href="/options" className="underline">
+              oFLOW
+            </Link>{" "}
+            (Option to buy FLOW)
           </Typography>
         </div>
         {isFetching && <CircularProgress size={20} />}
