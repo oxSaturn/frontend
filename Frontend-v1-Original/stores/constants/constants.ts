@@ -8,7 +8,7 @@ import * as queryKeys from "./queryKeys";
 
 const config = {
   [fantom.id]: {
-    scan: "https://ftm.scan/",
+    scan: "https://ftmscan.com/",
     contracts: contracts,
     nativeETH: {
       address: contracts.ETH_ADDRESS,

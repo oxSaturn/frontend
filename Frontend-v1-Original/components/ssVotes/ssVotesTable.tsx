@@ -629,7 +629,7 @@ const VotesRow = memo(function VotesRow({
                         <>
                           <div className="flex items-center">
                             <a
-                              href={`https://ftm.scan/address/${token.address}`}
+                              href={`https://ftmscan.com/address/${token.address}`}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
