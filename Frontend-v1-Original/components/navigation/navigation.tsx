@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
