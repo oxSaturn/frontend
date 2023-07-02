@@ -56,7 +56,7 @@ module.exports = {
         glow: `0 0 10px 0 ${theme("colors.cyan.DEFAULT")}`,
       }),
       backgroundImage: {
-        waves: 'url("/images/waves2.png")',
+        waves: 'url("/images/waves2.svg")',
       },
     },
   },
