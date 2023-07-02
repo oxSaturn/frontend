@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 import { CONTRACTS } from "../../stores/constants/constants";
 
@@ -11,6 +11,11 @@ import {
   useTvl,
 } from "./lib/queries";
 
+interface InfoItem {
+  label: string;
+  value: string | ReactNode;
+}
+
 export default function Info() {
   const { data: tokenPrices } = useTokenPrices();
   const { data: updateDate } = useActivePeriod();
@@ -19,42 +24,46 @@ export default function Info() {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: mCap } = useMarketCap();
 
+  const infoItems: InfoItem[] = [
+    {
+      label: "TVL",
+      value: `$${formatFinancialData(tvl ?? 0)}`,
+    },
+    {
+      label: "Total Bribe Value",
+      value: `$${formatFinancialData(tbv ?? 0)}`,
+    },
+    {
+      label: "FLOW Price",
+      value: `$${(
+        tokenPrices?.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()) ?? 0
+      ).toFixed(3)}`,
+    },
+    {
+      label: "Market Cap",
+      value: `$${formatFinancialData(mCap ?? 0)}`,
+    },
+    {
+      label: "Circulating Supply",
+      value: formatFinancialData(circulatingSupply ?? 0),
+    },
+    {
+      label: "Next Epoch",
+      value: <Timer deadline={updateDate} />,
+    },
+  ];
+
   return (
-    <div className="flex flex-col items-start gap-1 px-6 pt-2 font-sono md:flex-row md:items-center md:gap-3 md:px-4">
-      <div>
-        <span className="font-normal">TVL: </span>
-        <span className="tracking-tighter">
-          ${formatFinancialData(tvl ?? 0)}
-        </span>
-      </div>
-      <div>
-        <span className="font-normal">TBV: </span>
-        <span className="tracking-tighter">
-          ${formatFinancialData(tbv ?? 0)}
-        </span>
-      </div>
-      <div>
-        <span className="font-normal">$FVM price: </span>
-        <span className="tracking-tighter">
-          $
-          {(
-            tokenPrices?.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()) ?? 0
-          ).toFixed(3)}
-        </span>
-      </div>
-      <div>
-        <span className="font-normal">MCap: </span>
-        <span className="tracking-tighter">
-          ${formatFinancialData(mCap ?? 0)}
-        </span>
-      </div>
-      <div>
-        <span className="font-normal">Circulating Supply: </span>
-        <span className="tracking-tighter">
-          {formatFinancialData(circulatingSupply ?? 0)}
-        </span>
-      </div>
-      <Timer deadline={updateDate} />
+    <div className="grid gap-1 px-[14px] font-sono text-sm md:flex md:flex-row md:items-stretch md:py-3 lg:gap-x-5">
+      {infoItems.map((item) => (
+        <div
+          key={item.label}
+          className="flex w-full items-center justify-between space-x-3 md:grid md:grid-cols-1 md:grid-rows-2 md:items-start md:space-x-0 lg:flex lg:w-auto lg:items-center lg:justify-start lg:gap-x-1"
+        >
+          <span className="font-normal text-gray-500">{item.label}</span>
+          <span className="tracking-tighter">{item.value}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -68,14 +77,11 @@ function Timer({ deadline }: { deadline: number | undefined }) {
   const { days, hours, minutes, seconds } = useTimer(deadline, SECOND);
 
   return (
-    <div>
-      <span className="font-normal">Next Epoch: </span>
-      <span className="tracking-tighter">
-        {days + hours + minutes + seconds <= 0
-          ? "0d_0h_0m"
-          : `${days}d_${hours}h_${minutes}m_${seconds}s`}
-      </span>
-    </div>
+    <>
+      {days + hours + minutes + seconds <= 0
+        ? "0d_0h_0m"
+        : `${days}d_${hours}h_${minutes}m_${seconds}s`}
+    </>
   );
 }
 

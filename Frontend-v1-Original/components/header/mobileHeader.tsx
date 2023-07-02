@@ -19,8 +19,8 @@ function SiteLogo(props: { className?: string }) {
       className={className}
       src="/images/only_fvm_blue.png"
       alt="fvm by velocimeter logo"
-      height={38}
-      width={256}
+      height={357}
+      width={1200}
     />
   );
 }
@@ -44,7 +44,7 @@ function Header() {
             onClick={() => router.push("/home")}
             className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-5"
           >
-            <SiteLogo />
+            <SiteLogo className="h-[38px] w-auto" />
           </a>
           <button onClick={() => setOpen((prev) => !prev)}>
             {open ? <Close /> : <MenuIcon />}
@@ -56,13 +56,13 @@ function Header() {
           onClose={() => setOpen(false)}
           className="relative md:hidden"
           PaperProps={{
-            className: "flex flex-col items-start py-5 px-6 space-y-2",
+            className: "flex flex-col items-start py-5 px-6",
           }}
           data-rk
         >
           <button
             onClick={() => setOpen(false)}
-            className="absolute top-0 right-6 flex h-[78px] cursor-pointer items-center"
+            className="absolute top-5 right-5 flex h-[40px] cursor-pointer items-center"
           >
             <Close />
           </button>
@@ -90,7 +90,9 @@ function Header() {
               </IconButton>
             )}
           </div>
+          <div className="h-10"></div>
           <Navigation />
+          <div className="h-10"></div>
           <Info />
           <TransactionQueue />
         </Drawer>
