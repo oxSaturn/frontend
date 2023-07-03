@@ -298,6 +298,7 @@ export const getRewardBalances = async (
   });
 
   const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward" and defined token symbol of reward
+  const hashSet = new Set<`0x${string}`>();
 
   for (let j = 0; j < filteredPairs2.length; j++) {
     let pair = Object.assign({}, filteredPairs2[j]);
@@ -310,7 +311,10 @@ export const getRewardBalances = async (
           } else {
             pair.rewardsToClaim.push(reward);
           }
-          filteredRewards.push(pair);
+          if (!hashSet.has(pair.address)) {
+            hashSet.add(pair.address);
+            filteredRewards.push(pair);
+          }
         }
       }
     }
