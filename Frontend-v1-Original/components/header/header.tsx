@@ -7,7 +7,6 @@ import Navigation from "../navigation/navigation";
 import TransactionQueue, {
   useTransactionStore,
 } from "../transactionQueue/transactionQueue";
-import useScrollPosition from "../../hooks/useScrollPosition";
 
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
@@ -28,19 +27,11 @@ function SiteLogo(props: { className?: string }) {
 function Header() {
   const router = useRouter();
 
-  const scrollPosition = useScrollPosition();
-
   const { openQueue, transactions } = useTransactionStore();
 
   return (
     <>
-      <div
-        className={`grid w-full grid-flow-row border-primary border-opacity-50 transition-all duration-200 ${
-          scrollPosition > 0
-            ? "border-b-[0.25px] bg-[rgba(0,0,0,0.973)] opacity-90 backdrop-blur-2xl"
-            : "border-b-0 border-none"
-        }`}
-      >
+      <div className="grid w-full grid-flow-row">
         <Info />
         <div className="flex min-h-[60px] items-center justify-between rounded-none border-none px-5">
           <a
