@@ -18,7 +18,7 @@ export default function Layout({
   const { switchNetwork } = useSwitchNetwork({ chainId: fantom.id });
 
   return (
-    <div className="relative flex h-full min-h-screen w-full max-w-[100vw] flex-col lg:flex-row">
+    <div className="relative flex h-full min-h-screen w-full max-w-[100vw] flex-col overflow-x-hidden md:overflow-x-auto lg:flex-row">
       <Head>
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
