@@ -89,7 +89,7 @@ const useLocalAssets = () => {
   });
 };
 
-const getInitBaseAssets = (localBaseAssets: BaseAsset[] | undefined) => {
+export const getInitBaseAssets = (localBaseAssets?: BaseAsset[]) => {
   const baseAssets: BaseAsset[] = tokenlist.map((asset) => {
     return {
       ...asset,

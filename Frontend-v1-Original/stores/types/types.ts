@@ -74,6 +74,12 @@ interface Pair {
   token0: RouteAsset | BaseAsset; //TODO check if this is correct
   token1: RouteAsset | BaseAsset;
   rewardType?: string;
+  rewardsToClaim?: {
+    earned: `${number}`;
+    address: `0x${string}`;
+    symbol: string;
+    decimals: number;
+  }[];
   claimable0?: string;
   claimable1?: string;
   balance?: string;
@@ -102,11 +108,21 @@ interface Pair {
     reserve1?: string;
     weight?: string;
     weightPercent?: string;
-    rewardsEarned?: string;
-    BLOTR_rewardsEarned?: string;
     x_bribesEarned?: Bribe[];
     xx_bribesEarned?: Bribe[];
     bribesEarnedValue?: BribeEarned[];
+    rewardTokens?: {
+      address: `0x${string}`;
+      symbol: string;
+      decimals: number;
+    }[];
+    rewardsEarned?: {
+      earned: `${number}`;
+      address: `0x${string}`;
+      symbol: string;
+      decimals: number;
+    }[];
+    bribesEarned?: Bribe[];
   };
   gaugebribes?: Bribe[];
 }
@@ -136,7 +152,6 @@ interface Rewards {
   xBribes: Gauge[];
   xxBribes: Gauge[];
   rewards: Gauge[];
-  oBlotrRewards: Gauge[];
   veDist: VeDistReward[];
 }
 

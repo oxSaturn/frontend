@@ -56,18 +56,15 @@ export default function Rewards() {
       data.xBribes &&
       data.xxBribes &&
       data.rewards &&
-      data.oBlotrRewards &&
       data.veDist &&
       data.xBribes.length >= 0 &&
       data.xxBribes.length >= 0 &&
-      data.rewards.length >= 0 &&
-      data.oBlotrRewards.length >= 0
+      data.rewards.length >= 0
     ) {
       return [
         ...data.xxBribes,
         ...data.xBribes,
         ...data.rewards,
-        ...data.oBlotrRewards,
         ...data.veDist,
       ];
     }
