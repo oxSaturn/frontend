@@ -257,7 +257,6 @@ const claimAllRewards = async (
 
   let claimTXID = getTXUUID();
   let rewardClaimTXIDs: string[] = [];
-  let oblotr_rewardClaimTXIDs: string[] = [];
   let distributionClaimTXIDs: string[] = [];
 
   let bribePairs = (rewards as Gauge[]).filter((pair) => {
