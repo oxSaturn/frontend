@@ -118,6 +118,13 @@
     "logoURI": "https://pbs.twimg.com/profile_images/1673751872950108160/W8-EMVVE_400x400.jpg",
     "name": "OATH",
     "symbol": "OATH"
+  },
+  {
+    "address": "0xE5a4c0af6F5f7Ab5d6C1D38254bCf4Cc26d688ed",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://moonmasters.mypinata.cloud/ipfs/QmWTSjcjffhJKas33GHMcLbmjSEKq3wVvKroCZAAmyxoVd?_gl=1*6u6dcd*_ga*MzUwMzA0ODk0LjE2ODYwNjI5ODM.*_ga_5RMPXG14TE*MTY4ODM2MjA3MS4yLjEuMTY4ODM2MjA3Ni41NS4wLjA",
+    "name": "Moon Bay",
+    "symbol": "BAY"
   }
-  
 ]
