@@ -29,3 +29,6 @@ tsconfig.tsbuildinfo
 .env.*
 
 lib/wagmiGen.ts
+/test-results/
+/playwright-report/
+/playwright/.cache/
