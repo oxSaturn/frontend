@@ -3,7 +3,7 @@ import { react } from "@wagmi/cli/plugins";
 import { erc20ABI } from "wagmi";
 
 import { airdropClaimABI } from "./stores/abis/abis";
-import { PRO_OPTIONS } from "./stores/constants/constants";
+import { CONTRACTS, PRO_OPTIONS } from "./stores/constants/constants";
 import { flowConvertorABI } from "./stores/abis/flowConvertorABI";
 
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
     {
       name: "AirdropClaim",
       abi: airdropClaimABI,
-      address: "0x3339ab188839C31a9763352A5a0B7Fb05876BC44",
+      address: CONTRACTS.AIRDROP_CLAIM,
     },
     {
       name: "ERC20",

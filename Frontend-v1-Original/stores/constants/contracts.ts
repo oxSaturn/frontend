@@ -62,5 +62,7 @@ export const STABLE_TOKEN_ADDRESS =
   "0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07"; // pulse
 
 export const MSIG_ADDRESS = "0xa3082df7a11071db5ed0e02d48bca5f471ddbaf4"; // pulse
+export const MINT_TANK = "0xbB7bbd0496c23B7704213D6dbbe5C39eF8584E45"; // fantom
+export const AIRDROP_CLAIM = "0x3339ab188839C31a9763352A5a0B7Fb05876BC44"; // fantom
 
 //LFG
