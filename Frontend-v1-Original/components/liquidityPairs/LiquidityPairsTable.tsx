@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   Skeleton,
   Paper,
@@ -33,6 +34,7 @@ import {
   KeyboardArrowUp,
   KeyboardArrowDown,
   OpenInNewOutlined,
+  LocalFireDepartmentOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -220,25 +222,27 @@ const EnhancedTableToolbar = ({
           />
         </div>
         <ul className="flex flex-wrap gap-2 xs:flex-nowrap">
-          {["all", "deposited", "stable", "volatile"].map((filterOption) => (
-            <li key={filterOption}>
-              <input
-                type="radio"
-                id={filterOption}
-                name="filter"
-                value={filterOption}
-                checked={filter === filterOption}
-                onChange={onChange}
-                className="peer hidden"
-              />
-              <label
-                htmlFor={filterOption}
-                className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
-              >
-                <div className="uppercase">{filterOption}</div>
-              </label>
-            </li>
-          ))}
+          {["all", "boosted", "deposited", "stable", "volatile"].map(
+            (filterOption) => (
+              <li key={filterOption}>
+                <input
+                  type="radio"
+                  id={filterOption}
+                  name="filter"
+                  value={filterOption}
+                  checked={filter === filterOption}
+                  onChange={onChange}
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={filterOption}
+                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
+                >
+                  <span className="uppercase">{filterOption}</span>
+                </label>
+              </li>
+            )
+          )}
         </ul>
       </div>
     </Toolbar>
@@ -356,11 +360,11 @@ export default function EnhancedTable({
               return false;
             }
           }
-          // if (filter === "boosted") {
-          //   if (!pair.oblotr_apr) {
-          //     return false;
-          //   }
-          // }
+          if (filter === "boosted") {
+            if (!pair.oblotr_apr) {
+              return false;
+            }
+          }
           return true;
         }),
     [pairs, filter, search]
@@ -853,6 +857,17 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             {row.isAliveGauge === false && (
               <Tooltip title="Gauge has been killed">
                 <WarningOutlined className="ml-2 text-base text-yellow-300" />
+              </Tooltip>
+            )}
+            {row.oblotr_apr > 0 && (
+              <Tooltip
+                title={`oFVM APR BOOST ${row.oblotr_apr.toFixed(
+                  2
+                )}%. Use at Options page`}
+              >
+                <Link href={`/options`}>
+                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+                </Link>
               </Tooltip>
             )}
             <Typography variant="h2" className="text-xs font-extralight">
