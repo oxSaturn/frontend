@@ -145,58 +145,63 @@ export const getRewardBalances = async (
 
   const tokens = getInitBaseAssets();
 
-  for (const pair of filteredPairs2) {
-    const rewardNumber = await viemClient.readContract({
-      address: pair.gauge.address,
-      abi: CONTRACTS.GAUGE_ABI,
-      functionName: "rewardsListLength",
-    });
-    const rewardTokens: {
-      address: `0x${string}`;
-      symbol: string;
-      decimals: number;
-    }[] = [];
-    for (let i = 0n; i < rewardNumber; i++) {
-      const rewardToken = await viemClient.readContract({
+  await Promise.all(
+    filteredPairs2.map(async (pair) => {
+      const rewardNumber = await viemClient.readContract({
         address: pair.gauge.address,
         abi: CONTRACTS.GAUGE_ABI,
-        functionName: "rewards",
-        args: [i],
+        functionName: "rewardsListLength",
       });
-      const baseRewardToken = tokens.find(
-        (token) => token.address.toLowerCase() === rewardToken.toLowerCase()
+      const rewardTokens: {
+        address: `0x${string}`;
+        symbol: string;
+        decimals: number;
+      }[] = [];
+      const arr = Array.from({ length: Number(rewardNumber) }, (_, i) => i);
+      await Promise.all(
+        arr.map(async (i) => {
+          const rewardToken = await viemClient.readContract({
+            address: pair.gauge.address,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "rewards",
+            args: [BigInt(i)],
+          });
+          const baseRewardToken = tokens.find(
+            (token) => token.address.toLowerCase() === rewardToken.toLowerCase()
+          );
+          if (baseRewardToken) {
+            rewardTokens.push({
+              address: baseRewardToken.address,
+              symbol: baseRewardToken.symbol,
+              decimals: baseRewardToken.decimals,
+            });
+          } else {
+            const [symbol, decimals] = await viemClient.multicall({
+              allowFailure: false,
+              contracts: [
+                {
+                  address: rewardToken,
+                  abi: CONTRACTS.ERC20_ABI,
+                  functionName: "symbol",
+                },
+                {
+                  address: rewardToken,
+                  abi: CONTRACTS.ERC20_ABI,
+                  functionName: "decimals",
+                },
+              ],
+            });
+            rewardTokens.push({
+              address: rewardToken,
+              symbol: symbol,
+              decimals: Number(decimals),
+            });
+          }
+        })
       );
-      if (baseRewardToken) {
-        rewardTokens.push({
-          address: baseRewardToken.address,
-          symbol: baseRewardToken.symbol,
-          decimals: baseRewardToken.decimals,
-        });
-      } else {
-        const [symbol, decimals] = await viemClient.multicall({
-          allowFailure: false,
-          contracts: [
-            {
-              address: rewardToken,
-              abi: CONTRACTS.ERC20_ABI,
-              functionName: "symbol",
-            },
-            {
-              address: rewardToken,
-              abi: CONTRACTS.ERC20_ABI,
-              functionName: "decimals",
-            },
-          ],
-        });
-        rewardTokens.push({
-          address: rewardToken,
-          symbol: symbol,
-          decimals: Number(decimals),
-        });
-      }
-    }
-    pair.gauge.rewardTokens = rewardTokens;
-  }
+      pair.gauge.rewardTokens = rewardTokens;
+    })
+  );
 
   const rewardsCalls = filteredPairs2.flatMap((pair) => {
     if (!pair.gauge.rewardTokens) throw new Error("rewardTokens not found");
