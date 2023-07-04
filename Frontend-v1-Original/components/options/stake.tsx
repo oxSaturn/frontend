@@ -54,6 +54,7 @@ export function Stake() {
     stakedLockEnd,
     totalStakedValue,
     paymentTokenBalanceToDistribute,
+    paymentTokenToDistributeValue,
   } = useStakeData();
 
   const { data: tokenAprs } = useGaugeApr();
@@ -247,7 +248,11 @@ export function Stake() {
         </div>
         <div className="flex items-center justify-between">
           <div>{paymentTokenSymbol} reward</div>
-          <div>${formatCurrency(paymentTokenBalanceToDistribute ?? 0)}</div>
+          <div>
+            {paymentTokenToDistributeValue === undefined
+              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
+              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>

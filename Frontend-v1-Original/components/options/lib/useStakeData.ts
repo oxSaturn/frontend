@@ -81,6 +81,15 @@ export function useStakeData() {
     stakedBalanceWithLock
   );
 
+  const paymentTokenBalanceToDistribute =
+    paymentTokenBalanceInOption && paymentTokenLeftInGauge
+      ? parseFloat(paymentTokenLeftInGauge) +
+        parseFloat(paymentTokenBalanceInOption.formatted)
+      : undefined;
+
+  const { data: paymentTokenToDistributeValue } =
+    usePaymentTokenToDistributeValue(paymentTokenBalanceToDistribute);
+
   return {
     ...gaugeTotalStakedData,
     pair,
@@ -89,17 +98,41 @@ export function useStakeData() {
     stakedBalanceWithoutLock,
     stakedBalanceWithLock,
     stakedLockEnd,
-    paymentTokenBalanceToDistribute:
-      paymentTokenBalanceInOption && paymentTokenLeftInGauge
-        ? parseFloat(paymentTokenLeftInGauge) +
-          parseFloat(paymentTokenBalanceInOption.formatted)
-        : undefined,
+    paymentTokenBalanceToDistribute,
+    paymentTokenToDistributeValue,
     refetch: () => {
       refetchPooledBalance();
       refetchStakedBalance();
       refetchStakedBalanceWithLock();
     },
   };
+}
+
+function usePaymentTokenToDistributeValue(
+  paymentTokenBalanceToDistribute: number | undefined
+) {
+  const { paymentTokenAddress } = useTokenData();
+  const { data: tokenPrices } = useTokenPrices();
+  return useQuery({
+    queryKey: [
+      "paymentTokenBalanceToDistributeValue",
+      tokenPrices,
+      paymentTokenAddress,
+      paymentTokenBalanceToDistribute,
+    ],
+    queryFn: () =>
+      getPaymentTokenToDistributeValue(
+        paymentTokenAddress,
+        paymentTokenBalanceToDistribute,
+        tokenPrices
+      ),
+    enabled:
+      !!tokenPrices &&
+      !!paymentTokenBalanceToDistribute &&
+      !!paymentTokenAddress,
+    keepPreviousData: true,
+    retry: false,
+  });
 }
 
 export function useTotalStaked(
@@ -189,4 +222,23 @@ function getTotalStaked(
     stakedWithoutLockValue,
     stakedWithLockValue,
   };
+}
+
+function getPaymentTokenToDistributeValue(
+  paymentTokenAddress: `0x${string}` | undefined,
+  paymentTokenBalanceToDistribute: number | undefined,
+  tokenPrices: Map<string, number> | undefined
+) {
+  if (
+    !paymentTokenBalanceToDistribute ||
+    !tokenPrices ||
+    !paymentTokenAddress
+  ) {
+    throw new Error("Payment token balance to distribute value error");
+  }
+  const price = tokenPrices.get(paymentTokenAddress.toLowerCase());
+  if (!price) {
+    throw new Error("Payment token price not found");
+  }
+  return paymentTokenBalanceToDistribute * price;
 }
