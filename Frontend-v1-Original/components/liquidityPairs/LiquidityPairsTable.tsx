@@ -238,7 +238,7 @@ const EnhancedTableToolbar = ({
                   htmlFor={filterOption}
                   className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
                 >
-                  <div className="uppercase">{filterOption}</div>
+                  <span className="uppercase">{filterOption}</span>
                 </label>
               </li>
             )
