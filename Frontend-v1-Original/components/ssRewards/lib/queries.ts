@@ -6,7 +6,12 @@ import viemClient, {
   chunkArray,
   multicallChunks,
 } from "../../../stores/connectors/viem";
-import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
+import {
+  CONTRACTS,
+  PRO_OPTIONS,
+  QUERY_KEYS,
+  ZERO_ADDRESS,
+} from "../../../stores/constants/constants";
 import {
   hasGauge,
   VeDistReward,
@@ -209,8 +214,9 @@ export const getRewardBalances = async (
 
   await Promise.all(
     filteredPairs2.map(async (pair) => {
+      const gaugeAddress = pair.gauge.address;
       const rewardNumber = await viemClient.readContract({
-        address: pair.gauge.address,
+        address: gaugeAddress,
         abi: CONTRACTS.GAUGE_ABI,
         functionName: "rewardsListLength",
       });
@@ -222,19 +228,51 @@ export const getRewardBalances = async (
       const arr = Array.from({ length: Number(rewardNumber) }, (_, i) => i);
       await Promise.all(
         arr.map(async (i) => {
-          const rewardToken = await viemClient.readContract({
-            address: pair.gauge.address,
-            abi: CONTRACTS.GAUGE_ABI,
-            functionName: "rewards",
-            args: [BigInt(i)],
+          const [rewardToken, oFlow] = await viemClient.multicall({
+            allowFailure: false,
+            contracts: [
+              {
+                address: gaugeAddress,
+                abi: CONTRACTS.GAUGE_ABI,
+                functionName: "rewards",
+                args: [BigInt(i)],
+              },
+              {
+                address: gaugeAddress,
+                abi: CONTRACTS.GAUGE_ABI,
+                functionName: "oFlow",
+              },
+            ],
           });
+          let hasRole = false;
+          if (
+            rewardToken.toLowerCase() ===
+            CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+          ) {
+            hasRole = await viemClient.readContract({
+              address: PRO_OPTIONS.oFVM.tokenAddress,
+              abi: PRO_OPTIONS.optionTokenABI,
+              functionName: "hasRole",
+              args: [
+                "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9",
+                gaugeAddress,
+              ],
+            });
+          }
           const baseRewardToken = tokens.find(
             (token) => token.address.toLowerCase() === rewardToken.toLowerCase()
           );
+          // we only check symbol in baseRewardTokenCase because we know for sure that govToken is going to be there
           if (baseRewardToken) {
             rewardTokens.push({
               address: baseRewardToken.address,
-              symbol: baseRewardToken.symbol,
+              symbol:
+                oFlow !== ZERO_ADDRESS &&
+                hasRole &&
+                baseRewardToken.address.toLowerCase() ===
+                  CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+                  ? `o${baseRewardToken.symbol}`
+                  : baseRewardToken.symbol,
               decimals: baseRewardToken.decimals,
             });
           } else {
