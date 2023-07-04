@@ -27,7 +27,7 @@ export function Reward() {
     return earnedRewards?.map((reward) => reward.address);
   }, [earnedRewards]);
 
-  const { underlyingTokenSymbol } = useTokenData();
+  const { underlyingTokenSymbol, refetchBalances } = useTokenData();
 
   const { data: gaugeAddress } = useOptionTokenGauge();
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
@@ -46,6 +46,7 @@ export function Reward() {
     onSuccess: () => {
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
       refetchEarnedReward();
+      refetchBalances();
     },
   });
 
