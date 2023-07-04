@@ -126,5 +126,13 @@
     "logoURI": "https://moonmasters.mypinata.cloud/ipfs/QmWTSjcjffhJKas33GHMcLbmjSEKq3wVvKroCZAAmyxoVd",
     "name": "Moon Bay",
     "symbol": "BAY"
+  },
+  {
+    "address": "0xce1e3cc1950d2aaeb47de04de2dec2dc86380e0a",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29744/large/ERN200x200.png",
+    "name": "Ethos Reserve Note",
+    "symbol": "ERN"
   }
 ]
