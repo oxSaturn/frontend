@@ -97,7 +97,15 @@ export default function Lock() {
       const now = dayjs();
       const expiry = dayjs(selectedDate).add(1, "days");
       const secondsToExpire = expiry.diff(now, "seconds");
-      createVest({ amount, unlockTime: secondsToExpire.toString() });
+      const maxLockDurationInSeconds =
+        lockOptions[maxLockDuration] * 24 * 60 * 60;
+      createVest({
+        amount,
+        unlockTime: (secondsToExpire > maxLockDurationInSeconds
+          ? maxLockDurationInSeconds
+          : secondsToExpire
+        ).toString(),
+      });
     }
   };
 
