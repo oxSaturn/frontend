@@ -20,6 +20,9 @@ const pulsechainRpc = http("https://rpc.pulsechain.com");
 const client = createPublicClient({
   chain: pulsechain,
   transport: pulsechainRpc,
+  batch: {
+    multicall: true,
+  },
 });
 
 // rainbow kit set up
