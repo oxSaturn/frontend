@@ -7,6 +7,14 @@
     "name": "Wrapped FTM",
     "symbol": "WFTM"
   },
+    {
+    "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/13422/small/FRAX_icon.png?1679886922",
+    "name": "FRAX",
+    "symbol": "FRAX"
+  },
   {
     "address": "0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E",
     "chainId": 250,
