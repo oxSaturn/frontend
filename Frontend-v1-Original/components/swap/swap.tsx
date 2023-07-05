@@ -20,8 +20,8 @@ import {
 import type { BaseAsset } from "../../stores/types/types";
 import { useTokenPrices } from "../header/lib/queries";
 
-import { useSwapAssets, _useQuote } from "./lib/queries";
-import { _useSwap, useWrapOrUnwrap } from "./lib/mutations";
+import { useSwapAssets, useQuote } from "./lib/queries";
+import { useSwap, useWrapOrUnwrap } from "./lib/mutations";
 import { RoutesDialog } from "./routes";
 import { usePriceDiff } from "./lib/usePriceDiff";
 import { useIsWrapUnwrap } from "./lib/useIsWrapUnwrap";
@@ -71,7 +71,7 @@ function Swap() {
   const { data: tokenPrices } = useTokenPrices();
   const { data: swapAssetsOptions } = useSwapAssets();
 
-  const { mutate: swap, isLoading: loadingSwap } = _useSwap(swapReturned);
+  const { mutate: swap, isLoading: loadingSwap } = useSwap(swapReturned);
   const { mutate: wrapOrUnwrap, isLoading: loadingWrapOrUnwrap } =
     useWrapOrUnwrap(swapReturned);
 
@@ -82,10 +82,11 @@ function Swap() {
     isFetching: quoteLoading,
     data: quote,
     remove: removeQuote,
-  } = _useQuote({
+  } = useQuote({
     fromAssetValue,
     toAssetValue,
     fromAmountValue,
+    slippage,
     setToAmountValue,
     setToAmountValueUsd,
     loadingTrade,
@@ -265,8 +266,6 @@ function Swap() {
         quote,
         fromAsset: fromAssetValue,
         toAsset: toAssetValue,
-        fromAmount: fromAmountValue,
-        slippage,
       });
     }
   };
@@ -375,7 +374,12 @@ function Swap() {
         </div>
       );
     }
-
+    const totalFromInEth = fromAssetValue
+      ? BigNumber(quote.maxReturn.totalFrom).div(10 ** fromAssetValue.decimals)
+      : BigNumber(0);
+    const totalToInEth = toAssetValue
+      ? BigNumber(quote.maxReturn.totalTo).div(10 ** toAssetValue.decimals)
+      : BigNumber(0);
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-primary">
@@ -385,9 +389,7 @@ function Swap() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.inputs.fromAmount)
-                  .div(quote.output.finalValue ?? "0")
-                  .toFixed(18)
+                BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-secondary">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
@@ -395,24 +397,12 @@ function Swap() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.output.finalValue ?? "0")
-                  .div(quote.inputs.fromAmount)
-                  .toFixed(18)
+                BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-secondary">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
-        {BigNumber(quote.priceImpact).gt(5) && (
-          <>
-            <Typography
-              className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500"
-              align="center"
-            >
-              Price impact {formatCurrency(quote.priceImpact)}%
-            </Typography>
-          </>
-        )}
         {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
           (parseFloat(fromAmountValueUsd) > 0 &&
             parseFloat(toAmountValueUsd) === 0)) && (
@@ -539,11 +529,28 @@ function Swap() {
               )}
             </Button>
           </div>
+          <div className="mt-2 text-end text-xs">
+            <span className="align-middle text-secondary">Powered by </span>
+            <a
+              href="https://firebird.finance/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
+            >
+              <img
+                src="/images/logo-firebird.svg"
+                className="inline"
+                alt="firebird protocol logo"
+              />{" "}
+              <span className="align-middle">Firebird</span>
+            </a>
+          </div>
         </div>
         <RoutesDialog
           onClose={() => setRoutesOpen(false)}
           open={routesOpen}
-          paths={quote}
+          paths={quote?.maxReturn.paths}
+          tokens={quote?.maxReturn.tokens}
           fromAssetValue={fromAssetValue}
           fromAmountValue={fromAmountValue}
           toAssetValue={toAssetValue}
