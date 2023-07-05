@@ -7,7 +7,7 @@
     "name": "Wrapped FTM",
     "symbol": "WFTM"
   },
-    {
+  {
     "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355",
     "chainId": 250,
     "decimals": 18,
@@ -32,7 +32,7 @@
     "symbol": "WETH"
   },
   {
-    "address": "0x4385588ceb7cE866F871a8fb83898DC14089f359",
+    "address": "0xf1648C50d2863f780c57849D812b4B7686031A3D",
     "chainId": 250,
     "decimals": 8,
     "logoURI": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png",
@@ -96,7 +96,7 @@
     "symbol": "MPX"
   },
   {
-    "address": "0xA187a431fC7eb96D52f972b08000b12cfF8EcC33",
+    "address": "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
@@ -104,7 +104,7 @@
     "symbol": "USDC"
   },
   {
-    "address": "0xE79d22C33a37EA9E0Bda0226e0Eae2f98AE0E393",
+    "address": "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
