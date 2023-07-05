@@ -150,5 +150,13 @@
     "logoURI": "https://assets.coingecko.com/coins/images/29740/large/Grain.png",
     "name": "Granary",
     "symbol": "GRAIN"
+  },
+  {
+    "address": "0x3129662808bEC728a27Ab6a6b9AFd3cBacA8A43c",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/14287/large/dola.png",
+    "name": "DOLA",
+    "symbol": "DOLA"
   }
 ]
