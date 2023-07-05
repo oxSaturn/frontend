@@ -73,7 +73,7 @@ interface Pair {
   totalSupply: number | string; // gets reassigned to string in frontend store
   token0: RouteAsset | BaseAsset; //TODO check if this is correct
   token1: RouteAsset | BaseAsset;
-  rewardType?: string;
+  rewardType?: "XXBribe" | "XBribe" | "Reward";
   rewardsToClaim?: {
     earned: `${number}`;
     address: `0x${string}`;

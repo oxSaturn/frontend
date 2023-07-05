@@ -231,8 +231,9 @@ export default function EnhancedTable({
                     >
                       <TableCell>
                         {isGaugeReward(row) &&
-                          ["XBribe", "XXBribe", "Reward"].includes(
-                            row.rewardType ?? ""
+                          row.rewardType &&
+                          (["XBribe", "XXBribe", "Reward"] as const).includes(
+                            row.rewardType
                           ) && (
                             <div className="flex items-center">
                               <div className="relative flex h-9 w-[70px]">

@@ -6,12 +6,7 @@ import viemClient, {
   chunkArray,
   multicallChunks,
 } from "../../../stores/connectors/viem";
-import {
-  CONTRACTS,
-  PRO_OPTIONS,
-  QUERY_KEYS,
-  ZERO_ADDRESS,
-} from "../../../stores/constants/constants";
+import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
 import {
   hasGauge,
   VeDistReward,
@@ -225,40 +220,15 @@ export const getRewardBalances = async (
         symbol: string;
         decimals: number;
       }[] = [];
-      const arr = Array.from({ length: Number(rewardNumber) }, (_, i) => i);
+      const arr = [...Array(Number(rewardNumber)).keys()];
       await Promise.all(
         arr.map(async (i) => {
-          const [rewardToken, oFlow] = await viemClient.multicall({
-            allowFailure: false,
-            contracts: [
-              {
-                address: gaugeAddress,
-                abi: CONTRACTS.GAUGE_ABI,
-                functionName: "rewards",
-                args: [BigInt(i)],
-              },
-              {
-                address: gaugeAddress,
-                abi: CONTRACTS.GAUGE_ABI,
-                functionName: "oFlow",
-              },
-            ],
+          const rewardToken = await viemClient.readContract({
+            address: gaugeAddress,
+            abi: CONTRACTS.GAUGE_ABI,
+            functionName: "rewards",
+            args: [BigInt(i)],
           });
-          let hasRole = false;
-          if (
-            rewardToken.toLowerCase() ===
-            CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
-          ) {
-            hasRole = await viemClient.readContract({
-              address: PRO_OPTIONS.oFVM.tokenAddress,
-              abi: PRO_OPTIONS.optionTokenABI,
-              functionName: "hasRole",
-              args: [
-                "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9",
-                gaugeAddress,
-              ],
-            });
-          }
           const baseRewardToken = tokens.find(
             (token) => token.address.toLowerCase() === rewardToken.toLowerCase()
           );
@@ -266,13 +236,7 @@ export const getRewardBalances = async (
           if (baseRewardToken) {
             rewardTokens.push({
               address: baseRewardToken.address,
-              symbol:
-                oFlow !== ZERO_ADDRESS &&
-                hasRole &&
-                baseRewardToken.address.toLowerCase() ===
-                  CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
-                  ? `o${baseRewardToken.symbol}`
-                  : baseRewardToken.symbol,
+              symbol: baseRewardToken.symbol,
               decimals: baseRewardToken.decimals,
             });
           } else {
