@@ -153,7 +153,7 @@ const claimBribes = async (
 
 const claimRewards = async (
   account: Address | undefined,
-  options: { pair: Gauge; type: "gov" | "oblotr" }
+  options: { pair: Gauge }
 ) => {
   if (!account) {
     console.warn("account not found");
@@ -166,7 +166,7 @@ const claimRewards = async (
     throw new Error("wallet not found");
   }
 
-  const { pair, type } = options;
+  const { pair } = options;
 
   let claimTXID = getTXUUID();
 
@@ -180,8 +180,9 @@ const claimRewards = async (
     ],
   });
 
-  const targetReward =
-    type === "gov" ? CONTRACTS.GOV_TOKEN_ADDRESS : CONTRACTS.OPTION_TOKEN;
+  const targetRewards = pair.rewardsToClaim?.map((reward) => reward.address);
+
+  if (!targetRewards) throw new Error("No rewards to claim");
 
   const writeGetReward = async () => {
     const { request } = await viemClient.simulateContract({
@@ -189,7 +190,7 @@ const claimRewards = async (
       address: pair.gauge?.address,
       abi: CONTRACTS.GAUGE_ABI,
       functionName: "getReward",
-      args: [account, [targetReward]],
+      args: [account, targetRewards],
     });
     const txHash = await walletClient.writeContract(request);
     return txHash;
@@ -263,7 +264,6 @@ const claimAllRewards = async (
   let claim01TXID = getTXUUID();
   let claim0TXID = getTXUUID();
   let rewardClaimTXIDs: string[] = [];
-  let oblotr_rewardClaimTXIDs: string[] = [];
   let distributionClaimTXIDs: string[] = [];
 
   let xBribePairs = (rewards as Gauge[]).filter((pair) => {
@@ -275,10 +275,6 @@ const claimAllRewards = async (
 
   let rewardPairs = (rewards as Gauge[]).filter((pair) => {
     return pair.rewardType === "Reward";
-  });
-
-  let oBlotrRewardPairs = (rewards as Gauge[]).filter((pair) => {
-    return pair.rewardType === "oBLOTR_Reward";
   });
 
   let distribution = (rewards as VeDistReward[]).filter((pair) => {
@@ -305,8 +301,7 @@ const claimAllRewards = async (
   if (
     xBribePairs.length == 0 &&
     xxBribePairs.length == 0 &&
-    rewardPairs.length == 0 &&
-    oBlotrRewardPairs.length == 0
+    rewardPairs.length == 0
   ) {
     throw new Error("Nothing to claim");
   }
@@ -344,18 +339,6 @@ const claimAllRewards = async (
       sendOBJ.transactions.push({
         uuid: newClaimTX,
         description: `Claiming reward for ${rewardPairs[i].symbol}`,
-        status: TransactionStatus.WAITING,
-      });
-    }
-  }
-  if (oBlotrRewardPairs.length > 0) {
-    for (let i = 0; i < oBlotrRewardPairs.length; i++) {
-      const newClaimTX = getTXUUID();
-
-      oblotr_rewardClaimTXIDs.push(newClaimTX);
-      sendOBJ.transactions.push({
-        uuid: newClaimTX,
-        description: `Claiming reward for ${oBlotrRewardPairs[i].symbol}`,
         status: TransactionStatus.WAITING,
       });
     }
@@ -399,35 +382,24 @@ const claimAllRewards = async (
 
   if (rewardPairs.length > 0) {
     for (let i = 0; i < rewardPairs.length; i++) {
+      const targetRewards = rewardPairs[i].rewardsToClaim?.map(
+        (r) => r.address
+      );
+      if (!targetRewards) {
+        throw new Error("Target rewards not found");
+      }
       const writeGetReward = async () => {
         const { request } = await viemClient.simulateContract({
           account,
           address: rewardPairs[i].gauge.address,
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "getReward",
-          args: [account, [CONTRACTS.GOV_TOKEN_ADDRESS]],
+          args: [account, targetRewards],
         });
         const txHash = await walletClient.writeContract(request);
         return txHash;
       };
       await writeContractWrapper(rewardClaimTXIDs[i], writeGetReward);
-    }
-  }
-
-  if (oBlotrRewardPairs.length > 0) {
-    for (let i = 0; i < oBlotrRewardPairs.length; i++) {
-      const writeGetReward = async () => {
-        const { request } = await viemClient.simulateContract({
-          account,
-          address: oBlotrRewardPairs[i].gauge.address,
-          abi: CONTRACTS.GAUGE_ABI,
-          functionName: "getReward",
-          args: [account, [CONTRACTS.OPTION_TOKEN]],
-        });
-        const txHash = await walletClient.writeContract(request);
-        return txHash;
-      };
-      await writeContractWrapper(oblotr_rewardClaimTXIDs[i], writeGetReward);
     }
   }
 

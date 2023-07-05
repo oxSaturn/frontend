@@ -32,6 +32,9 @@ const client = createPublicClient({
       interval: 30_000,
     },
   }),
+  batch: {
+    multicall: true,
+  },
 });
 
 // rainbow kit set up
