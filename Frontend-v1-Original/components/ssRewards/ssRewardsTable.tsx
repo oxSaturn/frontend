@@ -225,9 +225,9 @@ export default function EnhancedTable({
                       <TableCell>
                         {isGaugeReward(row) &&
                           row.rewardType &&
-                          (
-                            row.rewardType && (["Bribe", "Reward"] as const)
-                          ).includes(row.rewardType) && (
+                          (["Bribe", "Reward"] as const).includes(
+                            row.rewardType
+                          ) && (
                             <div className="flex items-center">
                               <div className="relative flex h-9 w-[70px]">
                                 <img
@@ -284,7 +284,10 @@ export default function EnhancedTable({
                             </div>
                           )}
                         {!isGaugeReward(row) &&
-                          ["Distribution"].includes(row.rewardType ?? "") && (
+                          row.rewardType &&
+                          (["Distribution"] as const).includes(
+                            row.rewardType
+                          ) && (
                             <div className="flex items-center">
                               <div className="relative flex h-9 w-[70px]">
                                 <img
