@@ -73,7 +73,7 @@ interface Pair {
   totalSupply: number;
   token0: RouteAsset | BaseAsset; //TODO check if this is correct
   token1: RouteAsset | BaseAsset;
-  rewardType?: string;
+  rewardType?: "Bribe" | "Reward";
   rewardsToClaim?: {
     earned: `${number}`;
     address: `0x${string}`;
