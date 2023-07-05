@@ -191,7 +191,7 @@ export const getRewardBalances = async (
             CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
           ) {
             hasRole = await viemClient.readContract({
-              address: PRO_OPTIONS.oFVM.tokenAddress,
+              address: PRO_OPTIONS.oFLOW.tokenAddress,
               abi: PRO_OPTIONS.optionTokenABI,
               functionName: "hasRole",
               args: [MINTER_ROLE, gaugeAddress],
