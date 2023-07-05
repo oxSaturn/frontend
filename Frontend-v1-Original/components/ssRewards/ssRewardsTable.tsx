@@ -224,9 +224,10 @@ export default function EnhancedTable({
                     >
                       <TableCell>
                         {isGaugeReward(row) &&
-                          ["Bribe", "Reward"].includes(
-                            row.rewardType ?? ""
-                          ) && (
+                          row.rewardType &&
+                          (
+                            row.rewardType && (["Bribe", "Reward"] as const)
+                          ).includes(row.rewardType) && (
                             <div className="flex items-center">
                               <div className="relative flex h-9 w-[70px]">
                                 <img
@@ -615,13 +616,13 @@ function descendingComparator(
       return 0;
 
     case "balance":
-      if (isGaugeReward(a) && a.rewardType === "XXBribe" && a.gauge.balance) {
+      if (isGaugeReward(a) && a.rewardType === "Bribe" && a.gauge.balance) {
         aAmount = +a.gauge.balance;
       } else if (isGaugeReward(a) && a.balance) {
         aAmount = +a.balance;
       }
 
-      if (isGaugeReward(b) && b.rewardType === "XXBribe" && b.gauge.balance) {
+      if (isGaugeReward(b) && b.rewardType === "Bribe" && b.gauge.balance) {
         bAmount = +b.gauge.balance;
       } else if (isGaugeReward(b) && b.balance) {
         bAmount = +b.balance;
@@ -636,13 +637,13 @@ function descendingComparator(
       return 0;
 
     case "earned":
-      if (a.rewardType === "XXBribe") {
+      if (a.rewardType === "Bribe") {
         aAmount = a.gauge?.bribes.length;
       } else {
         aAmount = 2;
       }
 
-      if (b.rewardType === "XXBribe") {
+      if (b.rewardType === "Bribe") {
         bAmount = b.gauge?.bribes.length;
       } else {
         bAmount = 2;

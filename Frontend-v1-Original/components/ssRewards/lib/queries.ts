@@ -30,6 +30,9 @@ import {
   getInitBaseAssets,
 } from "../../../lib/global/queries";
 
+const MINTER_ROLE =
+  "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9";
+
 export const getRewardBalances = async (
   address: Address | undefined,
   tokenID: string | undefined,
@@ -163,7 +166,7 @@ export const getRewardBalances = async (
         symbol: string;
         decimals: number;
       }[] = [];
-      const arr = Array.from({ length: Number(rewardNumber) }, (_, i) => i);
+      const arr = [...Array(Number(rewardNumber)).keys()];
       await Promise.all(
         arr.map(async (i) => {
           const [rewardToken, oFlow] = await viemClient.multicall({
@@ -191,10 +194,7 @@ export const getRewardBalances = async (
               address: PRO_OPTIONS.oFVM.tokenAddress,
               abi: PRO_OPTIONS.optionTokenABI,
               functionName: "hasRole",
-              args: [
-                "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9",
-                gaugeAddress,
-              ],
+              args: [MINTER_ROLE, gaugeAddress],
             });
           }
           const baseRewardToken = tokens.find(
