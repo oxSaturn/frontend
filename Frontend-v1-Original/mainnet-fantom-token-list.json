@@ -98,7 +98,7 @@
   {
     "address": "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
     "chainId": 250,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
     "name": "USDC Coin",
     "symbol": "USDC"
@@ -106,7 +106,7 @@
   {
     "address": "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
     "chainId": 250,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
     "name": "Tether USD",
     "symbol": "USDT"
