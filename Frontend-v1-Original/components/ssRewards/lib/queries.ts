@@ -1,18 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { deserialize, serialize, useAccount } from "wagmi";
-import {
-  type Address,
-  formatEther,
-  formatUnits,
-  parseEther,
-  parseUnits,
-} from "viem";
+import { type Address, formatUnits, parseUnits } from "viem";
 
 import viemClient, {
   chunkArray,
   multicallChunks,
 } from "../../../stores/connectors/viem";
-import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
+import {
+  CONTRACTS,
+  PRO_OPTIONS,
+  QUERY_KEYS,
+  ZERO_ADDRESS,
+} from "../../../stores/constants/constants";
 import {
   hasGauge,
   VeDistReward,
@@ -28,7 +27,11 @@ import {
   useVeToken,
   usePairsWithGauges,
   useVestNfts,
+  getInitBaseAssets,
 } from "../../../lib/global/queries";
+
+const MINTER_ROLE =
+  "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9";
 
 export const getRewardBalances = async (
   address: Address | undefined,
@@ -61,7 +64,6 @@ export const getRewardBalances = async (
 
   const filteredPairs = structuredClone(gauges);
   const filteredPairs2 = structuredClone(gauges);
-  const filteredPairs3 = structuredClone(gauges);
 
   let veDistReward: VeDistReward[] = [];
   let filteredBribes: Gauge[] = []; // Pair with gauge rewardType set to "Bribe"
@@ -138,10 +140,8 @@ export const getRewardBalances = async (
       return vestNFT.id === tokenID;
     });
 
-    if (veDistEarned > 0) {
+    if (theNFT && veDistEarned > 0) {
       veDistReward.push({
-        // FIXME
-        // @ts-ignore
         token: theNFT[0],
         lockToken: veToken,
         rewardToken: govToken,
@@ -151,22 +151,107 @@ export const getRewardBalances = async (
     }
   }
 
-  const rewardsCalls = filteredPairs2.map((pair) => {
-    return {
-      address: pair.gauge.address,
-      abi: CONTRACTS.GAUGE_ABI,
-      functionName: "earned",
-      args: [CONTRACTS.GOV_TOKEN_ADDRESS, address],
-    } as const;
-  });
+  const tokens = getInitBaseAssets();
 
-  const oBlotrRewardsCalls = filteredPairs2.map((pair) => {
-    return {
-      address: pair.gauge.address,
-      abi: CONTRACTS.GAUGE_ABI,
-      functionName: "earned",
-      args: [CONTRACTS.OPTION_TOKEN_ADDRESS, address],
-    } as const;
+  await Promise.all(
+    filteredPairs2.map(async (pair) => {
+      const gaugeAddress = pair.gauge.address;
+      const rewardNumber = await viemClient.readContract({
+        address: gaugeAddress,
+        abi: CONTRACTS.GAUGE_ABI,
+        functionName: "rewardsListLength",
+      });
+      const rewardTokens: {
+        address: `0x${string}`;
+        symbol: string;
+        decimals: number;
+      }[] = [];
+      const arr = [...Array(Number(rewardNumber)).keys()];
+      await Promise.all(
+        arr.map(async (i) => {
+          const [rewardToken, oFlow] = await viemClient.multicall({
+            allowFailure: false,
+            contracts: [
+              {
+                address: gaugeAddress,
+                abi: CONTRACTS.GAUGE_ABI,
+                functionName: "rewards",
+                args: [BigInt(i)],
+              },
+              {
+                address: gaugeAddress,
+                abi: CONTRACTS.GAUGE_ABI,
+                functionName: "oFlow",
+              },
+            ],
+          });
+          let hasRole = false;
+          if (
+            rewardToken.toLowerCase() ===
+            CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+          ) {
+            hasRole = await viemClient.readContract({
+              address: PRO_OPTIONS.oFVM.tokenAddress,
+              abi: PRO_OPTIONS.optionTokenABI,
+              functionName: "hasRole",
+              args: [MINTER_ROLE, gaugeAddress],
+            });
+          }
+          const baseRewardToken = tokens.find(
+            (token) => token.address.toLowerCase() === rewardToken.toLowerCase()
+          );
+          // we only check symbol in baseRewardTokenCase because we know for sure that govToken is going to be there
+          if (baseRewardToken) {
+            rewardTokens.push({
+              address: baseRewardToken.address,
+              symbol:
+                oFlow !== ZERO_ADDRESS &&
+                hasRole &&
+                baseRewardToken.address.toLowerCase() ===
+                  CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
+                  ? `o${baseRewardToken.symbol}`
+                  : baseRewardToken.symbol,
+              decimals: baseRewardToken.decimals,
+            });
+          } else {
+            const [symbol, decimals] = await viemClient.multicall({
+              allowFailure: false,
+              contracts: [
+                {
+                  address: rewardToken,
+                  abi: CONTRACTS.ERC20_ABI,
+                  functionName: "symbol",
+                },
+                {
+                  address: rewardToken,
+                  abi: CONTRACTS.ERC20_ABI,
+                  functionName: "decimals",
+                },
+              ],
+            });
+            rewardTokens.push({
+              address: rewardToken,
+              symbol: symbol,
+              decimals: Number(decimals),
+            });
+          }
+        })
+      );
+      pair.gauge.rewardTokens = rewardTokens;
+    })
+  );
+
+  const rewardsCalls = filteredPairs2.flatMap((pair) => {
+    if (!pair.gauge.rewardTokens) throw new Error("rewardTokens not found");
+    return pair.gauge.rewardTokens.map(
+      (rewardToken) =>
+        ({
+          address: pair.gauge.address,
+          abi: CONTRACTS.GAUGE_ABI,
+          functionName: "earned",
+          args: [rewardToken.address, address],
+        } as const)
+    );
   });
 
   const rewardsEarnedCallResult = await viemClient.multicall({
@@ -174,58 +259,50 @@ export const getRewardBalances = async (
     contracts: rewardsCalls,
   });
 
-  const oBlotrRewardsEarnedCallResult = await viemClient.multicall({
-    allowFailure: false,
-    contracts: oBlotrRewardsCalls,
+  filteredPairs2.forEach((pair) => {
+    const earnedRewardsPair = rewardsEarnedCallResult.splice(
+      0,
+      pair.gauge.rewardTokens!.length
+    );
+    pair.gauge.rewardsEarned = pair.gauge.rewardTokens!.map(
+      (rewardToken, i) => {
+        return {
+          ...rewardToken,
+          earned: formatUnits(
+            earnedRewardsPair[i],
+            rewardToken.decimals
+          ) as `${number}`,
+        };
+      }
+    );
   });
 
-  const rewardsEarned = [...filteredPairs2];
+  const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward" and defined token symbol of reward
+  const hashSet = new Set<`0x${string}`>();
 
-  const oBlotrRewardsEarned = [...filteredPairs3];
-
-  for (let i = 0; i < rewardsEarned.length; i++) {
-    rewardsEarned[i].gauge.rewardsEarned = formatEther(
-      rewardsEarnedCallResult[i]
-    );
-  }
-
-  for (let i = 0; i < oBlotrRewardsEarned.length; i++) {
-    oBlotrRewardsEarned[i].gauge.BLOTR_rewardsEarned = formatEther(
-      oBlotrRewardsEarnedCallResult[i]
-    );
-  }
-
-  const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward"
-  const oBlotrFilteredRewards: Gauge[] = []; // Pair with rewardType set to "oReward"
-
-  for (let j = 0; j < rewardsEarned.length; j++) {
-    let pair = Object.assign({}, rewardsEarned[j]);
-    if (
-      pair.gauge &&
-      pair.gauge.rewardsEarned &&
-      parseEther(pair.gauge.rewardsEarned as `${number}`) > 0
-    ) {
-      pair.rewardType = "Reward";
-      filteredRewards.push(pair);
-    }
-  }
-
-  for (let j = 0; j < oBlotrRewardsEarned.length; j++) {
-    let pair = Object.assign({}, oBlotrRewardsEarned[j]);
-    if (
-      pair.gauge &&
-      pair.gauge.BLOTR_rewardsEarned &&
-      parseEther(pair.gauge.BLOTR_rewardsEarned as `${number}`) > 0
-    ) {
-      pair.rewardType = "oReward";
-      oBlotrFilteredRewards.push(pair);
+  for (let j = 0; j < filteredPairs2.length; j++) {
+    let pair = Object.assign({}, filteredPairs2[j]);
+    if (pair.gauge && pair.gauge.rewardsEarned) {
+      for (const reward of pair.gauge.rewardsEarned) {
+        if (parseFloat(reward.earned) > 0) {
+          pair.rewardType = "Reward";
+          if (!pair.rewardsToClaim) {
+            pair.rewardsToClaim = [reward];
+          } else {
+            pair.rewardsToClaim.push(reward);
+          }
+          if (!hashSet.has(pair.address)) {
+            hashSet.add(pair.address);
+            filteredRewards.push(pair);
+          }
+        }
+      }
     }
   }
 
   const rewards: Rewards = {
     bribes: filteredBribes,
     rewards: filteredRewards,
-    oBlotrRewards: oBlotrFilteredRewards,
     veDist: veDistReward,
   };
 
@@ -236,7 +313,6 @@ export const useRewards = <
   TData = {
     bribes: Gauge[];
     rewards: Gauge[];
-    oBlotrRewards: Gauge[];
     veDist: VeDistReward[];
   }
 >(
@@ -244,7 +320,6 @@ export const useRewards = <
   select?: (_data: {
     bribes: Gauge[];
     rewards: Gauge[];
-    oBlotrRewards: Gauge[];
     veDist: VeDistReward[];
   }) => TData
 ) => {

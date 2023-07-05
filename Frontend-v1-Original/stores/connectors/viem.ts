@@ -33,6 +33,9 @@ const client = createPublicClient({
     blockPiRpc,
     ankrRpc,
   ]),
+  batch: {
+    multicall: true,
+  },
 });
 
 // rainbow kit set up

@@ -55,18 +55,11 @@ export default function Rewards() {
     if (
       data.bribes &&
       data.rewards &&
-      data.oBlotrRewards &&
       data.veDist &&
       data.bribes.length >= 0 &&
-      data.rewards.length >= 0 &&
-      data.oBlotrRewards.length >= 0
+      data.rewards.length >= 0
     ) {
-      return [
-        ...data.bribes,
-        ...data.rewards,
-        ...data.oBlotrRewards,
-        ...data.veDist,
-      ];
+      return [...data.bribes, ...data.rewards, ...data.veDist];
     }
   });
 
