@@ -1,14 +1,14 @@
 import { Dialog } from "@mui/material";
 import BigNumber from "bignumber.js";
 
-import { Path, FireBirdTokens, BaseAsset } from "../../stores/types/types";
+import { BaseAsset, QuoteSwapResponse } from "../../stores/types/types";
 import { formatCurrency } from "../../utils/utils";
+import { W_NATIVE_ADDRESS } from "../../stores/constants/constants";
 
 export function RoutesDialog({
   onClose,
   open,
-  paths,
-  tokens,
+  quote,
   fromAssetValue,
   toAssetValue,
   fromAmountValue,
@@ -16,8 +16,7 @@ export function RoutesDialog({
 }: {
   onClose: () => void;
   open: boolean;
-  paths: Path[] | undefined;
-  tokens: FireBirdTokens | undefined;
+  quote: QuoteSwapResponse | undefined;
   fromAssetValue: BaseAsset | null;
   toAssetValue: BaseAsset | null;
   fromAmountValue: string;
@@ -26,6 +25,9 @@ export function RoutesDialog({
   const handleClose = () => {
     onClose();
   };
+
+  const paths = quote?.maxReturn.paths;
+  const tokens = quote?.maxReturn.tokens;
 
   return (
     <Dialog
@@ -78,14 +80,25 @@ export function RoutesDialog({
               >
                 <div className="relative flex flex-grow">
                   <div className="flex flex-grow justify-between gap-4">
-                    <div>
-                      {BigNumber(path.amountFrom)
-                        .div(10 ** fromAssetValue.decimals)
-                        .div(fromAmountValue)
-                        .multipliedBy(100)
-                        .toFixed()}
-                      %
-                    </div>
+                    {quote.maxReturn.from ===
+                      "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+                    quote.maxReturn.from === W_NATIVE_ADDRESS ? (
+                      <div>
+                        {BigNumber(path.amountTo)
+                          .div(quote.maxReturn.totalTo)
+                          .multipliedBy(100)
+                          .toFixed()}
+                        %
+                      </div>
+                    ) : (
+                      <div>
+                        {BigNumber(path.amountFrom)
+                          .div(quote.maxReturn.totalFrom)
+                          .multipliedBy(100)
+                          .toFixed()}
+                        %
+                      </div>
+                    )}
                     {path.swaps.map((swap, idx) => {
                       if (idx === path.swaps.length - 1) return null;
                       return (

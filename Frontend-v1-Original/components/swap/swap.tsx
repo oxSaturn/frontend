@@ -549,8 +549,7 @@ function Swap() {
         <RoutesDialog
           onClose={() => setRoutesOpen(false)}
           open={routesOpen}
-          paths={quote?.maxReturn.paths}
-          tokens={quote?.maxReturn.tokens}
+          quote={quote}
           fromAssetValue={fromAssetValue}
           fromAmountValue={fromAmountValue}
           toAssetValue={toAssetValue}
