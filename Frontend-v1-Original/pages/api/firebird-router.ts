@@ -41,7 +41,7 @@ export default async function handler(
     resJson.maxReturn.paths.forEach((path) => {
       path.swaps.forEach((swap) => {
         if (swap.dex !== "velocimeter") {
-          throw new Error("Invalid DEX");
+          res.status(500).json({ error: "Invalid DEX" });
         }
       });
     });
