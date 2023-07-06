@@ -27,7 +27,7 @@ export function Reward() {
     return earnedRewards?.map((reward) => reward.address);
   }, [earnedRewards]);
 
-  const { underlyingTokenSymbol, refetchBalances } = useTokenData();
+  const { refetchBalances } = useTokenData();
 
   const { data: gaugeAddress } = useOptionTokenGauge();
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
@@ -80,10 +80,7 @@ export function Reward() {
               className="flex items-center justify-between space-y-2"
               key={earnedReward.address}
             >
-              {formatCurrency(earnedReward.earnedAmount)}{" "}
-              {earnedReward.symbol === underlyingTokenSymbol
-                ? `o${underlyingTokenSymbol}`
-                : earnedReward.symbol}
+              {formatCurrency(earnedReward.earnedAmount)} {earnedReward.symbol}
             </div>
           ))}
         </div>

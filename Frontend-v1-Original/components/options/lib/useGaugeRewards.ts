@@ -10,6 +10,8 @@ import {
 } from "../../../lib/wagmiGen";
 import { CONTRACTS, PRO_OPTIONS } from "../../../stores/constants/constants";
 
+import { useIsEmittingOptions } from "./useIsEmittingOptions";
+
 const QUERY_KEYS = {
   TOKEN_ADDRESSES: "TOKEN_ADDRESSES",
   EARNED: "EARNED",
@@ -51,22 +53,35 @@ export function useGaugeRewardTokens() {
     select: (data) => Number(data),
   });
 
+  const { data: isEmittingOptions } = useIsEmittingOptions();
+
   return useQuery({
-    queryKey: [QUERY_KEYS.TOKEN_ADDRESSES, rewardsListLength, gaugeAddress],
-    queryFn: () => getGaugeRewardTokens(rewardsListLength, gaugeAddress),
-    enabled: !!rewardsListLength && !!gaugeAddress,
+    queryKey: [
+      QUERY_KEYS.TOKEN_ADDRESSES,
+      rewardsListLength,
+      gaugeAddress,
+      isEmittingOptions,
+    ],
+    queryFn: () =>
+      getGaugeRewardTokens(rewardsListLength, gaugeAddress, isEmittingOptions),
+    enabled:
+      !!rewardsListLength && !!gaugeAddress && isEmittingOptions !== undefined,
   });
 }
 
 async function getGaugeRewardTokens(
   rewardsListLength: number | undefined,
-  gaugeAddress: Address | undefined
+  gaugeAddress: Address | undefined,
+  isEmittingOptions: boolean | undefined
 ) {
   if (!rewardsListLength) {
     throw new Error("rewardsListLength is undefined or zero");
   }
   if (!gaugeAddress) {
     throw new Error("gaugeAddress is undefined");
+  }
+  if (isEmittingOptions === undefined) {
+    throw new Error("isEmittingOptions is undefined");
   }
 
   const initBaseAssets = getInitBaseAssets();
@@ -119,16 +134,17 @@ async function getGaugeRewardTokens(
     });
 
     let logoUrl = asset?.logoURI ? asset.logoURI : undefined;
-    if (
-      asset?.address.toLowerCase() === CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()
-    ) {
+    const isUnderlyingTokenEmittedAsOption =
+      asset?.address.toLowerCase() ===
+        CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase() && isEmittingOptions;
+    if (isUnderlyingTokenEmittedAsOption) {
       logoUrl =
         "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/oFvm.png?raw=true";
     }
 
     rewardsTokens.push({
       address: rewardTokenAddress,
-      symbol,
+      symbol: isUnderlyingTokenEmittedAsOption ? `o${symbol}` : symbol,
       decimals,
       logoUrl,
       reward:
