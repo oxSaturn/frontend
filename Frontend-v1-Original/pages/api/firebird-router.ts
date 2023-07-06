@@ -27,7 +27,7 @@ export default async function handler(
 
   try {
     const quote = await fetch(
-      `https://router.firebird.finance/aggregator/v1/route?chainId=${fantom.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${slippage}&receiver=${address}&source=velocimeter&dexes=fvm`,
+      `https://router.firebird.finance/aggregator/v1/route?chainId=${fantom.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${slippage}&receiver=${address}&source=velocimeter&dexes=velocimeter`,
       {
         method: "GET",
         headers: {
@@ -37,6 +37,15 @@ export default async function handler(
     );
 
     const resJson = (await quote.json()) as QuoteSwapResponse;
+
+    resJson.maxReturn.paths.forEach((path) => {
+      path.swaps.forEach((swap) => {
+        if (swap.dex !== "velocimeter") {
+          res.status(500).json({ error: "Invalid DEX" });
+        }
+      });
+    });
+
     res.status(200).json(resJson);
   } catch (e) {
     res.status(400);
