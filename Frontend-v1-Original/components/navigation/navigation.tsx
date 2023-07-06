@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, MenuItem } from "@mui/material/";
+import { OpenInNew } from "@mui/icons-material";
 
 function Navigation() {
   const router = useRouter();
@@ -65,7 +66,6 @@ function Navigation() {
   const renderNavs = () => {
     return (
       <>
-        {renderSubNav("Claim", "claim")}
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
         {renderSubNav("Vest", "vest")}
@@ -73,6 +73,7 @@ function Navigation() {
         {renderSubNav("Rewards", "rewards")}
         {renderSubNav("Options", "options")}
         {renderSubNav("Bribe", "bribe")}
+        {renderSubNav("Claim", "claim")}
         {renderMoreTab()}
       </>
     );
@@ -81,18 +82,19 @@ function Navigation() {
     return (
       <Link
         href={"/" + link}
-        className={`relative m-0 cursor-pointer select-none appearance-none rounded-lg border bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 ${
+        className={`cursor-pointer select-none appearance-none rounded-lg px-[14px] py-2 text-sm capitalize no-underline outline-0 transition-colors lg:text-base ${
           active === link
-            ? "border-cantoGreen text-white"
-            : "border-transparent"
-        } inline-flex items-center justify-center hover:bg-[hsla(0,0%,100%,.04)]`}
+            ? "bg-cyan text-black"
+            : "hover:bg-[hsla(0,0%,100%,.04)]"
+        }`}
       >
-        <div className="m-0 pl-0 text-center text-xs xs:text-base">{title}</div>
+        {title}
       </Link>
     );
   };
 
   const renderMoreTab = () => {
+    // TODO reckon we should probably move those links to a footer section
     return (
       <>
         <button
@@ -101,9 +103,9 @@ function Navigation() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
           onClick={handleClick}
-          className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+          className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-start rounded-lg border border-transparent bg-transparent px-[14px] pt-2 pb-[10px] text-sm capitalize text-white no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)] lg:text-base"
         >
-          <div className="m-0 pl-0 text-center text-xs xs:text-base">More</div>
+          More
         </button>
         <Menu
           id="basic-menu"
@@ -123,50 +125,66 @@ function Navigation() {
             },
           }}
         >
-          <MenuItem
-            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center gap-1 rounded-lg border border-transparent bg-transparent p-1 text-sm font-medium text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
-            onClick={handleScantoClick}
-          >
-            <Image
-              src="/images/sCANTO.png"
-              width={40}
-              height={40}
-              alt="sCANTO Token Icon"
-            />
-            <div className="m-0 pl-0 text-center text-xs xs:text-base">
-              sCANTO
-            </div>
-          </MenuItem>
-          <MenuItem
-            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
-            onClick={handleDocsClick}
-          >
-            <div className="m-0 pl-0 text-center text-xs xs:text-base">
-              Docs
-            </div>
-          </MenuItem>
-          <MenuItem
-            className="relative m-0 inline-flex w-full cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[24px] pt-2 pb-[10px] text-sm font-medium capitalize text-secondaryGray no-underline outline-0 hover:bg-secondaryGray hover:text-black"
-            onClick={handleGeckoClick}
-          >
-            <div className="m-0 pl-0 text-center text-xs xs:text-base">
-              Coingecko
-            </div>
-          </MenuItem>
+          {[
+            {
+              onClickHandler: handleScantoClick,
+              children: (
+                <>
+                  <Image
+                    src="/images/sCANTO.png"
+                    width={156}
+                    height={156}
+                    className="h-[30px] w-[30px]"
+                    alt="sCANTO Token Icon"
+                  />
+                  sCANTO <OpenInNew className="w-4" />
+                </>
+              ),
+            },
+            {
+              onClickHandler: handleDocsClick,
+              children: (
+                <>
+                  Docs <OpenInNew className="w-4" />
+                </>
+              ),
+            },
+            {
+              onClickHandler: handleGeckoClick,
+              children: (
+                <>
+                  Coingecko <OpenInNew className="w-4" />
+                </>
+              ),
+            },
+          ].map(
+            (
+              item: {
+                onClickHandler: () => void;
+                children: ReactNode;
+              },
+              index
+            ) => {
+              return (
+                <MenuItem
+                  key={index}
+                  className="relative m-0 inline-flex min-h-[30px] w-full cursor-pointer select-none appearance-none items-center justify-start gap-1 rounded-lg border border-transparent bg-transparent px-[14px] text-sm no-underline outline-0 hover:bg-secondary hover:text-black"
+                  onClick={item.onClickHandler}
+                >
+                  {item.children}
+                </MenuItem>
+              );
+            }
+          )}
         </Menu>
       </>
     );
   };
 
   return (
-    <>
-      <div className="flex items-center rounded-2xl border-0 bg-transparent p-2 text-center shadow-[0_0_0.2em] shadow-cantoGreen max-md:hidden">
-        {renderNavs()}
-      </div>
-      <div className="flex flex-col items-start py-2 text-center md:hidden">
-        {renderNavs()}
-      </div>
-    </>
+    <div className="grid w-full grid-cols-1 gap-y-1 md:flex md:w-auto md:items-center md:gap-x-1 md:rounded-2xl md:border-0 md:bg-transparent md:p-2 md:text-center">
+      {renderNavs()}
+    </div>
   );
 }
 

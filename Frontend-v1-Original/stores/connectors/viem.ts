@@ -42,17 +42,22 @@ const { chains, publicClient } = configureChains(
 //   chains,
 // });
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
+// we don't really have NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID under testing environment
+let wallets = [rabbyWallet({ chains })];
+if (projectId) {
+  wallets = [
+    ...wallets,
+    metaMaskWallet({ projectId, chains }),
+    walletConnectWallet({
+      projectId,
+      chains,
+    }),
+  ];
+}
 const connectors = connectorsForWallets([
   {
     groupName: "Recommended",
-    wallets: [
-      rabbyWallet({ chains }),
-      metaMaskWallet({ projectId, chains }),
-      walletConnectWallet({
-        projectId,
-        chains,
-      }),
-    ],
+    wallets,
   },
 ]);
 
