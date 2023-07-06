@@ -34,3 +34,6 @@ export const PAIRS_WITH_GAUGES_AND_VOTES = "pairsWithGaugesAndVotes";
 
 // swap
 export const QUOTE_SWAP = "quoteSwap";
+
+// options
+export const IS_EMITTING_OPTIONS = "isEmittingOptions";

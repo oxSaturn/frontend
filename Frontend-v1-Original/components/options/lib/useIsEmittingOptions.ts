@@ -8,6 +8,7 @@ import {
 import {
   CONTRACTS,
   MINTER_ROLE,
+  QUERY_KEYS,
   ZERO_ADDRESS,
 } from "../../../stores/constants";
 
@@ -24,7 +25,7 @@ export function useIsEmittingOptions() {
   });
 
   return useQuery({
-    queryKey: ["isEmittingOptions", hasMinterRole, oFlowOnGauge],
+    queryKey: [QUERY_KEYS.IS_EMITTING_OPTIONS, hasMinterRole, oFlowOnGauge],
     queryFn: () => {
       return !!hasMinterRole && oFlowOnGauge !== ZERO_ADDRESS;
     },
