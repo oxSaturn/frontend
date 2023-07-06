@@ -11,6 +11,7 @@ import {
   PRO_OPTIONS,
   QUERY_KEYS,
   ZERO_ADDRESS,
+  MINTER_ROLE,
 } from "../../../stores/constants/constants";
 import {
   hasGauge,
@@ -29,9 +30,6 @@ import {
   useVestNfts,
   getInitBaseAssets,
 } from "../../../lib/global/queries";
-
-const MINTER_ROLE =
-  "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9";
 
 export const getRewardBalances = async (
   address: Address | undefined,

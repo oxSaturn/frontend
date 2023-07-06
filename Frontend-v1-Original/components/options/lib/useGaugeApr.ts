@@ -7,6 +7,7 @@ import { PRO_OPTIONS } from "../../../stores/constants/constants";
 import { type Token, useGaugeRewardTokens } from "./useGaugeRewards";
 import { useStakeData } from "./useStakeData";
 import { useDiscountsData } from "./useDiscountsData";
+import { useIsEmittingOptions } from "./useIsEmittingOptions";
 
 export function useGaugeApr() {
   const { data: rewardTokens } = useGaugeRewardTokens();
@@ -15,6 +16,7 @@ export function useGaugeApr() {
   const { discount, maxLpDiscount, minLpDiscount, veDiscount } =
     useDiscountsData();
   const { totalStakedValue } = useStakeData();
+  const { data: isEmittingOptions } = useIsEmittingOptions();
   const optionTokenAddress = PRO_OPTIONS.oFVM.tokenAddress;
   return useQuery({
     queryKey: [
@@ -28,6 +30,7 @@ export function useGaugeApr() {
       maxLpDiscount,
       minLpDiscount,
       veDiscount,
+      isEmittingOptions,
     ],
     queryFn: () =>
       getGaugeApr(rewardTokens, tokenPrices, totalStakedValue, {
@@ -37,6 +40,7 @@ export function useGaugeApr() {
         veDiscount,
         underlyingTokenAddress,
         optionTokenAddress,
+        isEmittingOptions,
       }),
     keepPreviousData: true,
     enabled:
@@ -47,7 +51,8 @@ export function useGaugeApr() {
       !!discount &&
       maxLpDiscount !== undefined &&
       minLpDiscount !== undefined &&
-      !!veDiscount,
+      !!veDiscount &&
+      isEmittingOptions !== undefined,
   });
 }
 
@@ -62,10 +67,11 @@ function getGaugeApr(
     veDiscount: string | undefined;
     underlyingTokenAddress: `0x${string}` | undefined;
     optionTokenAddress: `0x${string}` | undefined;
+    isEmittingOptions: boolean | undefined;
   }
 ) {
   if (!rewardTokens || !tokenPrices || totalStakedValue === undefined) {
-    throw new Error("rewardTokens or tokenPrices is undefined");
+    throw new Error("rewardTokens or tokenPrices or totalStaked is undefined");
   }
   const {
     discount,
@@ -74,6 +80,7 @@ function getGaugeApr(
     veDiscount,
     underlyingTokenAddress,
     optionTokenAddress,
+    isEmittingOptions,
   } = discountsPriceOverride;
   if (
     !discount ||
@@ -81,10 +88,11 @@ function getGaugeApr(
     !underlyingTokenAddress ||
     !optionTokenAddress ||
     maxLpDiscount === undefined ||
-    minLpDiscount === undefined
+    minLpDiscount === undefined ||
+    isEmittingOptions === undefined
   ) {
     throw new Error(
-      "discount, maxLpDiscount, minLpDiscount, veDiscount, underlyingTokenAddress undefined error"
+      "discount, maxLpDiscount, minLpDiscount, veDiscount, underlyingTokenAddress, isEmittingOptions undefined error"
     );
   }
 
@@ -107,11 +115,12 @@ function getGaugeApr(
   const map = new Map<Token, readonly [number, number]>(); // [minApr, maxApr]
 
   for (const rewardToken of rewardTokens) {
-    if (
+    const isOptionToken =
+      rewardToken.address.toLowerCase() === optionTokenAddress.toLowerCase();
+    const isUnderlyingTokenEmittedAsOption =
       rewardToken.address.toLowerCase() ===
-        underlyingTokenAddress.toLowerCase() ||
-      rewardToken.address.toLowerCase() === optionTokenAddress.toLowerCase()
-    ) {
+        underlyingTokenAddress.toLowerCase() && isEmittingOptions;
+    if (isUnderlyingTokenEmittedAsOption || isOptionToken) {
       const fullUnderlyingTokenPrice =
         tokenPrices.get(underlyingTokenAddress.toLowerCase()) ?? 0;
 

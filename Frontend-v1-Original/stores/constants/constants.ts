@@ -47,3 +47,6 @@ export const W_NATIVE_ABI = config[fantom.id].wNativeABI;
 
 export const PAIR_DECIMALS = 18;
 export const QUERY_KEYS = queryKeys;
+
+export const MINTER_ROLE =
+  "0xf0887ba65ee2024ea881d91b74c2450ef19e1557f03bed3ea9f16b037cbe2dc9";
