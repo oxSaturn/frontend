@@ -43,7 +43,7 @@ const { chains, publicClient } = configureChains(
   [
     jsonRpcProvider({
       rpc: () => ({
-        http: process.env.NEXT_PUBLIC_RPC_URL!,
+        http: process.env.NEXT_PUBLIC_RPC_URL ?? 'https://canto.gravitychain.io',
       }),
     }),
     jsonRpcProvider({
