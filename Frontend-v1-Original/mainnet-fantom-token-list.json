@@ -158,5 +158,21 @@
     "logoURI": "https://assets.coingecko.com/coins/images/14287/large/dola.png",
     "name": "DOLA",
     "symbol": "DOLA"
+  },
+  {
+    "address": "0x2A5E4c77F791c0174a717B644A53fc21A29790Cd",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/05/Sheet_WIP.png",
+    "name": "sCANTO BLOTR",
+    "symbol": "BLOTR"
+  },
+  {
+    "address": "0x0AeEecbEedB4bC6288EBb9b412341428564709D4",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.scanto.io/V1.png",
+    "name": "Liquid Staked Canto",
+    "symbol": "sCANTO"
   }
 ]
