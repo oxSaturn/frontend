@@ -53,7 +53,7 @@ function Navigation() {
   const renderDocsTab = () => {
     return (
       <button
-        className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center rounded-lg border border-transparent bg-transparent px-[14px] pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-start rounded-lg border border-transparent bg-transparent px-[14px] pt-2 pb-[10px] text-sm font-medium capitalize no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         onClick={() => window.open("https://docs.velocimeter.xyz/", "_blank")}
       >
         <div className="m-0 pl-0 text-center text-xs xs:text-base">Docs</div>
@@ -64,7 +64,7 @@ function Navigation() {
   const renderScantoTab = () => {
     return (
       <button
-        className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-center gap-1 rounded-lg border border-transparent bg-transparent px-[14px] text-sm font-medium no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
+        className="relative m-0 inline-flex cursor-pointer select-none appearance-none items-center justify-start gap-1 rounded-lg border border-transparent bg-transparent px-[14px] text-sm font-medium no-underline outline-0 hover:bg-[hsla(0,0%,100%,.04)]"
         onClick={() => window.open("https://www.scanto.io/", "_blank")}
       >
         <Image
