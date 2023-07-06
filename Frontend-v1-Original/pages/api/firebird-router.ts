@@ -37,6 +37,15 @@ export default async function handler(
     );
 
     const resJson = (await quote.json()) as QuoteSwapResponse;
+
+    resJson.maxReturn.paths.forEach((path) => {
+      path.swaps.forEach((swap) => {
+        if (swap.dex !== "velocimeter") {
+          throw new Error("Invalid DEX");
+        }
+      });
+    });
+
     res.status(200).json(resJson);
   } catch (e) {
     res.status(400);
