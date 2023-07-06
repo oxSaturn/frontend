@@ -7,7 +7,6 @@ import Navigation from "../navigation/navigation";
 import TransactionQueue, {
   useTransactionStore,
 } from "../transactionQueue/transactionQueue";
-import useScrollPosition from "../../hooks/useScrollPosition";
 
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
@@ -19,8 +18,8 @@ function SiteLogo(props: { className?: string }) {
       className={className}
       src="/images/vcm_logo.png"
       alt="velocimeter logo"
-      height={38}
-      width={256}
+      height={682}
+      width={4643}
     />
   );
 }
@@ -28,26 +27,18 @@ function SiteLogo(props: { className?: string }) {
 function Header() {
   const router = useRouter();
 
-  const scrollPosition = useScrollPosition();
-
   const { openQueue, transactions } = useTransactionStore();
 
   return (
     <>
-      <div
-        className={`grid w-full grid-flow-row border-cantoGreen border-opacity-50 transition-all duration-200 ${
-          scrollPosition > 0
-            ? "border-b-[0.25px] bg-[rgba(0,0,0,0.973)] opacity-90 backdrop-blur-2xl"
-            : "border-b-0 border-none"
-        }`}
-      >
+      <div className="grid w-full grid-flow-row">
         <Info />
-        <div className="flex min-h-[60px] items-center justify-between rounded-none border-none py-5 px-8 md:max-[1200px]:flex-col">
+        <div className="flex min-h-[60px] items-center justify-between rounded-none border-none px-5">
           <a
             onClick={() => router.push("/home")}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-1"
+            className="flex flex-shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[40px] py-5"
           >
-            <SiteLogo />
+            <SiteLogo className="h-[38px] w-auto" />
           </a>
           <Navigation />
           <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
@@ -79,7 +70,9 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            <ConnectButton />
+            <span className="md:fixed md:right-5 md:bottom-5 xl:static">
+              <ConnectButton />
+            </span>
           </div>
           <TransactionQueue />
         </div>

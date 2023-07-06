@@ -48,6 +48,9 @@ module.exports = {
         primaryBg: "#272826",
         deepBlue: "#212b48",
         deepPurple: "#040105",
+        cyan: {
+          DEFAULT: '#00E8CA',
+        }
       },
       boxShadow: {
         glow: "0 0 10px 0 #06fc99",
