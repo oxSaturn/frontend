@@ -19,8 +19,8 @@ function SiteLogo(props: { className?: string }) {
       className={className}
       src="/images/vcm_logo.png"
       alt="velocimeter logo"
-      height={38}
-      width={256}
+      height={682}
+      width={4643}
     />
   );
 }
@@ -42,12 +42,12 @@ function Header() {
         }`}
       >
         <Info />
-        <div className="flex min-h-[60px] items-center justify-between rounded-none border-none py-5 px-8 md:max-[1200px]:flex-col">
+        <div className="flex min-h-[60px] items-center justify-between rounded-none border-none px-5">
           <a
             onClick={() => router.push("/home")}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-1"
+            className="flex flex-shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[40px] py-5"
           >
-            <SiteLogo />
+            <SiteLogo className="h-[38px] w-auto" />
           </a>
           <Navigation />
           <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
@@ -79,7 +79,9 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            <ConnectButton />
+            <span className="md:fixed md:right-5 md:bottom-5 xl:static">
+              <ConnectButton />
+            </span>
           </div>
           <TransactionQueue />
         </div>
