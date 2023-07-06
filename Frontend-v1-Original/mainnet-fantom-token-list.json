@@ -98,7 +98,7 @@
   {
     "address": "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
     "chainId": 250,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
     "name": "USDC Coin",
     "symbol": "USDC"
@@ -106,7 +106,7 @@
   {
     "address": "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
     "chainId": 250,
-    "decimals": 18,
+    "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
     "name": "Tether USD",
     "symbol": "USDT"
@@ -150,5 +150,29 @@
     "logoURI": "https://assets.coingecko.com/coins/images/29740/large/Grain.png",
     "name": "Granary",
     "symbol": "GRAIN"
+  },
+  {
+    "address": "0x3129662808bEC728a27Ab6a6b9AFd3cBacA8A43c",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/14287/large/dola.png",
+    "name": "DOLA",
+    "symbol": "DOLA"
+  },
+  {
+    "address": "0x2A5E4c77F791c0174a717B644A53fc21A29790Cd",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://cre8r.vip/wp-content/uploads/2023/05/Sheet_WIP.png",
+    "name": "sCANTO BLOTR",
+    "symbol": "BLOTR"
+  },
+  {
+    "address": "0x0AeEecbEedB4bC6288EBb9b412341428564709D4",
+    "chainId": 7700,
+    "decimals": 18,
+    "logoURI": "https://docs.scanto.io/V1.png",
+    "name": "Liquid Staked Canto",
+    "symbol": "sCANTO"
   }
 ]
