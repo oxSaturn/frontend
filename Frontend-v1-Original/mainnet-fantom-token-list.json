@@ -156,8 +156,8 @@
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/14287/large/dola.png",
-    "name": "DOLA",
-    "symbol": "DOLA"
+    "name": "Multichain DOLA",
+    "symbol": "anyDOLA"
   },
   {
     "address": "0x2A5E4c77F791c0174a717B644A53fc21A29790Cd",
