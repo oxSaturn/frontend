@@ -20,8 +20,8 @@
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/9956/large/4943.png",
-    "name": "Maker DAO DAI",
-    "symbol": "DAI"
+    "name": "Multichain Maker DAO DAI",
+    "symbol": "anyDAI"
   },
   {
     "address": "0xdf5C2c48cf3E50417b31Da8aa7B6Afd0Ce30af8A",
@@ -169,10 +169,18 @@
   },
   {
     "address": "0x0AeEecbEedB4bC6288EBb9b412341428564709D4",
-    "chainId": 7700,
+    "chainId": 250,
     "decimals": 18,
     "logoURI": "https://docs.scanto.io/V1.png",
     "name": "Liquid Staked Canto",
     "symbol": "sCANTO"
+  },
+  {
+    "address": "0xfa5992a8a47af7029e04ec6a95203ad3f301460b",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29172/large/skull.png",
+    "name": "SkullSwap Exchange",
+    "symbol": "SKULL"
   }
 ]
