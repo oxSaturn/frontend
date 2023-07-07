@@ -41,7 +41,7 @@ function Header() {
             <SiteLogo className="h-[50px] w-auto" />
           </a>
           <Navigation />
-          <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
+          <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8">
             {process.env.NEXT_PUBLIC_CHAINID === "740" && (
               <div>
                 <Typography className="rounded-xl border border-primary bg-[#0e110c] p-4 text-sm">
