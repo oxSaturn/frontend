@@ -3,6 +3,8 @@ import Head from "next/head";
 import { pulsechain } from "viem/chains";
 import { Button, Typography } from "@mui/material";
 
+import Link from "next/link";
+
 import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
@@ -46,7 +48,7 @@ export default function Layout({
         )}
         <SnackbarController />
         {!chain?.unsupported ? (
-          <main>{children}</main>
+          <main className="flex flex-grow flex-col">{children}</main>
         ) : (
           <div className="flex flex-grow items-center justify-center text-center">
             <div className="space-y-2">
@@ -64,6 +66,35 @@ export default function Layout({
             </div>
           </div>
         )}
+        <footer className="mx-auto flex gap-x-3 pt-20 pb-10 text-sm">
+          <Link href="/claim" className="text-cyan-700 hover:underline">
+            Claim
+          </Link>
+          {[
+            {
+              href: "https://www.scanto.io/",
+              text: "sCANTO",
+            },
+            {
+              href: "https://docs.velocimeter.xyz/FVMtokenomics",
+              text: "Docs",
+            },
+            {
+              href: "https://www.geckoterminal.com/fantom/fvm/pools",
+              text: "Coingecko",
+            },
+          ].map(({ href, text }, index) => (
+            <a
+              key={index}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-700 hover:underline"
+            >
+              {text}
+            </a>
+          ))}
+        </footer>
       </div>
     </div>
   );

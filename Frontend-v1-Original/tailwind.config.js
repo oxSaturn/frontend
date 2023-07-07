@@ -55,8 +55,11 @@ module.exports = {
         warning: "#ffda58",
         error: "#ff4141",
         cyan: {
-          DEFAULT: '#00E8CA',
-        }
+          DEFAULT: "#00E8CA",
+          700: "#00CFB3",
+          800: "#00A892",
+          900: "#00695B",
+        },
       },
       boxShadow: {
         glow: "0 0 10px 0 #06fc99",
