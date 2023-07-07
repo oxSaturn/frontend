@@ -70,7 +70,7 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            <span className="md:fixed md:right-5 md:bottom-5 xl:static">
+            <span className="md:max-[950px]:fixed md:max-[950px]:right-5 md:max-[950px]:bottom-5">
               <ConnectButton />
             </span>
           </div>
