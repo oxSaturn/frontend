@@ -20,11 +20,19 @@
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/9956/large/4943.png",
-    "name": "Maker DAO DAI",
-    "symbol": "DAI"
+    "name": "Multichain Maker DAO DAI",
+    "symbol": "anyDAI"
   },
   {
     "address": "0xdf5C2c48cf3E50417b31Da8aa7B6Afd0Ce30af8A",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
+    "name": "Wrapped ETH",
+    "symbol": "oldWETH.lz"
+  },
+  {
+    "address": "0x695921034f0387eAc4e11620EE91b1b15A6A09fE",
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
@@ -156,8 +164,8 @@
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/14287/large/dola.png",
-    "name": "DOLA",
-    "symbol": "DOLA"
+    "name": "Multichain DOLA",
+    "symbol": "anyDOLA"
   },
   {
     "address": "0x2A5E4c77F791c0174a717B644A53fc21A29790Cd",
@@ -169,10 +177,34 @@
   },
   {
     "address": "0x0AeEecbEedB4bC6288EBb9b412341428564709D4",
-    "chainId": 7700,
+    "chainId": 250,
     "decimals": 18,
     "logoURI": "https://docs.scanto.io/V1.png",
     "name": "Liquid Staked Canto",
     "symbol": "sCANTO"
+  },
+  {
+    "address": "0xfa5992a8a47af7029e04ec6a95203ad3f301460b",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/29172/large/skull.png",
+    "name": "SkullSwap Exchange",
+    "symbol": "SKULL"
+  },
+  {
+    "address": "0xf7Cc345aA2ccda40403af0b57341AB7Fa74b7EEa",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://icons-ckg.pages.dev/stargate-light/tokens/dai.svg",
+    "name": "Maker DAO DAI",
+    "symbol": "oldDAI.lz"
+  },
+  {
+    "address": "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://icons-ckg.pages.dev/stargate-light/tokens/dai.svg",
+    "name": "Maker DAO DAI",
+    "symbol": "DAI"
   }
 ]

@@ -11,7 +11,7 @@ const client = createPublicClient({
   chain: fantom,
   transport: http(),
 });
-const pairFactoryAddress = "0xF80909DF0A01ff18e4D37BF682E40519B21Def46";
+const pairFactoryAddress = "0x472f3c3c9608fe0ae8d702f3f8a2d12c410c881a";
 const abi = [
   {
     inputs: [

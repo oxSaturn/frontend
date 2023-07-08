@@ -1,12 +1,12 @@
 import { Dialog } from "@mui/material";
 
-import { BaseAsset, LegacyQuote } from "../../stores/types/types";
+import { BaseAsset, QuoteSwapResponse } from "../../stores/types/types";
 import { formatCurrency } from "../../utils/utils";
 
 export function RoutesDialog({
   onClose,
   open,
-  paths,
+  quote,
   fromAssetValue,
   toAssetValue,
   fromAmountValue,
@@ -14,7 +14,7 @@ export function RoutesDialog({
 }: {
   onClose: () => void;
   open: boolean;
-  paths: LegacyQuote | undefined;
+  quote: QuoteSwapResponse | undefined;
   fromAssetValue: BaseAsset | null;
   toAssetValue: BaseAsset | null;
   fromAmountValue: string;
@@ -23,6 +23,9 @@ export function RoutesDialog({
   const handleClose = () => {
     onClose();
   };
+
+  const paths = quote?.maxReturn.paths;
+  const tokens = quote?.maxReturn.tokens;
 
   return (
     <Dialog
@@ -50,28 +53,6 @@ export function RoutesDialog({
                 {formatCurrency(fromAmountValue)} {fromAssetValue.symbol}
               </span>
             </div>
-            {`->`}
-            {paths.output.routeAsset && (
-              <>
-                <div>
-                  <span className="mr-1 align-middle text-sm">
-                    {paths.output.routeAsset.symbol}
-                  </span>
-                  <img
-                    className="inline-block h-12 rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[6px]"
-                    alt=""
-                    src={paths.output.routeAsset.logoURI || ""}
-                    height="40px"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).onerror = null;
-                      (e.target as HTMLImageElement).src =
-                        "/tokens/unknown-logo.png";
-                    }}
-                  />
-                </div>
-                {`->`}
-              </>
-            )}
             <div>
               <span className="mr-1 align-middle text-sm">
                 {formatCurrency(toAmountValue)} {toAssetValue.symbol}
@@ -88,6 +69,37 @@ export function RoutesDialog({
                 }}
               />
             </div>
+          </div>
+          <div className="px-6">
+            {paths.map((path, idx) => (
+              <div
+                key={path.amountFrom + idx}
+                className="relative flex border-primary py-6 px-[5%] before:absolute before:left-0 before:top-0 before:h-12 before:w-full before:rounded-b-3xl before:rounded-br-3xl before:border-b before:border-dashed before:border-primary after:w-16 first:pt-7 last:before:border-l last:before:border-r [&:not(:last-child)]:border-x [&:not(:last-child)]:border-dashed"
+              >
+                <div className="relative flex flex-grow">
+                  <div className="flex flex-grow justify-between gap-4">
+                    <div>
+                      {(
+                        (parseFloat(path.amountFrom) /
+                          parseFloat(quote.maxReturn.totalFrom)) *
+                        100
+                      ).toFixed()}
+                      %
+                    </div>
+                    {path.swaps.map((swap, idx) => {
+                      if (idx === path.swaps.length - 1) return null;
+                      return (
+                        tokens && (
+                          <div key={swap.to + idx}>
+                            {tokens[swap.to].symbol}
+                          </div>
+                        )
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : (
