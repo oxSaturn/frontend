@@ -4,7 +4,7 @@ import Link from "next/link";
 
 function Navigation() {
   const router = useRouter();
-  const [active, setActive] = useState("swap");
+  const [active, setActive] = useState("");
 
   useEffect(() => {
     const activePath = router.asPath;
