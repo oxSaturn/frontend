@@ -134,7 +134,7 @@ export default function Layout({
               },
               {
                 href: "https://stargate.finance/transfer",
-                text: "stargate",
+                text: "Stargate",
               },
             ].map(({ href, text }, index) => (
               <a
