@@ -29,6 +29,14 @@
     "decimals": 18,
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
     "name": "Wrapped ETH",
+    "symbol": "oldWETH.lz"
+  },
+  {
+    "address": "0x695921034f0387eAc4e11620EE91b1b15A6A09fE",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
+    "name": "Wrapped ETH",
     "symbol": "WETH"
   },
   {
