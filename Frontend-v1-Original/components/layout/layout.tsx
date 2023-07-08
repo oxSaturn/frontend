@@ -77,7 +77,7 @@ export default function Layout({
                 className="mx-1 inline-block w-[80px]"
               />
             </a>{" "}
-            to support their tokens, including{" "}
+            in support of their tokens, including{" "}
             <a
               href="https://ftmscan.com/address/0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf"
               target="_blank"
