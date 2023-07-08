@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+
 import coreTheme from "./coreTheme";
 
 // Create a theme instance.

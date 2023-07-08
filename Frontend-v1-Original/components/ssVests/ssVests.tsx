@@ -11,7 +11,7 @@ export default function Vests() {
   const { data: vestNFTs } = useVestNfts();
 
   return (
-    <div className="m-auto mb-5 flex w-[calc(100%-40px)] max-w-[1400px] flex-col items-end p-0 pt-20 pb-2 xl:mb-14 xl:w-[calc(100%-180px)] xl:pt-0">
+    <div className="m-auto mb-5 flex w-[calc(100%-40px)] max-w-[1400px] flex-col items-end p-0 pb-2 xl:mb-14 xl:w-[calc(100%-180px)] xl:pt-0">
       <div className="flex flex-col gap-1 self-start text-left">
         <Typography variant="h1">Vest</Typography>
         <Typography variant="body2">
