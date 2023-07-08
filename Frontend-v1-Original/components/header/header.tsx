@@ -70,7 +70,8 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            <span className="md:max-[950px]:fixed md:max-[950px]:right-5 md:max-[950px]:bottom-5">
+            <span className="md:max-[950px]:fixed md:max-[950px]:right-5 md:max-[950px]:bottom-5 lg:flex lg:w-[168px] lg:justify-end">
+              {/* the reason we set w-[168px] here is to keep its width same as logo, so we can horizontally center our menu items */}
               <ConnectButton />
             </span>
           </div>
