@@ -96,6 +96,14 @@ const headCells = [
 
 type OrderBy = (typeof headCells)[number]["id"];
 
+const lzTokensLowerCase = [
+  "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
+  "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
+  "0xf1648C50d2863f780c57849D812b4B7686031A3D",
+  "0x695921034f0387eAc4e11620EE91b1b15A6A09fE",
+  "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f",
+].map((x) => x.toLowerCase());
+
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
@@ -193,37 +201,29 @@ const EnhancedTableToolbar = ({
 
   return (
     <Toolbar className="my-6 mx-0 p-0">
-      <div className="flex w-full flex-col items-center justify-between gap-2 lg:flex-row lg:gap-0">
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={<AddCircleOutline />}
-          size="large"
-          className="flex w-full bg-background font-bold text-primary hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
-          onClick={onCreate}
-        >
-          <Typography className="text-base font-bold">Add Liquidity</Typography>
-        </Button>
-        <div className="w-full lg:w-auto lg:flex-grow-[0.6]">
-          <TextField
-            className="flex w-full flex-[1]"
-            variant="outlined"
-            fullWidth
-            placeholder="FTM, WFTM, 0x..."
-            value={search}
-            onChange={onSearchChanged}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </div>
-        <ul className="flex flex-wrap gap-2 xs:flex-nowrap">
-          {["all", "boosted", "deposited", "stable", "volatile"].map(
-            (filterOption) => (
+      <div className="flex w-full flex-col items-center justify-between gap-1">
+        <div className="flex w-full flex-col items-center justify-between gap-1 lg:flex-row lg:gap-0">
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<AddCircleOutline />}
+            size="large"
+            className="flex w-full bg-background font-bold text-primary hover:bg-[rgb(19,44,60)] lg:w-auto lg:flex-grow-[0.3]"
+            onClick={onCreate}
+          >
+            <Typography className="text-base font-bold">
+              Add Liquidity
+            </Typography>
+          </Button>
+          <ul className="flex w-full flex-wrap gap-2 md:flex-nowrap lg:w-auto">
+            {[
+              "all",
+              "layer zero",
+              "boosted",
+              "deposited",
+              "stable",
+              "volatile",
+            ].map((filterOption) => (
               <li key={filterOption}>
                 <input
                   type="radio"
@@ -241,9 +241,26 @@ const EnhancedTableToolbar = ({
                   <span className="uppercase">{filterOption}</span>
                 </label>
               </li>
-            )
-          )}
-        </ul>
+            ))}
+          </ul>
+        </div>
+        <div className="w-full">
+          <TextField
+            className="flex w-full flex-[1]"
+            variant="outlined"
+            fullWidth
+            placeholder="FTM, WFTM, 0x..."
+            value={search}
+            onChange={onSearchChanged}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
       </div>
     </Toolbar>
   );
@@ -341,6 +358,14 @@ export default function EnhancedTable({
         .filter((pair) => {
           if (filter === "all") {
             return true;
+          }
+          if (filter === "layer zero") {
+            if (
+              !lzTokensLowerCase.includes(pair.token0_address.toLowerCase()) &&
+              !lzTokensLowerCase.includes(pair.token1_address.toLowerCase())
+            ) {
+              return false;
+            }
           }
           if (filter === "deposited") {
             if (
