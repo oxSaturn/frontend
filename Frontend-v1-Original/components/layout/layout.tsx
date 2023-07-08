@@ -73,7 +73,7 @@ export default function Layout({
             >
               <img
                 alt="LayerZero"
-                src="/images/Layer_Zero_Logo_black.svg"
+                src="/images/lz-logo-black.svg"
                 className="mx-1 inline-block w-[80px]"
               />
             </a>{" "}
