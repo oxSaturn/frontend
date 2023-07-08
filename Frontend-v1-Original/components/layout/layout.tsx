@@ -70,20 +70,17 @@ export default function Layout({
           </div>
         )}
         <footer className="mx-auto flex gap-x-3 pt-20 pb-10 text-sm">
-          <Link href="/claim" className="text-cyan-700 hover:underline">
-            Claim
-          </Link>
           {[
             {
               href: "https://www.scanto.io/",
               text: "sCANTO",
             },
             {
-              href: "https://docs.velocimeter.xyz/FVMtokenomics",
+              href: "https://docs.velocimeter.xyz/tokenomics",
               text: "Docs",
             },
             {
-              href: "https://www.geckoterminal.com/fantom/fvm/pools",
+              href: "https://www.geckoterminal.com/canto/velocimeter_v2/pools",
               text: "Coingecko",
             },
           ].map(({ href, text }, index) => (
