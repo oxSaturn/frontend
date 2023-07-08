@@ -197,6 +197,14 @@
     "decimals": 18,
     "logoURI": "https://icons-ckg.pages.dev/stargate-light/tokens/dai.svg",
     "name": "Maker DAO DAI",
+    "symbol": "oldDAI.lz"
+  },
+  {
+    "address": "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://icons-ckg.pages.dev/stargate-light/tokens/dai.svg",
+    "name": "Maker DAO DAI",
     "symbol": "DAI"
   }
 ]
