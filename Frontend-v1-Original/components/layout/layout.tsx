@@ -76,11 +76,11 @@ export default function Layout({
               text: "sCANTO",
             },
             {
-              href: "https://docs.velocimeter.xyz/FVMtokenomics",
+              href: "https://docs.velocimeter.xyz/pulse-tokenomics",
               text: "Docs",
             },
             {
-              href: "https://www.geckoterminal.com/fantom/fvm/pools",
+              href: "https://www.geckoterminal.com/pulsechain/velocimeter-pulsechain/pools",
               text: "Coingecko",
             },
           ].map(({ href, text }, index) => (
