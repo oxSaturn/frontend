@@ -96,6 +96,14 @@ const headCells = [
 
 type OrderBy = (typeof headCells)[number]["id"];
 
+const lzTokensLowerCase = [
+  "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf".toLowerCase(),
+  "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C".toLowerCase(),
+  "0xf1648C50d2863f780c57849D812b4B7686031A3D".toLowerCase(),
+  "0x695921034f0387eAc4e11620EE91b1b15A6A09fE".toLowerCase(),
+  "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f".toLowerCase(),
+];
+
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
@@ -222,27 +230,32 @@ const EnhancedTableToolbar = ({
           />
         </div>
         <ul className="flex flex-wrap gap-2 xs:flex-nowrap">
-          {["all", "boosted", "deposited", "stable", "volatile"].map(
-            (filterOption) => (
-              <li key={filterOption}>
-                <input
-                  type="radio"
-                  id={filterOption}
-                  name="filter"
-                  value={filterOption}
-                  checked={filter === filterOption}
-                  onChange={onChange}
-                  className="peer hidden"
-                />
-                <label
-                  htmlFor={filterOption}
-                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
-                >
-                  <span className="uppercase">{filterOption}</span>
-                </label>
-              </li>
-            )
-          )}
+          {[
+            "all",
+            "layer zero",
+            "boosted",
+            "deposited",
+            "stable",
+            "volatile",
+          ].map((filterOption) => (
+            <li key={filterOption}>
+              <input
+                type="radio"
+                id={filterOption}
+                name="filter"
+                value={filterOption}
+                checked={filter === filterOption}
+                onChange={onChange}
+                className="peer hidden"
+              />
+              <label
+                htmlFor={filterOption}
+                className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
+              >
+                <span className="uppercase">{filterOption}</span>
+              </label>
+            </li>
+          ))}
         </ul>
       </div>
     </Toolbar>
@@ -341,6 +354,14 @@ export default function EnhancedTable({
         .filter((pair) => {
           if (filter === "all") {
             return true;
+          }
+          if (filter === "layer zero") {
+            if (
+              !lzTokensLowerCase.includes(pair.token0_address.toLowerCase()) &&
+              !lzTokensLowerCase.includes(pair.token1_address.toLowerCase())
+            ) {
+              return false;
+            }
           }
           if (filter === "deposited") {
             if (
