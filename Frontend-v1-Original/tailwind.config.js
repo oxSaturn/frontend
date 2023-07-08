@@ -50,6 +50,7 @@ module.exports = {
         error: "#ff4141",
         cyan: {
           DEFAULT: "#00E8CA",
+          700: "#00CFB3",
         },
       },
       boxShadow: ({ theme }) => ({

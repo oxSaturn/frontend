@@ -75,9 +75,9 @@ export default function MyApp({
               <RainbowKitProvider
                 chains={chains}
                 theme={rainbowKitDarkTheme({
-                  accentColor: "rgb(0, 243, 203)",
+                  accentColor: "#00E8CA",
                   accentColorForeground: "#222222",
-                  borderRadius: "small",
+                  borderRadius: "medium",
                   fontStack: "rounded",
                   overlayBlur: "small",
                 })}
