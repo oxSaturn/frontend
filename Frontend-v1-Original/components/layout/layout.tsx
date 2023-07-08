@@ -30,8 +30,7 @@ export default function Layout({
         <meta name="og:title" content="FVM" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
-      <div className="pointer-events-none absolute top-0 right-0 -z-10 h-full w-full bg-appBackground" />
-      <div className="pointer-events-none fixed left-0 bottom-0 top-0 -z-10 hidden w-screen bg-waves bg-cover bg-clip-padding bg-no-repeat xs:block" />
+      <div className="pointer-events-none fixed left-0 bottom-0 top-0 -z-10 w-screen bg-appBackground bg-cover bg-clip-padding bg-no-repeat xs:bg-waves" />
       <div className="flex h-full min-h-screen flex-[1] flex-col">
         {!configure && (
           <>
