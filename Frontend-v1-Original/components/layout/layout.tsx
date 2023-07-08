@@ -48,7 +48,7 @@ export default function Layout({
         )}
         <SnackbarController />
         {!chain?.unsupported ? (
-          <main className="flex flex-grow flex-col">{children}</main>
+          <main className="flex flex-grow flex-col sm:pt-10">{children}</main>
         ) : (
           <div className="flex flex-grow items-center justify-center text-center">
             <div className="space-y-2">

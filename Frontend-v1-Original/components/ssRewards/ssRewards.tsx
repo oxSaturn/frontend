@@ -142,7 +142,7 @@ export default function Rewards() {
   };
 
   return (
-    <div className="m-auto mb-5 mt-[100px] w-[calc(100%-40px)] max-w-[1400px] flex-col items-end pb-2 min-[1200px]:mb-16 min-[1200px]:mt-['unset'] min-[1200px]:w-[calc(100%-180px)]">
+    <div className="m-auto mb-5 w-[calc(100%-40px)] max-w-[1400px] flex-col items-end pb-2 min-[1200px]:mb-16 min-[1200px]:mt-['unset'] min-[1200px]:w-[calc(100%-180px)]">
       <div className="flex justify-between">
         <div className="flex flex-col gap-1 self-start text-left">
           <Typography variant="h1">Rewards</Typography>
