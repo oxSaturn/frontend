@@ -97,12 +97,12 @@ const headCells = [
 type OrderBy = (typeof headCells)[number]["id"];
 
 const lzTokensLowerCase = [
-  "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf".toLowerCase(),
-  "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C".toLowerCase(),
-  "0xf1648C50d2863f780c57849D812b4B7686031A3D".toLowerCase(),
-  "0x695921034f0387eAc4e11620EE91b1b15A6A09fE".toLowerCase(),
-  "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f".toLowerCase(),
-];
+  "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
+  "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
+  "0xf1648C50d2863f780c57849D812b4B7686031A3D",
+  "0x695921034f0387eAc4e11620EE91b1b15A6A09fE",
+  "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f",
+].map(x => x.toLowerCase());
 
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
