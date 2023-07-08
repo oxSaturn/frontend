@@ -60,26 +60,26 @@ export default function MyApp({
           />
         </Head>
         <ThemeProvider theme={themeConfig}>
-          <WagmiConfig config={config}>
-            <RainbowKitProvider
-              chains={chains}
-              theme={rainbowKitDarkTheme({
-                accentColor: "rgb(0, 243, 203)",
-                accentColorForeground: "#222222",
-                borderRadius: "small",
-                fontStack: "rounded",
-                overlayBlur: "small",
-              })}
-            >
-              {mounted ? (
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              ) : (
-                <Configure {...pageProps} />
-              )}
-            </RainbowKitProvider>
-          </WagmiConfig>
+            <WagmiConfig config={config}>
+              <RainbowKitProvider
+                chains={chains}
+                theme={rainbowKitDarkTheme({
+                  accentColor: "#00E8CA",
+                  accentColorForeground: "#222222",
+                  borderRadius: "medium",
+                  fontStack: "rounded",
+                  overlayBlur: "small",
+                })}
+              >
+                {mounted ? (
+                  <Layout>
+                    <Component {...pageProps} />
+                  </Layout>
+                ) : (
+                  <Configure {...pageProps} />
+                )}
+              </RainbowKitProvider>
+            </WagmiConfig>
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

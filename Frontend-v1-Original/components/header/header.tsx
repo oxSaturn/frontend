@@ -41,7 +41,7 @@ function Header() {
             <SiteLogo className="h-[38px] w-auto" />
           </a>
           <Navigation />
-          <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8 xl:w-[260px]">
+          <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8">
             {process.env.NEXT_PUBLIC_CHAINID === "740" && (
               <div>
                 <Typography className="rounded-xl border border-cantoGreen bg-[#0e110c] p-4 text-sm">
@@ -70,7 +70,8 @@ function Header() {
                 </Badge>
               </IconButton>
             )}
-            <span className="md:fixed md:right-5 md:bottom-5 xl:static">
+            <span className="md:max-[950px]:fixed md:max-[950px]:right-5 md:max-[950px]:bottom-5 lg:flex lg:w-[258px] lg:justify-end">
+              {/* the reason we set lg:w-[px] here is to keep its width same as logo, so we can horizontally center our menu items */}
               <ConnectButton />
             </span>
           </div>
