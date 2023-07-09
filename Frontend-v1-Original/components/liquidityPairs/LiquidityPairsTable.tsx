@@ -45,6 +45,18 @@ const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
   { id: "pair", numeric: false, disablePadding: false, label: "Pair" },
   {
+    id: "apr",
+    numeric: true,
+    disablePadding: false,
+    label: "APR",
+  },
+  {
+    id: "tvl",
+    numeric: true,
+    disablePadding: false,
+    label: "TVL",
+  },
+  {
     id: "balance",
     numeric: true,
     disablePadding: false,
@@ -73,18 +85,6 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Total Pool Staked",
-  },
-  {
-    id: "tvl",
-    numeric: true,
-    disablePadding: false,
-    label: "TVL",
-  },
-  {
-    id: "apr",
-    numeric: true,
-    disablePadding: false,
-    label: "APR",
   },
   {
     id: "",
@@ -583,6 +583,34 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </div>
           </div>
         </TableCell>
+        <TableCell align="right">
+          <div className="flex items-center justify-end gap-1">
+            {row.isAliveGauge === false && (
+              <Tooltip title="Gauge has been killed">
+                <WarningOutlined className="ml-2 text-base text-yellow-300" />
+              </Tooltip>
+            )}
+            {row.oblotr_apr > 0 && (
+              <Tooltip
+                title={`oFVM APR BOOST ${row.oblotr_apr.toFixed(
+                  2
+                )}%. Use at Options page`}
+              >
+                <Link href={`/options`}>
+                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+                </Link>
+              </Tooltip>
+            )}
+            <Typography variant="h2" className="text-xs font-extralight">
+              {(row.apr + row.oblotr_apr).toFixed(2)}%
+            </Typography>
+          </div>
+        </TableCell>
+        <TableCell className="max-2xl:hidden" align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
+            {formatTVL(row.tvl)}
+          </Typography>
+        </TableCell>
         <TableCell className="max-md:hidden" align="right">
           {row &&
             row.token0 &&
@@ -872,34 +900,6 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </Typography>
           </TableCell>
         )}
-        <TableCell className="max-2xl:hidden" align="right">
-          <Typography variant="h2" className="text-xs font-extralight">
-            {formatTVL(row.tvl)}
-          </Typography>
-        </TableCell>
-        <TableCell align="right">
-          <div className="flex items-center justify-end gap-1">
-            {row.isAliveGauge === false && (
-              <Tooltip title="Gauge has been killed">
-                <WarningOutlined className="ml-2 text-base text-yellow-300" />
-              </Tooltip>
-            )}
-            {row.oblotr_apr > 0 && (
-              <Tooltip
-                title={`oFVM APR BOOST ${row.oblotr_apr.toFixed(
-                  2
-                )}%. Use at Options page`}
-              >
-                <Link href={`/options`}>
-                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
-                </Link>
-              </Tooltip>
-            )}
-            <Typography variant="h2" className="text-xs font-extralight">
-              {(row.apr + row.oblotr_apr).toFixed(2)}%
-            </Typography>
-          </div>
-        </TableCell>
         <TableCell align="right">
           <Button
             variant="outlined"
