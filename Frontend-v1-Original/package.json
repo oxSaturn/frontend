@@ -69,5 +69,9 @@
     "singleQuote": false,
     "tabWidth": 2,
     "trailingComma": "es5"
+  },
+  "engines": {
+    "node": "^18.0.0",
+    "pnpm": "^8.0.0"
   }
 }
