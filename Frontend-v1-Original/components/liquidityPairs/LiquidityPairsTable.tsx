@@ -121,9 +121,9 @@ function EnhancedTableHead(props: {
         {headCells.map((headCell) => (
           <TableCell
             className={`border-b border-b-[rgba(104,108,122,0.2)] ${
-              headCell.id === "tvl"
+              headCell.id === "poolAmount"
                 ? "max-2xl:hidden"
-                : headCell.id === "poolAmount" ||
+                : headCell.id === "tvl" ||
                   headCell.id === "stakedAmount" ||
                   headCell.id === "balance" ||
                   headCell.id === "poolBalance"
@@ -606,7 +606,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </Typography>
           </div>
         </TableCell>
-        <TableCell className="max-2xl:hidden" align="right">
+        <TableCell className="max-md:hidden" align="right">
           <Typography variant="h2" className="text-xs font-extralight">
             {formatTVL(row.tvl)}
           </Typography>
@@ -785,7 +785,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </Typography>
           </TableCell>
         )}
-        <TableCell className="max-md:hidden" align="right">
+        <TableCell className="max-2xl:hidden" align="right">
           {row && row.token0 && (
             <div className="flex items-center justify-end max-md:block">
               <Typography variant="h2" className="text-xs font-extralight">
