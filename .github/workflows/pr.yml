@@ -21,16 +21,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
-          cache-dependency-path: ./Frontend-v1-Original/yarn.lock
+          cache: pnpm
+          cache-dependency-path: ./Frontend-v1-Original/pnpm-lock.yaml
 
-      - run: yarn --frozen-lockfile
-      - run: yarn test
+      - run: pnpm install
+      - run: pnpm test
 
   next_lint:
     name: Next Lint
@@ -41,16 +44,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
-          cache-dependency-path: ./Frontend-v1-Original/yarn.lock
+          cache: pnpm
+          cache-dependency-path: ./Frontend-v1-Original/pnpm-lock.yaml
 
-      - run: yarn --frozen-lockfile
-      - run: yarn lint
+      - run: pnpm install
+      - run: pnpm lint
 
   tsc:
     name: Type Checking
@@ -60,12 +65,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
-          cache-dependency-path: ./Frontend-v1-Original/yarn.lock
-      - run: yarn --frozen-lockfile
-      - run: yarn tsc
+          cache: pnpm
+          cache-dependency-path: ./Frontend-v1-Original/pnpm-lock.yaml
+      - run: pnpm install
+      - run: pnpm tsc

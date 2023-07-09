@@ -4,4 +4,5 @@ internals/generators/
 internals/scripts/
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
 package.json
