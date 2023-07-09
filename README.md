@@ -1,25 +1,22 @@
-# Velocimeter - ve(3,3)
+# Velocimeter
 
-New contracts...
+Velocimeter frontend is inspired by Original Solidly v1 frontend. However, everything is refactored to use typescript in strict mode. It also introduces Tailwind CSS for styling. Some of the legacy components can be found under the legacy folder.
+We also have many-many more fixes and improvements.
 
-## What is Velocimeter
+## 🏎️ &nbsp; Quickstart
 
-Inspired by Solidly and Velodrome
+Velocimeter relies on [Next.js](https://nextjs.org/), [React](https://beta.reactjs.org/), [Wagmi](wagmi.sh), [Viem](viem.sh), [Material UI](https://mui.com/material-ui/getting-started/overview/) with [Tailwind CSS](https://tailwindcss.com/).
+It also uses Web3-React and FLUX.
 
-- [Solidly Smart Contracts](https://github.com/andrecronje/solidly)
-- [ve(3,3)](https://andrecronje.medium.com/ve-3-3-44466eaa088b)
-- [ve(3,3) Ouroboros: Part 1 - Fee Distribution](https://andrecronje.medium.com/ve-3-3-ouroboros-part-1-fee-distribution-5dcf131dc82e)
-- [ve(3,3) Ouroboros: Part 2 - Fees explored](https://andrecronje.medium.com/ve-3-3-ouroboros-part-2-fees-explored-c8e026841ae)
-- [ve(3,3): Curves, Initial distribution, Competition, & Building a protocol for protocols](https://andrecronje.medium.com/ve-3-3-curves-initial-distribution-competition-building-a-protocol-for-protocols-79a1ff1cf1a1)
-- [Solidly: preparation for launch](https://andrecronje.medium.com/solidly-preparation-for-launch-8e653ce8a428)
+## 💻 &nbsp; Developer Experience
 
-## Deployment
+### Commands
 
-- [Canto](https://velocimeter.xyz/)
+```
+pnpm install
+pnpm dev
+```
 
-## Getting started
+### Configuration
 
-- Make sure to have nodejs installed. This app is built using [Next.js](https://nextjs.org/learn/basics/create-nextjs-app) and [react](https://reactjs.org/docs/getting-started.html).
-- Run `pnpm install`
-- You can now run the nextjs app this way: `pnpm dev`
-- That's it! You can now start hacking and submit PRs.
+Code quality is set up for you with `prettier` and `eslint`.
