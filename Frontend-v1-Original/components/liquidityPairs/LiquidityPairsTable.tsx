@@ -44,6 +44,18 @@ const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
   { id: "pair", numeric: false, disablePadding: false, label: "Pair" },
   {
+    id: "apr",
+    numeric: true,
+    disablePadding: false,
+    label: "APR",
+  },
+  {
+    id: "tvl",
+    numeric: true,
+    disablePadding: false,
+    label: "TVL",
+  },
+  {
     id: "balance",
     numeric: true,
     disablePadding: false,
@@ -74,18 +86,6 @@ const headCells = [
     label: "Total Pool Staked",
   },
   {
-    id: "tvl",
-    numeric: true,
-    disablePadding: false,
-    label: "TVL",
-  },
-  {
-    id: "apr",
-    numeric: true,
-    disablePadding: false,
-    label: "APR",
-  },
-  {
     id: "",
     numeric: true,
     disablePadding: false,
@@ -112,9 +112,9 @@ function EnhancedTableHead(props: {
         {headCells.map((headCell) => (
           <TableCell
             className={`border-b border-b-[rgba(104,108,122,0.2)] ${
-              headCell.id === "tvl"
+              headCell.id === "poolAmount"
                 ? "max-2xl:hidden"
-                : headCell.id === "poolAmount" ||
+                : headCell.id === "tvl" ||
                   headCell.id === "stakedAmount" ||
                   headCell.id === "balance" ||
                   headCell.id === "poolBalance"
@@ -557,6 +557,30 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </div>
           </div>
         </TableCell>
+        <TableCell align="right">
+          <div className="flex items-center justify-end gap-1">
+            {row.isAliveGauge === false && (
+              <Tooltip title="Gauge has been killed">
+                <WarningOutlined className="ml-2 text-base text-yellow-300" />
+              </Tooltip>
+            )}
+            {row.oblotr_apr > 0 && (
+              <Tooltip
+                title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%.`}
+              >
+                <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
+              </Tooltip>
+            )}
+            <Typography variant="h2" className="text-xs font-extralight">
+              {(row.apr + row.oblotr_apr).toFixed(2)}%
+            </Typography>
+          </div>
+        </TableCell>
+        <TableCell className="max-md:hidden" align="right">
+          <Typography variant="h2" className="text-xs font-extralight">
+            {formatTVL(row.tvl)}
+          </Typography>
+        </TableCell>
         <TableCell className="max-md:hidden" align="right">
           {row &&
             row.token0 &&
@@ -731,7 +755,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </Typography>
           </TableCell>
         )}
-        <TableCell className="max-md:hidden" align="right">
+        <TableCell className="max-2xl:hidden" align="right">
           {row && row.token0 && (
             <div className="flex items-center justify-end max-md:block">
               <Typography variant="h2" className="text-xs font-extralight">
@@ -846,28 +870,6 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
             </Typography>
           </TableCell>
         )}
-        <TableCell className="max-2xl:hidden" align="right">
-          <Typography variant="h2" className="text-xs font-extralight">
-            {formatTVL(row.tvl)}
-          </Typography>
-        </TableCell>
-        <TableCell align="right">
-          <div className="flex items-center justify-end gap-1">
-            {row.isAliveGauge === false && (
-              <Tooltip title="Gauge has been killed">
-                <WarningOutlined className="ml-2 text-base text-yellow-300" />
-              </Tooltip>
-            )}
-            {row.oblotr_apr > 0 && (
-              <Tooltip title={`oBLOTR APR BOOST ${row.oblotr_apr.toFixed(2)}%`}>
-                <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
-              </Tooltip>
-            )}
-            <Typography variant="h2" className="text-xs font-extralight">
-              {(row.apr + row.oblotr_apr).toFixed(2)}%
-            </Typography>
-          </div>
-        </TableCell>
         <TableCell align="right">
           <Button
             variant="outlined"
