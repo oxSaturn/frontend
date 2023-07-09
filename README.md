@@ -13,8 +13,8 @@ It also uses Web3-React and FLUX.
 ### Commands
 
 ```
-yarn
-yarn dev
+pnpm
+pnpm dev
 ```
 
 ### Configuration
