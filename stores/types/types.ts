@@ -55,9 +55,24 @@ interface Bribe {
 
 type BribeEarned = { earned: string };
 
+interface GeneralApr {
+  symbol: string;
+  logo: string;
+  apr: number;
+}
+
+interface OptionApr {
+  symbol: string;
+  logo: string;
+  min_apr: number;
+  max_apr: number;
+}
+
+type Aprs = (GeneralApr | OptionApr)[] | null;
+
 interface Pair {
   tvl: number;
-  apr: number;
+  aprs: Aprs;
   oblotr_apr: number;
   address: `0x${string}`;
   symbol: string;
@@ -335,6 +350,7 @@ export type {
   FireBirdTokens,
   PairsCallResponse,
   Rewards,
+  Aprs,
 };
 
 export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };

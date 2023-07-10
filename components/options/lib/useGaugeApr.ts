@@ -109,8 +109,8 @@ function getGaugeApr(
     +veDiscount
   );
 
-  const minDiscountFactor = (100 - minDiscount) / 100;
-  const maxDiscountFactor = (100 - maxDiscount) / 100;
+  const minDiscountFactor = minDiscount / 100;
+  const maxDiscountFactor = maxDiscount / 100;
 
   const map = new Map<Token, readonly [number, number]>(); // [minApr, maxApr]
 
@@ -124,8 +124,8 @@ function getGaugeApr(
       const fullUnderlyingTokenPrice =
         tokenPrices.get(underlyingTokenAddress.toLowerCase()) ?? 0;
 
-      const maxPrice = fullUnderlyingTokenPrice * minDiscountFactor;
-      const minPrice = fullUnderlyingTokenPrice * maxDiscountFactor;
+      const maxPrice = fullUnderlyingTokenPrice * maxDiscountFactor;
+      const minPrice = fullUnderlyingTokenPrice * minDiscountFactor;
 
       const maxApr =
         ((rewardToken.reward * maxPrice) / totalStakedValue) * 100 * 365;

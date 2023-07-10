@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
 import {
   Skeleton,
   Paper,
@@ -34,7 +33,6 @@ import {
   KeyboardArrowUp,
   KeyboardArrowDown,
   OpenInNewOutlined,
-  LocalFireDepartmentOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -216,32 +214,27 @@ const EnhancedTableToolbar = ({
             </Typography>
           </Button>
           <ul className="flex w-full flex-wrap gap-2 md:flex-nowrap lg:w-auto">
-            {[
-              "all",
-              "layer zero",
-              "boosted",
-              "deposited",
-              "stable",
-              "volatile",
-            ].map((filterOption) => (
-              <li key={filterOption}>
-                <input
-                  type="radio"
-                  id={filterOption}
-                  name="filter"
-                  value={filterOption}
-                  checked={filter === filterOption}
-                  onChange={onChange}
-                  className="peer hidden"
-                />
-                <label
-                  htmlFor={filterOption}
-                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
-                >
-                  <span className="uppercase">{filterOption}</span>
-                </label>
-              </li>
-            ))}
+            {["all", "layer zero", "deposited", "stable", "volatile"].map(
+              (filterOption) => (
+                <li key={filterOption}>
+                  <input
+                    type="radio"
+                    id={filterOption}
+                    name="filter"
+                    value={filterOption}
+                    checked={filter === filterOption}
+                    onChange={onChange}
+                    className="peer hidden"
+                  />
+                  <label
+                    htmlFor={filterOption}
+                    className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
+                  >
+                    <span className="uppercase">{filterOption}</span>
+                  </label>
+                </li>
+              )
+            )}
           </ul>
         </div>
         <div className="w-full">
@@ -382,11 +375,6 @@ export default function EnhancedTable({
           }
           if (filter === "volatile") {
             if (pair.stable !== false) {
-              return false;
-            }
-          }
-          if (filter === "boosted") {
-            if (!pair.oblotr_apr) {
               return false;
             }
           }
@@ -584,26 +572,65 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           </div>
         </TableCell>
         <TableCell align="right">
-          <div className="flex items-center justify-end gap-1">
-            {row.isAliveGauge === false && (
-              <Tooltip title="Gauge has been killed">
-                <WarningOutlined className="ml-2 text-base text-yellow-300" />
-              </Tooltip>
+          <div className="flex flex-col items-center justify-end gap-1">
+            {row.aprs === null ? (
+              <div className="flex justify-end w-full">
+                <Typography variant="h2" className="text-xs font-extralight">
+                  {0}%
+                </Typography>
+              </div>
+            ) : (
+              row.aprs.map((apr) =>
+                "apr" in apr ? (
+                  <div
+                    key={apr.apr + apr.symbol + apr.logo}
+                    className="flex justify-between items-center w-full"
+                  >
+                    <img
+                      src={apr.logo}
+                      title={apr.symbol}
+                      alt={`${apr.symbol} apr`}
+                      className="block h-5 w-5 rounded-full"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src =
+                          "/tokens/unknown-logo.png";
+                      }}
+                    />
+                    <Typography
+                      variant="h2"
+                      className="text-xs font-extralight"
+                    >
+                      {apr.apr.toFixed()}% {apr.symbol}
+                    </Typography>
+                  </div>
+                ) : (
+                  <div
+                    key={apr.min_apr + apr.max_apr + apr.symbol + apr.logo}
+                    className="flex justify-between items-center w-full"
+                  >
+                    <img
+                      src={apr.logo}
+                      title={apr.symbol}
+                      alt={`${apr.symbol} apr`}
+                      className="block h-5 w-5 rounded-full"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src =
+                          "/tokens/unknown-logo.png";
+                      }}
+                    />
+                    <Typography
+                      variant="h2"
+                      className="text-xs font-extralight"
+                    >
+                      {apr.min_apr.toFixed()}-{apr.max_apr.toFixed()}%{" "}
+                      {apr.symbol}
+                    </Typography>
+                  </div>
+                )
+              )
             )}
-            {row.oblotr_apr > 0 && (
-              <Tooltip
-                title={`oFVM APR BOOST ${row.oblotr_apr.toFixed(
-                  2
-                )}%. Use at Options page`}
-              >
-                <Link href={`/options`}>
-                  <LocalFireDepartmentOutlined className="ml-2 text-base text-orange-600" />
-                </Link>
-              </Tooltip>
-            )}
-            <Typography variant="h2" className="text-xs font-extralight">
-              {(row.apr + row.oblotr_apr).toFixed(2)}%
-            </Typography>
           </div>
         </TableCell>
         <TableCell className="max-md:hidden" align="right">
@@ -901,6 +928,11 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           </TableCell>
         )}
         <TableCell align="right">
+          {row.isAliveGauge === false && (
+            <Tooltip title="Gauge has been killed">
+              <WarningOutlined className="ml-2 text-base text-yellow-300" />
+            </Tooltip>
+          )}
           <Button
             variant="outlined"
             color="primary"
@@ -1035,8 +1067,18 @@ function descendingComparator(a: Pair, b: Pair, orderBy: OrderBy) {
       return 0;
 
     case "apr":
-      const bApr = b.apr + b.oblotr_apr;
-      const aApr = a.apr + a.oblotr_apr;
+      const bApr = b.aprs
+        ? b.aprs.reduce((acc, curr) => {
+            return (acc =
+              "apr" in curr ? curr.apr : curr.min_apr + curr.max_apr);
+          }, 0)
+        : 0;
+      const aApr = a.aprs
+        ? a.aprs.reduce((acc, curr) => {
+            return (acc =
+              "apr" in curr ? curr.apr : curr.min_apr + curr.max_apr);
+          }, 0)
+        : 0;
       if (BigNumber(bApr).lt(aApr)) {
         return -1;
       }
