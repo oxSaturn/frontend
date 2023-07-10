@@ -206,5 +206,21 @@
     "logoURI": "https://icons-ckg.pages.dev/stargate-light/tokens/dai.svg",
     "name": "Maker DAO DAI",
     "symbol": "DAI"
+  },
+    {
+    "address": "0xfb98b335551a418cd0737375a2ea0ded62ea213b",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/15264/small/mimatic-red.png?1620281018",
+    "name": "Qi DAO miMATIC",
+    "symbol": "MAI"
+  },
+      {
+    "address": "0x9E73F99EE061C8807F69f9c6CCc44ea3d8c373ee",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/28284/small/frxETH_icon.png?1679886981",
+    "name": "FRAX Staked ETH",
+    "symbol": "frxETH"
   }
 ]
