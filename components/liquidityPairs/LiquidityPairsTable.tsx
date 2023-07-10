@@ -575,9 +575,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
           <div className="flex flex-col items-center justify-end gap-1">
             {row.aprs === null ? (
               <div className="flex justify-end w-full">
-                <Typography variant="h2" className="text-xs font-extralight">
-                  {0}%
-                </Typography>
+                <h2 className="text-xs font-extralight">{0}%</h2>
               </div>
             ) : (
               row.aprs.map((apr) =>
@@ -597,12 +595,9 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                           "/tokens/unknown-logo.png";
                       }}
                     />
-                    <Typography
-                      variant="h2"
-                      className="text-xs font-extralight"
-                    >
+                    <h2 className="text-xs font-extralight">
                       {apr.apr.toFixed()}% {apr.symbol}
-                    </Typography>
+                    </h2>
                   </div>
                 ) : (
                   <div
@@ -620,13 +615,10 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                           "/tokens/unknown-logo.png";
                       }}
                     />
-                    <Typography
-                      variant="h2"
-                      className="text-xs font-extralight"
-                    >
+                    <h2 className="text-xs font-extralight">
                       {apr.min_apr.toFixed()}-{apr.max_apr.toFixed()}%{" "}
                       {apr.symbol}
-                    </Typography>
+                    </h2>
                   </div>
                 )
               )
