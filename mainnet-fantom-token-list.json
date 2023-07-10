@@ -51,7 +51,7 @@
     "address": "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/fvm.png?raw=true",
+    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/public/tokens/fvm.png?raw=true",
     "name": "Velocimeter",
     "symbol": "FVM"
   },
@@ -59,7 +59,7 @@
     "address": "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/oFvm.png?raw=true",
+    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/public/tokens/oFvm.png?raw=true",
     "name": "Option FVM",
     "symbol": "oFVM"
   },
