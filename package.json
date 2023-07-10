@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "tsc": "tsc --noEmit",
-    "prepare": "cd .. && husky install Frontend-v1-Original/.husky",
+    "prepare": "husky install",
     "test": "vitest",
     "test:e2e": "playwright test"
   },
