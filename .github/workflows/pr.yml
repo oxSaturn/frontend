@@ -7,10 +7,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  run:
-    working-directory: ./Frontend-v1-Original
-
 jobs:
   unit_test:
     name: Unit Test
@@ -30,7 +26,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-          cache-dependency-path: ./Frontend-v1-Original/pnpm-lock.yaml
 
       - run: pnpm install
       - run: pnpm test
@@ -52,7 +47,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-          cache-dependency-path: ./Frontend-v1-Original/pnpm-lock.yaml
 
       - run: pnpm install
       - run: pnpm lint
@@ -74,6 +68,5 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-          cache-dependency-path: ./Frontend-v1-Original/pnpm-lock.yaml
       - run: pnpm install
       - run: pnpm tsc
