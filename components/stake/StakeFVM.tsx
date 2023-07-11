@@ -137,11 +137,7 @@ export function StakeFVM() {
   });
 
   // stake
-  const {
-    write: stakeFVM,
-    isLoading: userStakingFVM,
-    data: stakeFVMTx,
-  } = useStakeFvmDeposit(stakeConfig);
+  const { write: stakeFVM, data: stakeFVMTx } = useStakeFvmDeposit(stakeConfig);
 
   // wait for stake receipt
   const { isFetching: waitingStakeReceipt } = useWaitForTransaction({
@@ -174,17 +170,13 @@ export function StakeFVM() {
   });
 
   // claim
-  const {
-    write: claim,
-    isLoading: userClaiming,
-    data: claimTx,
-  } = useStakeFvmGetReward(claimConfig);
+  const { write: claim, data: claimTx } = useStakeFvmGetReward(claimConfig);
 
   // wait for claim receipt
   const { isFetching: waitingClaimReceipt } = useWaitForTransaction({
     hash: claimTx?.hash,
     onSuccess: () => {
-      // nothing to do
+      refetchEarned();
     },
   });
 
@@ -198,7 +190,8 @@ export function StakeFVM() {
     enabled: !!parseFloat(state.unstakeNumber),
   });
 
-  // unstake confirmation modal
+  // init unstake, wallet will ask for confirmation
+  // isLoading is true when user confirms
   const { write: unstakeFVM, data: unstakeFVMTx } =
     useStakeFvmWithdraw(unstakeConfig);
 
@@ -294,10 +287,14 @@ export function StakeFVM() {
 
           <div>
             <button onClick={claim} className={buttonClasses}>
-              Claim{" "}
               {waitingClaimReceipt ? (
-                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
-              ) : null}
+                <>
+                  Claiming
+                  <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+                </>
+              ) : (
+                "Claim"
+              )}
             </button>
           </div>
         </Section>
@@ -342,10 +339,14 @@ export function StakeFVM() {
                 }}
                 className={buttonClasses}
               >
-                Withdraw{" "}
                 {waitingUnstakeReceipt ? (
-                  <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
-                ) : null}
+                  <>
+                    Withdrawing
+                    <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+                  </>
+                ) : (
+                  "Withdraw"
+                )}
               </button>
             </div>
           </div>
