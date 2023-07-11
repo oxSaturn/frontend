@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { Pair, RouteAsset } from "../../stores/types/types";
+import { Aprs, Pair, RouteAsset } from "../../stores/types/types";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +15,35 @@ export default async function handler(
     let tvl = 0;
     let tbv = 0;
 
-    const noScamPairs = resJson.data.filter((pair) => {
+    const withParsedAprs = resJson.data.map((pair) => {
+      if (pair.aprs) {
+        const parsed = JSON.parse(pair.aprs as unknown as string) as Exclude<
+          Aprs,
+          null
+        >;
+        const filtered = parsed.filter((apr) => {
+          if ("min_apr" in apr) {
+            if (apr.symbol !== "oFVM") {
+              return apr.min_apr > 0;
+            } else {
+              return true;
+            }
+          } else {
+            if (apr.symbol !== "FVM") {
+              return apr.apr > 0;
+            } else {
+              return true;
+            }
+          }
+        });
+        const pairAprs = filtered.length > 0 ? filtered : null;
+        pair.aprs = pairAprs;
+      }
+      return pair;
+    });
+    const parsedAprsData = { data: withParsedAprs };
+
+    const noScamPairs = parsedAprsData.data.filter((pair) => {
       return !knownScamPairs.some(
         (scamPairAddress) =>
           scamPairAddress.toLowerCase() === pair.address.toLowerCase()
