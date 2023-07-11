@@ -26,7 +26,7 @@ import { LoadingSVG } from "../common/LoadingSVG";
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 
 const buttonClasses =
-  "inline-flex items-center bg-blue/70 text-white hover:bg-blue/50 transition-colors duration-200 px-3 py-1";
+  "inline-flex items-center bg-blue/70 text-white hover:bg-blue/50 transition-colors duration-200 px-3 py-1 disabled:cursor-not-allowed";
 
 const inputClasses =
   "w-full px-2 py-2 text-white hover:ring-1 hover:ring-cyan focus:outline-none focus:ring-1 focus:ring-cyan border-cyan-900/50 border bg-transparent";
@@ -255,7 +255,11 @@ export function StakeFVM() {
                     <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
                   </button>
                 ) : (
-                  <button className={buttonClasses} onClick={stakeFVM}>
+                  <button
+                    className={buttonClasses}
+                    onClick={stakeFVM}
+                    disabled={!stakeConfig.request}
+                  >
                     Stake {GOV_TOKEN_SYMBOL}
                   </button>
                 )
@@ -330,6 +334,9 @@ export function StakeFVM() {
                     unstakeFVM?.();
                   }
                 }}
+                disabled={
+                  !unstakeConfig.request || !parseFloat(state.unstakeNumber)
+                }
                 className={buttonClasses}
               >
                 {waitingUnstakeReceipt ? (
