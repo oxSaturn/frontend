@@ -215,7 +215,7 @@ export function StakeFVM() {
   if (isApprovalNeeded === undefined) return null;
 
   return (
-    <div className="mx-auto max-w-lg space-y-10">
+    <div className="mx-5 sm:mx-auto sm:max-w-lg space-y-10">
       <h1 className="text-3xl">
         Stake {GOV_TOKEN_SYMBOL} to earn o{GOV_TOKEN_SYMBOL}
       </h1>
@@ -280,9 +280,9 @@ export function StakeFVM() {
         </Section>
 
         <Section>
-          <SubHeader text="Rewards" />
+          <SubHeader text="Earned" />
           <div className="flex justify-between">
-            <span>o{GOV_TOKEN_SYMBOL} earned</span>
+            <span>o{GOV_TOKEN_SYMBOL}</span>
             <span>
               {isFetchingEarned ? (
                 <LoadingSVG className="animate-spin h-5 w-5" />
