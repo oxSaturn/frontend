@@ -36,7 +36,31 @@ export default async function handler(
             }
           }
         });
-        const pairAprs = filtered.length > 0 ? filtered : null;
+
+        // When gauge emits options and has been boosted with more options we want to summarise min and max apr values
+        const map = new Map<string, Exclude<Aprs, null>[number]>();
+        filtered.forEach((apr) => {
+          if ("min_apr" in apr) {
+            if (map.has(apr.symbol)) {
+              const current = map.get(apr.symbol) as Extract<
+                Exclude<Aprs, null>[number],
+                { min_apr: number }
+              >;
+              map.set(apr.symbol, {
+                ...current,
+                min_apr: current.min_apr + apr.min_apr,
+                max_apr: current.max_apr + apr.max_apr,
+              });
+            } else {
+              map.set(apr.symbol, apr);
+            }
+          } else {
+            map.set(apr.symbol, apr);
+          }
+        });
+        const mapAsArr = [...map.values()];
+
+        const pairAprs = mapAsArr.length > 0 ? mapAsArr : null;
         pair.aprs = pairAprs;
       }
       return pair;
