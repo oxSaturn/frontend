@@ -11,7 +11,7 @@ export function LoadingSVG({ className }: { className?: string }) {
         cy="12"
         r="10"
         stroke="currentColor"
-        stroke-width="4"
+        strokeWidth="4"
         className="opacity-25"
       />
       <path
