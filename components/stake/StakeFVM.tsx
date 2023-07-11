@@ -335,7 +335,19 @@ export function StakeFVM() {
                   }
                 }}
                 disabled={
-                  !unstakeConfig.request || !parseFloat(state.unstakeNumber)
+                  // enabled only when
+                  // 1. user has input a number
+                  // 2. the unstake tx will likely be successful
+                  // 3. user has more staked balance than input number
+                  !(
+                    Number.isNaN(parseFloat(state.unstakeNumber)) === false &&
+                    unstakeConfig.request &&
+                    (stakedBalance &&
+                    stakedBalance >=
+                      parseUnits(state.unstakeNumber, GOV_TOKEN_DECIMALS)
+                      ? true
+                      : false)
+                  )
                 }
                 className={buttonClasses}
               >
