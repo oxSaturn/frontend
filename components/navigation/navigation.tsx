@@ -32,6 +32,9 @@ function Navigation() {
     if (activePath.includes("options")) {
       setActive("options");
     }
+    if (activePath.includes("stake")) {
+      setActive("stake");
+    }
   }, [router.asPath]);
 
   const renderNavs = () => {
@@ -43,6 +46,7 @@ function Navigation() {
         {renderSubNav("Vote", "vote")}
         {renderSubNav("Rewards", "rewards")}
         {renderSubNav("Options", "options")}
+        {renderSubNav("Stake", "stake")}
         {renderSubNav("Bribe", "bribe")}
       </>
     );

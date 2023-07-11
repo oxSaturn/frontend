@@ -18,6 +18,7 @@ export { airdropClaimABI } from "./airdropClaimABI";
 
 export { optionTokenABI } from "./optionTokenABI";
 export { maxxingGaugeABI } from "./maxxingGaugeABI";
+export { stakeFvmABI } from "./stakeFvmABI";
 
 export default {
   erc20ABI,

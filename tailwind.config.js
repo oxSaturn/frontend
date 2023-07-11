@@ -51,6 +51,13 @@ module.exports = {
         cyan: {
           DEFAULT: "#00E8CA",
           700: "#00CFB3",
+          900: "#00695B",
+        },
+        green: {
+          900: "#021716",
+        },
+        blue: {
+          DEFAULT: "#0C8FE8",
         },
       },
       boxShadow: ({ theme }) => ({
