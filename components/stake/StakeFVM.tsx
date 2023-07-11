@@ -76,11 +76,7 @@ export function StakeFVM() {
    * Stake related hooks
    */
 
-  const {
-    data: fvmBalance,
-    isFetching: isFetchingFvmBalance,
-    refetch: refetchFvmBalance,
-  } = useBalance({
+  const { data: fvmBalance, refetch: refetchFvmBalance } = useBalance({
     address: address!,
     token: GOV_TOKEN_ADDRESS,
     enabled: !!GOV_TOKEN_ADDRESS && !!address,
@@ -116,11 +112,8 @@ export function StakeFVM() {
   });
 
   // approve
-  const {
-    write: approveFVM,
-    isLoading: userApprovingFVM,
-    data: approveFVMTx,
-  } = useErc20Approve(approveConfig);
+  const { write: approveFVM, data: approveFVMTx } =
+    useErc20Approve(approveConfig);
 
   // wait for approve receipt
   const { isFetching: waitingApproveReceipt } = useWaitForTransaction({
