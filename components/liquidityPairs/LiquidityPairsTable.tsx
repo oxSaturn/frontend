@@ -498,7 +498,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
     tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
   return (
     <>
-      <TableRow>
+      <TableRow className="hover:bg-background/50">
         <TableCell align="right" size="small">
           <IconButton
             aria-label="expand row"
@@ -582,19 +582,8 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 "apr" in apr ? (
                   <div
                     key={apr.apr + apr.symbol + apr.logo}
-                    className="flex justify-between items-center w-full"
+                    className="flex justify-end items-center w-full"
                   >
-                    <img
-                      src={apr.logo}
-                      title={apr.symbol}
-                      alt={`${apr.symbol} apr`}
-                      className="block h-5 w-5 rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).onerror = null;
-                        (e.target as HTMLImageElement).src =
-                          "/tokens/unknown-logo.png";
-                      }}
-                    />
                     <h2 className="text-xs font-extralight">
                       {apr.apr.toFixed()}% {apr.symbol}
                     </h2>
@@ -602,19 +591,8 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 ) : (
                   <div
                     key={apr.min_apr + apr.max_apr + apr.symbol + apr.logo}
-                    className="flex justify-between items-center w-full"
+                    className="flex justify-end items-center w-full"
                   >
-                    <img
-                      src={apr.logo}
-                      title={apr.symbol}
-                      alt={`${apr.symbol} apr`}
-                      className="block h-5 w-5 rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).onerror = null;
-                        (e.target as HTMLImageElement).src =
-                          "/tokens/unknown-logo.png";
-                      }}
-                    />
                     <h2 className="text-xs font-extralight">
                       {apr.min_apr.toFixed()}-{apr.max_apr.toFixed()}%{" "}
                       {apr.symbol}
