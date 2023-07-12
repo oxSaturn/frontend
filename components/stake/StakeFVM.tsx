@@ -25,10 +25,7 @@ import {
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
 
-import { useRewardTokens } from "./lib/useRewardTokens";
-import { reducer } from "./lib/reducer";
-import { useApr } from "./lib/useApr";
-import { useTotalStaked } from "./lib/useTotalStaked";
+import { reducer, useTotalStaked, useRewardTokens, useApr } from "./lib";
 
 const buttonClasses =
   "flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60";
