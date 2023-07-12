@@ -244,7 +244,7 @@ export function StakeFVM() {
                 dispatch({ type: "stake", payload: fvmBalance?.formatted! });
               }}
             >
-              {fvmBalance?.formatted}
+              {formatCurrency(fvmBalance?.formatted)}
             </span>
           </div>
           <div className="space-y-2">
