@@ -1,6 +1,8 @@
 import { useAccount, useBalance, useWaitForTransaction } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
-import { type ReactNode, useReducer } from "react";
+import { type ReactNode, useReducer, useMemo } from "react";
+
+import { LoadingSVG } from "../common/LoadingSVG";
 
 import {
   GOV_TOKEN_ADDRESS,
@@ -21,36 +23,18 @@ import {
   useStakeFvmGetReward,
   useStakeFvmWithdraw,
 } from "../../lib/wagmiGen";
-import { LoadingSVG } from "../common/LoadingSVG";
+import { formatCurrency } from "../../utils/utils";
 
-import { useRewardTokens } from "./useRewardTokens";
+import { useRewardTokens } from "./lib/useRewardTokens";
+import { reducer } from "./lib/reducer";
+import { useApr } from "./lib/useApr";
+import { useTotalStaked } from "./lib/useTotalStaked";
 
 const buttonClasses =
-  "inline-flex items-center bg-blue/70 text-white hover:bg-blue/50 transition-colors duration-200 px-3 py-1 disabled:cursor-not-allowed";
+  "flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60";
 
 const inputClasses =
   "w-full px-2 py-2 text-white hover:ring-1 hover:ring-cyan focus:outline-none focus:ring-1 focus:ring-cyan border-cyan-900/50 border bg-transparent";
-
-interface State {
-  stakeNumber: string;
-  unstakeNumber: string;
-}
-
-interface Action {
-  type: "stake" | "unstake";
-  payload: string;
-}
-
-function reducer(state: State, action: Action) {
-  switch (action.type) {
-    case "stake":
-      return { ...state, stakeNumber: action.payload };
-    case "unstake":
-      return { ...state, unstakeNumber: action.payload };
-    default:
-      return { ...state };
-  }
-}
 
 function SubHeader(props: { text: string }) {
   return <h2 className="text-2xl text-white">{props.text}</h2>;
@@ -75,6 +59,8 @@ export function StakeFVM() {
   /**
    * Stake related hooks
    */
+
+  const { data: totalStaked } = useTotalStaked();
 
   const { data: fvmBalance, refetch: refetchFvmBalance } = useBalance({
     address: address!,
@@ -112,8 +98,11 @@ export function StakeFVM() {
   });
 
   // approve
-  const { write: approveFVM, data: approveFVMTx } =
-    useErc20Approve(approveConfig);
+  const {
+    write: approveFVM,
+    data: approveFVMTx,
+    isLoading: isWritingApprove,
+  } = useErc20Approve(approveConfig);
 
   // wait for approve receipt
   const { isFetching: waitingApproveReceipt } = useWaitForTransaction({
@@ -130,7 +119,11 @@ export function StakeFVM() {
   });
 
   // stake
-  const { write: stakeFVM, data: stakeFVMTx } = useStakeFvmDeposit(stakeConfig);
+  const {
+    write: stakeFVM,
+    data: stakeFVMTx,
+    isLoading: isWritingStake,
+  } = useStakeFvmDeposit(stakeConfig);
 
   // wait for stake receipt
   const { isFetching: waitingStakeReceipt } = useWaitForTransaction({
@@ -153,14 +146,24 @@ export function StakeFVM() {
     refetch: refetchEarned,
   } = useRewardTokens();
 
+  const filteredEarned = useMemo(() => {
+    return earned?.filter((e) => Number(e.amount) > 0);
+  }, [earned]);
+
+  const { data: aprs } = useApr();
+
   // prepare claim
   const { config: claimConfig } = usePrepareStakeFvmGetReward({
-    args: [address!, earned?.map((e) => e.address) ?? []],
-    enabled: !!address && !!earned?.length,
+    args: [address!, filteredEarned?.map((e) => e.address) ?? []],
+    enabled: !!address && !!filteredEarned && filteredEarned.length > 0,
   });
 
   // claim
-  const { write: claim, data: claimTx } = useStakeFvmGetReward(claimConfig);
+  const {
+    write: claim,
+    data: claimTx,
+    isLoading: isWritingClaim,
+  } = useStakeFvmGetReward(claimConfig);
 
   // wait for claim receipt
   const { isFetching: waitingClaimReceipt } = useWaitForTransaction({
@@ -182,8 +185,11 @@ export function StakeFVM() {
 
   // init unstake, wallet will ask for confirmation
   // isLoading is true when user confirms
-  const { write: unstakeFVM, data: unstakeFVMTx } =
-    useStakeFvmWithdraw(unstakeConfig);
+  const {
+    write: unstakeFVM,
+    data: unstakeFVMTx,
+    isLoading: isWritingUnstake,
+  } = useStakeFvmWithdraw(unstakeConfig);
 
   // wait for unstake receipt
   const { isFetching: waitingUnstakeReceipt } = useWaitForTransaction({
@@ -198,13 +204,24 @@ export function StakeFVM() {
   if (isApprovalNeeded === undefined) return null;
 
   return (
-    <div className="mx-5 sm:mx-auto sm:max-w-lg space-y-10">
+    <div className="mx-5 sm:mx-auto sm:max-w-lg space-y-10 font-sono">
       <h1 className="text-3xl">
         Stake {GOV_TOKEN_SYMBOL} to earn o{GOV_TOKEN_SYMBOL}
       </h1>
       <div className="space-y-5">
         <Section>
           <SubHeader text="Stake" />
+          <div className="flex justify-between">
+            <span>Total Staked</span>
+            <span
+              className="underline cursor-pointer"
+              onClick={() => {
+                dispatch({ type: "stake", payload: fvmBalance?.formatted! });
+              }}
+            >
+              ${formatCurrency(totalStaked)}
+            </span>
+          </div>
           <div className="flex justify-between">
             <span>{GOV_TOKEN_SYMBOL} balance</span>
             <span
@@ -215,6 +232,27 @@ export function StakeFVM() {
             >
               {fvmBalance?.formatted}
             </span>
+          </div>
+          <div className="flex items-start justify-between">
+            <div>APR</div>
+            <div className="flex flex-col">
+              {aprs && aprs.length > 0 ? (
+                aprs
+                  .filter((apr) => Number(apr.minApr) > 0)
+                  .map((apr) => (
+                    <div
+                      key={apr.address}
+                      className="flex items-center justify-end gap-2"
+                    >
+                      <div>
+                        {apr.minApr} - ${apr.maxApr}%
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <div>0.00</div>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <input
@@ -229,7 +267,7 @@ export function StakeFVM() {
             />
             <div>
               {isApprovalNeeded ? (
-                waitingApproveReceipt ? (
+                waitingApproveReceipt || isWritingApprove ? (
                   <button className={buttonClasses} disabled>
                     Approving {GOV_TOKEN_SYMBOL}{" "}
                     <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
@@ -246,7 +284,7 @@ export function StakeFVM() {
               ) : null}
 
               {!isApprovalNeeded ? (
-                waitingStakeReceipt ? (
+                waitingStakeReceipt || isWritingStake ? (
                   <button className={buttonClasses} disabled>
                     Staking {GOV_TOKEN_SYMBOL}{" "}
                     <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
@@ -269,25 +307,38 @@ export function StakeFVM() {
         <Section>
           <SubHeader text="Earned" />
           <div>
-            {earned
-              ?.filter((e) => e.amount > 0n)
-              .map((e) => (
+            {filteredEarned &&
+              filteredEarned.map((e) => (
                 <div key={e.address} className="flex justify-between">
                   <span>{e.symbol}</span>
                   <span>
                     {isFetchingEarned ? (
                       <LoadingSVG className="animate-spin h-5 w-5" />
                     ) : (
-                      formatUnits(e.amount ?? 0n, e.decimals)
+                      formatCurrency(e.amount)
                     )}
                   </span>
                 </div>
-              )) ?? null}
+              ))}
+            {filteredEarned && filteredEarned.length === 0 && (
+              <div className="flex items-center justify-between">
+                Nothing earned yet
+              </div>
+            )}
           </div>
 
           <div>
-            <button onClick={claim} className={buttonClasses}>
-              {waitingClaimReceipt ? (
+            <button
+              onClick={claim}
+              className={buttonClasses}
+              disabled={
+                waitingClaimReceipt ||
+                isWritingClaim ||
+                !filteredEarned ||
+                filteredEarned?.length === 0
+              }
+            >
+              {waitingClaimReceipt || isWritingClaim ? (
                 <>
                   Claiming
                   <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
@@ -338,6 +389,8 @@ export function StakeFVM() {
                   }
                 }}
                 disabled={
+                  waitingUnstakeReceipt ||
+                  isWritingUnstake ||
                   // enabled only when
                   // 1. user has input a number
                   // 2. the unstake tx will likely be successful
@@ -354,7 +407,7 @@ export function StakeFVM() {
                 }
                 className={buttonClasses}
               >
-                {waitingUnstakeReceipt ? (
+                {waitingUnstakeReceipt || isWritingUnstake ? (
                   <>
                     Withdrawing
                     <LoadingSVG className="animate-spin h-5 w-5 ml-1" />

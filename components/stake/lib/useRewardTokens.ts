@@ -1,8 +1,9 @@
 import { erc20ABI, useAccount, useContractReads } from "wagmi";
+import { formatUnits } from "viem";
 
-import { useStakeFvmRewardsListLength } from "../../lib/wagmiGen";
-import { STAKING_ADDRESS } from "../../stores/constants/contracts";
-import { stakeFvmABI } from "../../stores/abis/stakeFvmABI";
+import { useStakeFvmRewardsListLength } from "../../../lib/wagmiGen";
+import { STAKING_ADDRESS } from "../../../stores/constants/contracts";
+import { stakeFvmABI } from "../../../stores/abis/stakeFvmABI";
 
 export function useRewardTokens() {
   const { address } = useAccount();
@@ -11,7 +12,7 @@ export function useRewardTokens() {
   });
 
   const { data: tokenAddresses } = useContractReads({
-    enabled: rewardsListLength !== undefined && rewardsListLength > 0,
+    enabled: !!rewardsListLength,
     allowFailure: false,
     contracts: [...Array(rewardsListLength ?? 0).keys()].map((i) => {
       return {
@@ -19,13 +20,12 @@ export function useRewardTokens() {
         abi: stakeFvmABI,
         functionName: "rewards",
         args: [BigInt(i)],
-      } as const; // see why we need to cast here https://github.com/wagmi-dev/wagmi/issues/2342
+      } as const;
     }),
   });
 
-  // read token symbol
-  const { data: tokenInfos } = useContractReads({
-    enabled: tokenAddresses !== undefined && tokenAddresses.length > 0,
+  const { data: tokenSymbols } = useContractReads({
+    enabled: !!tokenAddresses && tokenAddresses.length > 0,
     allowFailure: false,
     contracts: tokenAddresses?.map((token) => {
       return {
@@ -36,9 +36,8 @@ export function useRewardTokens() {
     }),
   });
 
-  // read token decimals
   const { data: tokenDecimals } = useContractReads({
-    enabled: tokenAddresses !== undefined && tokenAddresses.length > 0,
+    enabled: !!tokenAddresses && tokenAddresses.length > 0,
     allowFailure: false,
     contracts: tokenAddresses?.map((token) => {
       return {
@@ -49,11 +48,17 @@ export function useRewardTokens() {
     }),
   });
 
-  const { data, isFetching, refetch } = useContractReads({
+  const {
+    data: earned,
+    isFetching,
+    refetch,
+  } = useContractReads({
     enabled:
-      tokenAddresses !== undefined &&
+      !!tokenAddresses &&
       tokenAddresses.length > 0 &&
-      address !== undefined,
+      !!address &&
+      !!tokenDecimals &&
+      tokenDecimals.length > 0,
     allowFailure: false,
     contracts: tokenAddresses?.map((token) => {
       return {
@@ -63,15 +68,19 @@ export function useRewardTokens() {
         args: [token, address!],
       } as const;
     }),
+    select: (data) =>
+      data.map((earnedAmount, i) =>
+        formatUnits(earnedAmount, tokenDecimals![i])
+      ),
   });
 
   return {
     data:
-      data && tokenAddresses && tokenInfos && tokenDecimals
-        ? data.map((amount, i) => {
+      !!earned && !!tokenAddresses && !!tokenSymbols && tokenDecimals
+        ? earned.map((amount, i) => {
             return {
               address: tokenAddresses[i],
-              symbol: tokenInfos[i],
+              symbol: tokenSymbols[i],
               decimals: tokenDecimals[i],
               amount: amount,
             };
