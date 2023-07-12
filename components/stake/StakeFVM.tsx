@@ -247,6 +247,7 @@ export function StakeFVM() {
                       <div>
                         {apr.minApr} - ${apr.maxApr}%
                       </div>
+                      <div>{apr.symbol}</div>
                     </div>
                   ))
               ) : (
