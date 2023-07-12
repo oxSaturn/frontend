@@ -155,7 +155,7 @@ export function StakeFVM() {
 
   // prepare claim
   const { config: claimConfig } = usePrepareStakeFvmGetReward({
-    args: [address!, earned!.map((e) => e.address)],
+    args: [address!, earned?.map((e) => e.address) ?? []],
     enabled: !!address && !!earned?.length,
   });
 
