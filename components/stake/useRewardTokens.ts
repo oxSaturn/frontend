@@ -66,14 +66,17 @@ export function useRewardTokens() {
   });
 
   return {
-    data: data?.map((amount, i) => {
-      return {
-        address: tokenAddresses![i],
-        symbol: tokenInfos![i],
-        decimals: tokenDecimals![i],
-        amount: amount,
-      };
-    }),
+    data:
+      data && tokenAddresses && tokenInfos && tokenDecimals
+        ? data.map((amount, i) => {
+            return {
+              address: tokenAddresses[i],
+              symbol: tokenInfos[i],
+              decimals: tokenDecimals[i],
+              amount: amount,
+            };
+          })
+        : undefined,
     isFetching,
     refetch,
   };
