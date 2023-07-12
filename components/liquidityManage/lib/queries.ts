@@ -375,7 +375,7 @@ export const getPairByAddress = async (
       logoURI: "",
       local: false,
     },
-    apr: 0,
+    aprs: null, // we don't need to know aprs here
     oblotr_apr: 0,
     total_supply: 0,
     token0_address: token0,
