@@ -64,4 +64,7 @@ export const MSIG_ADDRESS = "0x88Dec6df03C2C111Efd4ad89Cef2c0347034AFC0"; // fan
 export const MINT_TANK = "0x14Dc007573Ac5dCC94410bc29DCBb4923e54C69d"; // fantom
 export const AIRDROP_CLAIM = "0xCEE59eb1E4e28F50D90Bf4897ca1a84d6552AA21"; // fantom
 
+// fantom staking FVM contract
+export const STAKING_ADDRESS = "0x0Ddf6B15422e68C892b66173f3026aE36b6C3825"; // fantom
+
 //LFG
