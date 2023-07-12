@@ -13,7 +13,7 @@ export function useRewardTokens() {
   const { data: tokenAddresses } = useContractReads({
     enabled: rewardsListLength !== undefined && rewardsListLength > 0,
     allowFailure: false,
-    contracts: [...Array(rewardsListLength!).keys()].map((i) => {
+    contracts: [...Array(rewardsListLength ?? 0).keys()].map((i) => {
       return {
         address: STAKING_ADDRESS,
         abi: stakeFvmABI,
@@ -27,7 +27,7 @@ export function useRewardTokens() {
   const { data: tokenInfos } = useContractReads({
     enabled: tokenAddresses !== undefined && tokenAddresses.length > 0,
     allowFailure: false,
-    contracts: tokenAddresses!.map((token) => {
+    contracts: tokenAddresses?.map((token) => {
       return {
         address: token,
         abi: erc20ABI,
@@ -40,7 +40,7 @@ export function useRewardTokens() {
   const { data: tokenDecimals } = useContractReads({
     enabled: tokenAddresses !== undefined && tokenAddresses.length > 0,
     allowFailure: false,
-    contracts: tokenAddresses!.map((token) => {
+    contracts: tokenAddresses?.map((token) => {
       return {
         address: token,
         abi: erc20ABI,
@@ -55,7 +55,7 @@ export function useRewardTokens() {
       tokenAddresses.length > 0 &&
       address !== undefined,
     allowFailure: false,
-    contracts: tokenAddresses!.map((token) => {
+    contracts: tokenAddresses?.map((token) => {
       return {
         address: STAKING_ADDRESS,
         abi: stakeFvmABI,
