@@ -149,6 +149,10 @@ export function StakeFVM() {
 
   const { data: aprs } = useApr();
 
+  const filteredAprs = useMemo(() => {
+    return aprs?.filter((e) => Number(e.maxApr) > 0);
+  }, [aprs]);
+
   // prepare claim
   const { config: claimConfig } = usePrepareStakeFvmGetReward({
     args: [address!, filteredEarned?.map((e) => e.address) ?? []],
@@ -210,14 +214,27 @@ export function StakeFVM() {
           <SubHeader text="Stake" />
           <div className="flex justify-between">
             <span>Total Staked</span>
-            <span
-              className="underline cursor-pointer"
-              onClick={() => {
-                dispatch({ type: "stake", payload: fvmBalance?.formatted! });
-              }}
-            >
-              ${formatCurrency(totalStaked)}
-            </span>
+            <span>${formatCurrency(totalStaked)}</span>
+          </div>
+          <div className="flex items-start justify-between">
+            <div>APR</div>
+            <div className="flex flex-col">
+              {filteredAprs && filteredAprs.length > 0 ? (
+                filteredAprs.map((apr) => (
+                  <div
+                    key={apr.address}
+                    className="flex items-center justify-end gap-2"
+                  >
+                    <div>
+                      {apr.minApr} - ${apr.maxApr}%
+                    </div>
+                    <div>{apr.symbol}</div>
+                  </div>
+                ))
+              ) : (
+                <div>0.00</div>
+              )}
+            </div>
           </div>
           <div className="flex justify-between">
             <span>{GOV_TOKEN_SYMBOL} balance</span>
@@ -229,28 +246,6 @@ export function StakeFVM() {
             >
               {fvmBalance?.formatted}
             </span>
-          </div>
-          <div className="flex items-start justify-between">
-            <div>APR</div>
-            <div className="flex flex-col">
-              {aprs && aprs.length > 0 ? (
-                aprs
-                  .filter((apr) => Number(apr.minApr) > 0)
-                  .map((apr) => (
-                    <div
-                      key={apr.address}
-                      className="flex items-center justify-end gap-2"
-                    >
-                      <div>
-                        {apr.minApr} - ${apr.maxApr}%
-                      </div>
-                      <div>{apr.symbol}</div>
-                    </div>
-                  ))
-              ) : (
-                <div>0.00</div>
-              )}
-            </div>
           </div>
           <div className="space-y-2">
             <input
