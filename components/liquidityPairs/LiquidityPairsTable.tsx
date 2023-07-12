@@ -33,6 +33,7 @@ import {
   KeyboardArrowUp,
   KeyboardArrowDown,
   OpenInNewOutlined,
+  InfoOutlined,
 } from "@mui/icons-material";
 
 import { formatCurrency } from "../../utils/utils";
@@ -138,9 +139,21 @@ function EnhancedTableHead(props: {
               direction={orderBy === headCell.id ? order : "desc"}
               onClick={createSortHandler(headCell.id)}
             >
-              <Typography variant="h5" className="text-xs font-extralight">
-                {headCell.label}
-              </Typography>
+              {headCell.id === "apr" ? (
+                <Tooltip title="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid FVM tokens, whereas the higher for veFVM">
+                  <Typography
+                    variant="h5"
+                    className="text-xs font-extralight inline-flex items-center"
+                  >
+                    <InfoOutlined className="w-5 mr-1" />
+                    {headCell.label}
+                  </Typography>
+                </Tooltip>
+              ) : (
+                <Typography variant="h5" className="text-xs font-extralight">
+                  {headCell.label}
+                </Typography>
+              )}
               {orderBy === headCell.id ? (
                 <span className="absolute top-5 m-[-1px] h-[1px] w-[1px] overflow-hidden text-clip border-0 border-none p-0">
                   {order === "desc" ? "sorted descending" : "sorted ascending"}
