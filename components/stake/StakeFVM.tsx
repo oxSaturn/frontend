@@ -18,12 +18,12 @@ import {
   usePrepareStakeFvmWithdraw,
   useStakeFvmBalanceOf,
   useStakeFvmDeposit,
-  useStakeFvmEarned,
   useStakeFvmGetReward,
   useStakeFvmWithdraw,
 } from "../../lib/wagmiGen";
 import { LoadingSVG } from "../common/LoadingSVG";
-import { PRO_OPTIONS } from "../../stores/constants/constants";
+
+import { useRewardTokens } from "./useRewardTokens";
 
 const buttonClasses =
   "inline-flex items-center bg-blue/70 text-white hover:bg-blue/50 transition-colors duration-200 px-3 py-1 disabled:cursor-not-allowed";
@@ -146,20 +146,17 @@ export function StakeFVM() {
   /**
    * Rewards related hooks
    */
-  // we have only oFVM rewards
+
   const {
     data: earned,
-    isLoading: isFetchingEarned,
+    isFetching: isFetchingEarned,
     refetch: refetchEarned,
-  } = useStakeFvmEarned({
-    args: [PRO_OPTIONS.oFVM.tokenAddress, address!],
-    enabled: !!address,
-  });
+  } = useRewardTokens();
 
   // prepare claim
   const { config: claimConfig } = usePrepareStakeFvmGetReward({
-    args: [address!, [PRO_OPTIONS.oFVM.tokenAddress as `0x${string}`]],
-    enabled: !!address,
+    args: [address!, earned!.map((e) => e.address)],
+    enabled: !!address && !!earned?.length,
   });
 
   // claim
@@ -271,15 +268,21 @@ export function StakeFVM() {
 
         <Section>
           <SubHeader text="Earned" />
-          <div className="flex justify-between">
-            <span>o{GOV_TOKEN_SYMBOL}</span>
-            <span>
-              {isFetchingEarned ? (
-                <LoadingSVG className="animate-spin h-5 w-5" />
-              ) : (
-                formatUnits(earned ?? 0n, GOV_TOKEN_DECIMALS)
-              )}
-            </span>
+          <div>
+            {earned
+              ?.filter((e) => e.amount > 0n)
+              .map((e) => (
+                <div key={e.address} className="flex justify-between">
+                  <span>{e.symbol}</span>
+                  <span>
+                    {isFetchingEarned ? (
+                      <LoadingSVG className="animate-spin h-5 w-5" />
+                    ) : (
+                      formatUnits(e.amount ?? 0n, e.decimals)
+                    )}
+                  </span>
+                </div>
+              )) ?? null}
           </div>
 
           <div>
