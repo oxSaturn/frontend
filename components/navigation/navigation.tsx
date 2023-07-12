@@ -42,11 +42,11 @@ function Navigation() {
       <>
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
+        {renderSubNav("Stake", "stake")}
         {renderSubNav("Vest", "vest")}
         {renderSubNav("Vote", "vote")}
         {renderSubNav("Rewards", "rewards")}
         {renderSubNav("Options", "options")}
-        {renderSubNav("Stake", "stake")}
         {renderSubNav("Bribe", "bribe")}
       </>
     );
