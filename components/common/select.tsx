@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { DeleteOutline, Search } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
+import Image from "next/image";
 
 import { BaseAsset } from "../../stores/types/types";
 import { ETHERSCAN_URL } from "../../stores/constants/constants";
@@ -102,12 +103,12 @@ export function AssetSelect({
         key={asset.address + "_" + idx}
         className="flex items-center justify-between px-0"
       >
-        <div className="relative mr-3 w-14">
-          <img
+        <div className="relative mr-3 w-14 h-14">
+          <Image
             className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
-            alt=""
+            alt={asset ? asset.symbol : ""}
             src={asset ? `${asset.logoURI}` : ""}
-            height="60px"
+            fill
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
               (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
@@ -146,30 +147,30 @@ export function AssetSelect({
       <MenuItem
         defaultValue={asset.address}
         key={asset.address + "_" + idx}
-        className="flex items-center justify-between px-0"
+        className="flex items-center justify-between px-5"
         onClick={() => {
           onLocalSelect(type, asset);
         }}
       >
-        <div className="relative mr-3 w-14">
-          <img
-            className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
-            alt=""
+        <div className="relative mr-3 w-14 h-14">
+          <Image
+            className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-1"
+            alt={asset ? asset.symbol : ""}
             src={asset ? `${asset.logoURI}` : ""}
-            height="60px"
+            fill
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
               (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
             }}
           />
         </div>
-        <div>
+        <div className="space-y-1">
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className="ml-12 flex flex-[1] flex-col items-end">
+        <div className="ml-5 flex flex-[1] flex-col items-end">
           <Typography variant="h5">
             {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
           </Typography>
@@ -184,24 +185,26 @@ export function AssetSelect({
   const renderManageLocal = () => {
     return (
       <>
-        <div className="h-[600px] overflow-y-scroll p-6">
-          <TextField
-            autoFocus
-            variant="outlined"
-            fullWidth
-            placeholder="FTM, WFTM, 0x..."
-            value={search}
-            onChange={onSearchChanged}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
+        <div className="h-[600px] overflow-y-scroll py-5">
+          <div className="px-5">
+            <TextField
+              autoFocus
+              variant="outlined"
+              fullWidth
+              placeholder="FTM, WFTM, 0x..."
+              value={search}
+              onChange={onSearchChanged}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </div>
 
-          <div className="mt-3 flex w-full min-w-[390px] flex-col">
+          <div className="mt-3 flex w-full max-w-full min-w-[300px] sm:min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .filter((option) => {
@@ -223,24 +226,26 @@ export function AssetSelect({
   const renderOptions = () => {
     return (
       <>
-        <div className="h-[600px] overflow-y-scroll p-6">
-          <TextField
-            autoFocus
-            variant="outlined"
-            fullWidth
-            placeholder="FTM, WFTM, 0x..."
-            value={search}
-            onChange={onSearchChanged}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
+        <div className="h-[600px] overflow-y-scroll py-5">
+          <div className="px-5">
+            <TextField
+              autoFocus
+              variant="outlined"
+              fullWidth
+              placeholder="FTM, WFTM, 0x..."
+              value={search}
+              onChange={onSearchChanged}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </div>
 
-          <div className="mt-3 flex w-full min-w-[390px] flex-col">
+          <div className="mt-3 flex w-full min-w-[300px] sm:min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
@@ -268,17 +273,17 @@ export function AssetSelect({
   return (
     <>
       <div
-        className="min-h-[100px] p-3"
         onClick={() => {
           openSearch();
         }}
       >
-        <div className="relative w-full cursor-pointer">
-          <img
-            className="h-full w-full rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
-            alt=""
+        <div className="relative w-[60px] cursor-pointer h-[60px] sm:w-[100px] sm:h-[100px]">
+          <Image
+            quality={100}
+            className="h-full w-full rounded-[50px] border border-cyan/20 bg-[#032725] p-2"
+            alt={value ? `${value.symbol}` : ""}
             src={value ? `${value.logoURI}` : ""}
-            height="100px"
+            fill
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
               (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";

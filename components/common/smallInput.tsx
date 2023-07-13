@@ -10,7 +10,7 @@ export const SmallInput = ({
   loading: boolean;
 }) => {
   return (
-    <div className="mb-1">
+    <div className="space-y-2">
       <label htmlFor="slippage">Slippage</label>
       <div className="flex w-full max-w-[72px] flex-wrap items-center rounded-[10px] bg-background">
         <TextField

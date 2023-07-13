@@ -21,7 +21,7 @@ export const MassiveInput = ({
   loading,
   setBalance100,
 }: {
-  type: string;
+  type: "From" | "To" | "amount0" | "amount1";
   amountValue: string;
   amountValueUsd: string;
   diffUsd: string | undefined;
@@ -45,39 +45,13 @@ export const MassiveInput = ({
     enabled: !!assetValue,
   });
   return (
-    <div className="relative mb-1">
+    <div className="relative my-5">
       <div
-        className="absolute top-2 right-2 z-[1] cursor-pointer"
-        onClick={() => {
-          if (type === "From") {
-            setBalance100();
-          }
-        }}
-      >
-        <Typography className="text-xs font-thin text-secondary" noWrap>
-          Balance:
-          {assetValue && (balanceInfo || assetValue.balance)
-            ? " " + formatCurrency(balanceInfo?.formatted ?? assetValue.balance)
-            : ""}
-        </Typography>
-      </div>
-      {assetValue && balanceInfo && amountValueUsd && amountValueUsd !== "" ? (
-        <div className="absolute bottom-2 right-2 z-[1] cursor-pointer">
-          <Typography className="text-xs font-thin text-secondary" noWrap>
-            {"~$" +
-              formatCurrency(amountValueUsd) +
-              (type === "To" && diffUsd && diffUsd !== ""
-                ? ` (${diffUsd}%)`
-                : "")}
-          </Typography>
-        </div>
-      ) : null}
-      <div
-        className={`flex w-full flex-wrap items-center rounded-[10px] bg-background ${
-          (amountError || assetError) && "border border-red-500"
+        className={`flex w-full items-center rounded-[10px] gap-x-2 sm:gap-x-3 ${
+          amountError || assetError ? "border border-red-500" : ""
         }`}
       >
-        <div className="h-full min-h-[128px] w-32">
+        <div className="flex-shrink-0">
           <AssetSelect
             type={type}
             value={assetValue}
@@ -85,7 +59,44 @@ export const MassiveInput = ({
             onSelect={onAssetSelect}
           />
         </div>
-        <div className="h-full flex-[1] flex-grow-[0.98]">
+        <div className="h-full flex-[1] flex-grow-[0.98] space-y-1">
+          <div>
+            <Typography
+              className="text-xs font-thin text-secondary flex items-center"
+              noWrap
+            >
+              {assetValue?.symbol} balance:
+              {assetValue && (balanceInfo || assetValue.balance)
+                ? " " +
+                  formatCurrency(balanceInfo?.formatted ?? assetValue.balance)
+                : ""}{" "}
+              {type === "From" ? (
+                <button
+                  type="button"
+                  className="text-cyan ml-2"
+                  onClick={() => {
+                    if (type === "From") {
+                      setBalance100();
+                    }
+                  }}
+                >
+                  Max
+                </button>
+              ) : null}
+              {assetValue &&
+              balanceInfo &&
+              amountValueUsd &&
+              amountValueUsd !== "" ? (
+                <span className="text-xs font-thin text-secondary ml-auto">
+                  {"~$" +
+                    formatCurrency(amountValueUsd) +
+                    (type === "To" && diffUsd && diffUsd !== ""
+                      ? ` (${diffUsd}%)`
+                      : "")}
+                </span>
+              ) : null}
+            </Typography>
+          </div>
           <TextField
             placeholder="0.00"
             fullWidth
@@ -95,15 +106,17 @@ export const MassiveInput = ({
             onChange={amountChanged}
             autoComplete="off"
             disabled={loading || type === "To"}
+            inputProps={{
+              sx: {
+                fontSize: "16px", // prevent zoom on mobile Safari
+              },
+            }}
             InputProps={{
-              style: {
-                fontSize: "46px !important",
+              sx: {
+                borderRadius: 0, // not quite sure about this, love round corners, but it makes the alignment a bit off visually
               },
             }}
           />
-          <Typography color="textSecondary" className="text-xs">
-            {assetValue?.symbol}
-          </Typography>
         </div>
       </div>
     </div>

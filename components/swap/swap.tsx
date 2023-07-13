@@ -342,8 +342,8 @@ function Swap() {
 
     if (!quote) {
       return (
-        <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
-          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-primary">
+        <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] py-3">
+          <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold">
             Price Info
           </Typography>
           <div className="grid w-full grid-cols-2 gap-3">
@@ -381,7 +381,7 @@ function Swap() {
       ? BigNumber(quote.maxReturn.totalTo).div(10 ** toAssetValue.decimals)
       : BigNumber(0);
     return (
-      <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
+      <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] py-3">
         <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-primary">
           Price Info
         </Typography>
@@ -433,17 +433,14 @@ function Swap() {
   };
 
   return (
-    <div className="mt-32 flex h-full min-h-[calc(100vh-432px)] w-full flex-col items-center justify-evenly sm:mt-0 lg:flex-row">
-      <Paper
-        elevation={0}
-        className="flex w-full max-w-[485px] flex-col bg-transparent p-3 shadow-glow backdrop-blur-sm lg:p-6"
-      >
-        <div className="relative flex w-full flex-col">
+    <div className="flex h-full w-full flex-col items-center justify-evenly sm:mt-0 lg:flex-row">
+      <div className="flex w-full box-border px-5 flex-col">
+        <div className="relative flex w-full flex-col p-5 sm:px-10 border border-gray-500/50 rounded-lg sm:w-[500px] box-border bg-green-900 sm:mx-auto">
           <div
             className={`${
               !settingsOpen
                 ? "hidden"
-                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-background p-4"
+                : "absolute z-20 flex h-full w-full flex-col gap-4 bg-background p-5 sm:px-10 top-0 rounded-lg left-1/2 -translate-x-1/2"
             }`}
           >
             <div
@@ -458,7 +455,7 @@ function Swap() {
               loading={loadingTrade}
             />
           </div>
-          <div className="mb-4 flex items-center justify-end space-x-2">
+          <div className="flex items-center justify-end space-x-2">
             <button onClick={() => refetchQuote()}>
               <UpdateOutlined className="fill-gray-300 transition-all hover:scale-105 hover:fill-primary" />
             </button>
@@ -509,13 +506,13 @@ function Swap() {
               variant="contained"
               size="large"
               color="primary"
-              className="bg-background font-bold text-primary hover:bg-green-900"
+              className="bg-cyan text-black hover:bg-cyan/80"
               disabled={
                 loadingTrade || quoteLoading || (!quote && !isWrapUnwrap)
               }
               onClick={!isWrapUnwrap ? onSwap : onWrapUnwrap}
             >
-              <Typography className="font-bold capitalize">
+              <span className="capitalize">
                 {loadingTrade
                   ? `Loading`
                   : isWrapUnwrap
@@ -523,7 +520,7 @@ function Swap() {
                     ? "Wrap"
                     : "Unwrap"
                   : `Swap`}
-              </Typography>
+              </span>
               {loadingTrade && (
                 <CircularProgress size={10} className="ml-2 fill-white" />
               )}
@@ -555,7 +552,7 @@ function Swap() {
           toAssetValue={toAssetValue}
           toAmountValue={toAmountValue}
         />
-      </Paper>
+      </div>
     </div>
   );
 }
