@@ -225,14 +225,15 @@ export function Stake() {
                   className="flex items-center justify-end gap-2"
                 >
                   <div>
-                    {"aprRange" in token
+                    {typeof token.aprRange !== "undefined"
                       ? `${formatCurrency(
                           token.aprRange[0]
-                        )} % - ${formatCurrency(token.aprRange[1])} %`
+                        )} - ${formatCurrency(token.aprRange[1])}%`
                       : `
-                  ${formatCurrency(token.apr)} %
+                  ${formatCurrency(token.apr)}%
                   `}
                   </div>
+                  {token.symbol}
                   <img
                     src={token.logoUrl ?? "/tokens/unknown-logo.png"}
                     title={token.symbol}
