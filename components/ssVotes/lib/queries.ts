@@ -28,6 +28,7 @@ export const useVestVotes = (tokenID: string | undefined) => {
     queryFn: () => getVestVotes(address, tokenID, pairs),
     enabled: !!address && !!tokenID && !!pairs,
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
     select: (votes) => {
       const votesValues: Votes | undefined = votes?.map((vote) => {
         return {
