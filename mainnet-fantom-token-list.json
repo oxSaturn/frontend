@@ -7,7 +7,7 @@
     "name": "Wrapped FTM",
     "symbol": "WFTM"
   },
-    {
+  {
     "address": "0x7d016eec9c25232b01f23ef992d98ca97fc2af5a",
     "chainId": 250,
     "decimals": 18,
@@ -15,7 +15,7 @@
     "name": "FRAX Share",
     "symbol": "FXS"
   },
-  
+
   {
     "address": "0xdc301622e621166bd8e82f2ca0a26c13ad0be355",
     "chainId": 250,
@@ -216,7 +216,7 @@
     "name": "Maker DAO DAI",
     "symbol": "DAI"
   },
-    {
+  {
     "address": "0xfb98b335551a418cd0737375a2ea0ded62ea213b",
     "chainId": 250,
     "decimals": 18,
@@ -224,12 +224,20 @@
     "name": "Qi DAO miMATIC",
     "symbol": "MAI"
   },
-      {
+  {
     "address": "0x9E73F99EE061C8807F69f9c6CCc44ea3d8c373ee",
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/28284/small/frxETH_icon.png?1679886981",
     "name": "FRAX Staked ETH",
     "symbol": "frxETH"
+  },
+  {
+    "address": "0xa41A879bcFdd75983a987FD6b68fae37777e8b28",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://pbs.twimg.com/profile_images/1600595248048181253/x6LgJqWO_400x400.jpg",
+    "name": "XEX Crypto",
+    "symbol": "XEX"
   }
 ]
