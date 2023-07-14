@@ -8,6 +8,7 @@ import { type Token, useGaugeRewardTokens } from "./useGaugeRewards";
 import { useStakeData } from "./useStakeData";
 import { useDiscountsData } from "./useDiscountsData";
 import { useIsEmittingOptions } from "./useIsEmittingOptions";
+import { aggregateApr } from "./aggregateApr";
 
 export function useGaugeApr() {
   const { data: rewardTokens } = useGaugeRewardTokens();
@@ -150,5 +151,7 @@ function getGaugeApr(
     }
   }
 
-  return arr;
+  const aggreatedApr = aggregateApr(arr);
+
+  return aggreatedApr;
 }
