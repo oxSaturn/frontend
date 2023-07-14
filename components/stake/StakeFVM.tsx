@@ -226,7 +226,7 @@ export function StakeFVM() {
                     className="flex items-center justify-end gap-2"
                   >
                     <div>
-                      {apr.minApr} - ${apr.maxApr}%
+                      {apr.minApr} - {apr.maxApr}%
                     </div>
                     <div>{apr.symbol}</div>
                   </div>
