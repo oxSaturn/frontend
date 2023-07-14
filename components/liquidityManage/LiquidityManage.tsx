@@ -46,6 +46,7 @@ import { SmallInput } from "../common/smallInput";
 
 import {
   useGetPair,
+  usePairManageStore,
   usePairsWithGaugesOnlyWithBalance,
   useQuoteAddLiquidity,
   useQuoteRemoveLiquidity,
@@ -90,10 +91,8 @@ export default function LiquidityManage() {
 
   const { data: assetOptions } = useBaseAssetWithInfo();
 
-  const { data: pair, isFetching: isLoadingPair } = useGetPair(
-    router.query.address
-  );
-
+  const { isFetching: isLoadingPair } = useGetPair(router.query.address);
+  const { pair, pairOptions, setPair, setPairOptions } = usePairManageStore();
   const { data: quote, remove: removeQuote } = useQuoteAddLiquidity(
     router.query.address
   );
@@ -165,7 +164,11 @@ export default function LiquidityManage() {
 
   const onBack = useCallback(() => {
     router.push("/liquidity");
-  }, [router]);
+    setAmount0("");
+    setAmount1("");
+    setPair(undefined);
+    setPairOptions(undefined);
+  }, [router, setAmount0, setAmount1, setPair, setPairOptions]);
 
   const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value == "" || !isNaN(+event.target.value)) {
@@ -934,6 +937,24 @@ export default function LiquidityManage() {
         </div>
         <div className="w-full py-6 px-0">
           <div className="py-0 px-6">
+            {!!pairOptions && (
+              <div className="flex flex-col px-2">
+                Found several gauges:
+                {pairOptions.length > 1 &&
+                  pairOptions.map((pairOption, i) => (
+                    <div
+                      key={pairOption?.address + pairOption?.gauge?.address + i}
+                      onClick={() => setPair(pairOption)}
+                      className="w-full cursor-pointer text-end"
+                    >
+                      <span className="cursor-pointer hover:text-lime-100">
+                        {`pair-v-${i}`}{" "}
+                        {pairOption.isAliveGauge ? "Active" : "Disabled"}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
             {activeTab === "deposit" && (
               <>
                 {renderMassiveInput(

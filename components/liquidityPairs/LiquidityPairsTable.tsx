@@ -478,7 +478,13 @@ export default function EnhancedTable({
                 if (!row) {
                   return null;
                 }
-                return <Row key={row.address} row={row} onView={onView} />;
+                return (
+                  <Row
+                    key={row.address + row.gauge?.address}
+                    row={row}
+                    onView={onView}
+                  />
+                );
               })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 61 * emptyRows }}>

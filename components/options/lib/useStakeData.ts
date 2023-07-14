@@ -11,7 +11,10 @@ import {
   useMaxxingGaugeTotalSupply,
   useOptionTokenGauge,
 } from "../../../lib/wagmiGen";
-import { useGetPair } from "../../liquidityManage/lib/queries";
+import {
+  useGetPair,
+  usePairManageStore,
+} from "../../liquidityManage/lib/queries";
 import { Pair } from "../../../stores/types/types";
 import { useTokenPrices } from "../../header/lib/queries";
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
@@ -147,7 +150,8 @@ export function useTotalStaked(
     address: gaugeAddress,
     select: (data) => formatEther(data),
   });
-  const { data: pairData } = useGetPair(pair);
+  useGetPair(pair);
+  const { pair: pairData } = usePairManageStore();
   const { data: tokenPrices } = useTokenPrices();
 
   return useQuery({

@@ -9,6 +9,7 @@ import {
   parseUnits,
 } from "viem";
 import BigNumber from "bignumber.js";
+import { create } from "zustand";
 
 import viemClient from "../../../stores/connectors/viem";
 import { usePairsWithGauges } from "../../../lib/global/queries";
@@ -22,6 +23,20 @@ import {
 } from "../../../stores/constants/constants";
 
 import { useAmounts } from "./useAmounts";
+
+interface PairManageStore {
+  pair: Pair | undefined;
+  setPair: (_pair: Pair | undefined) => void;
+  pairOptions: Pair[] | undefined;
+  setPairOptions: (_pairOptions: Pair[] | undefined) => void;
+}
+
+export const usePairManageStore = create<PairManageStore>()((set) => ({
+  pair: undefined,
+  setPair: (pair) => set({ pair }),
+  pairOptions: undefined,
+  setPairOptions: (pairOptions) => set({ pairOptions }),
+}));
 
 export const KEYS = {
   PAIR_EXISTANCE: "pairExistance",
@@ -49,14 +64,26 @@ export function usePairExistance(pairParams: {
 export function useGetPair(pairAddress: string | string[] | undefined) {
   const { address } = useAccount();
   const { data: pairs } = usePairsWithGauges();
+  const { setPairOptions, setPair, pair } = usePairManageStore();
   return useQuery({
-    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pairAddress],
+    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pair, pairAddress],
     queryFn: () => getPairByAddress(address, pairAddress as Address, pairs),
     enabled:
       !!address &&
       !!pairAddress &&
       !Array.isArray(pairAddress) &&
       isAddress(pairAddress),
+    onSuccess: (pairs) => {
+      setPairOptions(pairs);
+      if (pair === undefined) {
+        setPair(pairs[0]);
+      }
+    },
+    refetchOnWindowFocus: false,
+    onError: () => {
+      setPairOptions(undefined);
+      setPair(undefined);
+    },
   });
 }
 
@@ -65,7 +92,8 @@ export function useQuoteAddLiquidity(
 ) {
   const { address } = useAccount();
   const { amount0, amount1 } = useAmounts();
-  const { data: pair } = useGetPair(pairAddress);
+  useGetPair(pairAddress);
+  const { pair } = usePairManageStore();
 
   return useQuery({
     queryKey: [
@@ -95,7 +123,8 @@ export function useQuoteRemoveLiquidity(
   pairAddress: string | string[] | undefined
 ) {
   const { address } = useAccount();
-  const { data: pair } = useGetPair(pairAddress);
+  useGetPair(pairAddress);
+  const { pair } = usePairManageStore();
   return useQuery({
     queryKey: [
       KEYS.QUOTE_REMOVE_LIQUIDITY,
@@ -216,12 +245,12 @@ export const getPairByAddress = async (
     throw new Error("pair not found");
   }
 
-  const pair = pairs?.find(
+  const pairArr = pairs?.filter(
     (p) => p.address.toLowerCase() === pairAddress.toLowerCase()
   );
 
-  if (pair) {
-    return pair;
+  if (pairArr && pairArr?.length > 0) {
+    return pairArr;
   }
 
   const pairContract = {
@@ -387,6 +416,7 @@ export const getPairByAddress = async (
     tvl: 0,
     gauge_address: gaugeAddress,
     isStable: stable,
+    killed_gauges: [],
   };
 
   if (gaugeAddress !== ZERO_ADDRESS) {
@@ -493,7 +523,7 @@ export const getPairByAddress = async (
     };
   }
 
-  return thePair;
+  return [thePair];
 };
 
 const getBaseAsset = async (account: Address | undefined, address: Address) => {
