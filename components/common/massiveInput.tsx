@@ -61,33 +61,37 @@ export const MassiveInput = ({
         </div>
         <div className="h-full flex-[1] flex-grow-[0.98] space-y-1">
           <div>
-            <Typography
-              className="text-xs font-thin text-secondary flex items-center"
-              noWrap
-            >
-              {assetValue?.symbol} balance:
-              {assetValue && (balanceInfo || assetValue.balance)
-                ? " " +
-                  formatCurrency(balanceInfo?.formatted ?? assetValue.balance)
-                : ""}{" "}
-              {type === "From" ? (
-                <button
-                  type="button"
-                  className="text-cyan ml-2"
-                  onClick={() => {
-                    if (type === "From") {
-                      setBalance100();
-                    }
-                  }}
-                >
-                  Max
-                </button>
-              ) : null}
+            <div className="text-xs text-secondary flex items-center flex-nowrap">
+              <span className="space-x-1">
+                {assetValue?.symbol ? <span>{assetValue?.symbol}</span> : ""}
+                {assetValue && (balanceInfo || assetValue.balance) ? (
+                  <span>
+                    balance:
+                    <button
+                      type="button"
+                      className={
+                        type === "From" ? "underline ml-1" : "cursor-text ml-1"
+                      }
+                      onClick={() => {
+                        if (type === "From") {
+                          setBalance100();
+                        }
+                      }}
+                    >
+                      {formatCurrency(
+                        balanceInfo?.formatted ?? assetValue.balance
+                      )}
+                    </button>
+                  </span>
+                ) : (
+                  ""
+                )}
+              </span>
               {assetValue &&
               balanceInfo &&
               amountValueUsd &&
               amountValueUsd !== "" ? (
-                <span className="text-xs font-thin text-secondary ml-auto">
+                <span className="text-xs text-secondary ml-auto">
                   {"~$" +
                     formatCurrency(amountValueUsd) +
                     (type === "To" && diffUsd && diffUsd !== ""
@@ -95,7 +99,7 @@ export const MassiveInput = ({
                       : "")}
                 </span>
               ) : null}
-            </Typography>
+            </div>
           </div>
           <TextField
             placeholder="0.00"
