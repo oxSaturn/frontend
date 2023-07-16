@@ -13,12 +13,22 @@ import {
   useOptionTokenGetLpDiscountedPrice,
   useOptionTokenGetVeDiscountedPrice,
 } from "../../../lib/wagmiGen";
+import { PRO_OPTIONS } from "../../../stores/constants/constants";
+
+import { useInputs } from "./useInputs";
 
 export function useTokenData(lpDiscount?: number) {
+  const { optionToken } = useInputs();
   const { address } = useAccount();
-  const { data: optionTokenSymbol } = useOptionTokenSymbol();
-  const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
-  const { data: underlyingTokenAddress } = useOptionTokenUnderlyingToken();
+  const { data: optionTokenSymbol } = useOptionTokenSymbol({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
+  const { data: paymentTokenAddress } = useOptionTokenPaymentToken({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
+  const { data: underlyingTokenAddress } = useOptionTokenUnderlyingToken({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   const { data: paymentTokenSymbol } = useErc20Symbol({
     address: paymentTokenAddress,
     enabled: !!paymentTokenAddress,
@@ -46,21 +56,25 @@ export function useTokenData(lpDiscount?: number) {
     refetch: refetchOptionBalance,
     isFetching: isFetchingOptionBalance,
   } = useOptionTokenBalanceOf({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [address!],
     enabled: !!address,
     select: (data) => formatEther(data),
   });
 
   const { data: optionPrice } = useOptionTokenGetTimeWeightedAveragePrice({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
 
   const { data: discountedPrice } = useOptionTokenGetDiscountedPrice({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
   const { data: discountedLpPrice } = useOptionTokenGetLpDiscountedPrice({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [
       parseEther("1"),
       lpDiscount === undefined ? 100n : BigInt(100 - lpDiscount),
@@ -70,6 +84,7 @@ export function useTokenData(lpDiscount?: number) {
     cacheTime: 0,
   });
   const { data: discountedVePrice } = useOptionTokenGetVeDiscountedPrice({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });

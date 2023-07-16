@@ -22,7 +22,6 @@ export default defineConfig({
     {
       name: "OptionToken",
       abi: PRO_OPTIONS.optionTokenABI,
-      address: PRO_OPTIONS.oFVM.tokenAddress,
     },
     {
       name: "MaxxingGauge",

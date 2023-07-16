@@ -302,6 +302,9 @@ export default function EnhancedTable({
   };
 
   const onView = (pair: Pair) => {
+    if (pair.gauge?.address) {
+      return router.push(`/liquidity/${pair.address}/${pair.gauge.address}`);
+    }
     router.push(`/liquidity/${pair.address}`);
   };
 
@@ -478,7 +481,13 @@ export default function EnhancedTable({
                 if (!row) {
                   return null;
                 }
-                return <Row key={row.address} row={row} onView={onView} />;
+                return (
+                  <Row
+                    key={row.address + row.gauge?.address}
+                    row={row}
+                    onView={onView}
+                  />
+                );
               })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 61 * emptyRows }}>

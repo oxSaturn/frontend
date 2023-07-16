@@ -46,26 +46,38 @@ export function usePairExistance(pairParams: {
   });
 }
 
-export function useGetPair(pairAddress: string | string[] | undefined) {
+export function useGetPair(
+  pairAddress: string | string[] | undefined,
+  gaugeAddress: string | string[] | undefined
+) {
   const { address } = useAccount();
   const { data: pairs } = usePairsWithGauges();
   return useQuery({
-    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pairAddress],
-    queryFn: () => getPairByAddress(address, pairAddress as Address, pairs),
+    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pairAddress, gaugeAddress],
+    queryFn: () =>
+      getPairByAddress(
+        address,
+        pairAddress as Address,
+        pairs,
+        gaugeAddress as Address | undefined
+      ),
     enabled:
       !!address &&
       !!pairAddress &&
       !Array.isArray(pairAddress) &&
-      isAddress(pairAddress),
+      isAddress(pairAddress) &&
+      !Array.isArray(gaugeAddress),
+    refetchOnWindowFocus: false,
   });
 }
 
 export function useQuoteAddLiquidity(
-  pairAddress: string | string[] | undefined
+  pairAddress: string | string[] | undefined,
+  gaugeAddress: string | string[] | undefined
 ) {
   const { address } = useAccount();
   const { amount0, amount1 } = useAmounts();
-  const { data: pair } = useGetPair(pairAddress);
+  const { data: pair } = useGetPair(pairAddress, gaugeAddress);
 
   return useQuery({
     queryKey: [
@@ -92,10 +104,11 @@ export function useQuoteAddLiquidity(
 
 export function useQuoteRemoveLiquidity(
   amount: string,
-  pairAddress: string | string[] | undefined
+  pairAddress: string | string[] | undefined,
+  gaugeAddress: string | string[] | undefined
 ) {
   const { address } = useAccount();
-  const { data: pair } = useGetPair(pairAddress);
+  const { data: pair } = useGetPair(pairAddress, gaugeAddress);
   return useQuery({
     queryKey: [
       KEYS.QUOTE_REMOVE_LIQUIDITY,
@@ -205,7 +218,8 @@ const checkIfPairExists = async (pairParams: {
 export const getPairByAddress = async (
   account: Address | undefined,
   pairAddress: Address | undefined,
-  pairs: Pair[] | undefined
+  pairs: Pair[] | undefined,
+  gaugeAddressOfPair?: Address
 ) => {
   if (!account) {
     console.warn("account not found");
@@ -216,9 +230,15 @@ export const getPairByAddress = async (
     throw new Error("pair not found");
   }
 
-  const pair = pairs?.find(
-    (p) => p.address.toLowerCase() === pairAddress.toLowerCase()
-  );
+  const pair = pairs?.find((p) => {
+    if (gaugeAddressOfPair) {
+      return (
+        p.address.toLowerCase() === pairAddress.toLowerCase() &&
+        p.gauge?.address.toLowerCase() === gaugeAddressOfPair.toLowerCase()
+      );
+    }
+    return p.address.toLowerCase() === pairAddress.toLowerCase();
+  });
 
   if (pair) {
     return pair;
@@ -387,6 +407,7 @@ export const getPairByAddress = async (
     tvl: 0,
     gauge_address: gaugeAddress,
     isStable: stable,
+    killed_gauges: [],
   };
 
   if (gaugeAddress !== ZERO_ADDRESS) {

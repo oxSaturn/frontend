@@ -11,12 +11,14 @@ import { fantom } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
-import * as Tooltip from "@radix-ui/react-tooltip";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Checkbox from "@radix-ui/react-checkbox";
 
+import { Select, SelectItem } from "../common/radixSelect";
+import { Tooltip } from "../common/radixTooltip";
+
 import { formatCurrency } from "../../utils/utils";
-import { QUERY_KEYS } from "../../stores/constants/constants";
+import { PRO_OPTIONS, QUERY_KEYS } from "../../stores/constants/constants";
 
 import {
   useOptionTokenExercise,
@@ -45,33 +47,59 @@ import {
   useStakeData,
 } from "./lib";
 
+const TOKENS = ["oFVM", "oBLOTR"];
+
+interface RedeemTabs {
+  LP: string;
+  LIQUID: string;
+  VEST?: string;
+}
+
 export function Redeem() {
+  const now = useNow();
+  const { setActiveInput, setOption, setPayment, setOptionToken, optionToken } =
+    useInputs();
   const { optionTokenSymbol, paymentTokenSymbol, underlyingTokenSymbol } =
     useTokenData();
-
-  const [TABS] = useState({
+  const [tabs, setTabs] = useState<RedeemTabs>({
     LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
     VEST: `ve${underlyingTokenSymbol}`,
     LIQUID: `${underlyingTokenSymbol}`,
   });
-  const now = useNow();
-  const [tab, setTab] = useState<(typeof TABS)[keyof typeof TABS]>(TABS.LP);
+  const [tab, setTab] = useState<(typeof tabs)[keyof typeof tabs]>(tabs.LP);
 
-  const { setActiveInput, setOption, setPayment } = useInputs();
+  useEffect(() => {
+    if (underlyingTokenSymbol === "FVM") {
+      const tabs = {
+        LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
+        VEST: `ve${underlyingTokenSymbol}`,
+        LIQUID: `${underlyingTokenSymbol}`,
+      };
+      setTabs(tabs);
+      setTab(tabs.LP);
+    } else {
+      const tabs = {
+        LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
+        LIQUID: `${underlyingTokenSymbol}`,
+      };
+      setTabs(tabs);
+      setTab(tabs.LP);
+    }
+  }, [paymentTokenSymbol, underlyingTokenSymbol]);
 
   const handleTabChange = (value: string) => {
     setOption("");
     setPayment("");
     setActiveInput(INPUT.OPTION);
     switch (value) {
-      case TABS.LP:
-        setTab(TABS.LP);
+      case tabs.LP:
+        setTab(tabs.LP);
         break;
-      case TABS.VEST:
-        setTab(TABS.VEST);
+      case tabs.VEST:
+        setTab(tabs.VEST);
         break;
-      case TABS.LIQUID:
-        setTab(TABS.LIQUID);
+      case tabs.LIQUID:
+        setTab(tabs.LIQUID);
         break;
     }
   };
@@ -82,9 +110,23 @@ export function Redeem() {
       value={tab}
       onValueChange={handleTabChange}
     >
+      {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg">Select option token</h3>
+          <Select value={optionToken} onValueChange={setOptionToken}>
+            {TOKENS.map((token) => {
+              return (
+                <SelectItem value={token} key={token}>
+                  {token}
+                </SelectItem>
+              );
+            })}
+          </Select>
+        </div>
+      )}
       <h2 className="mb-5 text-xl">Redeem {optionTokenSymbol} Into</h2>
       <Tabs.List className="flex shrink-0" aria-label="Redeem options">
-        {Object.values(TABS).map((tab) => (
+        {Object.values(tabs).map((tab) => (
           <Tabs.Trigger
             key={tab}
             value={tab}
@@ -94,13 +136,15 @@ export function Redeem() {
           </Tabs.Trigger>
         ))}
       </Tabs.List>
-      <Tabs.Content className="mt-3 grow" value={TABS.LP}>
+      <Tabs.Content className="mt-3 grow" value={tabs.LP}>
         <RedeemLP now={now} />
       </Tabs.Content>
-      <Tabs.Content className="mt-3 grow" value={TABS.VEST}>
-        <RedeemVest now={now} />
-      </Tabs.Content>
-      <Tabs.Content className="mt-3 grow" value={TABS.LIQUID}>
+      {tabs.VEST && (
+        <Tabs.Content className="mt-3 grow" value={tabs.VEST}>
+          <RedeemVest now={now} />
+        </Tabs.Content>
+      )}
+      <Tabs.Content className="mt-3 grow" value={tabs.LIQUID}>
         <RedeemLiquid now={now} />
       </Tabs.Content>
     </Tabs.Root>
@@ -110,6 +154,7 @@ export function Redeem() {
 function RedeemLiquid({ now }: { now: number }) {
   const queryClient = useQueryClient();
   const {
+    optionToken,
     option,
     payment,
     activeInput,
@@ -150,6 +195,7 @@ function RedeemLiquid({ now }: { now: number }) {
   } = useAllowance();
 
   const { config: exerciseOptionConfig } = usePrepareOptionTokenExercise({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(payment, paymentTokenDecimals) &&
@@ -337,29 +383,18 @@ function RedeemLiquid({ now }: { now: number }) {
           </>
         )}
       </div>
-      <Tooltip.Root>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            Max payment{" "}
-            <Tooltip.Trigger>
-              <InfoOutlined className="w-5" />
-            </Tooltip.Trigger>
-          </div>
-          <div>
-            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
-            {paymentTokenSymbol}
-          </div>
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          Max payment{" "}
+          <Tooltip content="We take into account 1% slippage">
+            <InfoOutlined className="w-5" />
+          </Tooltip>
         </div>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-background px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-            sideOffset={5}
-          >
-            We take into account 1% slippage
-            <Tooltip.Arrow className="fill-accent" />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
+        <div>
+          {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+          {paymentTokenSymbol}
+        </div>
+      </div>
     </>
   );
 }
@@ -369,6 +404,7 @@ function RedeemLP({ now }: { now: number }) {
   const [increaseAccepted, setIncreaseAccepted] = useState(false);
 
   const {
+    optionToken,
     option,
     payment,
     activeInput,
@@ -399,6 +435,7 @@ function RedeemLP({ now }: { now: number }) {
     data: durationForDiscount,
     isFetching: isFetchingDurationForDiscount,
   } = useOptionTokenGetLockDurationForLpDiscount({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [BigInt(100 - lpDiscount)],
     cacheTime: 0,
     select(data) {
@@ -447,6 +484,7 @@ function RedeemLP({ now }: { now: number }) {
   } = useAllowance();
 
   const { config: exerciseLPOptionConfig } = usePrepareOptionTokenExerciseLp({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(maxPaymentAmountForExercise, paymentTokenDecimals)
@@ -732,28 +770,17 @@ function RedeemLP({ now }: { now: number }) {
                 {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
               </div>
             </div>
-            <Tooltip.Root>
-              <div className="flex w-full items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  Max payment{" "}
-                  <Tooltip.Trigger>
-                    <InfoOutlined className="w-5" />
-                  </Tooltip.Trigger>
-                </div>
-                <div>
-                  {formatCurrency(maxPayment)} {paymentTokenSymbol}
-                </div>
+            <div className="flex w-full items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                Max payment{" "}
+                <Tooltip content="We take into account 1% slippage">
+                  <InfoOutlined className="w-5" />
+                </Tooltip>
               </div>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-background px-4 py-2 text-sm leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-                  sideOffset={5}
-                >
-                  We take into account 1% slippage
-                  <Tooltip.Arrow className="fill-accent" />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
+              <div>
+                {formatCurrency(maxPayment)} {paymentTokenSymbol}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -764,6 +791,7 @@ function RedeemLP({ now }: { now: number }) {
 function RedeemVest({ now }: { now: number }) {
   const queryClient = useQueryClient();
   const {
+    optionToken,
     option,
     payment,
     activeInput,
@@ -804,6 +832,7 @@ function RedeemVest({ now }: { now: number }) {
   } = useAllowance();
 
   const { config: exerciseVeOptionConfig } = usePrepareOptionTokenExerciseVe({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       isValidInput(payment, paymentTokenDecimals) &&
@@ -999,29 +1028,18 @@ function RedeemVest({ now }: { now: number }) {
           locked veNFT. It is possible to merge it into single veNFT on Vest
           page after.
         </div>
-        <Tooltip.Root>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              Max payment{" "}
-              <Tooltip.Trigger>
-                <InfoOutlined className="w-5" />
-              </Tooltip.Trigger>
-            </div>
-            <div>
-              {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
-              {paymentTokenSymbol}
-            </div>
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            Max payment{" "}
+            <Tooltip content="We take into account 1% slippage">
+              <InfoOutlined className="w-5" />
+            </Tooltip>
           </div>
-          <Tooltip.Portal>
-            <Tooltip.Content
-              className="radix-state-delayed-open:radix-side-bottom:animate-slideUpAndFade radix-state-delayed-open:radix-side-left:animate-slideRightAndFade radix-state-delayed-open:radix-side-top:animate-slideDownAndFade select-none border border-accent bg-background px-4 py-2 leading-none text-secondary shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity] max-w-radix-tooltip-content-available-width radix-state-delayed-open:radix-side-right:animate-slideLeftAndFade"
-              sideOffset={5}
-            >
-              We take into account 1% slippage
-              <Tooltip.Arrow className="fill-accent" />
-            </Tooltip.Content>
-          </Tooltip.Portal>
-        </Tooltip.Root>
+          <div>
+            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+            {paymentTokenSymbol}
+          </div>
+        </div>
       </div>
     </>
   );

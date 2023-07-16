@@ -7,7 +7,7 @@ import {
   useOptionTokenVeDiscount,
 } from "../../../lib/wagmiGen";
 import { useTokenPrices } from "../../header/lib/queries";
-import { CONTRACTS } from "../../../stores/constants/constants";
+import { CONTRACTS, PRO_OPTIONS } from "../../../stores/constants/constants";
 import { stakeFvmABI } from "../../../stores/abis/stakeFvmABI";
 
 import { useRewardTokens } from "./useRewardTokens";
@@ -50,9 +50,11 @@ export function useApr() {
       data.map((left, i) => formatUnits(left, rewardTokens![i].decimals)),
   });
   const { data: discount } = useOptionTokenDiscount({
+    address: PRO_OPTIONS.oFVM.tokenAddress,
     select: (asianDiscount) => (100n - asianDiscount).toString(),
   });
   const { data: veDiscount } = useOptionTokenVeDiscount({
+    address: PRO_OPTIONS.oFVM.tokenAddress,
     select: (asianDiscount) => (100n - asianDiscount).toString(),
   });
 

@@ -70,6 +70,39 @@ interface OptionApr {
 
 type Aprs = (GeneralApr | OptionApr)[] | null;
 
+interface GaugeOfPair {
+  // exists only if gauge_address is not empty
+  decimals: number;
+  tbv: number;
+  votes: number;
+  apr: number;
+  address: `0x${string}`;
+  total_supply: number;
+  bribe_address: `0x${string}`;
+  reward: number;
+  bribeAddress: `0x${string}`;
+  totalSupply: number;
+  bribes: Bribe[];
+  // following gets assigned in frontend store
+  balance?: string;
+  reserve0?: string;
+  reserve1?: string;
+  weight?: string;
+  weightPercent?: string;
+  rewardTokens?: {
+    address: `0x${string}`;
+    symbol: string;
+    decimals: number;
+  }[];
+  rewardsEarned?: {
+    earned: `${number}`;
+    address: `0x${string}`;
+    symbol: string;
+    decimals: number;
+  }[];
+  bribesEarned?: Bribe[];
+}
+
 interface Pair {
   tvl: number;
   aprs: Aprs;
@@ -99,38 +132,21 @@ interface Pair {
   claimable1?: string;
   balance?: string;
   isAliveGauge?: boolean;
-  gauge?: {
-    // exists only if gauge_address is not empty
-    decimals: number;
-    tbv: number;
-    votes: number;
-    apr: number;
-    address: `0x${string}`;
-    total_supply: number;
-    bribe_address: `0x${string}`;
-    reward: number;
-    bribeAddress: `0x${string}`;
-    totalSupply: number;
-    bribes: Bribe[];
-    // following gets assigned in frontend store
-    balance?: string;
-    reserve0?: string;
-    reserve1?: string;
-    weight?: string;
-    weightPercent?: string;
-    rewardTokens?: {
-      address: `0x${string}`;
-      symbol: string;
-      decimals: number;
-    }[];
-    rewardsEarned?: {
-      earned: `${number}`;
-      address: `0x${string}`;
-      symbol: string;
-      decimals: number;
-    }[];
-    bribesEarned?: Bribe[];
-  };
+  gauge?: GaugeOfPair;
+  killed_gauges: Pick<
+    GaugeOfPair,
+    | "decimals"
+    | "tbv"
+    | "votes"
+    | "apr"
+    | "address"
+    | "total_supply"
+    | "totalSupply"
+    | "bribe_address"
+    | "reward"
+    | "bribeAddress"
+    | "bribes"
+  >[]; // if no gauges killed, set to: []
   gaugebribes?: Bribe[];
 }
 

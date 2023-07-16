@@ -3,16 +3,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useWaitForTransaction } from "wagmi";
 
 import { formatCurrency } from "../../utils/utils";
-import { QUERY_KEYS } from "../../stores/constants/constants";
+import { QUERY_KEYS, PRO_OPTIONS } from "../../stores/constants/constants";
 import {
   useMaxxingGaugeGetReward,
   useOptionTokenGauge,
   usePrepareMaxxingGaugeGetReward,
 } from "../../lib/wagmiGen";
 
-import { useGaugeRewards, useTokenData } from "./lib";
+import { useGaugeRewards, useTokenData, useInputs } from "./lib";
 
 export function Reward() {
+  const { optionToken } = useInputs();
+
   const queryClient = useQueryClient();
   const { address } = useAccount();
 
@@ -29,7 +31,9 @@ export function Reward() {
 
   const { refetchBalances } = useTokenData();
 
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   const { config: getRewardConfig } = usePrepareMaxxingGaugeGetReward({
     address: gaugeAddress,
     args: [address!, earnedTokenAddresses!],

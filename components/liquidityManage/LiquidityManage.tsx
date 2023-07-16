@@ -91,15 +91,20 @@ export default function LiquidityManage() {
   const { data: assetOptions } = useBaseAssetWithInfo();
 
   const { data: pair, isFetching: isLoadingPair } = useGetPair(
-    router.query.address
+    router.query.address,
+    router.query.gauge?.[0]
   );
-
   const { data: quote, remove: removeQuote } = useQuoteAddLiquidity(
-    router.query.address
+    router.query.address,
+    router.query.gauge?.[0]
   );
 
   const { data: withdrawQuote, remove: removeWithdrawQuote } =
-    useQuoteRemoveLiquidity(withdrawAmount, router.query.address);
+    useQuoteRemoveLiquidity(
+      withdrawAmount,
+      router.query.address,
+      router.query.gauge?.[0]
+    );
 
   const onLoadActionSuccess = useCallback(() => {
     setAmount0("");
@@ -165,7 +170,9 @@ export default function LiquidityManage() {
 
   const onBack = useCallback(() => {
     router.push("/liquidity");
-  }, [router]);
+    setAmount0("");
+    setAmount1("");
+  }, [router, setAmount0, setAmount1]);
 
   const onSlippageChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value == "" || !isNaN(+event.target.value)) {

@@ -11,6 +11,7 @@ import {
 import { CONTRACTS, PRO_OPTIONS } from "../../../stores/constants/constants";
 
 import { useIsEmittingOptions } from "./useIsEmittingOptions";
+import { useInputs } from "./useInputs";
 
 const QUERY_KEYS = {
   TOKEN_ADDRESSES: "TOKEN_ADDRESSES",
@@ -33,9 +34,12 @@ interface Earned {
 }
 
 export function useGaugeRewards() {
+  const { optionToken } = useInputs();
   const { address } = useAccount();
   const { data: rewardTokens } = useGaugeRewardTokens();
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   return useQuery({
     queryKey: [QUERY_KEYS.EARNED, rewardTokens, address, gaugeAddress],
     queryFn: () => getEarned(address, rewardTokens, gaugeAddress),
@@ -46,7 +50,10 @@ export function useGaugeRewards() {
 }
 
 export function useGaugeRewardTokens() {
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { optionToken } = useInputs();
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
 
   const { data: rewardsListLength } = useMaxxingGaugeRewardsListLength({
     address: gaugeAddress,

@@ -21,8 +21,15 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
+import { PRO_OPTIONS } from "../../stores/constants/constants";
 
-import { isValidInput, useStakeData, useGaugeApr, useTokenData } from "./lib";
+import {
+  isValidInput,
+  useStakeData,
+  useGaugeApr,
+  useTokenData,
+  useInputs,
+} from "./lib";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -30,6 +37,7 @@ const ACTION = {
 } as const;
 
 export function Stake() {
+  const { optionToken } = useInputs();
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
@@ -59,7 +67,9 @@ export function Stake() {
 
   const { data: tokenAprs } = useGaugeApr();
 
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   const {
     data: isApprovalNeeded,
     refetch: refetchAllowance,

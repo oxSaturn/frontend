@@ -8,13 +8,21 @@ import {
 import {
   CONTRACTS,
   MINTER_ROLE,
+  PRO_OPTIONS,
   QUERY_KEYS,
   ZERO_ADDRESS,
 } from "../../../stores/constants";
 
+import { useInputs } from "./useInputs";
+
 export function useIsEmittingOptions() {
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { optionToken } = useInputs();
+
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   const { data: hasMinterRole } = useOptionTokenHasRole({
+    address: PRO_OPTIONS.oFVM.tokenAddress,
     args: [MINTER_ROLE, gaugeAddress!],
     enabled: !!gaugeAddress,
   });

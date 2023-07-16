@@ -447,6 +447,9 @@ export const getPairsWithGauges = async (
   });
 
   const gauges = pairsWithoutInfo.filter(hasGauge);
+  const pairsWithkilledGauges = structuredClone(pairsWithoutInfo).filter(
+    (pair) => pair.killed_gauges.length > 0
+  );
 
   const gaugesAliveCalls = gauges.map((pair) => {
     return {
@@ -525,7 +528,67 @@ export const getPairsWithGauges = async (
     return pair;
   });
 
-  return ps1;
+  // TODO: refactor to support multiple killed gauges if ever needed
+  const killedGaugesCalls = pairsWithkilledGauges.flatMap((pair) => {
+    return [
+      {
+        address: pair.killed_gauges[0].address,
+        abi: CONTRACTS.GAUGE_ABI,
+        functionName: "totalSupply",
+      },
+      {
+        address: pair.killed_gauges[0].address,
+        abi: CONTRACTS.GAUGE_ABI,
+        functionName: "balanceOf",
+        args: [address],
+      },
+    ] as const;
+  });
+
+  const killedGaugesBalances = await viemClient.multicall({
+    allowFailure: false,
+    contracts: killedGaugesCalls,
+  });
+
+  const ps2 = pairsWithkilledGauges.map((pair, i) => {
+    const [totalSupply, gaugeBalance] = killedGaugesBalances.slice(
+      i * 2,
+      i * 2 + 2
+    );
+
+    const formattedTotalSupply = +formatEther(totalSupply);
+    pair.gauge = {
+      address: pair.killed_gauges[0].address,
+      balance: formatEther(gaugeBalance),
+      decimals: pair.killed_gauges[0].decimals,
+      votes: pair.killed_gauges[0].votes,
+      apr: pair.killed_gauges[0].apr,
+      tbv: pair.killed_gauges[0].tbv,
+      bribe_address: pair.killed_gauges[0].bribe_address,
+      bribeAddress: pair.killed_gauges[0].bribe_address,
+      bribes: [],
+      total_supply: formattedTotalSupply,
+      totalSupply: formattedTotalSupply,
+      reward: 0,
+      reserve0:
+        pair.totalSupply > 0
+          ? ((pair.reserve0 * formattedTotalSupply) / pair.totalSupply).toFixed(
+              pair.token0.decimals
+            )
+          : "0",
+      reserve1:
+        pair.totalSupply > 0
+          ? ((pair.reserve1 * formattedTotalSupply) / pair.totalSupply).toFixed(
+              pair.token1.decimals
+            )
+          : "0",
+    };
+    pair.isAliveGauge = false;
+    pair.aprs = null;
+    return pair;
+  });
+
+  return [...ps1, ...ps2];
 };
 
 export const usePairsWithGauges = <TData = Pair[]>(

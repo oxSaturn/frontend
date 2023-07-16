@@ -17,10 +17,14 @@ import { useTokenPrices } from "../../header/lib/queries";
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
 import { useTokenData } from "./useTokenData";
+import { useInputs } from "./useInputs";
 
 export function useStakeData() {
+  const { optionToken } = useInputs();
   const { address } = useAccount();
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
 
   const { data: pair } = useMaxxingGaugeStake({
     address: gaugeAddress,
@@ -64,7 +68,7 @@ export function useStakeData() {
     select: (data) => formatUnits(data, paymentTokenDecimals),
   });
   const { data: paymentTokenBalanceInOption } = useBalance({
-    address: PRO_OPTIONS.oFVM.tokenAddress,
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     token: paymentTokenAddress,
     enabled: !!paymentTokenAddress,
   });
@@ -128,7 +132,7 @@ function usePaymentTokenToDistributeValue(
       ),
     enabled:
       !!tokenPrices &&
-      !!paymentTokenBalanceToDistribute &&
+      paymentTokenBalanceToDistribute !== undefined &&
       !!paymentTokenAddress,
     keepPreviousData: true,
     retry: false,
@@ -139,7 +143,10 @@ export function useTotalStaked(
   stakedBalanceWithoutLock: string | undefined,
   stakedBalanceWithLock: string | undefined
 ) {
-  const { data: gaugeAddress } = useOptionTokenGauge();
+  const { optionToken } = useInputs();
+  const { data: gaugeAddress } = useOptionTokenGauge({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   const { data: pair } = useMaxxingGaugeStake({
     address: gaugeAddress,
   });
@@ -147,7 +154,7 @@ export function useTotalStaked(
     address: gaugeAddress,
     select: (data) => formatEther(data),
   });
-  const { data: pairData } = useGetPair(pair);
+  const { data: pairData } = useGetPair(pair, gaugeAddress);
   const { data: tokenPrices } = useTokenPrices();
 
   return useQuery({
@@ -230,7 +237,7 @@ function getPaymentTokenToDistributeValue(
   tokenPrices: Map<string, number> | undefined
 ) {
   if (
-    !paymentTokenBalanceToDistribute ||
+    paymentTokenBalanceToDistribute === undefined ||
     !tokenPrices ||
     !paymentTokenAddress
   ) {
