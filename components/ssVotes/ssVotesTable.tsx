@@ -286,7 +286,7 @@ export default function EnhancedTable({
                 token={token}
                 defaultVotes={defaultVotes}
                 onSliderChange={onSliderChange}
-                key={row.address}
+                key={row.address + row.gauge.address}
               />
             ))}
             {emptyRows > 0 && (
@@ -331,9 +331,8 @@ const VotesRow = memo(function VotesRow({
   const token1Info =
     tokens[row.token1.address.toLowerCase() as keyof typeof tokens];
 
-  let sliderValue = defaultVotes?.find(
-    (el) => el.address === row?.address
-  )?.value;
+  let sliderValue = defaultVotes?.find((el) => el.address === row?.address)
+    ?.value;
   if (!sliderValue) {
     sliderValue = 0;
   }
@@ -712,12 +711,10 @@ function descendingComparator(
       return 0;
 
     case "rewardEstimate":
-      const sliderValueA = defaultVotes?.find(
-        (el) => el.address === a?.address
-      )?.value;
-      const sliderValueB = defaultVotes?.find(
-        (el) => el.address === b?.address
-      )?.value;
+      const sliderValueA = defaultVotes?.find((el) => el.address === a?.address)
+        ?.value;
+      const sliderValueB = defaultVotes?.find((el) => el.address === b?.address)
+        ?.value;
       let rewardEstimateA: number | undefined;
       let rewardEstimateB: number | undefined;
 
@@ -802,12 +799,10 @@ function descendingComparator(
 
     case "myVotes":
     case "mvp":
-      const sliderValue1 = defaultVotes?.find(
-        (el) => el.address === a?.address
-      )?.value;
-      const sliderValue2 = defaultVotes?.find(
-        (el) => el.address === b?.address
-      )?.value;
+      const sliderValue1 = defaultVotes?.find((el) => el.address === a?.address)
+        ?.value;
+      const sliderValue2 = defaultVotes?.find((el) => el.address === b?.address)
+        ?.value;
       if (
         sliderValue1 !== undefined &&
         sliderValue2 !== undefined &&
