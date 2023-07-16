@@ -427,10 +427,12 @@ const createPairStake = async (
     args: [account],
   });
 
-  const _pair = (await getPairByAddress(account, _pairFor, [])) as
-    | Gauge[]
-    | null; // this has to have gauge because it was created dayjs ago
-  const pair = _pair?.[0] ?? null;
+  const pair = (await getPairByAddress(
+    account,
+    _pairFor,
+    [],
+    gaugeAddress
+  )) as Gauge | null; // this has to have gauge because it was created dayjs ago
 
   const stakeAllowance = await getStakeAllowance(pair, account, _pairFor);
   if (!stakeAllowance) throw new Error("stakeAllowance is null");

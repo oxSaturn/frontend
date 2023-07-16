@@ -302,6 +302,9 @@ export default function EnhancedTable({
   };
 
   const onView = (pair: Pair) => {
+    if (pair.gauge?.address) {
+      return router.push(`/liquidity/${pair.address}/${pair.gauge.address}`);
+    }
     router.push(`/liquidity/${pair.address}`);
   };
 

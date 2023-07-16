@@ -9,7 +9,6 @@ import {
   parseUnits,
 } from "viem";
 import BigNumber from "bignumber.js";
-import { create } from "zustand";
 
 import viemClient from "../../../stores/connectors/viem";
 import { usePairsWithGauges } from "../../../lib/global/queries";
@@ -23,20 +22,6 @@ import {
 } from "../../../stores/constants/constants";
 
 import { useAmounts } from "./useAmounts";
-
-interface PairManageStore {
-  pair: Pair | undefined;
-  setPair: (_pair: Pair | undefined) => void;
-  pairOptions: Pair[] | undefined;
-  setPairOptions: (_pairOptions: Pair[] | undefined) => void;
-}
-
-export const usePairManageStore = create<PairManageStore>()((set) => ({
-  pair: undefined,
-  setPair: (pair) => set({ pair }),
-  pairOptions: undefined,
-  setPairOptions: (pairOptions) => set({ pairOptions }),
-}));
 
 export const KEYS = {
   PAIR_EXISTANCE: "pairExistance",
@@ -61,39 +46,38 @@ export function usePairExistance(pairParams: {
   });
 }
 
-export function useGetPair(pairAddress: string | string[] | undefined) {
+export function useGetPair(
+  pairAddress: string | string[] | undefined,
+  gaugeAddress: string | string[] | undefined
+) {
   const { address } = useAccount();
   const { data: pairs } = usePairsWithGauges();
-  const { setPairOptions, setPair, pair } = usePairManageStore();
   return useQuery({
-    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pair, pairAddress],
-    queryFn: () => getPairByAddress(address, pairAddress as Address, pairs),
+    queryKey: [KEYS.PAIR_BY_ADDRESS, pairs, address, pairAddress, gaugeAddress],
+    queryFn: () =>
+      getPairByAddress(
+        address,
+        pairAddress as Address,
+        pairs,
+        gaugeAddress as Address | undefined
+      ),
     enabled:
       !!address &&
       !!pairAddress &&
       !Array.isArray(pairAddress) &&
-      isAddress(pairAddress),
-    onSuccess: (pairs) => {
-      setPairOptions(pairs);
-      if (pair === undefined) {
-        setPair(pairs[0]);
-      }
-    },
+      isAddress(pairAddress) &&
+      !Array.isArray(gaugeAddress),
     refetchOnWindowFocus: false,
-    onError: () => {
-      setPairOptions(undefined);
-      setPair(undefined);
-    },
   });
 }
 
 export function useQuoteAddLiquidity(
-  pairAddress: string | string[] | undefined
+  pairAddress: string | string[] | undefined,
+  gaugeAddress: string | string[] | undefined
 ) {
   const { address } = useAccount();
   const { amount0, amount1 } = useAmounts();
-  useGetPair(pairAddress);
-  const { pair } = usePairManageStore();
+  const { data: pair } = useGetPair(pairAddress, gaugeAddress);
 
   return useQuery({
     queryKey: [
@@ -120,11 +104,11 @@ export function useQuoteAddLiquidity(
 
 export function useQuoteRemoveLiquidity(
   amount: string,
-  pairAddress: string | string[] | undefined
+  pairAddress: string | string[] | undefined,
+  gaugeAddress: string | string[] | undefined
 ) {
   const { address } = useAccount();
-  useGetPair(pairAddress);
-  const { pair } = usePairManageStore();
+  const { data: pair } = useGetPair(pairAddress, gaugeAddress);
   return useQuery({
     queryKey: [
       KEYS.QUOTE_REMOVE_LIQUIDITY,
@@ -234,7 +218,8 @@ const checkIfPairExists = async (pairParams: {
 export const getPairByAddress = async (
   account: Address | undefined,
   pairAddress: Address | undefined,
-  pairs: Pair[] | undefined
+  pairs: Pair[] | undefined,
+  gaugeAddressOfPair?: Address
 ) => {
   if (!account) {
     console.warn("account not found");
@@ -245,12 +230,18 @@ export const getPairByAddress = async (
     throw new Error("pair not found");
   }
 
-  const pairArr = pairs?.filter(
-    (p) => p.address.toLowerCase() === pairAddress.toLowerCase()
-  );
+  const pair = pairs?.find((p) => {
+    if (gaugeAddressOfPair) {
+      return (
+        p.address.toLowerCase() === pairAddress.toLowerCase() &&
+        p.gauge?.address.toLowerCase() === gaugeAddressOfPair.toLowerCase()
+      );
+    }
+    return p.address.toLowerCase() === pairAddress.toLowerCase();
+  });
 
-  if (pairArr && pairArr?.length > 0) {
-    return pairArr;
+  if (pair) {
+    return pair;
   }
 
   const pairContract = {
@@ -523,7 +514,7 @@ export const getPairByAddress = async (
     };
   }
 
-  return [thePair];
+  return thePair;
 };
 
 const getBaseAsset = async (account: Address | undefined, address: Address) => {
