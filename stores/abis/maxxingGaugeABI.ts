@@ -423,19 +423,6 @@ export const maxxingGaugeABI = [
   },
   {
     inputs: [],
-    name: "external_bribe",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "fees0",
     outputs: [
       {

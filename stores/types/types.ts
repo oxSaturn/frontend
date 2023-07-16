@@ -179,10 +179,11 @@ interface Rewards {
 
 type Vote = {
   address: `0x${string}`;
+  gaugeAddress: `0x${string}`;
   votePercent: string;
 };
 
-type Votes = Array<Pick<Vote, "address"> & { value: number }>;
+type Votes = Array<Pick<Vote, "address" | "gaugeAddress"> & { value: number }>;
 
 interface DexScrennerPair {
   chainId: string;

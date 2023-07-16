@@ -33,6 +33,7 @@ export const useVestVotes = (tokenID: string | undefined) => {
       const votesValues: Votes | undefined = votes?.map((vote) => {
         return {
           address: vote?.address,
+          gaugeAddress: vote?.gaugeAddress,
           value: BigNumber(
             vote && vote.votePercent ? vote.votePercent : 0
           ).toNumber(),
@@ -62,9 +63,7 @@ const getVestVotes = async (
     throw new Error("no token id");
   }
 
-  const filteredPairs = pairs.filter((pair) => {
-    return pair && pair.gauge && pair.gauge.address;
-  });
+  const filteredPairs = pairs.filter(hasGauge);
 
   const gaugesContract = {
     abi: CONTRACTS.VOTER_ABI,
@@ -94,6 +93,7 @@ const getVestVotes = async (
   for (let i = 0; i < voteCounts.length; i++) {
     votes.push({
       address: filteredPairs[i].address,
+      gaugeAddress: filteredPairs[i].gauge.address,
       votePercent:
         totalVotes > 0 || totalVotes < 0
           ? parseFloat(
@@ -110,10 +110,14 @@ const getPairsWithGaugesAndVotes = (
   pairsWithGauges: Pair[] | undefined,
   votes: Votes | undefined
 ) => {
-  const gauges = pairsWithGauges?.filter(hasGauge).filter((gauge) => {
+  const gauges = pairsWithGauges?.filter(hasGauge).filter((pairWithGauge) => {
     let sliderValue =
-      votes?.find((el) => el.address === gauge.address)?.value ?? 0;
-    if (gauge.isAliveGauge === false && sliderValue === 0) {
+      votes?.find(
+        (el) =>
+          el.address === pairWithGauge.address &&
+          el.gaugeAddress === pairWithGauge.gauge.address
+      )?.value ?? 0;
+    if (pairWithGauge.isAliveGauge === false && sliderValue === 0) {
       return false;
     }
     return true;

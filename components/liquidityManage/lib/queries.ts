@@ -3,7 +3,6 @@ import { Address, useAccount } from "wagmi";
 import {
   formatEther,
   formatUnits,
-  getContract,
   isAddress,
   parseEther,
   parseUnits,
@@ -416,21 +415,6 @@ export const getPairByAddress = async (
       address: gaugeAddress,
     } as const;
 
-    const external_bribe = await viemClient.readContract({
-      ...gaugeContract,
-      functionName: "external_bribe",
-    });
-
-    //wrapped bribe address is coming from api. if the api doesnt work this will break
-    const bribeContract = {
-      abi: CONTRACTS.BRIBE_ABI,
-      address: external_bribe,
-    } as const;
-    const bribeContractInstance = getContract({
-      ...bribeContract,
-      publicClient: viemClient,
-    });
-
     const [totalSupply, gaugeBalance, bribeAddress] =
       await viemClient.multicall({
         allowFailure: false,
@@ -452,7 +436,15 @@ export const getPairByAddress = async (
         ],
       });
 
-    const tokensLength = await bribeContractInstance.read.rewardsListLength();
+    const bribeContract = {
+      abi: CONTRACTS.BRIBE_ABI,
+      address: bribeAddress,
+    } as const;
+
+    const tokensLength = await viemClient.readContract({
+      ...bribeContract,
+      functionName: "rewardsListLength",
+    });
 
     const arry = Array.from(
       { length: parseInt(tokensLength.toString()) },
@@ -461,9 +453,11 @@ export const getPairByAddress = async (
 
     const bribes = await Promise.all(
       arry.map(async (idx) => {
-        const tokenAddress = await bribeContractInstance.read.rewards([
-          BigInt(idx),
-        ]);
+        const tokenAddress = await viemClient.readContract({
+          ...bribeContract,
+          functionName: "rewards",
+          args: [BigInt(idx)],
+        });
 
         const token = await getBaseAsset(account, tokenAddress);
         if (!token) {

@@ -813,7 +813,7 @@ const writeCreateGauge = async (
       address: CONTRACTS.VOTER_ADDRESS,
       abi: CONTRACTS.VOTER_ABI,
       functionName: "createGauge",
-      args: [pairAddress, 0n],
+      args: [pairAddress, 1n],
     });
     const txHash = await walletClient.writeContract(request);
     return txHash;
