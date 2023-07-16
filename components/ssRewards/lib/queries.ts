@@ -75,7 +75,7 @@ export const getRewardBalances = async (
             abi: CONTRACTS.BRIBE_ABI,
             functionName: "earned",
             args: [bribe.token.address, BigInt(tokenID)],
-          } as const)
+          }) as const
       )
     );
     const callsChunks = chunkArray(calls, 100);
@@ -248,7 +248,7 @@ export const getRewardBalances = async (
           abi: CONTRACTS.GAUGE_ABI,
           functionName: "earned",
           args: [rewardToken.address, address],
-        } as const)
+        }) as const
     );
   });
 
@@ -276,7 +276,7 @@ export const getRewardBalances = async (
   });
 
   const filteredRewards: Gauge[] = []; // Pair with rewardType set to "Reward" and defined token symbol of reward
-  const hashSet = new Set<`0x${string}`>();
+  const hashSet = new Set<string>();
 
   for (let j = 0; j < filteredPairs2.length; j++) {
     let pair = Object.assign({}, filteredPairs2[j]);
@@ -289,8 +289,8 @@ export const getRewardBalances = async (
           } else {
             pair.rewardsToClaim.push(reward);
           }
-          if (!hashSet.has(pair.address)) {
-            hashSet.add(pair.address);
+          if (!hashSet.has(pair.address + pair.gauge.address)) {
+            hashSet.add(pair.address + pair.gauge.address);
             filteredRewards.push(pair);
           }
         }
@@ -312,7 +312,7 @@ export const useRewards = <
     bribes: Gauge[];
     rewards: Gauge[];
     veDist: VeDistReward[];
-  }
+  },
 >(
   tokenID: string | undefined,
   select?: (_data: {
