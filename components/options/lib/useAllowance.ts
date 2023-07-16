@@ -28,7 +28,7 @@ export function useAllowance() {
     isFetching: isFetchingAllowance,
   } = useErc20Allowance({
     address: paymentTokenAddress,
-    args: [address!, PRO_OPTIONS.oFVM.tokenAddress],
+    args: [address!, PRO_OPTIONS[optionToken].tokenAddress],
     enabled: !!address && !!paymentTokenAddress && !!paymentTokenDecimals,
     select: (allowance) => {
       if (!maxPayment) return;
@@ -39,7 +39,7 @@ export function useAllowance() {
   const { config: approveConfig } = usePrepareErc20Approve({
     address: paymentTokenAddress,
     args: [
-      PRO_OPTIONS.oFVM.tokenAddress,
+      PRO_OPTIONS[optionToken].tokenAddress,
       isValidInput(maxPayment, paymentTokenDecimals) &&
       isValidInput(payment, paymentTokenDecimals)
         ? parseUnits(maxPayment, paymentTokenDecimals)
