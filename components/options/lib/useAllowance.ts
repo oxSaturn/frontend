@@ -15,10 +15,12 @@ import { useTokenData } from "./useTokenData";
 export function useAllowance() {
   const { address } = useAccount();
 
-  const { payment } = useInputs();
+  const { payment, optionToken } = useInputs();
   const maxPayment = (parseFloat(payment) * 1.01).toString();
 
-  const { data: paymentTokenAddress } = useOptionTokenPaymentToken();
+  const { data: paymentTokenAddress } = useOptionTokenPaymentToken({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
+  });
   const { paymentTokenDecimals } = useTokenData();
   const {
     data: isApprovalNeeded,

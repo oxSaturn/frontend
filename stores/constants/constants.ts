@@ -35,6 +35,9 @@ export const PRO_OPTIONS = {
   oFVM: {
     tokenAddress: "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
   },
+  oBLOTR: {
+    tokenAddress: "0xC5d4E462b96cC73283EB452B15147c17Af413313",
+  },
 } as const;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);

@@ -5,18 +5,21 @@ import {
   useOptionTokenGetPaymentTokenAmountForExerciseLp,
   useOptionTokenGetVeDiscountedPrice,
 } from "../../../lib/wagmiGen";
+import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
 import { INPUT, isValidInput, useInputs } from "./useInputs";
 import { useTokenData } from "./useTokenData";
 
 export function useAmountToPayLiquid() {
-  const { option, payment, activeInput, setOption, setPayment } = useInputs();
+  const { optionToken, option, payment, activeInput, setOption, setPayment } =
+    useInputs();
   const maxPayment = (parseFloat(payment) * 1.01).toString();
 
   const { paymentTokenDecimals } = useTokenData();
 
   const { isFetching: isFetchingPaymentForOption } =
     useOptionTokenGetDiscountedPrice({
+      address: PRO_OPTIONS[optionToken].tokenAddress,
       args: [isValidInput(option) ? parseEther(option as `${number}`) : 0n],
       enabled: activeInput === INPUT.OPTION && isValidInput(option),
       onSuccess: (amountPaymentForOption) => {
@@ -28,6 +31,7 @@ export function useAmountToPayLiquid() {
 
   const { isFetching: isFetchingOptionDiscountedPrice } =
     useOptionTokenGetDiscountedPrice({
+      address: PRO_OPTIONS[optionToken].tokenAddress,
       args: [parseEther("1")],
       enabled:
         activeInput === INPUT.PAYMENT &&
@@ -54,13 +58,15 @@ export function useAmountToPayLiquid() {
 }
 
 export function useAmountToPayVest() {
-  const { option, payment, activeInput, setOption, setPayment } = useInputs();
+  const { optionToken, option, payment, activeInput, setOption, setPayment } =
+    useInputs();
   const maxPayment = (parseFloat(payment) * 1.01).toString();
 
   const { paymentTokenDecimals } = useTokenData();
 
   const { isFetching: isFetchingPaymentForOption } =
     useOptionTokenGetVeDiscountedPrice({
+      address: PRO_OPTIONS[optionToken].tokenAddress,
       args: [isValidInput(option) ? parseEther(option as `${number}`) : 0n],
       enabled: activeInput === INPUT.OPTION && isValidInput(option),
       onSuccess: (amountPaymentForOption) => {
@@ -72,6 +78,7 @@ export function useAmountToPayVest() {
 
   const { isFetching: isFetchingOptionDiscountedPrice } =
     useOptionTokenGetVeDiscountedPrice({
+      address: PRO_OPTIONS[optionToken].tokenAddress,
       args: [parseEther("1")],
       enabled:
         activeInput === INPUT.PAYMENT &&
@@ -98,12 +105,13 @@ export function useAmountToPayVest() {
 }
 
 export function useAmountToPayLP(lpDiscount: number) {
-  const { option, activeInput, setPayment } = useInputs();
+  const { optionToken, option, activeInput, setPayment } = useInputs();
   const { paymentTokenDecimals } = useTokenData();
   const {
     isFetching: isFetchingPaymentTokenAmountForOption,
     data: paymentAndAddLiquidityAmounts,
   } = useOptionTokenGetPaymentTokenAmountForExerciseLp({
+    address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [
       isValidInput(option) ? parseEther(option as `${number}`) : 0n,
       BigInt(100 - lpDiscount),
