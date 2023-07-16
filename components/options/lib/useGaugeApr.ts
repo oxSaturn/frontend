@@ -161,7 +161,9 @@ function getGaugeApr(
     const isGovTokenEmittedAsOption =
       rewardToken.address.toLowerCase() ===
         CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase() && isEmittingOptions;
-    if (isUnderlyingTokenEmittedAsOption || isOptionToken) {
+    if (totalStakedValue === 0) {
+      map.set(rewardToken, [0, 0] as const);
+    } else if (isUnderlyingTokenEmittedAsOption || isOptionToken) {
       const fullUnderlyingTokenPrice =
         tokenPrices.get(underlyingTokenAddress.toLowerCase()) ?? 0;
 
