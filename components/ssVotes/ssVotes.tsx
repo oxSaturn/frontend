@@ -63,6 +63,14 @@ export default function Votes() {
   const { mutate: vote, isLoading: voteLoading } = useVote();
 
   useEffect(() => {
+    if (token.id !== initialEmptyToken.id) {
+      // if user has selected a token, we don't want to change it
+      // just re set the same token to update token data
+      setToken(
+        vestNFTs?.find((nft) => nft.id === token.id) || initialEmptyToken
+      );
+      return;
+    }
     if (vestNFTs && vestNFTs.length > 0) {
       const votableNFTs = vestNFTs.filter(
         (nft) => nft.actionedInCurrentEpoch === false
@@ -73,7 +81,7 @@ export default function Votes() {
         setToken(vestNFTs[0]);
       }
     }
-  }, [vestNFTs]);
+  }, [vestNFTs, token]);
 
   useEffect(() => {
     const localStorageWarningAccepted =
