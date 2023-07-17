@@ -118,6 +118,12 @@ export default function Layout({
             <Link href="/claim" className="text-cyan-700 hover:underline">
               Claim
             </Link>
+            <Link
+              href="/squid-bridge"
+              className="text-cyan-700 hover:underline"
+            >
+              Bridge
+            </Link>
             {[
               {
                 href: "https://www.scanto.io/",
