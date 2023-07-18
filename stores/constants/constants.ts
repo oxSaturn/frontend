@@ -38,6 +38,9 @@ export const PRO_OPTIONS = {
   oBLOTR: {
     tokenAddress: "0xC5d4E462b96cC73283EB452B15147c17Af413313",
   },
+  oBAY: {
+    tokenAddress: "0x269557D887EaA9C1a756B2129740B3FC2821fD91",
+  },
 } as const;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);

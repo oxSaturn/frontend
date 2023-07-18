@@ -47,7 +47,7 @@ import {
   useStakeData,
 } from "./lib";
 
-const TOKENS = ["oFVM", "oBLOTR"];
+const TOKENS = ["oFVM", "oBLOTR", "oBAY"];
 
 interface RedeemTabs {
   LP: string;
@@ -110,20 +110,18 @@ export function Redeem() {
       value={tab}
       onValueChange={handleTabChange}
     >
-      {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg">Select option token</h3>
-          <Select value={optionToken} onValueChange={setOptionToken}>
-            {TOKENS.map((token) => {
-              return (
-                <SelectItem value={token} key={token}>
-                  {token}
-                </SelectItem>
-              );
-            })}
-          </Select>
-        </div>
-      )}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg">Select option token</h3>
+        <Select value={optionToken} onValueChange={setOptionToken}>
+          {TOKENS.map((token) => {
+            return (
+              <SelectItem value={token} key={token}>
+                {token}
+              </SelectItem>
+            );
+          })}
+        </Select>
+      </div>
       <h2 className="mb-5 text-xl">Redeem {optionTokenSymbol} Into</h2>
       <Tabs.List className="flex shrink-0" aria-label="Redeem options">
         {Object.values(tabs).map((tab) => (
