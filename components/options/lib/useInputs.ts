@@ -1,12 +1,9 @@
 import { parseUnits } from "viem";
 import { create } from "zustand";
 
-import { PRO_OPTIONS } from "../../../stores/constants/constants";
+import { OPTIONS } from "../../../stores/constants/constants";
 
-type OptionToken = Exclude<
-  keyof typeof PRO_OPTIONS,
-  "optionTokenABI" | "maxxingGaugeABI"
->;
+export type OptionToken = keyof typeof OPTIONS;
 
 export const INPUT = {
   OPTION: "0",

@@ -1,12 +1,32 @@
 import { Typography } from "@mui/material";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 import { Redeem } from "../../components/options/redeem";
 import { Stake } from "../../components/options/stake";
 import { Reward } from "../../components/options/reward";
 import { Convert } from "../../components/options/convert";
 import { PageWrapper } from "../../components/common/PageWrapper";
+import { OptionToken, useInputs } from "../../components/options/lib/useInputs";
+import { OPTIONS } from "../../stores/constants/constants";
 
 function Options() {
+  const { option } = useRouter().query;
+  const { setOptionToken } = useInputs();
+  useEffect(() => {
+    // visit /options
+    if (typeof option === "undefined") {
+      setOptionToken("oFVM");
+      return;
+    }
+    // visit /options/oToken
+    if (Array.isArray(option)) {
+      const [oToken] = option;
+      if (Object.keys(OPTIONS).includes(oToken)) {
+        setOptionToken(oToken as OptionToken);
+      }
+    }
+  }, [option, setOptionToken]);
   return (
     <PageWrapper
       placeholder={

@@ -14,7 +14,6 @@ import dayjs from "dayjs";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Checkbox from "@radix-ui/react-checkbox";
 
-import { Select, SelectItem } from "../common/radixSelect";
 import { Tooltip } from "../common/radixTooltip";
 
 import { formatCurrency } from "../../utils/utils";
@@ -47,8 +46,6 @@ import {
   useStakeData,
 } from "./lib";
 
-const TOKENS = ["oFVM", "oBLOTR", "oBAY"];
-
 interface RedeemTabs {
   LP: string;
   LIQUID: string;
@@ -57,8 +54,7 @@ interface RedeemTabs {
 
 export function Redeem() {
   const now = useNow();
-  const { setActiveInput, setOption, setPayment, setOptionToken, optionToken } =
-    useInputs();
+  const { setActiveInput, setOption, setPayment } = useInputs();
   const { optionTokenSymbol, paymentTokenSymbol, underlyingTokenSymbol } =
     useTokenData();
   const [tabs, setTabs] = useState<RedeemTabs>({
@@ -110,18 +106,6 @@ export function Redeem() {
       value={tab}
       onValueChange={handleTabChange}
     >
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg">Select option token</h3>
-        <Select value={optionToken} onValueChange={setOptionToken}>
-          {TOKENS.map((token) => {
-            return (
-              <SelectItem value={token} key={token}>
-                {token}
-              </SelectItem>
-            );
-          })}
-        </Select>
-      </div>
       <h2 className="mb-5 text-xl">Redeem {optionTokenSymbol} Into</h2>
       <Tabs.List className="flex shrink-0" aria-label="Redeem options">
         {Object.values(tabs).map((tab) => (

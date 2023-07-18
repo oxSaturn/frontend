@@ -29,9 +29,14 @@ const config = {
 export const ETHERSCAN_URL = config[fantom.id].scan;
 
 export const CONTRACTS = config[fantom.id].contracts;
-export const PRO_OPTIONS = {
-  optionTokenABI: optionTokenABI,
-  maxxingGaugeABI: maxxingGaugeABI,
+
+type oToken = "oFVM" | "oBLOTR" | "oBAY";
+export const OPTIONS: Record<
+  oToken,
+  {
+    tokenAddress: `0x${string}`;
+  }
+> = {
   oFVM: {
     tokenAddress: "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
   },
@@ -41,6 +46,11 @@ export const PRO_OPTIONS = {
   oBAY: {
     tokenAddress: "0x269557D887EaA9C1a756B2129740B3FC2821fD91",
   },
+} as const;
+export const PRO_OPTIONS = {
+  optionTokenABI: optionTokenABI,
+  maxxingGaugeABI: maxxingGaugeABI,
+  ...OPTIONS,
 } as const;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
