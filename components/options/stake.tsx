@@ -161,8 +161,11 @@ export function Stake() {
         setAmount(pooledBalance.formatted);
       }
     } else {
-      if (stakedBalance && parseFloat(stakedBalance) > 0) {
-        setAmount(stakedBalance);
+      if (
+        stakedBalanceWithoutLock &&
+        parseFloat(stakedBalanceWithoutLock) > 0
+      ) {
+        setAmount(stakedBalanceWithoutLock);
       }
     }
   };
@@ -268,7 +271,9 @@ export function Stake() {
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>
           <div
-            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
+            className={`${
+              action === ACTION.WITHDRAW && "cursor-pointer underline"
+            }`}
             onClick={() => pickWithdrawAmount("notLocked")}
           >
             ${formatCurrency(stakedWithoutLockValue)}
@@ -276,12 +281,7 @@ export function Stake() {
         </div>
         <div className="flex items-center justify-between">
           <div>Staked with lock</div>
-          <div
-            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
-            onClick={() => pickWithdrawAmount("locked")}
-          >
-            ${formatCurrency(stakedWithLockValue)}
-          </div>
+          <div>${formatCurrency(stakedWithLockValue)}</div>
         </div>
         {stakedLockEnd ? (
           <div className="flex items-center justify-between">
@@ -291,7 +291,14 @@ export function Stake() {
         ) : null}
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
-          <div>{pooledBalance?.formatted}</div>
+          <div
+            className={`${
+              action === ACTION.STAKE && "cursor-pointer underline"
+            }`}
+            onClick={() => setMax()}
+          >
+            {pooledBalance?.formatted}
+          </div>
         </div>
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
