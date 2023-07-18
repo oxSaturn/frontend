@@ -1,9 +1,7 @@
 import { parseUnits } from "viem";
 import { create } from "zustand";
 
-import { OPTIONS } from "../../../stores/constants/constants";
-
-export type OptionToken = keyof typeof OPTIONS;
+import { type oToken as OptionToken } from "../../../stores/constants/constants";
 
 export const INPUT = {
   OPTION: "0",

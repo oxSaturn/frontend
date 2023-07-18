@@ -7,8 +7,11 @@ import { Stake } from "../../components/options/stake";
 import { Reward } from "../../components/options/reward";
 import { Convert } from "../../components/options/convert";
 import { PageWrapper } from "../../components/common/PageWrapper";
-import { OptionToken, useInputs } from "../../components/options/lib/useInputs";
-import { OPTIONS } from "../../stores/constants/constants";
+import { useInputs } from "../../components/options/lib/useInputs";
+import {
+  OPTIONS,
+  type oToken as OptionToken,
+} from "../../stores/constants/constants";
 
 function Options() {
   const { option } = useRouter().query;

@@ -30,7 +30,7 @@ export const ETHERSCAN_URL = config[fantom.id].scan;
 
 export const CONTRACTS = config[fantom.id].contracts;
 
-type oToken = "oFVM" | "oBLOTR" | "oBAY";
+export type oToken = "oFVM" | "oBLOTR" | "oBAY";
 export const OPTIONS: Record<
   oToken,
   {
