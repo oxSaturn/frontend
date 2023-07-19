@@ -56,7 +56,8 @@ function Options() {
       }
     >
       <div className="space-y-5">
-        <h1 className="text-center text-2xl flex justify-center items-center">
+        <h1 className="text-2xl flex px-5 items-center gap-2 w-96 min-w-[384px] md:w-[512px] md:min-w-[512px] lg:w-[calc(1024px+1.25rem)] lg:min-w-[calc(1024px+1.25rem)] mx-auto">
+          <span>Select option token:</span>
           <Select
             value={transformOptionQuery(option)}
             onValueChange={(value) => {
@@ -72,7 +73,7 @@ function Options() {
         </h1>
         <div className="flex flex-wrap items-stretch justify-center gap-5">
           <Redeem />
-          <div className="flex flex-col items-center justify-between gap-1">
+          <div className="flex flex-col items-center justify-between gap-5">
             <Stake />
             <Reward />
             <Convert />
