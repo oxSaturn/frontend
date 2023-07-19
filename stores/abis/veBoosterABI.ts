@@ -191,6 +191,25 @@ export const veBoosterABI = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "_paymentAmount",
+        type: "uint256",
+      },
+    ],
+    name: "getExpectedAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_token",
         type: "address",

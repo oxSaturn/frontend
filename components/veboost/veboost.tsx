@@ -1,5 +1,5 @@
 import { useAccount, useBalance, useWaitForTransaction } from "wagmi";
-import { parseUnits } from "viem";
+import { formatEther, parseUnits } from "viem";
 import { useState } from "react";
 
 import { LoadingSVG } from "../common/LoadingSVG";
@@ -14,6 +14,7 @@ import {
   useVeBoosterBoostedBuyAndVeLock,
   useVeBoosterMatchRate,
   useVeBoosterPaymentToken,
+  useVeBoosterGetExpectedAmount,
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
 import { VE_BOOSTER_ADRRESS } from "../../stores/constants/contracts";
@@ -36,6 +37,13 @@ export function VeBoost() {
     address: paymentToken,
     enabled: !!paymentToken,
   });
+
+  const { data: boostedAmount, isFetching: isFetchingBoostedAmount } =
+    useVeBoosterGetExpectedAmount({
+      args: [parseUnits(amount, decimals!)],
+      enabled: !!amount && !!decimals,
+      select: (boostedAmount) => formatEther(boostedAmount),
+    });
 
   const { data: paymentBalance, refetch: refetchPaymentBalance } = useBalance({
     address: address!,
@@ -125,6 +133,14 @@ export function VeBoost() {
             >
               {formatCurrency(paymentBalance?.formatted)}
             </span>
+          </div>
+          <div
+            className={`flex justify-between ${
+              isFetchingBoostedAmount && "animate-pulse"
+            }`}
+          >
+            <span>Boosted veFVM amount</span>
+            <span>{formatCurrency(boostedAmount)}</span>
           </div>
           <div className="space-y-2">
             <input
