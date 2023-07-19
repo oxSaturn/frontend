@@ -35,6 +35,9 @@ function Navigation() {
     if (activePath.includes("stake")) {
       setActive("stake");
     }
+    if (activePath.includes("veboost")) {
+      setActive("veboost");
+    }
   }, [router.asPath]);
 
   const renderNavs = () => {
@@ -44,6 +47,7 @@ function Navigation() {
         {renderSubNav("Liquidity", "liquidity")}
         {renderSubNav("Stake", "stake")}
         {renderSubNav("Vest", "vest")}
+        {renderSubNav("VeBoost", "veboost")}
         {renderSubNav("Vote", "vote")}
         {renderSubNav("Rewards", "rewards")}
         {renderSubNav("Options", "options")}

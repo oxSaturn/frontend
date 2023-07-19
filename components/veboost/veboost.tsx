@@ -54,6 +54,7 @@ export function VeBoost() {
   const {
     data: isApprovalNeeded,
     isRefetching: isRefetchingAllowance,
+    isFetching: isFetchingAllowance,
     refetch: refetchAllowance,
   } = useErc20Allowance({
     address: paymentToken,
@@ -108,8 +109,6 @@ export function VeBoost() {
       refetchAllowance();
     },
   });
-
-  if (isApprovalNeeded === undefined) return null;
 
   return (
     <div className="mx-5 sm:mx-auto sm:max-w-lg space-y-10 font-sono">
@@ -193,7 +192,7 @@ export function VeBoost() {
                   <button
                     className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
                     onClick={boostedBuy}
-                    disabled={!boostedBuy}
+                    disabled={!boostedBuy || isFetchingAllowance}
                   >
                     Boosted Buy
                   </button>
