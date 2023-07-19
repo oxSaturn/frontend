@@ -262,7 +262,7 @@
     "decimals": 6,
     "name": "Axelar Wrapped USDC",
     "symbol": "axlUSDC",
-    "logoURI": "https://www.fvm.exchange/images/partners/Circle_USDC_Logo.svg"
+    "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg"
   },
   {
     "name": "Axelar Wrapped ETH",
@@ -270,7 +270,7 @@
     "address": "0xfe7eDa5F2c56160d406869A8aA4B2F365d544C7B",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://www.fvm.exchange/images/partners/Ethereum_logo_2014.svg"
+    "logoURI": "https://assets.coingecko.com/coins/images/28171/large/axlweth.png"
   },
   {
     "name": "Stader sFTMX",
@@ -278,6 +278,6 @@
     "address": "0xd7028092c830b5C8FcE061Af2E593413EbbC1fc1",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://www.fvm.exchange/images/partners/sftmx.png"
+    "logoURI": "https://assets.coingecko.com/coins/images/26586/large/Fantom_Light.png.png"
   }
 ]
