@@ -247,5 +247,13 @@
     "logoURI": "https://pbs.twimg.com/profile_images/1600595248048181253/x6LgJqWO_400x400.jpg",
     "name": "XEX Crypto",
     "symbol": "XEX"
+  },
+  {
+    "address": "0x269557D887EaA9C1a756B2129740B3FC2821fD91",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://www.fvm.exchange/images/partners/obaylogo.png",
+    "name": "Option to buy BAY",
+    "symbol": "oBAY"
   }
 ]
