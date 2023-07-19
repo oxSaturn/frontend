@@ -13,7 +13,7 @@ export function formatCurrency(amount: any, decimals = 2) {
       maximumFractionDigits: decimals,
     });
 
-    if (amount > 1_000_000_000) {
+    if (amount >= 1_000_000_000) {
       return formatter.format(amount / 1_000_000_000) + "b";
     }
 
