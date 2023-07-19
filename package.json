@@ -15,7 +15,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@0xsquid/widget": "^1.5.9",
     "@babel/core": "^7.22.9",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.1",
@@ -83,16 +82,5 @@
   "engines": {
     "node": "^18.0.0",
     "pnpm": "^8.0.0"
-  },
-  "pnpm": {
-    "packageExtensions": {
-      "@0xsquid/sdk": {
-        "peerDependencies": {
-          "pino-pretty": "*",
-          "encoding": "*",
-          "lokijs": "*"
-        }
-      }
-    }
   }
 }
