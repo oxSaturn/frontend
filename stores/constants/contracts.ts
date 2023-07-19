@@ -66,5 +66,5 @@ export const AIRDROP_CLAIM = "0xCEE59eb1E4e28F50D90Bf4897ca1a84d6552AA21"; // fa
 
 // fantom staking FVM contract
 export const STAKING_ADDRESS = "0x0Ddf6B15422e68C892b66173f3026aE36b6C3825"; // fantom
-export const VE_BOOSTER_ADRRESS = "0x0"; // fantom
+export const VE_BOOSTER_ADRRESS = "0xbD777Af905F603797CFC1E8eBa229DaD26FE4863"; // fantom
 //LFG
