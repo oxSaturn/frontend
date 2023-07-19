@@ -13,9 +13,26 @@ export function formatCurrency(amount: any, decimals = 2) {
       maximumFractionDigits: decimals,
     });
 
+    if (amount > 1_000_000_000) {
+      return formatter.format(amount / 1_000_000_000) + "b";
+    }
+
     return formatter.format(amount);
   } else {
     return "0.00";
+  }
+}
+
+export function formatFinancialData(dataNumber: number) {
+  if (dataNumber < 10_000_000) {
+    return dataNumber.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  } else if (dataNumber < 1_000_000_000) {
+    return (dataNumber / 1_000_000).toFixed(2) + "m";
+  } else {
+    return (dataNumber / 1_000_000_000).toFixed(2) + "b";
   }
 }
 
