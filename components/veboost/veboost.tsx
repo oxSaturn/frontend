@@ -15,6 +15,7 @@ import {
   useVeBoosterMatchRate,
   useVeBoosterPaymentToken,
   useVeBoosterGetExpectedAmount,
+  useVeBoosterBalanceOfFlow,
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
 import { VE_BOOSTER_ADRRESS } from "../../stores/constants/contracts";
@@ -44,6 +45,10 @@ export function VeBoost() {
       enabled: !!amount && !!decimals,
       select: (boostedAmount) => formatEther(boostedAmount),
     });
+
+  const { data: balanceInBooster } = useVeBoosterBalanceOfFlow({
+    select: (balance) => formatEther(balance),
+  });
 
   const { data: paymentBalance, refetch: refetchPaymentBalance } = useBalance({
     address: address!,
@@ -121,6 +126,10 @@ export function VeBoost() {
           <div className="flex justify-between">
             <span>Current boost</span>
             <span>{formatCurrency(matchRate)} %</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Booster balance</span>
+            <span>{formatCurrency(balanceInBooster)} FVM</span>
           </div>
           <div className="flex justify-between">
             <span>{symbol ?? "WFTM"} balance</span>
