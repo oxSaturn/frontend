@@ -12,14 +12,23 @@ import { getTXUUID } from "../../../utils/utils";
 import { usePairs, useVestNfts } from "../../../lib/global/queries";
 import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
+import { useIsVoting } from "./useIsVoting";
+
 export function useVote() {
   const { address } = useAccount();
   const { data: pairs } = usePairs();
   const { refetch: refetchVestNfts } = useVestNfts();
+  const setIsVoting = useIsVoting((state) => state.setIsVoting);
   return useMutation({
     mutationFn: (options: { votes: Votes | undefined; tokenID: string }) =>
       vote(address, { ...options, pairs }),
-    onSuccess: () => refetchVestNfts(),
+    onSuccess: () => {
+      setIsVoting(false);
+      refetchVestNfts();
+    },
+    onError: () => {
+      setIsVoting(false);
+    },
   });
 }
 

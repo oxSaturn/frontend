@@ -30,6 +30,7 @@ import {
   useVotes,
 } from "./lib/queries";
 import { useVote } from "./lib/mutations";
+import { useIsVoting } from "./lib/useIsVoting";
 
 const initialEmptyToken: VestNFT = {
   id: "0",
@@ -96,7 +97,10 @@ export default function Votes() {
     setShowWarning(false);
   }, []);
 
+  const setIsVoting = useIsVoting((state) => state.setIsVoting);
+
   const onVote = () => {
+    setIsVoting(true);
     vote({
       votes,
       tokenID: token.id,
