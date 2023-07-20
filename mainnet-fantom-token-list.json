@@ -7,6 +7,14 @@
     "name": "Wrapped FTM",
     "symbol": "WFTM"
   },
+    {
+    "name": "F**K Multichain",
+    "symbol": "FMULTI",
+    "address": "0x6CEbb8cD66Fca7E6aca65841Ae3A04B7884F4de8",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://ton.twitter.com/1.1/ton/data/dm/1681728690122817540/1681728683961380865/6c6kcohB.jpg:large"
+  },
   {
     "address": "0x7d016eec9c25232b01f23ef992d98ca97fc2af5a",
     "chainId": 250,
