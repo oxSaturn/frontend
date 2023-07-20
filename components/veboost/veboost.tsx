@@ -131,6 +131,14 @@ export function VeBoost() {
             <span>Booster balance</span>
             <span>{formatCurrency(balanceInBooster)} FVM</span>
           </div>
+          <div
+            className={`flex justify-between ${
+              isFetchingBoostedAmount && "animate-pulse"
+            }`}
+          >
+            <span>Boosted veFVM amount</span>
+            <span>{formatCurrency(boostedAmount)}</span>
+          </div>
           <div className="flex justify-between">
             <span>{symbol ?? "WFTM"} balance</span>
             <span
@@ -141,14 +149,6 @@ export function VeBoost() {
             >
               {formatCurrency(paymentBalance?.formatted)}
             </span>
-          </div>
-          <div
-            className={`flex justify-between ${
-              isFetchingBoostedAmount && "animate-pulse"
-            }`}
-          >
-            <span>Boosted veFVM amount</span>
-            <span>{formatCurrency(boostedAmount)}</span>
           </div>
           <div className="space-y-2">
             <input
