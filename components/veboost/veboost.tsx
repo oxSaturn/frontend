@@ -47,6 +47,7 @@ export function VeBoost() {
     });
 
   const { data: balanceInBooster } = useVeBoosterBalanceOfFlow({
+    watch: true,
     select: (balance) => formatEther(balance),
   });
 
