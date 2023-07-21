@@ -22,6 +22,9 @@ export function useVote() {
   return useMutation({
     mutationFn: (options: { votes: Votes | undefined; tokenID: string }) =>
       vote(address, { ...options, pairs }),
+    onMutate: () => {
+      setIsVoting(true);
+    },
     onSuccess: () => {
       setIsVoting(false);
       refetchVestNfts();
