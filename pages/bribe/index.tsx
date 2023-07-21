@@ -1,6 +1,6 @@
 import { Typography, SvgIcon } from "@mui/material";
 
-import SSBribes from "../../components/ssBribes/ssBribes";
+import SSBribes from "../../components/bribes/Bribes";
 import { PageWrapper } from "../../components/common/PageWrapper";
 
 function BalanceIcon({ className }: { className: string }) {

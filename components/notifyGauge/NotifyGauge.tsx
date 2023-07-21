@@ -20,9 +20,8 @@ import { ETHERSCAN_URL } from "../../stores/constants/constants";
 import { BaseAsset, Gauge } from "../../stores/types/types";
 import { useRemoveLocalAsset } from "../../lib/global/mutations";
 
-import { useBaseAssetWithInfoNoNative, useGauges } from "./queries";
-import { useCreateBribe } from "./mutations";
-import classes from "./ssBribeCreate.module.css";
+import { useBaseAssetWithInfoNoNative, useGauges } from "./lib/queries";
+import { useNotifyGauge } from "./lib/mutations";
 
 export default function BribeCreate() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function BribeCreate() {
   const [asset, setAsset] = useState<BaseAsset | null>(null);
   const [gauge, setGauge] = useState<Gauge | null>(null);
 
-  const { mutate: createBribe, createLoading } = useCreateBribe();
+  const { mutate: notifyGauge, notifyLoading } = useNotifyGauge();
 
   const { data: gaugeOptions } = useGauges();
   useEffect(() => {
@@ -91,7 +90,7 @@ export default function BribeCreate() {
     }
 
     if (!error) {
-      createBribe({
+      notifyGauge({
         asset,
         amount,
         gauge,
@@ -122,11 +121,11 @@ export default function BribeCreate() {
     onAssetSelect: (_value: BaseAsset) => void
   ) => {
     return (
-      <div className={classes.textField}>
-        <div className={classes.inputTitleContainer}>
-          <div className={classes.inputBalance}>
+      <div className="relative mb-1">
+        <div className="w-full flex items-center justify-end absolute top-2">
+          <div className="flex justify-end pr-3 pb-2 cursor-pointer">
             <Typography
-              className={classes.inputBalanceText}
+              className="text-xs font-extralight mr-2 mt-2 text-secondary"
               noWrap
               onClick={() => {
                 setAmountPercent(type, 100);
@@ -140,18 +139,18 @@ export default function BribeCreate() {
           </div>
         </div>
         <div
-          className={`${classes.massiveInputContainer} ${
-            amountError && classes.error
+          className={`flex wrap rounded-lg w-full items-center bg-background ${
+            amountError && "border border-error"
           }`}
         >
-          <div className={classes.massiveInputAssetSelect}>
+          <div className="w-32 min-h-[124px] h-full">
             <AssetSelect
               value={assetValue}
               assetOptions={assetOptions}
               onSelect={onAssetSelect}
             />
           </div>
-          <div className={`${classes.massiveInputAmount} ${classes.p_4}`}>
+          <div className="h-full flex-[1] p-1">
             <TextField
               placeholder="0.00"
               fullWidth
@@ -159,12 +158,14 @@ export default function BribeCreate() {
               helperText={amountError}
               value={amount}
               onChange={amountChanged}
-              disabled={createLoading}
+              disabled={notifyLoading}
               InputProps={{
-                className: classes.largeInput,
+                style: {
+                  fontSize: "46px",
+                },
               }}
             />
-            <Typography color="textSecondary" className={classes.smallerText}>
+            <Typography color="textSecondary" className="text-xs mt-1">
               {asset?.symbol}
             </Typography>
           </div>
@@ -179,14 +180,14 @@ export default function BribeCreate() {
 
   const renderCreateInfo = () => {
     return (
-      <div className={classes.depositInfoContainer}>
-        <Typography className={classes.depositInfoHeading}>
+      <div className="mt-3 p-3 flex flex-wrap rounded-lg w-full items-center">
+        <Typography className="w-full pb-3 text-center text-secondary">
           You are creating a bribe of{" "}
-          <span className={classes.highlight}>
+          <span className="text-white">
             {formatCurrency(amount)} {asset?.symbol}
           </span>{" "}
           to incentivize Vesters to vote for the{" "}
-          <span className={classes.highlight}>
+          <span className="text-white">
             {gauge?.token0?.symbol}/{gauge?.token1?.symbol} Pool
           </span>
         </Typography>
@@ -195,54 +196,53 @@ export default function BribeCreate() {
   };
 
   return (
-    <div className={classes.retain}>
-      <Paper elevation={0} className={classes.container}>
-        <div className={classes.titleSection}>
+    <div className="relative">
+      <Paper
+        elevation={0}
+        className="m-auto flex w-[calc(100%-40px)] max-w-[485px] flex-col items-end p-0 xl:w-[calc(100%-180px)]"
+      >
+        <div className="flex items-center justify-center bg-none border border-background rounded-lg w-[calc(100%-52px)] relative m-6 mb-0 min-h-[60px]">
           <Tooltip placement="top" title="Back to Voting">
-            <IconButton className={classes.backButton} onClick={onBack}>
-              <ArrowBack className={classes.backIcon} />
+            <IconButton className="absolute left-1 top-1" onClick={onBack}>
+              <ArrowBack className="text-cyan" />
             </IconButton>
           </Tooltip>
-          <Typography className={classes.titleText}>Create Bribe</Typography>
+          <Typography className="font-bold text-lg">Notify Gauge</Typography>
         </div>
-        <div className={classes.reAddPadding}>
-          <div className={classes.inputsContainer}>
-            <GaugeSelect
-              value={gauge}
-              gaugeOptions={gaugeOptions}
-              onSelect={onGaugeSelect}
-            />
-            {renderMassiveInput(
-              "amount",
-              amountError,
-              amountChanged,
-              asset,
-              assetOptions,
-              onAssetSelect
-            )}
-            {renderCreateInfo()}
-          </div>
-          <div className={classes.actionsContainer}>
-            <Button
-              variant="contained"
-              size="large"
-              className={
-                createLoading
-                  ? classes.multiApprovalButton
-                  : classes.buttonOverride
-              }
-              color="primary"
-              disabled={createLoading}
-              onClick={onCreate}
-            >
-              <Typography className={classes.actionButtonText}>
-                {createLoading ? `Creating` : `Create Bribe`}
-              </Typography>
-              {createLoading && (
-                <CircularProgress size={10} className={classes.loadingCircle} />
-              )}
-            </Button>
-          </div>
+        <div className="pt-6 px-6 w-full">
+          <GaugeSelect
+            value={gauge}
+            gaugeOptions={gaugeOptions}
+            onSelect={onGaugeSelect}
+          />
+          {renderMassiveInput(
+            "amount",
+            amountError,
+            amountChanged,
+            asset,
+            assetOptions,
+            onAssetSelect
+          )}
+          {renderCreateInfo()}
+        </div>
+        <div className="grid gap-3 grid-cols-[1fr] w-full h-full mt-3 px-6 pb-6">
+          <Button
+            variant="contained"
+            size="large"
+            className={
+              notifyLoading
+                ? "min-w-[auto]"
+                : "w-full min-w-[200px] bg-background font-bold text-primary hover:bg-[rgb(19,44,60)]"
+            }
+            color="primary"
+            disabled={notifyLoading}
+            onClick={onCreate}
+          >
+            <Typography>
+              {notifyLoading ? `Notifying` : `Notify Gauge`}
+            </Typography>
+            {notifyLoading && <CircularProgress size={10} />}
+          </Button>
         </div>
       </Paper>
     </div>
@@ -482,29 +482,27 @@ function AssetSelect({
     return (
       <MenuItem
         key={asset.address + "_" + idx}
-        className={classes.assetSelectMenu}
+        className="flex items-center justify-between px-0"
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainerSmall}>
-            <img
-              className={classes.displayAssetIconSmall}
-              alt=""
-              src={asset ? `${asset.logoURI}` : ""}
-              height="60px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative mr-3 w-14">
+          <img
+            className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
+            alt=""
+            src={asset ? `${asset.logoURI}` : ""}
+            height="60px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
-        <div className={classes.assetSelectIconName}>
+        <div>
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className={classes.assetSelectActions}>
+        <div className="flex flex-[1] justify-end">
           <IconButton
             onClick={() => {
               deleteOption(asset);
@@ -528,32 +526,30 @@ function AssetSelect({
     return (
       <MenuItem
         key={asset.address + "_" + idx}
-        className={classes.assetSelectMenu}
+        className="flex items-center justify-between px-0"
         onClick={() => {
           onLocalSelect(asset);
         }}
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainerSmall}>
-            <img
-              className={classes.displayAssetIconSmall}
-              alt=""
-              src={asset ? `${asset.logoURI}` : ""}
-              height="60px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative mr-3 w-14">
+          <img
+            className="h-full w-full rounded-[30px] border border-[rgba(126,153,153,0.5)] bg-[rgb(33,43,72)] p-[6px]"
+            alt=""
+            src={asset ? `${asset.logoURI}` : ""}
+            height="60px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
-        <div className={classes.assetSelectIconName}>
+        <div>
           <Typography variant="h5">{asset ? asset.symbol : ""}</Typography>
           <Typography variant="subtitle1" color="textSecondary">
             {asset ? asset.name : ""}
           </Typography>
         </div>
-        <div className={classes.assetSelectBalance}>
+        <div className="ml-12 flex flex-[1] flex-col items-end">
           <Typography variant="h5">
             {asset && asset.balance ? formatCurrency(asset.balance) : "0.00"}
           </Typography>
@@ -568,47 +564,7 @@ function AssetSelect({
   const renderManageLocal = () => {
     return (
       <>
-        <div className={classes.searchContainer}>
-          <div className={classes.searchInline}>
-            <TextField
-              autoFocus
-              variant="outlined"
-              fullWidth
-              placeholder="FTM, WFTM, 0x..."
-              value={search}
-              onChange={onSearchChanged}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </div>
-          <div className={classes.assetSearchResults}>
-            {filteredAssetOptions
-              ? filteredAssetOptions
-                  .filter((option) => {
-                    return option.local === true;
-                  })
-                  .map((asset, idx) => {
-                    return renderManageOption(asset, idx);
-                  })
-              : []}
-          </div>
-        </div>
-        <div className={classes.manageLocalContainer}>
-          <Button onClick={toggleLocal}>Back to Assets</Button>
-        </div>
-      </>
-    );
-  };
-
-  const renderOptions = () => {
-    return (
-      <>
-        <div className={classes.searchContainer}>
+        <div className="h-[600px] overflow-y-scroll p-6">
           <TextField
             autoFocus
             variant="outlined"
@@ -624,7 +580,45 @@ function AssetSelect({
               ),
             }}
           />
-          <div className={classes.assetSearchResults}>
+          <div className="mt-3 flex w-full min-w-[390px] flex-col">
+            {filteredAssetOptions
+              ? filteredAssetOptions
+                  .filter((option) => {
+                    return option.local === true;
+                  })
+                  .map((asset, idx) => {
+                    return renderManageOption(asset, idx);
+                  })
+              : []}
+          </div>
+        </div>
+        <div className="flex w-full items-center justify-center p-[6px]">
+          <Button onClick={toggleLocal}>Back to Assets</Button>
+        </div>
+      </>
+    );
+  };
+
+  const renderOptions = () => {
+    return (
+      <>
+        <div className="h-[600px] overflow-y-scroll p-6">
+          <TextField
+            autoFocus
+            variant="outlined"
+            fullWidth
+            placeholder="FTM, WFTM, 0x..."
+            value={search}
+            onChange={onSearchChanged}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <div className="mt-3 flex w-full min-w-[390px] flex-col">
             {filteredAssetOptions
               ? filteredAssetOptions
                   .sort((a, b) => {
@@ -643,7 +637,7 @@ function AssetSelect({
               : []}
           </div>
         </div>
-        <div className={classes.manageLocalContainer}>
+        <div className="flex w-full items-center justify-center p-[6px]">
           <Button onClick={toggleLocal}>Manage Local Assets</Button>
         </div>
       </>
@@ -653,24 +647,22 @@ function AssetSelect({
   return (
     <>
       <div
-        className={classes.displaySelectContainer}
+        className="min-h-[100px] p-3"
         onClick={() => {
           openSearch();
         }}
       >
-        <div className={classes.assetSelectMenuItem}>
-          <div className={classes.displayDualIconContainer}>
-            <img
-              className={classes.displayAssetIcon}
-              alt=""
-              src={value ? `${value.logoURI}` : ""}
-              height="100px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
-              }}
-            />
-          </div>
+        <div className="relative w-full cursor-pointer">
+          <img
+            className="h-full w-full rounded-[50px] border border-[rgba(126,153,153,0.5)] bg-[#032725] p-[10px]"
+            alt=""
+            src={value ? `${value.logoURI}` : ""}
+            height="100px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = "/tokens/unknown-logo.png";
+            }}
+          />
         </div>
       </div>
       <Dialog
