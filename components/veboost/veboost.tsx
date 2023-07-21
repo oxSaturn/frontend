@@ -16,14 +16,18 @@ import {
   useVeBoosterPaymentToken,
   useVeBoosterGetExpectedAmount,
   useVeBoosterBalanceOfFlow,
+  useVeBoosterBoostedEvent,
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
 import { VE_BOOSTER_ADRRESS } from "../../stores/constants/contracts";
+
+import { useLatestTxs } from "./useLatestTx";
 
 export function VeBoost() {
   const { address } = useAccount();
 
   const [amount, setAmount] = useState("");
+  const { latestTxs, addTx } = useLatestTxs();
 
   const { data: paymentToken } = useVeBoosterPaymentToken();
   const { data: matchRate } = useVeBoosterMatchRate({
@@ -113,6 +117,18 @@ export function VeBoost() {
       setAmount("");
       refetchPaymentBalance();
       refetchAllowance();
+    },
+  });
+
+  useVeBoosterBoostedEvent({
+    listener: (events) => {
+      events.forEach((event) => {
+        addTx({
+          hash: event.transactionHash,
+          amount: formatEther(event.args._totalLocked ?? 0n),
+          timestamp: event.args._timestamp?.toString(),
+        });
+      });
     },
   });
 
