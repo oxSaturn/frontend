@@ -10,6 +10,8 @@ import { usePairs } from "../../../lib/global/queries";
 import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
 import { useDisplayedPairs } from "../../liquidityPairs/queries";
 
+import { useIsVoting } from "./useIsVoting";
+
 interface VotesStore {
   votes: Votes | undefined;
   setVotes: (_votes: Votes | undefined) => void;
@@ -23,10 +25,11 @@ export const useVotes = create<VotesStore>((set) => ({
 export const useVestVotes = (tokenID: string | undefined) => {
   const { address } = useAccount();
   const { data: pairs } = usePairs();
+  const isVoting = useIsVoting((state) => state.isVoting);
   return useQuery({
     queryKey: [QUERY_KEYS.VEST_VOTES, address, tokenID, pairs],
     queryFn: () => getVestVotes(address, tokenID, pairs),
-    enabled: !!address && !!tokenID && !!pairs,
+    enabled: !!address && !!tokenID && !!pairs && isVoting === false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     select: (votes) => {
