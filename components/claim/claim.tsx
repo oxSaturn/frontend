@@ -118,7 +118,6 @@ export function Claim() {
                 disabled={
                   isLoading ||
                   !claim ||
-                  claimed ||
                   (!!claimable && parseFloat(claimable) === 0)
                 }
                 onClick={() => claim?.()}
