@@ -54,7 +54,7 @@
     "decimals": 18,
     "logoURI": "https://ethereum.org/static/655aaefb744ae2f9f818095a436d38b5/448ee/eth-diamond-purple-purple.webp",
     "name": "Wrapped ETH",
-    "symbol": "WETH"
+    "symbol": "lzWETH"
   },
   {
     "address": "0xf1648C50d2863f780c57849D812b4B7686031A3D",
@@ -62,7 +62,7 @@
     "decimals": 8,
     "logoURI": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png",
     "name": "Wrapped BTC",
-    "symbol": "WBTC"
+    "symbol": "lzWBTC"
   },
   {
     "address": "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96",
@@ -126,7 +126,7 @@
     "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdc.jpg",
     "name": "USDC Coin",
-    "symbol": "USDC"
+    "symbol": "lzUSDC"
   },
   {
     "address": "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
@@ -134,7 +134,7 @@
     "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/sushiswap/list/master/logos/token-logos/token/usdt.jpg",
     "name": "Tether USD",
-    "symbol": "USDT"
+    "symbol": "lzUSDT"
   },
   {
     "address": "0x74ccbe53F77b08632ce0CB91D3A545bF6B8E0979",

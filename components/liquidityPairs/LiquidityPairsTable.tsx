@@ -227,27 +227,25 @@ const EnhancedTableToolbar = ({
             </Typography>
           </Button>
           <ul className="flex w-full flex-wrap gap-2 md:flex-nowrap lg:w-auto">
-            {["all", "layer zero", "deposited", "stable", "volatile"].map(
-              (filterOption) => (
-                <li key={filterOption}>
-                  <input
-                    type="radio"
-                    id={filterOption}
-                    name="filter"
-                    value={filterOption}
-                    checked={filter === filterOption}
-                    onChange={onChange}
-                    className="peer hidden"
-                  />
-                  <label
-                    htmlFor={filterOption}
-                    className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
-                  >
-                    <span className="uppercase">{filterOption}</span>
-                  </label>
-                </li>
-              )
-            )}
+            {["all", "deposited", "stable", "volatile"].map((filterOption) => (
+              <li key={filterOption}>
+                <input
+                  type="radio"
+                  id={filterOption}
+                  name="filter"
+                  value={filterOption}
+                  checked={filter === filterOption}
+                  onChange={onChange}
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={filterOption}
+                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
+                >
+                  <span className="uppercase">{filterOption}</span>
+                </label>
+              </li>
+            ))}
           </ul>
         </div>
         <div className="w-full">
@@ -367,14 +365,6 @@ export default function EnhancedTable({
         .filter((pair) => {
           if (filter === "all") {
             return true;
-          }
-          if (filter === "layer zero") {
-            if (
-              !lzTokensLowerCase.includes(pair.token0_address.toLowerCase()) &&
-              !lzTokensLowerCase.includes(pair.token1_address.toLowerCase())
-            ) {
-              return false;
-            }
           }
           if (filter === "deposited") {
             if (
