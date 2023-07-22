@@ -63,57 +63,6 @@ export default function Layout({
           </div>
         )}
         <footer className="w-full space-y-3 pt-20 pb-10">
-          <div className="px-5 text-center text-sm text-white/70">
-            Velocimeter is partnered with{" "}
-            <a
-              href="https://layerzero.network/"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-            >
-              <img
-                alt="LayerZero"
-                src="/images/lz-logo-black.svg"
-                className="mx-1 inline-block w-[80px]"
-              />
-            </a>{" "}
-            in support of their tokens, including{" "}
-            <a
-              href="https://ftmscan.com/address/0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-cyan-700 hover:underline"
-            >
-              USDC
-            </a>
-            ,{" "}
-            <a
-              href="https://ftmscan.com/address/0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-cyan-700 hover:underline"
-            >
-              USDT
-            </a>
-            ,{" "}
-            <a
-              href="https://ftmscan.com/address/0xf1648C50d2863f780c57849D812b4B7686031A3D"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-cyan-700 hover:underline"
-            >
-              WBTC
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://ftmscan.com/address/0x695921034f0387eAc4e11620EE91b1b15A6A09fE"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-cyan-700 hover:underline"
-            >
-              WETH
-            </a>
-            .
-          </div>
           <nav className="flex justify-center gap-x-3  text-sm">
             <Link href="/claim" className="text-cyan-700 hover:underline">
               Claim
