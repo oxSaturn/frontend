@@ -3,16 +3,19 @@ import { Typography, CircularProgress } from "@mui/material";
 import PairsTable from "./LiquidityPairsTable";
 import { useDisplayedPairs } from "./queries";
 
+const fuckMultiPairAddress = "0x90102FbbB9226bBD286Da3003ADD03D4178D896e";
+
+const hideList = [fuckMultiPairAddress].map((x) => x.toLowerCase());
+
 export default function LiquidityPairs() {
   const { data: tablePairs, isFetching } = useDisplayedPairs();
 
-  const fuckMultiPairAddress = "0x90102FbbB9226bBD286Da3003ADD03D4178D896e";
-
   const filteredPairs = tablePairs?.filter((pair) => {
-    // hide it when pair is fuckMulti and has user has no balance in that pair
+    // hide it when pair is in hideList and user has no lp at all
     if (
-      pair.address.toLowerCase() === fuckMultiPairAddress.toLowerCase() &&
-      parseFloat(pair.gauge?.balance ?? "0") === 0
+      hideList.includes(pair.address.toLowerCase()) &&
+      parseFloat(pair.gauge?.balance ?? "0") === 0 && // no lp staked
+      parseFloat(pair.balance ?? "0") === 0 // no lp to stake
     ) {
       return false;
     }
