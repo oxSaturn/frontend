@@ -8,6 +8,15 @@
     "symbol": "WFTM"
   },
     {
+    "address": "0xaa798BF5eC09B6E3bC059Ea4d36d4Ca53e063EF7",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://cdn.jsdelivr.net/gh/curvefi/curve-assets/images/assets/0xf939e0a03fb07f59a73314e73794be0e57ac1b4e.png",
+    "name": "Curve USD",
+    "symbol": "crvUSD"
+  },
+  
+    {
     "name": "F**K Multichain",
     "symbol": "FMULTI",
     "address": "0x6CEbb8cD66Fca7E6aca65841Ae3A04B7884F4de8",
