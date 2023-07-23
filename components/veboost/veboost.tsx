@@ -2,6 +2,7 @@ import { useAccount, useBalance, useWaitForTransaction } from "wagmi";
 import { formatEther, parseUnits } from "viem";
 import { useState } from "react";
 import { InfoOutlined } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 import { LoadingSVG } from "../common/LoadingSVG";
 import { Tooltip } from "../common/radixTooltip";
@@ -232,6 +233,18 @@ export function VeBoost() {
                 )
               ) : null}
             </div>
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-2xl text-white">Latest boosted buys</h2>
+            {latestTxs.length > 0 &&
+              latestTxs.reverse().map((tx) => (
+                <div key={tx.hash} className="flex justify-between">
+                  <span>{formatCurrency(tx.amount)} veFVM</span>
+                  <span>
+                    {dayjs.unix(parseInt(tx.timestamp ?? "0")).fromNow()}
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
       </div>
