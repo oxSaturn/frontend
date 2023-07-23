@@ -7,7 +7,7 @@
     "name": "Wrapped FTM",
     "symbol": "WFTM"
   },
-    {
+  {
     "address": "0xaa798BF5eC09B6E3bC059Ea4d36d4Ca53e063EF7",
     "chainId": 250,
     "decimals": 18,
@@ -15,8 +15,8 @@
     "name": "Curve USD",
     "symbol": "crvUSD"
   },
-  
-    {
+
+  {
     "name": "F**K Multichain",
     "symbol": "FMULTI",
     "address": "0x6CEbb8cD66Fca7E6aca65841Ae3A04B7884F4de8",
@@ -77,7 +77,7 @@
     "address": "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/public/tokens/fvm.png?raw=true",
+    "logoURI": "https://www.fvm.exchange/tokens/fvm.png",
     "name": "Velocimeter",
     "symbol": "FVM"
   },
@@ -85,7 +85,7 @@
     "address": "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
     "chainId": 250,
     "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/public/tokens/oFvm.png?raw=true",
+    "logoURI": "https://www.fvm.exchange/tokens/oFvm.png",
     "name": "Option FVM",
     "symbol": "oFVM"
   },

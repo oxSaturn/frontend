@@ -7,8 +7,7 @@ export const GOV_TOKEN_ADDRESS = "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96"; /
 export const GOV_TOKEN_NAME = "FVM";
 export const GOV_TOKEN_SYMBOL = "FVM";
 export const GOV_TOKEN_DECIMALS = 18;
-export const GOV_TOKEN_LOGO =
-  "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/public/tokens/fvm.png?raw=true";
+export const GOV_TOKEN_LOGO = "https://www.fvm.exchange/tokens/fvm.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0xAE459eE7377Fb9F67518047BBA5482C2F0963236"; // fantom
