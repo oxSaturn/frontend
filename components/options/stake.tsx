@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useAccount,
   useNetwork,
@@ -170,8 +170,12 @@ export function Stake() {
     }
   };
 
-  const pickWithdrawAmount = (type: "locked" | "notLocked") => {
+  const pickWithdrawAmount = (type: "locked" | "notLocked" | "all") => {
     if (action === ACTION.STAKE) return;
+    if (type === "all") {
+      setAmount(stakedBalance ?? "0");
+      return;
+    }
     if (type === "notLocked") {
       if (
         stakedBalanceWithoutLock &&
@@ -198,6 +202,10 @@ export function Stake() {
       ? pooledBalance &&
         parseFloat(amount) > parseFloat(pooledBalance.formatted)
       : stakedBalance && parseFloat(amount) > parseFloat(stakedBalance);
+
+  const isLockExpired = useMemo(() => {
+    return stakedLockEnd && stakedLockEnd < dayjs().unix() ? true : false;
+  }, [stakedLockEnd]);
 
   return (
     <>
@@ -274,16 +282,23 @@ export function Stake() {
             className={`${
               action === ACTION.WITHDRAW && "cursor-pointer underline"
             }`}
-            onClick={() => pickWithdrawAmount("notLocked")}
+            onClick={() =>
+              pickWithdrawAmount(isLockExpired ? "all" : "notLocked")
+            }
           >
-            ${formatCurrency(stakedWithoutLockValue)}
+            $
+            {formatCurrency(
+              isLockExpired ? stakedBalance ?? 0 : stakedWithoutLockValue
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Staked with lock</div>
-          <div>${formatCurrency(stakedWithLockValue)}</div>
+          <div>
+            ${formatCurrency(isLockExpired ? 0 : stakedWithLockValue ?? 0)}
+          </div>
         </div>
-        {stakedLockEnd ? (
+        {!isLockExpired && stakedLockEnd ? (
           <div className="flex items-center justify-between">
             <div>Lock end</div>
             <div>{dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH:mm:ss")}</div>
