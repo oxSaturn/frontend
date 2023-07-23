@@ -12,7 +12,6 @@ import {
   TableSortLabel,
   TablePagination,
   Typography,
-  Tooltip,
   Toolbar,
   IconButton,
   TextField,
@@ -35,6 +34,8 @@ import {
   OpenInNewOutlined,
   InfoOutlined,
 } from "@mui/icons-material";
+
+import { Tooltip } from "../common/radixTooltip";
 
 import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
@@ -95,14 +96,6 @@ const headCells = [
 
 type OrderBy = (typeof headCells)[number]["id"];
 
-const lzTokensLowerCase = [
-  "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
-  "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
-  "0xf1648C50d2863f780c57849D812b4B7686031A3D",
-  "0x695921034f0387eAc4e11620EE91b1b15A6A09fE",
-  "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f",
-].map((x) => x.toLowerCase());
-
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
@@ -140,14 +133,11 @@ function EnhancedTableHead(props: {
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.id === "apr" ? (
-                <Tooltip title="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid FVM tokens, whereas the higher for veFVM">
-                  <Typography
-                    variant="h5"
-                    className="text-xs font-extralight inline-flex items-center"
-                  >
+                <Tooltip content="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid FVM tokens, whereas the higher for veFVM.">
+                  <h5 className="text-xs font-extralight inline-flex items-center">
                     <InfoOutlined className="w-5 mr-1" />
                     {headCell.label}
-                  </Typography>
+                  </h5>
                 </Tooltip>
               ) : (
                 <Typography variant="h5" className="text-xs font-extralight">
@@ -911,7 +901,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
         )}
         <TableCell align="right">
           {row.isAliveGauge === false && (
-            <Tooltip title="Gauge has been killed">
+            <Tooltip content="Gauge has been killed">
               <WarningOutlined className="ml-2 text-base text-yellow-300" />
             </Tooltip>
           )}
