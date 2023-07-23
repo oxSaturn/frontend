@@ -20,6 +20,7 @@ interface LatestTxsStore {
 export const useLatestTxs = create<LatestTxsStore>()(
   persist(
     (set, get) => ({
+      version: 1,
       latestTxs: [],
       addTx: (tx: Tx) => {
         if (get().latestTxs.length < 6) {
@@ -36,8 +37,8 @@ export const useLatestTxs = create<LatestTxsStore>()(
       updateLatestTxs: async () => {
         const client = getPublicClient();
         const latestBlock = await client.getBlockNumber();
-        // fantom average 2 b/s, latest 2 hours is 7200s * 2b/s
-        const range = latestBlock - 7200n * 2n;
+        // most of providers are limit block range to 10k
+        const range = latestBlock - 10_000n;
         const logs = await client.getLogs({
           address: CONTRACTS.VE_BOOSTER_ADRRESS,
           event: {
@@ -80,9 +81,12 @@ export const useLatestTxs = create<LatestTxsStore>()(
     }),
     {
       name: "latestTxs",
+      version: 1,
       onRehydrateStorage: () => {
         return (state) => {
-          state?.updateLatestTxs();
+          if (state) {
+            state.updateLatestTxs();
+          }
         };
       },
     }
