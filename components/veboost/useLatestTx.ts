@@ -20,6 +20,7 @@ interface LatestTxsStore {
 export const useLatestTxs = create<LatestTxsStore>()(
   persist(
     (set, get) => ({
+      version: 1,
       latestTxs: [],
       addTx: (tx: Tx) => {
         if (get().latestTxs.length < 6) {
@@ -80,6 +81,7 @@ export const useLatestTxs = create<LatestTxsStore>()(
     }),
     {
       name: "latestTxs",
+      version: 1,
       onRehydrateStorage: () => {
         return (state) => {
           if (state) {
