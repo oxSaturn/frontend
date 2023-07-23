@@ -1,8 +1,12 @@
+import { getPublicClient } from "@wagmi/core";
+import { formatEther } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { CONTRACTS } from "../../stores/constants/constants";
+
 interface Tx {
-  hash: `${string}` | null;
+  hash: `0x${string}` | null;
   amount: string;
   timestamp: string | undefined;
 }
@@ -17,18 +21,70 @@ export const useLatestTxs = create<LatestTxsStore>()(
   persist(
     (set, get) => ({
       latestTxs: [],
-      addTx: (_tx: Tx) => {
+      addTx: (tx: Tx) => {
         if (get().latestTxs.length < 6) {
-          set(() => ({ latestTxs: [...get().latestTxs, _tx] }));
+          const newTxs = [...get().latestTxs];
+          newTxs.unshift(tx);
+          set(() => ({ latestTxs: newTxs }));
         } else {
           const newTxs = [...get().latestTxs];
           newTxs.pop();
-          newTxs.unshift(_tx);
+          newTxs.unshift(tx);
           set(() => ({ latestTxs: newTxs }));
         }
       },
-      updateLatestTxs: () => {},
+      updateLatestTxs: async () => {
+        const client = getPublicClient();
+        const latestBlock = await client.getBlockNumber();
+        // fantom average 2 b/s, latest 2 hours is 7200s * 2b/s
+        const range = latestBlock - 7200n * 2n;
+        const logs = await client.getLogs({
+          address: CONTRACTS.VE_BOOSTER_ADRRESS,
+          event: {
+            anonymous: false,
+            inputs: [
+              {
+                indexed: true,
+                internalType: "uint256",
+                name: "_timestamp",
+                type: "uint256",
+              },
+              {
+                indexed: false,
+                internalType: "uint256",
+                name: "_totalLocked",
+                type: "uint256",
+              },
+              {
+                indexed: false,
+                internalType: "address",
+                name: "_locker",
+                type: "address",
+              },
+            ],
+            name: "Boosted",
+            type: "event",
+          },
+          fromBlock: range,
+          toBlock: latestBlock,
+        });
+        if (logs.length === 0) return;
+        const sliced = logs.length > 6 ? logs.slice(-6) : logs;
+        const latestTxs = sliced.reverse().map((log) => ({
+          hash: log.transactionHash,
+          amount: formatEther(log.args._totalLocked ?? 0n),
+          timestamp: log.args._timestamp?.toString(),
+        }));
+        set(() => ({ latestTxs }));
+      },
     }),
-    { name: "latestTxs" }
+    {
+      name: "latestTxs",
+      onRehydrateStorage: () => {
+        return (state) => {
+          state?.updateLatestTxs();
+        };
+      },
+    }
   )
 );
