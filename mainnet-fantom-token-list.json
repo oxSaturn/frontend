@@ -7,6 +7,14 @@
     "name": "Wrapped FTM",
     "symbol": "WFTM"
   },
+      {
+    "address": "0xC7aE4aB742F6b0b203f6710C87677005Bc45ad01",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/16036/large/Fantom.png",
+    "name": "Curve",
+    "symbol": "CRV"
+  },
   {
     "address": "0xaa798BF5eC09B6E3bC059Ea4d36d4Ca53e063EF7",
     "chainId": 250,
