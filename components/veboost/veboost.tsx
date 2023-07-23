@@ -1,8 +1,10 @@
 import { useAccount, useBalance, useWaitForTransaction } from "wagmi";
 import { formatEther, parseUnits } from "viem";
 import { useState } from "react";
+import { InfoOutlined } from "@mui/icons-material";
 
 import { LoadingSVG } from "../common/LoadingSVG";
+import { Tooltip } from "../common/radixTooltip";
 
 import {
   useErc20Allowance,
@@ -139,7 +141,12 @@ export function VeBoost() {
       </h1>
       <div className="space-y-5">
         <div className="bg-green-900 space-y-3 p-5 border border-cyan-900/70 rounded-md">
-          <h2 className="text-2xl text-white">Buy boosted veFVM</h2>
+          <div className="flex justify-between">
+            <h2 className="text-2xl text-white">Buy boosted veFVM</h2>
+            <Tooltip content="This transaction will take the amount of wFTM chosen and use it to market buy FVM, then match it with FVM at the rate displayed, and lock all of that in a new veFVM NFT into your wallet.">
+              <InfoOutlined />
+            </Tooltip>
+          </div>
           <div className="flex justify-between">
             <span>Current boost</span>
             <span>{formatCurrency(matchRate)} %</span>
