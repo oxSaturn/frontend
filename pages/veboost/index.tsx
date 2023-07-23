@@ -10,7 +10,7 @@ export default function Stake() {
             Create boosted veNFT
           </h1>
           <p className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg">
-            Buy and create new veNFTs with boosted voting power.
+            This transaction will take the amount of wFTM chosen and use it to market buy FVM, then match it with FVM at the rate displayed, and lock all of that in a new max locked veFVM NFT into your wallet.
           </p>
         </div>
       }
