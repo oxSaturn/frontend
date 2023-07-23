@@ -296,5 +296,13 @@
     "chainId": 250,
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/26586/large/Fantom_Light.png.png"
+  },
+  {
+    "name": "Stargate Finance",
+    "symbol": "STG",
+    "address": "0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590",
+    "chainId": 250,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/24413/large/STG_LOGO.png"
   }
 ]
