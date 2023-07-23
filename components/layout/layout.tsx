@@ -64,16 +64,18 @@ export default function Layout({
         )}
         <footer className="w-full space-y-3 pt-20 pb-10">
           <nav className="flex justify-center gap-x-3  text-sm">
-            <Link href="/claim" className="text-cyan-700 hover:underline">
-              Claim
-            </Link>
-            <Link
-              href="/squid-bridge"
-              className="text-cyan-700 hover:underline"
-            >
-              Bridge
-            </Link>
             {[
+              {
+                href: "https://stargate.finance/transfer",
+                text: "Stargate",
+              },
+              {
+                Child: ({ className }: { className: string }) => (
+                  <Link href="/claim" className={className}>
+                    Claim
+                  </Link>
+                ),
+              },
               {
                 href: "https://www.scanto.io/",
                 text: "sCANTO",
@@ -87,20 +89,27 @@ export default function Layout({
                 text: "Coingecko",
               },
               {
-                href: "https://stargate.finance/transfer",
-                text: "Stargate",
+                Child: ({ className }: { className: string }) => (
+                  <Link href="/squid-bridge" className={className}>
+                    SquidRouter
+                  </Link>
+                ),
               },
-            ].map(({ href, text }, index) => (
-              <a
-                key={index}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan-700 hover:underline"
-              >
-                {text}
-              </a>
-            ))}
+            ].map(({ href, text, Child }, index) =>
+              Child ? (
+                <Child key={index} className="text-cyan-700 hover:underline" />
+              ) : (
+                <a
+                  key={index}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-700 hover:underline"
+                >
+                  {text}
+                </a>
+              )
+            )}
           </nav>
         </footer>
       </div>
