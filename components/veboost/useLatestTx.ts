@@ -36,8 +36,8 @@ export const useLatestTxs = create<LatestTxsStore>()(
       updateLatestTxs: async () => {
         const client = getPublicClient();
         const latestBlock = await client.getBlockNumber();
-        // fantom average 2 b/s, latest 2 hours is 7200s * 2b/s
-        const range = latestBlock - 7200n * 2n;
+        // most of providers are limit block range to 10k
+        const range = latestBlock - 10_000n;
         const logs = await client.getLogs({
           address: CONTRACTS.VE_BOOSTER_ADRRESS,
           event: {
@@ -82,7 +82,9 @@ export const useLatestTxs = create<LatestTxsStore>()(
       name: "latestTxs",
       onRehydrateStorage: () => {
         return (state) => {
-          state?.updateLatestTxs();
+          if (state) {
+            state.updateLatestTxs();
+          }
         };
       },
     }

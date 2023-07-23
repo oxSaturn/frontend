@@ -125,13 +125,14 @@ export function VeBoost() {
 
   useVeBoosterBoostedEvent({
     listener: (events) => {
-      events.forEach((event) => {
-        addTx({
-          hash: event.transactionHash,
-          amount: formatEther(event.args._totalLocked ?? 0n),
-          timestamp: event.args._timestamp?.toString(),
+      if (events.length > 0)
+        events.forEach((event) => {
+          addTx({
+            hash: event.transactionHash,
+            amount: formatEther(event.args._totalLocked ?? 0n),
+            timestamp: event.args._timestamp?.toString(),
+          });
         });
-      });
     },
   });
 
@@ -237,7 +238,7 @@ export function VeBoost() {
           <div className="space-y-1">
             <h2 className="text-2xl text-white">Latest boosted buys</h2>
             {latestTxs.length > 0 &&
-              latestTxs.reverse().map((tx) => (
+              latestTxs.map((tx) => (
                 <div key={tx.hash} className="flex justify-between">
                   <span>{formatCurrency(tx.amount)} veFVM</span>
                   <span>
