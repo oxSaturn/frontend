@@ -85,7 +85,7 @@ export default function Layout({
                 text: "Docs",
               },
               {
-                href: "https://www.geckoterminal.com/fantom/fvm/pools",
+                href: "https://www.geckoterminal.com/ftm/velocimeter-fantom/pools",
                 text: "Coingecko",
               },
               {
