@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Aprs, Pair, RouteAsset } from "../../stores/types/types";
 
+const fuckMultiPairAddress = "0x90102FbbB9226bBD286Da3003ADD03D4178D896e";
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -91,8 +92,18 @@ export default async function handler(
       tbv += pair.gauge?.tbv ?? 0;
     }
 
+    const censoredPairs = noScamPairs.map((pair) => {
+      if (pair.address.toLowerCase() === fuckMultiPairAddress.toLowerCase()) {
+        return {
+          ...pair,
+          symbol: "vAMM-WFTM/FMULTI",
+        };
+      }
+      return pair;
+    });
+
     res.status(200).json({
-      data: noScamPairs,
+      data: censoredPairs,
       prices: [...tokenPricesMap.entries()],
       tvl,
       tbv,

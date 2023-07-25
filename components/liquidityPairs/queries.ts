@@ -14,7 +14,6 @@ interface UseReactivePairs {
   setPairs: (_pairs: Pair[] | undefined) => void;
   setIsFetching: (_isFetching: boolean) => void;
 }
-
 const useReactivePairs = create<UseReactivePairs>()((set) => ({
   pairs: undefined,
   isFetching: false,
@@ -60,5 +59,8 @@ export const useDisplayedPairs = () => {
     setIsFetching,
   ]);
 
-  return { data: pairs, isFetching };
+  return {
+    data: pairs,
+    isFetching,
+  };
 };
