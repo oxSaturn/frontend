@@ -14,8 +14,6 @@ interface UseReactivePairs {
   setPairs: (_pairs: Pair[] | undefined) => void;
   setIsFetching: (_isFetching: boolean) => void;
 }
-const fuckMultiPairAddress = "0x90102FbbB9226bBD286Da3003ADD03D4178D896e";
-
 const useReactivePairs = create<UseReactivePairs>()((set) => ({
   pairs: undefined,
   isFetching: false,
@@ -62,15 +60,7 @@ export const useDisplayedPairs = () => {
   ]);
 
   return {
-    data: pairs?.map((pair) => {
-      if (pair.address.toLowerCase() === fuckMultiPairAddress.toLowerCase()) {
-        return {
-          ...pair,
-          symbol: "vAMM-WFTM/FMULTI",
-        };
-      }
-      return pair;
-    }),
+    data: pairs,
     isFetching,
   };
 };
