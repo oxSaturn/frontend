@@ -345,13 +345,13 @@ const VotesRow = memo(function VotesRow({
       : votesCasting + parseFloat(row.gauge.weight);
 
     rewardEstimate =
-      row.gauge.tbv > 0 && sliderValue > 0
-        ? (row.gauge.tbv * votesCasting) / divideBy
+      row.gauge.min_tbv > 0 && sliderValue > 0
+        ? (row.gauge.min_tbv * votesCasting) / divideBy
         : 0;
   }
   const rewardPerThousand =
     row.gauge.weight && parseFloat(row.gauge.weight) > 0
-      ? (row.gauge.tbv / parseFloat(row.gauge.weight)) * 1000
+      ? (row.gauge.min_tbv / parseFloat(row.gauge.weight)) * 1000
       : 0;
 
   return (
@@ -457,12 +457,17 @@ const VotesRow = memo(function VotesRow({
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            {formatCurrency(row.gauge.apr)} %
+            {row.gauge.max_apr - row.gauge.min_apr < 1
+              ? `${formatCurrency(row.gauge.min_apr)}%`
+              : `${formatCurrency(row.gauge.min_apr)}-${formatCurrency(
+                  row.gauge.max_apr
+                )}%`}
           </Typography>
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            ${formatCurrency(row.gauge.tbv)}
+            ${formatCurrency(row.gauge.min_tbv)}-$
+            {formatCurrency(row.gauge.max_tbv)}
           </Typography>
         </TableCell>
         <TableCell align="right">
@@ -549,8 +554,8 @@ const VotesRow = memo(function VotesRow({
               <Typography variant="h2" className="text-xs font-extralight">
                 $
                 {formatCurrency(
-                  rewardPerThousand > row.gauge.tbv
-                    ? row.gauge.tbv
+                  rewardPerThousand > row.gauge.min_tbv
+                    ? row.gauge.min_tbv
                     : rewardPerThousand
                 )}
               </Typography>
@@ -702,10 +707,10 @@ function descendingComparator(
       return 0;
 
     case "votingAPR":
-      if (BigNumber(b.gauge.apr).lt(a.gauge.apr)) {
+      if (BigNumber(b.gauge.min_apr).lt(a.gauge.min_apr)) {
         return -1;
       }
-      if (BigNumber(b.gauge.apr).gt(a.gauge.apr)) {
+      if (BigNumber(b.gauge.min_apr).gt(a.gauge.min_apr)) {
         return 1;
       }
       return 0;
@@ -725,8 +730,8 @@ function descendingComparator(
           ? parseFloat(a.gauge.weight)
           : votesCastingA + parseFloat(a.gauge.weight);
         rewardEstimateA =
-          a.gauge.tbv > 0 && sliderValueA > 0
-            ? (a.gauge.tbv * votesCastingA) / divideByA
+          a.gauge.min_tbv > 0 && sliderValueA > 0
+            ? (a.gauge.min_tbv * votesCastingA) / divideByA
             : 0;
       }
 
@@ -737,23 +742,27 @@ function descendingComparator(
           ? parseFloat(b.gauge.weight)
           : votesCastingB + parseFloat(b.gauge.weight);
         rewardEstimateB =
-          b.gauge.tbv > 0 && sliderValueB > 0
-            ? (b.gauge.tbv * votesCastingB) / divideByB
+          b.gauge.min_tbv > 0 && sliderValueB > 0
+            ? (b.gauge.min_tbv * votesCastingB) / divideByB
             : 0;
       }
 
       const _rewardPerThousandA =
         a.gauge.weight && parseFloat(a.gauge.weight) > 0
-          ? (a.gauge.tbv / parseFloat(a.gauge.weight)) * 1000
+          ? (a.gauge.min_tbv / parseFloat(a.gauge.weight)) * 1000
           : 0;
       const _rewardPerThousandB =
         b.gauge.weight && parseFloat(b.gauge.weight) > 0
-          ? (b.gauge.tbv / parseFloat(b.gauge.weight)) * 1000
+          ? (b.gauge.min_tbv / parseFloat(b.gauge.weight)) * 1000
           : 0;
       const rewardPerThousandA =
-        _rewardPerThousandA > a.gauge.tbv ? a.gauge.tbv : _rewardPerThousandA;
+        _rewardPerThousandA > a.gauge.min_tbv
+          ? a.gauge.min_tbv
+          : _rewardPerThousandA;
       const rewardPerThousandB =
-        _rewardPerThousandB > b.gauge.tbv ? b.gauge.tbv : _rewardPerThousandB;
+        _rewardPerThousandB > b.gauge.min_tbv
+          ? b.gauge.min_tbv
+          : _rewardPerThousandB;
 
       if (rewardEstimateB && rewardEstimateA) {
         if (rewardEstimateB < rewardEstimateA) {
@@ -789,10 +798,10 @@ function descendingComparator(
 
     case "totalBribesUSD":
     case "apy":
-      if (BigNumber(b.gauge.tbv).lt(a.gauge.tbv)) {
+      if (BigNumber(b.gauge.median_tbv).lt(a.gauge.median_tbv)) {
         return -1;
       }
-      if (BigNumber(b.gauge.tbv).gt(a.gauge.tbv)) {
+      if (BigNumber(b.gauge.median_tbv).gt(a.gauge.median_tbv)) {
         return 1;
       }
       return 0;
