@@ -89,7 +89,7 @@ export default async function handler(
         );
       }
       tvl += pair.tvl;
-      tbv += pair.gauge?.tbv ?? 0;
+      tbv += pair.gauge?.median_tbv ?? 0;
     }
 
     const censoredPairs = noScamPairs.map((pair) => {

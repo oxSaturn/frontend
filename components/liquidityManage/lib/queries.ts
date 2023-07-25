@@ -492,9 +492,12 @@ export const getPairByAddress = async (
 
     thePair.gauge = {
       address: gaugeAddress,
-      apr: 0,
+      min_apr: 0,
+      max_apr: 0,
       votes: 0,
-      tbv: 0,
+      median_tbv: 0,
+      min_tbv: 0,
+      max_tbv: 0,
       reward: 0,
       bribeAddress: bribeAddress,
       bribe_address: bribeAddress,

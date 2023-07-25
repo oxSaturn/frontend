@@ -255,17 +255,7 @@ export default function Votes() {
   );
 
   const bribesAccrued = filteredGauges
-    ?.reduce(
-      (
-        acc: number,
-        row: {
-          gauge: {
-            tbv: number;
-          };
-        }
-      ) => acc + row.gauge.tbv,
-      0
-    )
+    ?.reduce((acc, row) => acc + row.gauge.median_tbv, 0)
     .toFixed(2);
 
   return (
