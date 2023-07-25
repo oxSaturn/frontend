@@ -819,10 +819,10 @@ function descendingComparator(
 
     case "totalBribesUSD":
     case "apy":
-      if (BigNumber(b.gauge.median_tbv).lt(a.gauge.median_tbv)) {
+      if (BigNumber(b.gauge.min_tbv).lt(a.gauge.min_tbv)) {
         return -1;
       }
-      if (BigNumber(b.gauge.median_tbv).gt(a.gauge.median_tbv)) {
+      if (BigNumber(b.gauge.min_tbv).gt(a.gauge.min_tbv)) {
         return 1;
       }
       return 0;
