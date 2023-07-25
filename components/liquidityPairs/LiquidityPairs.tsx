@@ -11,7 +11,7 @@ export default function LiquidityPairs() {
     if (pair.address.toLowerCase() === fuckMultiPairAddress.toLowerCase()) {
       return {
         ...pair,
-        symbol: "vAMM-WFTM/F**KMULTI",
+        symbol: "vAMM-WFTM/FMULTI",
       };
     }
     return pair;

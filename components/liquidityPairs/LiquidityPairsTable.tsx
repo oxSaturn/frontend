@@ -338,16 +338,6 @@ export default function EnhancedTable({
           const searchLower = search.toLowerCase();
 
           if (
-            searchLower.startsWith("fu") ||
-            searchLower.startsWith("fuc") ||
-            searchLower.startsWith("fuck")
-          ) {
-            if (pair.symbol.toLowerCase().includes("f**k")) {
-              return true;
-            }
-          }
-
-          if (
             pair.symbol.toLowerCase().includes(searchLower) ||
             pair.address.toLowerCase().includes(searchLower) ||
             pair.token0.symbol.toLowerCase().includes(searchLower) ||
