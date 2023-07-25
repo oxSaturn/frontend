@@ -24,7 +24,10 @@ import {
   KeyboardArrowDown,
   KeyboardArrowUp,
   OpenInNewOutlined,
+  InfoOutlined,
 } from "@mui/icons-material";
+
+import { Tooltip } from "../common/radixTooltip";
 
 import { formatCurrency } from "../../utils/utils";
 import { Gauge, Vote, VestNFT, Votes } from "../../stores/types/types";
@@ -114,9 +117,26 @@ function EnhancedTableHead(props: {
               direction={orderBy === headCell.id ? order : "desc"}
               onClick={createSortHandler(headCell.id)}
             >
-              <Typography variant="h5" className="text-xs font-extralight">
-                {headCell.label}
-              </Typography>
+              {headCell.id === "votingAPR" ||
+              headCell.id === "totalBribesUSD" ? (
+                <Tooltip content="The below ranges indicate that options are being used as part of bribes for the pool. The lowest number indicated exercising option token to liquid tokens, whereas the higher for LP of the underlying token.">
+                  <h5 className="text-xs font-extralight inline-flex items-center">
+                    <InfoOutlined className="w-5 mr-1" />
+                    {headCell.label}
+                  </h5>
+                </Tooltip>
+              ) : headCell.id === "rewardEstimate" ? (
+                <Tooltip content="The below estimate takes into account minimum value of bribes.">
+                  <h5 className="text-xs font-extralight inline-flex items-center">
+                    <InfoOutlined className="w-5 mr-1" />
+                    {headCell.label}
+                  </h5>
+                </Tooltip>
+              ) : (
+                <Typography variant="h5" className="text-xs font-extralight">
+                  {headCell.label}
+                </Typography>
+              )}
               {orderBy === headCell.id ? (
                 <span className="absolute top-5 m-[-1px] h-[1px] w-[1px] overflow-hidden text-clip border-0 border-none p-0">
                   {order === "desc" ? "sorted descending" : "sorted ascending"}
@@ -457,17 +477,18 @@ const VotesRow = memo(function VotesRow({
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            {row.gauge.max_apr - row.gauge.min_apr < 1
-              ? `${formatCurrency(row.gauge.min_apr)}%`
-              : `${formatCurrency(row.gauge.min_apr)}-${formatCurrency(
-                  row.gauge.max_apr
-                )}%`}
+            {row.gauge.max_apr - row.gauge.min_apr < 10
+              ? `${row.gauge.min_apr.toFixed()}%`
+              : `${row.gauge.min_apr.toFixed()}-${row.gauge.max_apr.toFixed()}%`}
           </Typography>
         </TableCell>
         <TableCell align="right">
           <Typography variant="h2" className="text-xs font-extralight">
-            ${formatCurrency(row.gauge.min_tbv)}-$
-            {formatCurrency(row.gauge.max_tbv)}
+            {row.gauge.max_tbv - row.gauge.min_tbv < 10
+              ? `$${formatCurrency(row.gauge.min_tbv)}`
+              : `$${formatCurrency(row.gauge.min_tbv)}-$${formatCurrency(
+                  row.gauge.max_tbv
+                )}`}
           </Typography>
         </TableCell>
         <TableCell align="right">
