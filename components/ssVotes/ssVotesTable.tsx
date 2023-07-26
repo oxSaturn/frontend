@@ -389,7 +389,7 @@ const VotesRow = memo(function VotesRow({
         </TableCell>
         <TableCell>
           <div className="flex items-center">
-            <div className="relative flex h-[35px] w-[70px]">
+            <div className="relative flex h-[35px] w-[70px] flex-shrink-0">
               <img
                 className="absolute left-0 top-0 rounded-[30px] border-[3px] border-[rgb(25,33,56)]"
                 src={
