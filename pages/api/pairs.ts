@@ -103,7 +103,7 @@ export default async function handler(
     });
 
     res.status(200).json({
-      data: censoredPairs.map((pair) => transformLayerZeroTokenSymbol(pair)),
+      data: censoredPairs.map((pair) => transformPairSymbol(pair)),
       prices: [...tokenPricesMap.entries()],
       tvl,
       tbv,
@@ -112,47 +112,13 @@ export default async function handler(
     res.status(200).json({ data: [] });
   }
 }
-
-const lzBridgedTokens = {
-  "0x28a92dde19d9989f39a49905d7c9c2fac7799bdf": "USDC",
-  "0xcc1b99ddac1a33c201a742a1851662e87bc7f22c": "USDT",
-  "0xf1648c50d2863f780c57849d812b4b7686031a3d": "WBTC",
-  "0x695921034f0387eac4e11620ee91b1b15a6a09fe": "WETH",
-  "0x91a40c733c97a6e1bf876eaf9ed8c08102eb491f": "DAI",
-} as const;
-
-type LowercaseString = Lowercase<string>;
-
-function isLzBridged(k: LowercaseString): k is keyof typeof lzBridgedTokens {
-  return k in lzBridgedTokens;
-}
-
-// if a pair contains usdc, usdt, etc. from lz
-// we prefix the respective token symbol with 'lz'
-export function transformLayerZeroTokenSymbol(pair: Pair) {
+export function transformPairSymbol(pair: Pair) {
   let pairSymbol = pair.stable ? "sAMM" : "vAMM";
   pairSymbol = pairSymbol + "-";
 
   const { token0, token1 } = pair;
-  const token0Address = token0.address.toLowerCase() as LowercaseString;
-  const token1Address = token1.address.toLowerCase() as LowercaseString;
 
-  const token0IsLz = isLzBridged(token0Address);
-  const token1IsLz = isLzBridged(token1Address);
-
-  if (token0IsLz) {
-    pairSymbol = pairSymbol + "lz" + token0.symbol;
-  } else {
-    pairSymbol = pairSymbol + token0.symbol;
-  }
-
-  pairSymbol = pairSymbol + "/";
-
-  if (token1IsLz) {
-    pairSymbol = pairSymbol + "lz" + token1.symbol;
-  } else {
-    pairSymbol = pairSymbol + token1.symbol;
-  }
+  pairSymbol = pairSymbol + token0.symbol + "/" + token1.symbol;
   return {
     ...pair,
     symbol: pairSymbol,
