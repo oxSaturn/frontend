@@ -40,6 +40,7 @@ import { Tooltip } from "../common/radixTooltip";
 import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
 import tokens from "../../tokens.json";
+import { CopyToClipboardButton } from "../common/CopyToClipboardButton";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -958,8 +959,11 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
                             >
                               Contract Address{" "}
-                              <OpenInNewOutlined fontSize="inherit" />
                             </a>
+                            <CopyToClipboardButton
+                              text={token.address}
+                              className="ml-1 text-xs w-3 h-3"
+                            />
                             {info?.homepage ? (
                               <>
                                 ・
