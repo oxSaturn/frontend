@@ -41,6 +41,7 @@ import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
 import tokens from "../../tokens.json";
 import { CopyToClipboardButton } from "../common/CopyToClipboardButton";
+import { EXPLORER_URL } from "../../stores/constants/constants";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -953,7 +954,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                         <>
                           <div className="flex items-center">
                             <a
-                              href={`https://ftmscan.com/address/${token.address}`}
+                              href={`${EXPLORER_URL}address/${token.address}`}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"

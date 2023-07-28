@@ -13,7 +13,7 @@ import { DeleteOutline, Search } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { BaseAsset } from "../../stores/types/types";
-import { ETHERSCAN_URL } from "../../stores/constants/constants";
+import { EXPLORER_URL } from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
   useAddLocalAsset,
@@ -92,7 +92,7 @@ export function AssetSelect({
   };
 
   const viewOption = (token: BaseAsset) => {
-    window.open(`${ETHERSCAN_URL}token/${token.address}`, "_blank");
+    window.open(`${EXPLORER_URL}token/${token.address}`, "_blank");
   };
 
   const renderManageOption = (type: string, asset: BaseAsset, idx: number) => {
