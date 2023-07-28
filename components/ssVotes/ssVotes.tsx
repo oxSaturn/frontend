@@ -19,7 +19,6 @@ import { Search } from "@mui/icons-material";
 
 import { useVeToken, useVestNfts } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
-import WarningModal from "../warning/warning";
 import { VestNFT } from "../../stores/types/types";
 
 import GaugesTable from "./ssVotesTable";
@@ -49,8 +48,6 @@ function MyListSubheader(props: ListSubheaderProps) {
 MyListSubheader.muiSkipListHighlight = true;
 
 export default function Votes() {
-  const [showWarning, setShowWarning] = useState(false);
-
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [search, setSearch] = useState("");
 
@@ -83,28 +80,11 @@ export default function Votes() {
     }
   }, [vestNFTs, token]);
 
-  useEffect(() => {
-    const localStorageWarningAccepted =
-      window.localStorage.getItem("voting.warning");
-    if (
-      !localStorageWarningAccepted ||
-      localStorageWarningAccepted !== "accepted"
-    ) {
-      setShowWarning(true);
-      return;
-    }
-    setShowWarning(false);
-  }, []);
-
   const onVote = () => {
     vote({
       votes,
       tokenID: token.id,
     });
-  };
-
-  const acceptWarning = () => {
-    window.localStorage.setItem("voting.warning", "accepted");
   };
 
   let totalVotes = votes?.reduce((acc, curr) => {
@@ -353,12 +333,6 @@ export default function Votes() {
             </Button>
           </div>
         </Paper>
-      )}
-      {showWarning && (
-        <WarningModal
-          close={() => setShowWarning(false)}
-          acceptWarning={acceptWarning}
-        />
       )}
     </div>
   );
