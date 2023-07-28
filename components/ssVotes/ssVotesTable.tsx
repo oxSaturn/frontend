@@ -34,6 +34,7 @@ import { Gauge, Vote, VestNFT, Votes } from "../../stores/types/types";
 
 import tokens from "../../tokens.json";
 import { formatTVL } from "../liquidityPairs/LiquidityPairsTable";
+import { EXPLORER_URL } from "../../stores/constants/constants";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -654,7 +655,7 @@ const VotesRow = memo(function VotesRow({
                         <>
                           <div className="flex items-center">
                             <a
-                              href={`https://ftmscan.com/address/${token.address}`}
+                              href={`${EXPLORER_URL}address/${token.address}`}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"

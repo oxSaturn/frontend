@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 
 import { colors } from "../../theme/coreTheme";
-import { ETHERSCAN_URL } from "../../stores/constants/constants";
+import { EXPLORER_URL } from "../../stores/constants/constants";
 
 const iconStyle = {
   fontSize: "32px",
@@ -129,7 +129,7 @@ function MySnackbar(props: {
       color = colors.blue;
       messageType = "Hash";
 
-      let snackbarMessage = ETHERSCAN_URL + "tx/" + message;
+      let snackbarMessage = EXPLORER_URL + "tx/" + message;
       actions = [
         <Button
           variant="text"

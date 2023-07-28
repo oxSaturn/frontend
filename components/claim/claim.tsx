@@ -18,6 +18,7 @@ import {
   useAirdropClaimUserClaimed,
   usePrepareAirdropClaimClaim,
 } from "../../lib/wagmiGen";
+import { EXPLORER_URL } from "../../stores/constants/constants";
 
 export function Claim() {
   const [toastOpen, setToastOpen] = useState(false);
@@ -150,15 +151,15 @@ export function Claim() {
         <Toast.Action
           className="[grid-area:_action]"
           asChild
-          altText="Look on ftmscan"
+          altText="Look on explorer"
         >
           <a
-            href={`https://ftmscan.com/tx/${toastHash}`}
+            href={`${EXPLORER_URL}tx/${toastHash}`}
             target="_blank"
             rel="noreferrer noopener"
             className="text-sm text-secondary underline transition-colors hover:text-primary hover:no-underline"
           >
-            Look on ftmscan
+            Look on explorer
           </a>
         </Toast.Action>
       </Toast.Root>

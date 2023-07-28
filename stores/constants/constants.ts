@@ -26,7 +26,7 @@ const config = {
   },
 };
 
-export const ETHERSCAN_URL = config[fantom.id].scan;
+export const EXPLORER_URL = config[fantom.id].scan;
 
 export const CONTRACTS = config[fantom.id].contracts;
 export const PRO_OPTIONS = {
