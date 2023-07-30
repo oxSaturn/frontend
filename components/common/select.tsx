@@ -13,7 +13,10 @@ import { DeleteOutline, Search } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { BaseAsset } from "../../stores/types/types";
-import { EXPLORER_URL } from "../../stores/constants/constants";
+import {
+  EXPLORER_URL,
+  placeholderOfInput,
+} from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
   useAddLocalAsset,
@@ -189,7 +192,7 @@ export function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -228,7 +231,7 @@ export function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{

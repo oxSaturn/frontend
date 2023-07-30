@@ -43,6 +43,11 @@ export const PRO_OPTIONS = {
   },
 } as const;
 
+/**
+ * chain specific constants
+ */
+export const placeholderOfInput = "FTM, WFTM, 0x...";
+
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 

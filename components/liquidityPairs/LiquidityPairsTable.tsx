@@ -41,7 +41,10 @@ import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
 import tokens from "../../tokens.json";
 import { CopyToClipboardButton } from "../common/CopyToClipboardButton";
-import { EXPLORER_URL } from "../../stores/constants/constants";
+import {
+  EXPLORER_URL,
+  placeholderOfInput,
+} from "../../stores/constants/constants";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -245,7 +248,7 @@ const EnhancedTableToolbar = ({
             className="flex w-full flex-[1]"
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{
