@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { Badge, IconButton, Typography } from "@mui/material";
 import { List } from "@mui/icons-material";
 
@@ -10,12 +11,16 @@ import TransactionQueue, {
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
 
-function SiteLogo() {
+function SiteLogo(props: { className?: string }) {
+  const { className } = props;
   return (
-    <div className="font-['Monument'] text-cyan flex flex-col gap-1 justify-start">
-      <span>BVM</span>
-      <span>by Velocimeter</span>
-    </div>
+    <Image
+      className={className}
+      src="/images/bvm_logo_blue.png"
+      alt="bvm by velocimeter logo"
+      height={357}
+      width={1200}
+    />
   );
 }
 
@@ -33,7 +38,7 @@ function Header() {
             onClick={() => router.push("/home")}
             className="flex flex-shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[40px] py-5"
           >
-            <SiteLogo />
+            <SiteLogo className="h-[50px] w-auto" />
           </a>
           <Navigation />
           <div className="flex justify-end gap-1 md:max-[1200px]:w-full md:max-[1200px]:items-end md:max-[1200px]:px-8">
