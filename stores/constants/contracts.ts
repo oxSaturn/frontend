@@ -7,7 +7,7 @@ export const GOV_TOKEN_ADDRESS = "0xd386a121991E51Eab5e3433Bf5B1cF4C8884b47a"; /
 export const GOV_TOKEN_NAME = "BVM";
 export const GOV_TOKEN_SYMBOL = "BVM";
 export const GOV_TOKEN_DECIMALS = 18;
-export const GOV_TOKEN_LOGO = "https://www.fvm.exchange/tokens/bvm.png";
+export const GOV_TOKEN_LOGO = "https://base.velocimeter.xyz/tokens/bvm.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0x91F85d68B413dE823684c891db515B0390a02512"; // base

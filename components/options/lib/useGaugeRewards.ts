@@ -145,7 +145,7 @@ async function getGaugeRewardTokens(
       asset?.address.toLowerCase() ===
         CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase() && isEmittingOptions;
     if (isUnderlyingTokenEmittedAsOption) {
-      logoUrl = "https://www.fvm.exchange/tokens/oBvm.png";
+      logoUrl = "https://base.velocimeter.xyz/tokens/oBvm.png";
     }
 
     rewardsTokens.push({
