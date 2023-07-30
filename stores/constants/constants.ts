@@ -33,7 +33,7 @@ export const PRO_OPTIONS = {
   optionTokenABI: optionTokenABI,
   maxxingGaugeABI: maxxingGaugeABI,
   oBVM: {
-    tokenAddress: "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
+    tokenAddress: "0x762eb51D2e779EeEc9B239FFB0B2eC8262848f3E",
   },
 } as const;
 

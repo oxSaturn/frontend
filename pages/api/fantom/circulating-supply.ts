@@ -48,7 +48,6 @@ export default async function handler(
     flowInRewardsDistributor,
     flowInOptionToken1,
     flowInAirdropClaim,
-    flowInMintTank,
     flowInMsig,
   ] = await publicClient.multicall({
     allowFailure: false,
@@ -81,11 +80,6 @@ export default async function handler(
         ...flowContract,
         functionName: "balanceOf",
         args: [CONTRACTS.AIRDROP_CLAIM],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
-        args: [CONTRACTS.MINT_TANK],
       },
       {
         ...flowContract,
@@ -143,7 +137,6 @@ export default async function handler(
       flowInMinter -
       flowInAirdropClaim -
       flowInRewardsDistributor -
-      flowInMintTank -
       flowInMsig -
       gaugeBalancesSum -
       flowInOptionToken1,

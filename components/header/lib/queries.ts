@@ -135,7 +135,6 @@ const getCirculatingSupply = async () => {
     flowInRewardsDistributor,
     flowInOptionToken1,
     flowInAirdropClaim,
-    flowInMintTank,
     flowInMsig,
   ] = await viemClient.multicall({
     allowFailure: false,
@@ -172,11 +171,6 @@ const getCirculatingSupply = async () => {
       {
         ...flowContract,
         functionName: "balanceOf",
-        args: [CONTRACTS.MINT_TANK],
-      },
-      {
-        ...flowContract,
-        functionName: "balanceOf",
         args: [CONTRACTS.MSIG_ADDRESS],
       },
     ],
@@ -206,7 +200,7 @@ const getCirculatingSupply = async () => {
         address: CONTRACTS.VOTER_ADDRESS,
         functionName: "gauges",
         args: [pairAddress],
-      } as const)
+      }) as const
   );
   const gaugeAddresses = await viemClient.multicall({
     allowFailure: false,
@@ -230,7 +224,6 @@ const getCirculatingSupply = async () => {
       flowInMinter -
       flowInAirdropClaim -
       flowInRewardsDistributor -
-      flowInMintTank -
       flowInMsig -
       gaugeBalancesSum -
       flowInOptionToken1,

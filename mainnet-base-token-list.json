@@ -8,18 +8,18 @@
     "symbol": "WETH"
   },
   {
-    "address": "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96",
+    "address": "0xd386a121991E51Eab5e3433Bf5B1cF4C8884b47a",
     "chainId": 8453,
     "decimals": 18,
-    "logoURI": "https://www.based.velocimeter.xyz/tokens/bvm.png",
+    "logoURI": "https://www.base.velocimeter.xyz/tokens/bvm.png",
     "name": "Velocimeter",
     "symbol": "BVM"
   },
   {
-    "address": "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
+    "address": "0x762eb51D2e779EeEc9B239FFB0B2eC8262848f3E",
     "chainId": 8453,
     "decimals": 18,
-    "logoURI": "https://www.based.velocimeter.xyz/tokens/oBvm.png",
+    "logoURI": "https://www.base.velocimeter.xyz/tokens/oBvm.png",
     "name": "Option BVM",
     "symbol": "oBVM"
   }
