@@ -3,6 +3,7 @@ import { base } from "wagmi/chains";
 import { BaseError, formatUnits } from "viem";
 import BigNumber from "bignumber.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
 
 import viemClient from "../../../stores/connectors/viem";
 import { useTransactionStore } from "../../transactionQueue/transactionQueue";
@@ -11,6 +12,7 @@ import {
   ITransaction,
   QuoteSwapResponse,
   TransactionStatus,
+  LegacyQuote,
 } from "../../../stores/types/types";
 import { formatCurrency, getTXUUID } from "../../../utils/utils";
 import {
@@ -19,7 +21,11 @@ import {
   NATIVE_TOKEN,
   QUERY_KEYS,
 } from "../../../stores/constants/constants";
-import { writeApprove, writeWrapUnwrap } from "../../../lib/global/mutations";
+import {
+  writeApprove,
+  writeContractWrapper,
+  writeWrapUnwrap,
+} from "../../../lib/global/mutations";
 
 const getFirebirdSwapAllowance = async (
   token: BaseAsset,
@@ -289,4 +295,185 @@ export const useWrapOrUnwrap = (onSuccess: () => void) => {
       onSuccess();
     },
   });
+};
+
+export const useSwapLegacy = (onSuccess: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (options: {
+      quote: LegacyQuote | undefined;
+      fromAsset: BaseAsset | null;
+      toAsset: BaseAsset | null;
+      fromAmount: string;
+      slippage: string;
+    }) => _swap(options),
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
+      onSuccess();
+    },
+  });
+};
+
+const getSwapAllowance = async (token: BaseAsset, account: `0x${string}`) => {
+  const allowance = await viemClient.readContract({
+    address: token.address,
+    abi: CONTRACTS.ERC20_ABI,
+    functionName: "allowance",
+    args: [account, CONTRACTS.ROUTER_ADDRESS],
+  });
+
+  return formatUnits(allowance, token.decimals);
+};
+
+const _swap = async (options: {
+  quote: LegacyQuote | undefined;
+  fromAsset: BaseAsset | null;
+  toAsset: BaseAsset | null;
+  fromAmount: string;
+  slippage: string;
+}) => {
+  const walletClient = await getWalletClient({ chainId: base.id });
+  if (!walletClient) {
+    throw new Error("wallet");
+  }
+
+  const [account] = await walletClient.getAddresses();
+
+  const { fromAsset, toAsset, fromAmount, quote, slippage } = options;
+
+  if (!fromAsset || !toAsset || !quote) {
+    throw new Error("assets");
+  }
+
+  // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
+  let allowanceTXID = getTXUUID();
+  let swapTXID = getTXUUID();
+
+  useTransactionStore.getState().updateTransactionQueue({
+    transactions: [
+      {
+        uuid: allowanceTXID,
+        description: `Checking your ${fromAsset.symbol} allowance`,
+        status: TransactionStatus.WAITING,
+      },
+      {
+        uuid: swapTXID,
+        description: `Swap ${formatCurrency(fromAmount)} ${
+          fromAsset.symbol
+        } for ${toAsset.symbol}`,
+        status: TransactionStatus.WAITING,
+      },
+    ],
+  });
+
+  let allowance: string | null = "0";
+
+  // CHECK ALLOWANCES AND SET TX DISPLAY
+  if (fromAsset.address !== NATIVE_TOKEN.symbol) {
+    allowance = await getSwapAllowance(fromAsset, account);
+    if (BigNumber(allowance).lt(fromAmount)) {
+      useTransactionStore.getState().updateTransactionStatus({
+        uuid: allowanceTXID,
+        description: `Allow the router to spend your ${fromAsset.symbol}`,
+        status: TransactionStatus.WAITING,
+      });
+    } else {
+      useTransactionStore.getState().updateTransactionStatus({
+        uuid: allowanceTXID,
+        description: `Allowance on ${fromAsset.symbol} sufficient`,
+        status: TransactionStatus.DONE,
+      });
+    }
+  } else {
+    allowance = MAX_UINT256;
+    useTransactionStore.getState().updateTransactionStatus({
+      uuid: allowanceTXID,
+      description: `Allowance on ${fromAsset.symbol} sufficient`,
+      status: TransactionStatus.DONE,
+    });
+  }
+
+  if (!allowance) throw new Error("Couldn't fetch allowance");
+  // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
+  if (BigNumber(allowance).lt(fromAmount)) {
+    await writeApprove(
+      walletClient,
+      allowanceTXID,
+      fromAsset.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
+
+  // SUBMIT SWAP TRANSACTION
+  const sendSlippage = BigNumber(100).minus(slippage).div(100);
+  const sendFromAmount = BigNumber(fromAmount)
+    .times(10 ** fromAsset.decimals)
+    .toFixed(0);
+  const sendMinAmountOut = BigNumber(quote.output.finalValue ?? "0")
+    .times(10 ** toAsset.decimals)
+    .times(sendSlippage)
+    .toFixed(0);
+  const deadline = "" + dayjs().add(600, "seconds").unix();
+
+  if (fromAsset.address === NATIVE_TOKEN.address) {
+    const writeSwapFromEth = async () => {
+      const { request } = await viemClient.simulateContract({
+        account,
+        address: CONTRACTS.ROUTER_ADDRESS,
+        abi: CONTRACTS.ROUTER_ABI,
+        functionName: "swapExactETHForTokens",
+        args: [
+          BigInt(sendMinAmountOut),
+          quote.output.routes,
+          account,
+          BigInt(deadline),
+        ],
+        value: BigInt(sendFromAmount),
+      });
+      const txHash = await walletClient.writeContract(request);
+      return txHash;
+    };
+
+    await writeContractWrapper(swapTXID, writeSwapFromEth);
+  } else if (toAsset.address === NATIVE_TOKEN.address) {
+    const writeSwapForEth = async () => {
+      const { request } = await viemClient.simulateContract({
+        account,
+        address: CONTRACTS.ROUTER_ADDRESS,
+        abi: CONTRACTS.ROUTER_ABI,
+        functionName: "swapExactTokensForETH",
+        args: [
+          BigInt(sendFromAmount),
+          BigInt(sendMinAmountOut),
+          quote.output.routes,
+          account,
+          BigInt(deadline),
+        ],
+      });
+      const txHash = await walletClient.writeContract(request);
+      return txHash;
+    };
+
+    await writeContractWrapper(swapTXID, writeSwapForEth);
+  } else {
+    const writeSwap = async () => {
+      const { request } = await viemClient.simulateContract({
+        account,
+        address: CONTRACTS.ROUTER_ADDRESS,
+        abi: CONTRACTS.ROUTER_ABI,
+        functionName: "swapExactTokensForTokens",
+        args: [
+          BigInt(sendFromAmount),
+          BigInt(sendMinAmountOut),
+          quote.output.routes,
+          account,
+          BigInt(deadline),
+        ],
+      });
+      const txHash = await walletClient.writeContract(request);
+      return txHash;
+    };
+
+    await writeContractWrapper(swapTXID, writeSwap);
+  }
 };

@@ -349,6 +349,25 @@ interface FireBirdTokens {
   };
 }
 
+interface LegacyQuote {
+  inputs: {
+    fromAmount: string;
+    fromAsset: BaseAsset;
+    toAsset: BaseAsset;
+  };
+  output: {
+    routes: {
+      from: `0x${string}`;
+      to: `0x${string}`;
+      stable: boolean;
+    }[];
+    routeAsset: RouteAsset | null;
+    receiveAmounts?: string[] | undefined;
+    finalValue?: string | undefined;
+  };
+  priceImpact: string;
+}
+
 export type {
   BaseAsset,
   Pair,
@@ -374,6 +393,7 @@ export type {
   PairsCallResponse,
   Rewards,
   Aprs,
+  LegacyQuote,
 };
 
 export { hasGauge, isGaugeReward, isBaseAsset, TransactionStatus };
