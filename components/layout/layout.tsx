@@ -100,6 +100,30 @@ export default function Layout({
               )
             )}
           </nav>
+          <div className="mx-auto flex gap-x-5 justify-center">
+            <a
+              href="https://discord.gg/FMEPSnzUJ2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/images/discord-mark-white.svg"
+                alt="Discord"
+                className="w-auto h-6"
+              />
+            </a>
+            <a
+              href="https://twitter.com/velocimeterdex"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/images/Logo_of_Twitter.svg"
+                alt="Twitter"
+                className="w-6 h-6"
+              />
+            </a>
+          </div>
         </footer>
       </div>
     </div>
