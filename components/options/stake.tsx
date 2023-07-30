@@ -288,7 +288,9 @@ export function Stake() {
           >
             $
             {formatCurrency(
-              isLockExpired ? stakedBalance ?? 0 : stakedWithoutLockValue
+              isLockExpired
+                ? (stakedWithLockValue ?? 0) + (stakedWithoutLockValue ?? 0)
+                : stakedWithoutLockValue
             )}
           </div>
         </div>
