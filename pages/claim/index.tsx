@@ -1,6 +1,7 @@
 import { Typography } from "@mui/material";
 
 import { Claim } from "../../components/claim/claim";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 function Rewards() {
   return (
@@ -16,7 +17,7 @@ function Rewards() {
           className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
           variant="body2"
         >
-          Claim your veFVM airdrop
+          Claim your ve{GOV_TOKEN_SYMBOL} airdrop
         </Typography>
       </div>
       <div className="flex items-center justify-center">

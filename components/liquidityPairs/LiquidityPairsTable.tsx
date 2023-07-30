@@ -45,6 +45,7 @@ import {
   EXPLORER_URL,
   placeholderOfInput,
 } from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -138,7 +139,9 @@ function EnhancedTableHead(props: {
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.id === "apr" ? (
-                <Tooltip content="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid FVM tokens, whereas the higher for veFVM.">
+                <Tooltip
+                  content={`The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid ${GOV_TOKEN_SYMBOL} tokens, whereas the higher for ve${GOV_TOKEN_SYMBOL}.`}
+                >
                   <h5 className="text-xs font-extralight inline-flex items-center">
                     <InfoOutlined className="w-5 mr-1" />
                     {headCell.label}

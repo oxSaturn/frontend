@@ -18,6 +18,7 @@ import {
   usePrepareAirdropClaimClaim,
 } from "../../lib/wagmiGen";
 import { EXPLORER_URL, chainToConnect } from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 export function Claim() {
   const [toastOpen, setToastOpen] = useState(false);
@@ -89,7 +90,9 @@ export function Claim() {
       <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex items-center justify-between">
           <div>Claimable amount</div>
-          <div>{formatCurrency(claimable ?? "0")} veFVM</div>
+          <div>
+            {formatCurrency(claimable ?? "0")} ve{GOV_TOKEN_SYMBOL}
+          </div>
         </div>
         {claimable && parseFloat(claimable) > 0 && (
           <div className="mt-1 font-medium text-success">
