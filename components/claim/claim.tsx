@@ -5,7 +5,6 @@ import {
   useNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { fantom } from "wagmi/chains";
 import { formatEther } from "viem";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 
@@ -18,7 +17,7 @@ import {
   useAirdropClaimUserClaimed,
   usePrepareAirdropClaimClaim,
 } from "../../lib/wagmiGen";
-import { EXPLORER_URL } from "../../stores/constants/constants";
+import { EXPLORER_URL, chainToConnect } from "../../stores/constants/constants";
 
 export function Claim() {
   const [toastOpen, setToastOpen] = useState(false);
@@ -29,7 +28,7 @@ export function Claim() {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -39,7 +38,7 @@ export function Claim() {
     isFetching: isLoadingClaimable,
     refetch: refetchClaimable,
   } = useAirdropClaimClaimable({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
     args: [address!],
     enabled: !!address,
     select: (claimable) => formatEther(claimable),
@@ -47,14 +46,14 @@ export function Claim() {
 
   const { data: claimed, refetch: refetchClaimed } = useAirdropClaimUserClaimed(
     {
-      chainId: fantom.id,
+      chainId: chainToConnect.id,
       args: [address!],
       enabled: !!address,
     }
   );
 
   const { config, isFetching: isPreparingClaim } = usePrepareAirdropClaimClaim({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
     enabled: !!claimable && parseFloat(claimable) > 0,
   });
 
@@ -72,7 +71,7 @@ export function Claim() {
   });
 
   const { isFetching: isWaitingClaim } = useWaitForTransaction({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
     hash: txHash?.hash,
     onSuccess(data) {
       setToastMessage("Transaction confirmed!");

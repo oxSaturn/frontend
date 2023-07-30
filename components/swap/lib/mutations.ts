@@ -1,5 +1,4 @@
 import { getWalletClient } from "@wagmi/core";
-import { fantom } from "wagmi/chains";
 import { BaseError, formatUnits } from "viem";
 import BigNumber from "bignumber.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,6 +17,7 @@ import {
   MAX_UINT256,
   NATIVE_TOKEN,
   QUERY_KEYS,
+  chainToConnect,
 } from "../../../stores/constants/constants";
 import { writeApprove, writeWrapUnwrap } from "../../../lib/global/mutations";
 
@@ -41,7 +41,7 @@ const swap = async (options: {
   fromAsset: BaseAsset | null;
   toAsset: BaseAsset | null;
 }) => {
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("Wallet not connected");
@@ -129,7 +129,7 @@ const swap = async (options: {
         value: BigInt(quote.maxReturn.totalFrom),
         data: quote.encodedData.data,
         gasPrice: BigInt(quote.maxReturn.gasPrice),
-        chain: fantom,
+        chain: chainToConnect,
       });
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash,
@@ -171,7 +171,7 @@ const swap = async (options: {
         value: undefined,
         data: quote.encodedData.data,
         gasPrice: BigInt(quote.maxReturn.gasPrice),
-        chain: fantom,
+        chain: chainToConnect,
       });
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash,
@@ -225,7 +225,7 @@ const wrapOrUnwrap = async (options: {
   toAsset: BaseAsset | null;
   fromAmount: string;
 }) => {
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     throw new Error("wallet");
   }
