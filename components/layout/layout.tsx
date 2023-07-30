@@ -1,6 +1,6 @@
 import { useNetwork, useSwitchNetwork } from "wagmi";
 import Head from "next/head";
-import { fantom } from "viem/chains";
+import { base } from "viem/chains";
 import { Button, Typography } from "@mui/material";
 
 import Link from "next/link";
@@ -17,7 +17,7 @@ export default function Layout({
   configure?: boolean;
 }) {
   const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork({ chainId: fantom.id });
+  const { switchNetwork } = useSwitchNetwork({ chainId: base.id });
 
   return (
     <div className="relative flex h-full min-h-screen w-full max-w-[100vw] flex-col overflow-x-hidden md:overflow-x-auto lg:flex-row">
@@ -25,9 +25,9 @@ export default function Layout({
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
           name="description"
-          content="FVM by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on fantom."
+          content="BVM by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on base."
         />
-        <meta name="og:title" content="FVM" />
+        <meta name="og:title" content="BVM" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
       <div className="pointer-events-none fixed left-0 bottom-0 top-0 -z-10 w-screen bg-appBackground bg-cover bg-no-repeat xs:bg-waves" />
@@ -50,14 +50,14 @@ export default function Layout({
             <div className="space-y-2">
               <Typography className="max-w-md text-2xl text-white">
                 {`The chain you're connected to isn't supported. Please
-                check that your wallet is connected to fantom Mainnet.`}
+                check that your wallet is connected to Base Mainnet.`}
               </Typography>
               <Button
                 className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
                 variant="contained"
                 onClick={() => switchNetwork?.()}
               >
-                Switch to fantom
+                Switch to Base
               </Button>
             </div>
           </div>
@@ -65,10 +65,6 @@ export default function Layout({
         <footer className="w-full space-y-3 pt-20 pb-10">
           <nav className="flex justify-center gap-x-3  text-sm">
             {[
-              {
-                href: "https://stargate.finance/transfer",
-                text: "Stargate",
-              },
               {
                 Child: ({ className }: { className: string }) => (
                   <Link href="/claim" className={className}>
@@ -81,19 +77,12 @@ export default function Layout({
                 text: "sCANTO",
               },
               {
-                href: "https://docs.velocimeter.xyz/FVMtokenomics",
+                href: "https://docs.velocimeter.xyz/",
                 text: "Docs",
               },
               {
-                href: "https://www.geckoterminal.com/ftm/velocimeter-fantom/pools",
+                href: "https://www.geckoterminal.com/base/velocimeter-base/pools",
                 text: "Coingecko",
-              },
-              {
-                Child: ({ className }: { className: string }) => (
-                  <Link href="/squid-bridge" className={className}>
-                    SquidRouter
-                  </Link>
-                ),
               },
             ].map(({ href, text, Child }, index) =>
               Child ? (

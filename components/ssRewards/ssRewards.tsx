@@ -147,7 +147,7 @@ export default function Rewards() {
         <div className="flex flex-col gap-1 self-start text-left">
           <Typography variant="h1">Rewards</Typography>
           <Typography variant="body2">
-            Choose your veFVM and claim your rewards.
+            Choose your veBVM and claim your rewards.
           </Typography>
         </div>
         {isRefetchingRewards && <CircularProgress size={20} />}

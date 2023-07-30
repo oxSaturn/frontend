@@ -27,7 +27,7 @@ interface UseInputs {
 }
 
 export const useInputs = create<UseInputs>((set) => ({
-  optionToken: "oFVM",
+  optionToken: "oBVM",
   option: "",
   payment: "",
   activeInput: INPUT.OPTION,

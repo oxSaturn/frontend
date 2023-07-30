@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, http, formatUnits } from "viem";
-import { fantom } from "viem/chains";
+import { base } from "viem/chains";
 import Cors from "cors";
 
 import { CONTRACTS } from "../../../stores/constants/constants";
@@ -10,8 +10,8 @@ const cors = Cors({
 });
 
 const publicClient = createPublicClient({
-  chain: fantom,
-  transport: http(),
+  chain: base,
+  transport: http("https://mainnet.base.org/"),
 });
 
 function runMiddleware(
@@ -119,7 +119,7 @@ export default async function handler(
         address: CONTRACTS.VOTER_ADDRESS,
         functionName: "gauges",
         args: [pairAddress],
-      } as const)
+      }) as const
   );
   const gaugeAddresses = await publicClient.multicall({
     allowFailure: false,

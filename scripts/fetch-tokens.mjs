@@ -5,10 +5,12 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+
 import { createPublicClient, http } from "viem";
-import { fantom } from "viem/chains";
+import { base } from "viem/chains";
+
 const client = createPublicClient({
-  chain: fantom,
+  chain: base,
   transport: http(),
 });
 const pairFactoryAddress = "0x472f3c3c9608fe0ae8d702f3f8a2d12c410c881a";
@@ -116,7 +118,7 @@ tokens = [...new Set(tokens.map((token) => token.result))];
 async function fetchTokenInfo(token) {
   // we'll fetch api from coingecko
   const json = await fetch(
-    `https://api.coingecko.com/api/v3/coins/fantom/contract/${token}`
+    `https://api.coingecko.com/api/v3/coins/base/contract/${token}`
   ).then((res) => res.json());
   if (json.status?.error_code === 429) {
     // we've exceeded the rate limit, so we'll wait for 61 seconds, note that it's not that acurate in my test

@@ -20,7 +20,7 @@ function Swap() {
               className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
               variant="body2"
             >
-              Swap between FVM supported stable and volatile assets.
+              Swap between BVM supported stable and volatile assets.
             </Typography>
           </div>
         </>

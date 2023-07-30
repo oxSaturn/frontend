@@ -89,10 +89,10 @@ export function useTokenData(lpDiscount?: number) {
     select: (data) => formatEther(data),
   });
   return {
-    optionTokenSymbol: optionTokenSymbol ?? "oFVM",
-    paymentTokenSymbol: paymentTokenSymbol ?? "WFTM",
+    optionTokenSymbol: optionTokenSymbol ?? "oBVM",
+    paymentTokenSymbol: paymentTokenSymbol ?? "WETH",
     paymentTokenDecimals: paymentTokenDecimals ?? 18,
-    underlyingTokenSymbol: underlyingTokenSymbol ?? "FVM",
+    underlyingTokenSymbol: underlyingTokenSymbol ?? "BVM",
     paymentTokenAddress,
     paymentBalance,
     optionBalance,

@@ -18,7 +18,7 @@ function Vest() {
             className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
             variant="body2"
           >
-            Lock your FVM to earn rewards and governance rights. Each locked
+            Lock your BVM to earn rewards and governance rights. Each locked
             position is created and represented as an NFT, meaning you can hold
             multiple locked positions.
           </Typography>

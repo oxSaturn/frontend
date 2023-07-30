@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { fantom } from "wagmi/chains";
+import { base } from "wagmi/chains";
 
 import { maxxingGaugeABI, optionTokenABI } from "../abis/abis";
 
@@ -7,8 +7,8 @@ import * as contracts from "./contracts";
 import * as queryKeys from "./queryKeys";
 
 const config = {
-  [fantom.id]: {
-    scan: "https://ftmscan.com/",
+  [base.id]: {
+    scan: "https://basescan.org/",
     contracts: contracts,
     nativeETH: {
       address: contracts.ETH_ADDRESS,
@@ -16,7 +16,7 @@ const config = {
       logoURI: contracts.ETH_LOGO,
       name: contracts.ETH_NAME,
       symbol: contracts.ETH_SYMBOL,
-      chainId: fantom.id,
+      chainId: base.id,
       local: false,
       balance: "0",
     },
@@ -26,30 +26,24 @@ const config = {
   },
 };
 
-export const EXPLORER_URL = config[fantom.id].scan;
+export const EXPLORER_URL = config[base.id].scan;
 
-export const CONTRACTS = config[fantom.id].contracts;
+export const CONTRACTS = config[base.id].contracts;
 export const PRO_OPTIONS = {
   optionTokenABI: optionTokenABI,
   maxxingGaugeABI: maxxingGaugeABI,
-  oFVM: {
+  oBVM: {
     tokenAddress: "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D",
-  },
-  oBLOTR: {
-    tokenAddress: "0xC5d4E462b96cC73283EB452B15147c17Af413313",
-  },
-  oBAY: {
-    tokenAddress: "0x269557D887EaA9C1a756B2129740B3FC2821fD91",
   },
 } as const;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-export const NATIVE_TOKEN = config[fantom.id].nativeETH;
-export const W_NATIVE_ADDRESS = config[fantom.id].wNativeAddress;
-export const W_NATIVE_SYMBOL = config[fantom.id].wNativeSymbol;
-export const W_NATIVE_ABI = config[fantom.id].wNativeABI;
+export const NATIVE_TOKEN = config[base.id].nativeETH;
+export const W_NATIVE_ADDRESS = config[base.id].wNativeAddress;
+export const W_NATIVE_SYMBOL = config[base.id].wNativeSymbol;
+export const W_NATIVE_ABI = config[base.id].wNativeABI;
 
 export const PAIR_DECIMALS = 18;
 export const QUERY_KEYS = queryKeys;

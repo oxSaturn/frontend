@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatUnits } from "viem";
 import { getAccount, getWalletClient } from "@wagmi/core";
-import { fantom } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
@@ -57,7 +57,7 @@ const notifyGauge = async (options: {
     throw new Error("No account found");
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     throw new Error("No wallet client found");
   }

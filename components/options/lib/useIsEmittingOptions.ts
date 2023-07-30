@@ -22,7 +22,7 @@ export function useIsEmittingOptions() {
     address: PRO_OPTIONS[optionToken].tokenAddress,
   });
   const { data: hasMinterRole } = useOptionTokenHasRole({
-    address: PRO_OPTIONS.oFVM.tokenAddress,
+    address: PRO_OPTIONS.oBVM.tokenAddress,
     args: [MINTER_ROLE, gaugeAddress!],
     enabled: !!gaugeAddress,
   });

@@ -5,7 +5,7 @@ import {
   MulticallParameters,
   fallback,
 } from "viem";
-import { fantom } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
@@ -15,24 +15,14 @@ import {
   metaMaskWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 
-const publicNodeRpc = http("https://fantom.publicnode.com");
-const blastApiRpc = http("https://fantom-mainnet.public.blastapi.io");
-const OneRpc = http("https://1rpc.io/ftm");
-const ftmToolsRpc = http("https://rpc.ftm.tools");
-const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
-const ankrRpc = http("https://rpc.ankr.com/fantom");
+const publicNodeRpc = http("https://mainnet.base.org");
+const blockPiRpc = http("https://base.blockpi.network/v1/rpc/public");
+const devAccessRpc = http("https://developer-access-mainnet.base.org");
 
 // used in store for reading blockchain
 const client = createPublicClient({
-  chain: fantom,
-  transport: fallback([
-    publicNodeRpc,
-    blastApiRpc,
-    OneRpc,
-    ftmToolsRpc,
-    blockPiRpc,
-    ankrRpc,
-  ]),
+  chain: base,
+  transport: fallback([publicNodeRpc, devAccessRpc, blockPiRpc]),
   batch: {
     multicall: true,
   },
@@ -40,36 +30,21 @@ const client = createPublicClient({
 
 // rainbow kit set up
 const { chains, publicClient } = configureChains(
-  [fantom],
+  [base],
   [
     jsonRpcProvider({
       rpc: () => ({
-        http: "https://fantom.publicnode.com",
+        http: "https://mainnet.base.org",
       }),
     }),
     jsonRpcProvider({
       rpc: () => ({
-        http: "https://fantom-mainnet.public.blastapi.io",
+        http: "https://base.blockpi.network/v1/rpc/public",
       }),
     }),
     jsonRpcProvider({
       rpc: () => ({
-        http: "https://1rpc.io/ftm",
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: () => ({
-        http: "https://rpc.ftm.tools",
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: () => ({
-        http: "https://fantom.blockpi.network/v1/rpc/public",
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: () => ({
-        http: "https://rpc.ankr.com/fantom",
+        http: "https://developer-access-mainnet.base.org",
       }),
     }),
   ]
@@ -124,7 +99,7 @@ export function chunkArray<T>(array: T[], chunkSize = 100): T[][] {
  */
 export async function multicallChunks<
   TContracts extends ContractFunctionConfig[],
-  TAllowFailure extends boolean = true
+  TAllowFailure extends boolean = true,
 >(chunks: MulticallParameters<TContracts, TAllowFailure>["contracts"][]) {
   /* multicall can only handle 100 contracts at a time (approximately)
   so we chunk the array and call multicall multiple times

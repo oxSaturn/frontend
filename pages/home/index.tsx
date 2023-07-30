@@ -20,7 +20,7 @@ function Home() {
               variant="h1"
               className="relative bottom-0 mb-5 animate-titleAnim font-['Monument'] text-lg font-thin uppercase tracking-wider text-primary delay-[0s]"
             >
-              Fantom Liquidity Layer
+              Base Liquidity Layer
             </Typography>
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -67,7 +67,7 @@ function Home() {
               variant="h1"
               className="mb-5 text-center font-['Monument'] text-lg sm:text-3xl"
             >
-              Welcome to FVM
+              Welcome to BVM
             </Typography>
           </Grid>
           <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -75,9 +75,9 @@ function Home() {
               variant="body1"
               className="mb-5 text-sm text-white sm:text-base md:text-lg"
             >
-              FVM officially launched in June 2023 with a collective goal of
-              fair and balanced access to DeFi. FVM is a decentralized exchange
-              that has launched on the Fantom network with low fees, near 0
+              BVM officially launched in July 2023 with a collective goal of
+              fair and balanced access to DeFi. BVM is a decentralized exchange
+              that has launched on the Base network with low fees, near 0
               slippage on correlated assets and a strong focus on secondary
               markets for tokenized locks as NFTs.
             </Typography>
@@ -87,7 +87,7 @@ function Home() {
             >
               One segment of the cryptocurrency landscape that has shown
               incredible potential is the swapping of stablecoins and volatile
-              assets. FVM Swap offers users quick, seamless and cheap
+              assets. BVM Swap offers users quick, seamless and cheap
               transactions while utilizing strategies to maximize their yield.
             </Typography>
           </Grid>

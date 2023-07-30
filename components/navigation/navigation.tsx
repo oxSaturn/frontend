@@ -32,9 +32,6 @@ function Navigation() {
     if (activePath.includes("options")) {
       setActive("options");
     }
-    if (activePath.includes("stake")) {
-      setActive("stake");
-    }
     if (activePath.includes("veboost")) {
       setActive("veboost");
     }
@@ -45,7 +42,6 @@ function Navigation() {
       <>
         {renderSubNav("Swap", "swap")}
         {renderSubNav("Liquidity", "liquidity")}
-        {renderSubNav("Stake", "stake")}
         {renderSubNav("Vest", "vest")}
         {renderSubNav("VeBoost", "veboost")}
         {renderSubNav("Vote", "vote")}

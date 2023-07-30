@@ -255,7 +255,7 @@ export default function Votes() {
             <TextField
               variant="outlined"
               fullWidth
-              placeholder="FTM, WFTM, 0x..."
+              placeholder="ETH, WETH, 0x..."
               value={search}
               onChange={onSearchChanged}
               InputProps={{

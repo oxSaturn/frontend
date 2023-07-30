@@ -6,7 +6,7 @@ import {
 import { serialize, useAccount } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
 import { Address, formatUnits } from "viem";
-import { fantom } from "viem/chains";
+import { base } from "viem/chains";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 
@@ -159,7 +159,7 @@ const createVest = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -248,7 +248,7 @@ const increaseVestAmount = async (
     throw new Error("");
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("");
@@ -346,7 +346,7 @@ const increaseVestDuration = async (
     throw new Error("");
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("");
@@ -397,7 +397,7 @@ const resetVest = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -537,7 +537,7 @@ const withdrawVest = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -661,7 +661,7 @@ const transferNft = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -706,7 +706,7 @@ const mergeNft = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");

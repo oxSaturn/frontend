@@ -4,10 +4,10 @@ export const OPTION_TOKEN_ADDRESS =
   "0xF9EDdca6B1e548B0EC8cDDEc131464F462b8310D"; // fantom
 
 export const GOV_TOKEN_ADDRESS = "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96"; // fantom
-export const GOV_TOKEN_NAME = "FVM";
-export const GOV_TOKEN_SYMBOL = "FVM";
+export const GOV_TOKEN_NAME = "BVM";
+export const GOV_TOKEN_SYMBOL = "BVM";
 export const GOV_TOKEN_DECIMALS = 18;
-export const GOV_TOKEN_LOGO = "https://www.fvm.exchange/tokens/fvm.png";
+export const GOV_TOKEN_LOGO = "https://www.fvm.exchange/tokens/bvm.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0xAE459eE7377Fb9F67518047BBA5482C2F0963236"; // fantom
@@ -18,18 +18,18 @@ export const VE_TOKEN_LOGO =
   "https://cre8r.vip/wp-content/uploads/2023/02/Flow-circle-aqua-150x150.png";
 export const VE_TOKEN_ABI = abis.veTokenABI;
 
-export const WETH_ADDRESS = "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83"; // fantom
-export const WETH_NAME = "Wrapped FTM";
-export const WETH_SYMBOL = "WFTM";
+export const WETH_ADDRESS = "0x4200000000000000000000000000000000000006"; // base
+export const WETH_NAME = "Wrapped ETH";
+export const WETH_SYMBOL = "WETH";
 export const WETH_DECIMALS = 18;
 export const WETH_ABI = abis.wethABI;
 
-export const ETH_ADDRESS = "FTM";
-export const ETH_NAME = "FTM";
-export const ETH_SYMBOL = "FTM";
+export const ETH_ADDRESS = "ETH";
+export const ETH_NAME = "ETH";
+export const ETH_SYMBOL = "ETH";
 export const ETH_DECIMALS = 18;
 export const ETH_LOGO =
-  "https://assets.coingecko.com/coins/images/4001/large/Fantom_round.png";
+  "https://assets.coingecko.com/coins/images/279/large/ethereum.png";
 
 export const FACTORY_ADDRESS = "0x472f3C3c9608fe0aE8d702f3f8A2d12c410C881A"; // fantom
 export const FACTORY_ABI = abis.factoryABI;
@@ -63,7 +63,5 @@ export const MSIG_ADDRESS = "0x88Dec6df03C2C111Efd4ad89Cef2c0347034AFC0"; // fan
 export const MINT_TANK = "0x14Dc007573Ac5dCC94410bc29DCBb4923e54C69d"; // fantom
 export const AIRDROP_CLAIM = "0xCEE59eb1E4e28F50D90Bf4897ca1a84d6552AA21"; // fantom
 
-// fantom staking FVM contract
-export const STAKING_ADDRESS = "0x0Ddf6B15422e68C892b66173f3026aE36b6C3825"; // fantom
 export const VE_BOOSTER_ADRRESS = "0xbD777Af905F603797CFC1E8eBa229DaD26FE4863"; // fantom
 //LFG

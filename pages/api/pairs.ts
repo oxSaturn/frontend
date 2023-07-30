@@ -24,13 +24,13 @@ export default async function handler(
         >;
         const filtered = parsed.filter((apr) => {
           if ("min_apr" in apr) {
-            if (apr.symbol !== "oFVM") {
+            if (apr.symbol !== "oBVM") {
               return apr.min_apr > 0;
             } else {
               return true;
             }
           } else {
-            if (apr.symbol !== "FVM") {
+            if (apr.symbol !== "BVM") {
               return apr.apr > 0;
             } else {
               return true;

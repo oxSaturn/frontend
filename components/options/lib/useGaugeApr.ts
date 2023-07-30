@@ -23,11 +23,11 @@ export function useGaugeApr() {
     address: PRO_OPTIONS[optionToken].tokenAddress,
   });
   const { data: govDiscount } = useOptionTokenDiscount({
-    address: PRO_OPTIONS.oFVM.tokenAddress,
+    address: PRO_OPTIONS.oBVM.tokenAddress,
     select: (asianDiscount) => (100n - asianDiscount).toString(),
   });
   const { data: govVeDiscount } = useOptionTokenVeDiscount({
-    address: PRO_OPTIONS.oFVM.tokenAddress,
+    address: PRO_OPTIONS.oBVM.tokenAddress,
     select: (asianDiscount) => (100n - asianDiscount).toString(),
   });
   const { discount, maxLpDiscount, minLpDiscount, veDiscount } =

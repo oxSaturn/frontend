@@ -35,7 +35,7 @@ export default function Info() {
       value: `$${formatFinancialData(tbv ?? 0)}`,
     },
     {
-      label: "FVM Price",
+      label: "BVM Price",
       value: `$${(
         tokenPrices?.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()) ?? 0
       ).toFixed(3)}`,

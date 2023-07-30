@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Address, useAccount } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
-import { fantom } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
@@ -48,7 +48,7 @@ const vote = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: base.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");

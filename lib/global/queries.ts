@@ -15,7 +15,7 @@ import {
   PAIR_DECIMALS,
   QUERY_KEYS,
 } from "../../stores/constants/constants";
-import tokenlistPls from "../../mainnet-fantom-token-list.json";
+import tokenlistPls from "../../mainnet-base-token-list.json";
 import {
   BaseAsset,
   GovToken,

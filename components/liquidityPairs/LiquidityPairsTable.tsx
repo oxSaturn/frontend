@@ -135,7 +135,7 @@ function EnhancedTableHead(props: {
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.id === "apr" ? (
-                <Tooltip content="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid FVM tokens, whereas the higher for veFVM.">
+                <Tooltip content="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid BVM tokens, whereas the higher for veBVM.">
                   <h5 className="text-xs font-extralight inline-flex items-center">
                     <InfoOutlined className="w-5 mr-1" />
                     {headCell.label}
@@ -245,7 +245,7 @@ const EnhancedTableToolbar = ({
             className="flex w-full flex-[1]"
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder="ETH, WETH, 0x..."
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -556,7 +556,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 noWrap
               >
                 <a
-                  href={`https://dexscreener.com/fantom/${row.address}`}
+                  href={`https://dexscreener.com/base/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"

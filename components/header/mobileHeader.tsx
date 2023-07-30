@@ -17,8 +17,8 @@ function SiteLogo(props: { className?: string }) {
   return (
     <Image
       className={className}
-      src="/images/only_fvm_blue.png"
-      alt="fvm by velocimeter logo"
+      src="/images/only_bvm_blue.png"
+      alt="bvm by velocimeter logo"
       height={357}
       width={1200}
     />
