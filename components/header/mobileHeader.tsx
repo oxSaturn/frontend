@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Image from "next/image";
 import { Badge, Drawer, IconButton } from "@mui/material";
 import { Close, List, Menu as MenuIcon } from "@mui/icons-material";
 
@@ -12,16 +11,11 @@ import TransactionQueue, {
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
 
-function SiteLogo(props: { className?: string }) {
-  const { className } = props;
+function SiteLogo() {
   return (
-    <Image
-      className={className}
-      src="/images/only_bvm_blue.png"
-      alt="bvm by velocimeter logo"
-      height={357}
-      width={1200}
-    />
+    <div className="font-['Monument'] text-cyan">
+      <span>BVM</span>
+    </div>
   );
 }
 
@@ -44,7 +38,7 @@ function Header() {
             onClick={() => router.push("/home")}
             className="flex cursor-pointer items-center justify-center gap-2 rounded-[40px] py-5"
           >
-            <SiteLogo className="h-[38px] w-auto" />
+            <SiteLogo />
           </a>
           <button onClick={() => setOpen((prev) => !prev)}>
             {open ? <Close /> : <MenuIcon />}
