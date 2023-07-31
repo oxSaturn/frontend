@@ -73,6 +73,13 @@ export default function Layout({
                 ),
               },
               {
+                Child: ({ className }: { className: string }) => (
+                  <Link href="/squid-bridge" className={className}>
+                    Squid Bridge
+                  </Link>
+                ),
+              },
+              {
                 href: "https://www.scanto.io/",
                 text: "sCANTO",
               },
