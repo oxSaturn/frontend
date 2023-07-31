@@ -47,7 +47,7 @@ import {
   useStakeData,
 } from "./lib";
 
-const TOKENS = ["oBVM"];
+const TOKENS = ["oBVM", "oSMOOTH"];
 
 interface RedeemTabs {
   LP: string;
