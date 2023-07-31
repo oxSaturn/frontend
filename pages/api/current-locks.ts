@@ -5,6 +5,8 @@ import { fantom } from "viem/chains";
 
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 
+const GOV_TOKEN_GAUGE_ADDRESS = "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52";
+
 const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
 
 const client = createPublicClient({
@@ -52,7 +54,7 @@ export default async function handler(
   const res = await Promise.all(
     [...addys].map(async (d) => {
       const lockEnd = await client.readContract({
-        address: "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52",
+        address: GOV_TOKEN_GAUGE_ADDRESS,
         abi: PRO_OPTIONS.maxxingGaugeABI,
         functionName: "lockEnd",
         args: [d!],

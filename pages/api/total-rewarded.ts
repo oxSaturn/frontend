@@ -16,6 +16,8 @@ interface DefiLlamaTokenPrice {
   };
 }
 
+const GOV_TOKEN_GAUGE_ADDRESS = "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52";
+
 const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
 
 const client = createPublicClient({
@@ -31,7 +33,7 @@ export default async function handler(
   rs: NextApiResponse
 ) {
   const filter = await client.createContractEventFilter({
-    address: "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52",
+    address: GOV_TOKEN_GAUGE_ADDRESS,
     abi: CONTRACTS.GAUGE_ABI,
     fromBlock: 64965262n,
     toBlock: "latest",
@@ -41,7 +43,7 @@ export default async function handler(
   const events = await client.getFilterLogs({ filter });
 
   const totalPayed = events.reduce((acc, curr) => {
-    if (curr.args.reward === "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83") {
+    if (curr.args.reward?.toLowerCase() === W_NATIVE_ADDRESS?.toLowerCase()) {
       return acc + parseFloat(formatEther(curr.args.amount ?? 0n));
     }
     return acc;
