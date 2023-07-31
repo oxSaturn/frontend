@@ -25,6 +25,7 @@ import { formatCurrency } from "../../utils/utils";
 import { VE_BOOSTER_ADRRESS } from "../../stores/constants/contracts";
 
 import { useLatestTxs } from "./useLatestTx";
+import { useEligibleAirdropAmount } from "./useEligibleAirdropAmount";
 
 export function VeBoost() {
   const { address } = useAccount();
@@ -63,6 +64,9 @@ export function VeBoost() {
     token: paymentToken,
     enabled: !!paymentToken && !!address,
   });
+
+  const { data: eligibleAmount, isLoading: isLoadingEligibleAmount } =
+    useEligibleAirdropAmount();
 
   const {
     data: isApprovalNeeded,
@@ -148,6 +152,23 @@ export function VeBoost() {
             <Tooltip content="This transaction will take the amount of wFTM chosen and use it to market buy FVM, then match it with FVM at the rate displayed, and lock all of that in a new veFVM NFT into your wallet.">
               <InfoOutlined />
             </Tooltip>
+          </div>
+          <div className="flex justify-between">
+            <span>AIRDROP AMOUNT</span>
+            <span>
+              {isLoadingEligibleAmount ? (
+                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+              ) : eligibleAmount !== undefined ? (
+                formatCurrency(
+                  (parseFloat(boostedAmount ?? "0") *
+                    parseFloat(matchRate ?? "0")) /
+                    100 +
+                    eligibleAmount
+                )
+              ) : (
+                formatCurrency(0)
+              )}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>Current boost</span>
