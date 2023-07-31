@@ -38,5 +38,21 @@
     "logoURI": "https://base.velocimeter.xyz/images/partners/smooth.png",
     "name": "Smooth",
     "symbol": "SMOOTH"
+  },
+  {
+    "address": "0x9Adf0d2C4fEeAc572AC1e2Ca6a0D453017B5F7D9",
+    "chainId": 8453,
+    "decimals": 18,
+    "logoURI": "https://base.velocimeter.xyz/images/partners/beth.png",
+    "name": "BETH",
+    "symbol": "BETH"
+  },
+  {
+    "address": "0x3FF13895C5449591e3296192649169c9110941F0",
+    "chainId": 8453,
+    "decimals": 18,
+    "logoURI": "https://base.velocimeter.xyz/images/partners/share.png",
+    "name": "SHARE",
+    "symbol": "SHARE"
   }
 ]
