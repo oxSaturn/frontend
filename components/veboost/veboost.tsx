@@ -65,8 +65,11 @@ export function VeBoost() {
     enabled: !!paymentToken && !!address,
   });
 
-  const { data: eligibleAmount, isLoading: isLoadingEligibleAmount } =
-    useEligibleAirdropAmount();
+  const {
+    data: eligibleAmount,
+    isLoading: isLoadingEligibleAmount,
+    refetch: refetchEligibleAirdropAmount,
+  } = useEligibleAirdropAmount();
 
   const {
     data: isApprovalNeeded,
@@ -115,15 +118,16 @@ export function VeBoost() {
   const {
     write: boostedBuy,
     data: boostedBuyTx,
-    isLoading: isWritingStake,
+    isLoading: isWritingBuy,
   } = useVeBoosterBoostedBuyAndVeLock(boostedBillConfig);
 
-  const { isFetching: waitingStakeReceipt } = useWaitForTransaction({
+  const { isFetching: waitingBuyReceipt } = useWaitForTransaction({
     hash: boostedBuyTx?.hash,
     onSuccess: () => {
       setAmount("");
       refetchPaymentBalance();
       refetchAllowance();
+      refetchEligibleAirdropAmount();
     },
   });
 
@@ -236,7 +240,7 @@ export function VeBoost() {
               ) : null}
 
               {!isApprovalNeeded ? (
-                waitingStakeReceipt || isWritingStake ? (
+                waitingBuyReceipt || isWritingBuy ? (
                   <button
                     className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
                     disabled
