@@ -8,6 +8,7 @@ import Link from "next/link";
 import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 export default function Layout({
   children,
@@ -25,9 +26,9 @@ export default function Layout({
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
           name="description"
-          content="FVM by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on fantom."
+          content={`${GOV_TOKEN_SYMBOL} by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on fantom.`}
         />
-        <meta name="og:title" content="FVM" />
+        <meta name="og:title" content={GOV_TOKEN_SYMBOL} />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
       <div className="pointer-events-none fixed left-0 bottom-0 top-0 -z-10 w-screen bg-appBackground bg-cover bg-no-repeat xs:bg-waves" />

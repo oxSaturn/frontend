@@ -21,6 +21,8 @@ import { useVeToken, useVestNfts } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import { VestNFT } from "../../stores/types/types";
 
+import { placeholderOfInput } from "../../stores/constants/constants";
+
 import GaugesTable from "./ssVotesTable";
 
 import {
@@ -255,7 +257,7 @@ export default function Votes() {
             <TextField
               variant="outlined"
               fullWidth
-              placeholder="FTM, WFTM, 0x..."
+              placeholder={placeholderOfInput}
               value={search}
               onChange={onSearchChanged}
               InputProps={{

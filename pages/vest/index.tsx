@@ -2,6 +2,7 @@ import { Typography } from "@mui/material";
 
 import VestsNFTs from "../../components/ssVests/ssVests";
 import { PageWrapper } from "../../components/common/PageWrapper";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 function Vesting() {
   return (
@@ -18,9 +19,9 @@ function Vesting() {
             className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
             variant="body2"
           >
-            Lock your FVM to earn rewards and governance rights. Each locked
-            position is created and represented as an NFT, meaning you can hold
-            multiple locked positions.
+            Lock your {GOV_TOKEN_SYMBOL} to earn rewards and governance rights.
+            Each locked position is created and represented as an NFT, meaning
+            you can hold multiple locked positions.
           </Typography>
         </div>
       }

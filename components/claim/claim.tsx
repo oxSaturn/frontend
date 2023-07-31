@@ -5,7 +5,6 @@ import {
   useNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { fantom } from "wagmi/chains";
 import { formatEther } from "viem";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 
@@ -18,7 +17,8 @@ import {
   useAirdropClaimUserClaimed,
   usePrepareAirdropClaimClaim,
 } from "../../lib/wagmiGen";
-import { EXPLORER_URL } from "../../stores/constants/constants";
+import { EXPLORER_URL, chainToConnect } from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 export function Claim() {
   const [toastOpen, setToastOpen] = useState(false);
@@ -29,7 +29,7 @@ export function Claim() {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -39,7 +39,7 @@ export function Claim() {
     isFetching: isLoadingClaimable,
     refetch: refetchClaimable,
   } = useAirdropClaimClaimable({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
     args: [address!],
     enabled: !!address,
     select: (claimable) => formatEther(claimable),
@@ -47,14 +47,14 @@ export function Claim() {
 
   const { data: claimed, refetch: refetchClaimed } = useAirdropClaimUserClaimed(
     {
-      chainId: fantom.id,
+      chainId: chainToConnect.id,
       args: [address!],
       enabled: !!address,
     }
   );
 
   const { config, isFetching: isPreparingClaim } = usePrepareAirdropClaimClaim({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
     enabled: !!claimable && parseFloat(claimable) > 0,
   });
 
@@ -72,7 +72,7 @@ export function Claim() {
   });
 
   const { isFetching: isWaitingClaim } = useWaitForTransaction({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
     hash: txHash?.hash,
     onSuccess(data) {
       setToastMessage("Transaction confirmed!");
@@ -90,7 +90,9 @@ export function Claim() {
       <div className="mt-20 flex w-96 min-w-[384px] flex-col border border-primary p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
         <div className="flex items-center justify-between">
           <div>Claimable amount</div>
-          <div>{formatCurrency(claimable ?? "0")} veFVM</div>
+          <div>
+            {formatCurrency(claimable ?? "0")} ve{GOV_TOKEN_SYMBOL}
+          </div>
         </div>
         {claimable && parseFloat(claimable) > 0 && (
           <div className="mt-1 font-medium text-success">

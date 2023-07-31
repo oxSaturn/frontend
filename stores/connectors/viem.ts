@@ -5,7 +5,6 @@ import {
   MulticallParameters,
   fallback,
 } from "viem";
-import { fantom } from "wagmi/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
@@ -14,6 +13,8 @@ import {
   rabbyWallet,
   metaMaskWallet,
 } from "@rainbow-me/rainbowkit/wallets";
+
+import { chainToConnect } from "../constants/constants";
 
 const publicNodeRpc = http("https://fantom.publicnode.com");
 const blastApiRpc = http("https://fantom-mainnet.public.blastapi.io");
@@ -24,7 +25,7 @@ const ankrRpc = http("https://rpc.ankr.com/fantom");
 
 // used in store for reading blockchain
 const client = createPublicClient({
-  chain: fantom,
+  chain: chainToConnect,
   transport: fallback([
     publicNodeRpc,
     blastApiRpc,
@@ -40,7 +41,7 @@ const client = createPublicClient({
 
 // rainbow kit set up
 const { chains, publicClient } = configureChains(
-  [fantom],
+  [chainToConnect],
   [
     jsonRpcProvider({
       rpc: () => ({
@@ -124,7 +125,7 @@ export function chunkArray<T>(array: T[], chunkSize = 100): T[][] {
  */
 export async function multicallChunks<
   TContracts extends ContractFunctionConfig[],
-  TAllowFailure extends boolean = true
+  TAllowFailure extends boolean = true,
 >(chunks: MulticallParameters<TContracts, TAllowFailure>["contracts"][]) {
   /* multicall can only handle 100 contracts at a time (approximately)
   so we chunk the array and call multicall multiple times

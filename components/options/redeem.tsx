@@ -29,6 +29,7 @@ import {
   usePrepareOptionTokenExerciseVe,
   useOptionTokenExerciseVe,
 } from "../../lib/wagmiGen";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import { Slider } from "./slider";
 import {
@@ -47,7 +48,7 @@ import {
   useStakeData,
 } from "./lib";
 
-const TOKENS = ["oFVM", "oBLOTR", "oBAY"];
+const TOKENS = [`o${GOV_TOKEN_SYMBOL}`, "oBLOTR", "oBAY"];
 
 interface RedeemTabs {
   LP: string;
@@ -69,7 +70,7 @@ export function Redeem() {
   const [tab, setTab] = useState<(typeof tabs)[keyof typeof tabs]>(tabs.LP);
 
   useEffect(() => {
-    if (underlyingTokenSymbol === "FVM") {
+    if (underlyingTokenSymbol === GOV_TOKEN_SYMBOL) {
       const tabs = {
         LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
         VEST: `ve${underlyingTokenSymbol}`,
