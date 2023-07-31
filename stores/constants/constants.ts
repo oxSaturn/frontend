@@ -44,9 +44,19 @@ export const PRO_OPTIONS = {
 } as const;
 
 /**
+ * define placeholders for inputs on all chains we support
+ */
+const inputPlaceholders: Record<string, string> = {
+  canto: "CANTO, NOTE, 0x...",
+  pulse: "PLS, HEX, 0x...",
+  fantom: "FTM, WFTM, 0x...",
+  base: "ETH, WETH, 0x...",
+  mantle: "WMNT, WETH, 0x...",
+};
+/**
  * chain specific constants
  */
-export const placeholderOfInput = "FTM, WFTM, 0x...";
+export const placeholderOfInput = inputPlaceholders[chain.network];
 export const chainToConnect = chain;
 
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
