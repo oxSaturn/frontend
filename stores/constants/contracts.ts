@@ -57,7 +57,7 @@ export const AUTO_BRIBE_ABI = abis.autoBribeABI;
 export const FAIR_AUCTION_ABI = abis.fairAuctionABI;
 
 export const MSIG_ADDRESS = "0xfA89A4C7F79Dc4111c116a0f01061F4a7D9fAb73"; // base
-// export const MINT_TANK = "0x14Dc007573Ac5dCC94410bc29DCBb4923e54C69d"; // fantom
+export const MINT_TANK = "0x9B5EC2ddCb1BeeBEA5FFe94e6449b4eC56294cBa"; // base
 export const AIRDROP_CLAIM = "0xCEE59eb1E4e28F50D90Bf4897ca1a84d6552AA21"; // fantom
 
 export const VE_BOOSTER_ADRRESS = "0xbD777Af905F603797CFC1E8eBa229DaD26FE4863"; // fantom
