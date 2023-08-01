@@ -91,7 +91,7 @@ export default async function handler(
   }
 
   const totalLocked = filtered.reduce((acc, curr) => {
-    return acc + Number(+curr.formattedAmount);
+    return acc + Number(curr.formattedAmount);
   }, 0);
 
   const boostedAmount = totalLocked / BOOSTED_FACTOR;

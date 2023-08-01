@@ -164,9 +164,8 @@ export function VeBoost() {
                 <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
               ) : eligibleAmount !== undefined ? (
                 formatCurrency(
-                  (parseFloat(boostedAmount ?? "0") *
-                    parseFloat(matchRate ?? "0")) /
-                    100 +
+                  parseFloat(boostedAmount ?? "0") /
+                    (1 + parseFloat(matchRate ?? "0") / 100) +
                     eligibleAmount
                 )
               ) : (
