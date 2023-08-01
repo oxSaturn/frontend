@@ -8,7 +8,10 @@ import {
 import { base } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
+import * as Separator from "@radix-ui/react-separator";
 import dayjs from "dayjs";
+
+import { LoadingSVG } from "../common/LoadingSVG";
 
 import { formatCurrency } from "../../utils/utils";
 import {
@@ -21,7 +24,8 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
-import { PRO_OPTIONS } from "../../stores/constants/constants";
+import { PRO_OPTIONS, W_NATIVE_SYMBOL } from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {
   isValidInput,
@@ -30,6 +34,8 @@ import {
   useTokenData,
   useInputs,
 } from "./lib";
+import { useTotalRewardedAmount } from "./lib/useTotalRewardedAmount";
+import { useCurrentLocksAverage } from "./lib/useCurrentLocksAverage";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -66,6 +72,12 @@ export function Stake() {
   } = useStakeData();
 
   const { data: tokenAprs } = useGaugeApr();
+
+  const { data: totalRewardedAmount, isLoading: isLoadingTotalRewardedAmount } =
+    useTotalRewardedAmount();
+
+  const { data: averageLocks, isLoading: isLoadingLocksData } =
+    useCurrentLocksAverage();
 
   const { data: gaugeAddress } = useOptionTokenGauge({
     address: PRO_OPTIONS[optionToken].tokenAddress,
@@ -236,6 +248,38 @@ export function Stake() {
           <div>Total staked</div>
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
+        {optionToken === `o${GOV_TOKEN_SYMBOL}` && (
+          <div className="flex items-center justify-between">
+            <div>{W_NATIVE_SYMBOL} reward claimed</div>
+            <div>
+              {isLoadingTotalRewardedAmount ? (
+                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+              ) : (
+                `$${formatCurrency(totalRewardedAmount)}`
+              )}
+            </div>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <div>{paymentTokenSymbol} reward left</div>
+          <div>
+            {paymentTokenToDistributeValue === undefined
+              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
+              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
+          </div>
+        </div>
+        {optionToken === `o${GOV_TOKEN_SYMBOL}` && (
+          <div className="flex items-center justify-between">
+            <div>Average lock time</div>
+            <div>
+              {isLoadingLocksData ? (
+                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+              ) : (
+                `${averageLocks ?? "-"}d`
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex items-start justify-between">
           <div>APR</div>
           <div className="flex flex-col">
@@ -268,14 +312,7 @@ export function Stake() {
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <div>{paymentTokenSymbol} reward</div>
-          <div>
-            {paymentTokenToDistributeValue === undefined
-              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
-              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
-          </div>
-        </div>
+        <Separator.Root className="bg-secondary radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full my-[15px]" />
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>
           <div
