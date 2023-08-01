@@ -24,7 +24,11 @@ export default async function handler(
   req: NextApiRequest,
   rs: NextApiResponse
 ) {
-  const { address }: { address: `0x${string}` } = JSON.parse(req.body);
+  const { address }: { address: `0x${string}` | undefined } = JSON.parse(
+    req.body
+  );
+
+  if (!address) return rs.status(200).json(0);
 
   const toBlock = await client.getBlockNumber();
 
