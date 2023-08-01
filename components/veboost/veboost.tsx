@@ -150,7 +150,9 @@ export function VeBoost() {
             <h2 className="text-2xl text-white">
               Buy boosted ve{GOV_TOKEN_SYMBOL}
             </h2>
-            <Tooltip content="This transaction will take the amount of wFTM chosen and use it to market buy {GOV_TOKEN_SYMBOL}, then match it with {GOV_TOKEN_SYMBOL} at the rate displayed, and lock all of that in a new ve{GOV_TOKEN_SYMBOL} NFT into your wallet.">
+            <Tooltip
+              content={`This transaction will take the amount of wFTM chosen and use it to market buy ${GOV_TOKEN_SYMBOL}, then match it with ${GOV_TOKEN_SYMBOL} at the rate displayed, and lock all of that in a new ve${GOV_TOKEN_SYMBOL} NFT into your wallet.`}
+            >
               <InfoOutlined />
             </Tooltip>
           </div>
