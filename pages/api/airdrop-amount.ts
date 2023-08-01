@@ -6,7 +6,7 @@ import { CONTRACTS } from "../../stores/constants/constants";
 import { veBoosterABI } from "../../stores/abis/veBoosterABI";
 
 const FROM_BLOCK = 66450156n;
-const BOOSTED_FACTOR = 0.01;
+const BOOSTED_FACTOR = 1.01;
 const BOOSTED_LOADED = 5_263.157895;
 const AIRDROP_SUPPLY = 90_000;
 
@@ -58,7 +58,7 @@ export default async function handler(
     return acc + Number(+curr.formattedAmount);
   }, 0);
 
-  const boostedAmount = totalLocked * BOOSTED_FACTOR;
+  const boostedAmount = totalLocked / BOOSTED_FACTOR;
 
   const eligible = (boostedAmount / BOOSTED_LOADED) * AIRDROP_SUPPLY;
 

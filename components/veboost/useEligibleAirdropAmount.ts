@@ -19,5 +19,6 @@ export function useEligibleAirdropAmount() {
     staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days
     cacheTime: 1000 * 60 * 10, // 10 minutes
     retry: 5,
+    enabled: !!address,
   });
 }
