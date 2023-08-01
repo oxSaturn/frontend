@@ -260,7 +260,7 @@ function RedeemLiquid({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>{paymentTokenSymbol} balance</div>
         <div>
-          {formatCurrency(paymentBalance?.formatted)} {paymentTokenSymbol}
+          {formatCurrency(paymentBalance?.formatted, 3)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -272,13 +272,13 @@ function RedeemLiquid({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>Strike price</div>
         <div>
-          {formatCurrency(discountedPrice)} {paymentTokenSymbol}
+          {formatCurrency(discountedPrice, 4)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
         <div>{underlyingTokenSymbol} price</div>
         <div>
-          {formatCurrency(optionPrice)} {paymentTokenSymbol}
+          {formatCurrency(optionPrice, 4)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -389,7 +389,7 @@ function RedeemLiquid({ now }: { now: number }) {
           </Tooltip>
         </div>
         <div>
-          {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+          {formatCurrency((parseFloat(payment) * 1.01).toString(), 3)}{" "}
           {paymentTokenSymbol}
         </div>
       </div>
@@ -546,7 +546,7 @@ function RedeemLP({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>{paymentTokenSymbol} balance</div>
         <div>
-          {formatCurrency(paymentBalance?.formatted)} {paymentTokenSymbol}
+          {formatCurrency(paymentBalance?.formatted, 3)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -558,13 +558,13 @@ function RedeemLP({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>Strike price</div>
         <div>
-          {formatCurrency(discountedLpPrice)} {paymentTokenSymbol}
+          {formatCurrency(discountedLpPrice, 4)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
         <div>{underlyingTokenSymbol} price</div>
         <div>
-          {formatCurrency(optionPrice)} {paymentTokenSymbol}
+          {formatCurrency(optionPrice, 4)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -759,13 +759,13 @@ function RedeemLP({ now }: { now: number }) {
             <div className="flex w-full items-center justify-between text-sm">
               <div>To redeem option</div>
               <div>
-                {formatCurrency(paymentAmount)} {paymentTokenSymbol}
+                {formatCurrency(paymentAmount, 3)} {paymentTokenSymbol}
               </div>
             </div>
             <div className="flex w-full items-center justify-between text-sm">
               <div>To create LP</div>
               <div>
-                {formatCurrency(addLiquidityAmount)} {paymentTokenSymbol}
+                {formatCurrency(addLiquidityAmount, 3)} {paymentTokenSymbol}
               </div>
             </div>
             <div className="flex w-full items-center justify-between text-sm">
@@ -776,7 +776,7 @@ function RedeemLP({ now }: { now: number }) {
                 </Tooltip>
               </div>
               <div>
-                {formatCurrency(maxPayment)} {paymentTokenSymbol}
+                {formatCurrency(maxPayment, 3)} {paymentTokenSymbol}
               </div>
             </div>
           </div>
@@ -897,7 +897,7 @@ function RedeemVest({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>{paymentTokenSymbol} balance</div>
         <div>
-          {formatCurrency(paymentBalance?.formatted)} {paymentTokenSymbol}
+          {formatCurrency(paymentBalance?.formatted, 3)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -909,13 +909,13 @@ function RedeemVest({ now }: { now: number }) {
       <div className="flex items-center justify-between">
         <div>Strike price</div>
         <div>
-          {formatCurrency(discountedVePrice)} {paymentTokenSymbol}
+          {formatCurrency(discountedVePrice, 4)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
         <div>{underlyingTokenSymbol} price</div>
         <div>
-          {formatCurrency(optionPrice)} {paymentTokenSymbol}
+          {formatCurrency(optionPrice, 4)} {paymentTokenSymbol}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -1034,7 +1034,7 @@ function RedeemVest({ now }: { now: number }) {
             </Tooltip>
           </div>
           <div>
-            {formatCurrency((parseFloat(payment) * 1.01).toString())}{" "}
+            {formatCurrency((parseFloat(payment) * 1.01).toString(), 3)}{" "}
             {paymentTokenSymbol}
           </div>
         </div>
