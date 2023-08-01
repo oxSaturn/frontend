@@ -8,9 +8,9 @@ const FROM_BLOCK = 66450156;
 const BOOSTED_FACTOR = 1.01;
 const BOOSTED_LOADED = 5_263.157895;
 const AIRDROP_SUPPLY = 90_000;
-const RPC_STEP = 1_024;
+const RPC_STEP = 10_000;
 
-const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
+const blockPiRpc = http("https://rpc.fantom.network/");
 
 const client = createPublicClient({
   chain: fantom,
