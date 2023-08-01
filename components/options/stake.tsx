@@ -250,7 +250,7 @@ export function Stake() {
         </div>
         {optionToken === `o${GOV_TOKEN_SYMBOL}` && (
           <div className="flex items-center justify-between">
-            <div>{W_NATIVE_SYMBOL} rewards claimed</div>
+            <div>{W_NATIVE_SYMBOL} reward claimed</div>
             <div>
               {isLoadingTotalRewardedAmount ? (
                 <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
