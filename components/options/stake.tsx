@@ -23,7 +23,12 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
-import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
+import {
+  PRO_OPTIONS,
+  W_NATIVE_SYMBOL,
+  chainToConnect,
+} from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {
   isValidInput,
@@ -246,7 +251,27 @@ export function Stake() {
           <div>Total staked</div>
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
-        {optionToken === "oFVM" && (
+        {optionToken === `o${GOV_TOKEN_SYMBOL}` && (
+          <div className="flex items-center justify-between">
+            <div>{W_NATIVE_SYMBOL} reward claimed</div>
+            <div>
+              {isLoadingTotalRewardedAmount ? (
+                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+              ) : (
+                `$${formatCurrency(totalRewardedAmount)}`
+              )}
+            </div>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <div>{paymentTokenSymbol} reward left</div>
+          <div>
+            {paymentTokenToDistributeValue === undefined
+              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
+              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
+          </div>
+        </div>
+        {optionToken === `o${GOV_TOKEN_SYMBOL}` && (
           <div className="flex items-center justify-between">
             <div>Average lock time</div>
             <div>
@@ -288,26 +313,6 @@ export function Stake() {
             ) : (
               <div>0.00</div>
             )}
-          </div>
-        </div>
-        {optionToken === "oFVM" && (
-          <div className="flex items-center justify-between">
-            <div>Total rewards produced</div>
-            <div>
-              {isLoadingTotalRewardedAmount ? (
-                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
-              ) : (
-                `$${formatCurrency(totalRewardedAmount)}`
-              )}
-            </div>
-          </div>
-        )}
-        <div className="flex items-center justify-between">
-          <div>{paymentTokenSymbol} reward left</div>
-          <div>
-            {paymentTokenToDistributeValue === undefined
-              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
-              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
           </div>
         </div>
         <Separator.Root className="bg-secondary radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full my-[15px]" />
