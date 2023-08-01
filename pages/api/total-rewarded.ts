@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, formatEther, http } from "viem";
 import { fantom } from "wagmi/chains";
 
-import { CONTRACTS, W_NATIVE_ADDRESS } from "../../stores/constants/constants";
+import { W_NATIVE_ADDRESS } from "../../stores/constants/constants";
 
 interface DefiLlamaTokenPrice {
   coins: {
@@ -18,11 +18,14 @@ interface DefiLlamaTokenPrice {
 
 const GOV_TOKEN_GAUGE_ADDRESS = "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52";
 
-const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
+const FROM_BLOCK = 64965262;
+const RPC_STEP = 10_000;
+
+const rpc = http("https://rpc.fantom.network/");
 
 const client = createPublicClient({
   chain: fantom,
-  transport: blockPiRpc,
+  transport: rpc,
   batch: {
     multicall: true,
   },
@@ -32,17 +35,54 @@ export default async function handler(
   req: NextApiRequest,
   rs: NextApiResponse
 ) {
-  const filter = await client.createContractEventFilter({
-    address: GOV_TOKEN_GAUGE_ADDRESS,
-    abi: CONTRACTS.GAUGE_ABI,
-    fromBlock: 64965262n,
-    toBlock: "latest",
-    eventName: "ClaimRewards",
-  });
+  const toBlock = await client.getBlockNumber();
 
-  const events = await client.getFilterLogs({ filter });
+  const ranges: bigint[][] = [];
 
-  const totalPayed = events.reduce((acc, curr) => {
+  for (let i = FROM_BLOCK; i <= Number(toBlock); i += RPC_STEP) {
+    const rangeEnd = Math.min(i + RPC_STEP - 1, Number(toBlock));
+    ranges.push([BigInt(i), BigInt(rangeEnd)]);
+  }
+
+  const _logs = await Promise.all(
+    ranges.map(async ([from, to]) => {
+      const events = await client.getLogs({
+        address: GOV_TOKEN_GAUGE_ADDRESS,
+        event: {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "reward",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "ClaimRewards",
+          type: "event",
+        },
+        fromBlock: from,
+        toBlock: to,
+      });
+      return events;
+    })
+  );
+
+  const logs = _logs.flat();
+
+  const totalPayed = logs.reduce((acc, curr) => {
     if (curr.args.reward?.toLowerCase() === W_NATIVE_ADDRESS?.toLowerCase()) {
       return acc + parseFloat(formatEther(curr.args.amount ?? 0n));
     }
@@ -52,8 +92,6 @@ export default async function handler(
   const nativePrice = await getDefillamaPriceInStables(
     W_NATIVE_ADDRESS as `0x${string}`
   );
-  console.log(totalPayed);
-  console.log(nativePrice);
 
   rs.status(200).json(totalPayed * nativePrice);
 }

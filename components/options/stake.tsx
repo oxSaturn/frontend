@@ -33,7 +33,7 @@ import {
   useInputs,
 } from "./lib";
 import { useTotalRewardedAmount } from "./lib/useTotalRewardedAmount";
-import { useCurrentLocks } from "./lib/useCurrentLocks";
+import { useCurrentLocksAverage } from "./lib/useCurrentLocksAverage";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -74,7 +74,8 @@ export function Stake() {
   const { data: totalRewardedAmount, isLoading: isLoadingTotalRewardedAmount } =
     useTotalRewardedAmount();
 
-  const { data: locksData, isLoading: isLoadingLocksData } = useCurrentLocks();
+  const { data: averageLocks, isLoading: isLoadingLocksData } =
+    useCurrentLocksAverage();
 
   const { data: gaugeAddress } = useOptionTokenGauge({
     address: PRO_OPTIONS[optionToken].tokenAddress,
@@ -246,28 +247,16 @@ export function Stake() {
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
         {optionToken === "oFVM" && (
-          <>
-            <div className="flex items-center justify-between">
-              <div>Average lock time</div>
-              <div>
-                {isLoadingLocksData ? (
-                  <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
-                ) : (
-                  `${locksData?.average ?? "-"}d`
-                )}
-              </div>
+          <div className="flex items-center justify-between">
+            <div>Average lock time</div>
+            <div>
+              {isLoadingLocksData ? (
+                <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+              ) : (
+                `${averageLocks ?? "-"}d`
+              )}
             </div>
-            <div className="flex items-center justify-between">
-              <div>Median lock time</div>
-              <div>
-                {isLoadingLocksData ? (
-                  <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
-                ) : (
-                  `${locksData?.median ?? "-"}d`
-                )}
-              </div>
-            </div>
-          </>
+          </div>
         )}
         <div className="flex items-start justify-between">
           <div>APR</div>
@@ -314,7 +303,7 @@ export function Stake() {
           </div>
         )}
         <div className="flex items-center justify-between">
-          <div>{paymentTokenSymbol} reward</div>
+          <div>{paymentTokenSymbol} reward left</div>
           <div>
             {paymentTokenToDistributeValue === undefined
               ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)

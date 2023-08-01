@@ -2,14 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useInputs } from "./useInputs";
 
-export function useCurrentLocks() {
+export function useCurrentLocksAverage() {
   const { optionToken } = useInputs();
   return useQuery({
     queryKey: ["currentLocks"],
     queryFn: async () => {
-      const jsonLocksData = await fetch(`/api/current-locks`);
-      const locksData = await jsonLocksData.json();
-      return locksData as { average: string; median: string };
+      const jsonAverageLocksData = await fetch(`/api/current-locks`);
+      const averageLocksData = await jsonAverageLocksData.json();
+      return averageLocksData as string;
     },
     // this is purely because not to spam the nodes
     staleTime: 1000 * 60 * 60 * 24 * 3, // 3 days

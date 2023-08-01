@@ -7,11 +7,14 @@ import { PRO_OPTIONS } from "../../stores/constants/constants";
 
 const GOV_TOKEN_GAUGE_ADDRESS = "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52";
 
-const blockPiRpc = http("https://fantom.blockpi.network/v1/rpc/public");
+const FROM_BLOCK = 64965262;
+const RPC_STEP = 10_000;
+
+const rpc = http("https://rpc.fantom.network/");
 
 const client = createPublicClient({
   chain: fantom,
-  transport: blockPiRpc,
+  transport: rpc,
   batch: {
     multicall: true,
   },
@@ -21,69 +24,94 @@ export default async function handler(
   req: NextApiRequest,
   rs: NextApiResponse
 ) {
-  const filter = await client.createContractEventFilter({
-    address: PRO_OPTIONS.oFVM.tokenAddress,
-    abi: PRO_OPTIONS.optionTokenABI,
-    fromBlock: 64965262n,
-    toBlock: "latest",
-  });
+  const toBlock = await client.getBlockNumber();
 
-  const events = await client.getFilterLogs({ filter });
+  const ranges: bigint[][] = [];
+
+  for (let i = FROM_BLOCK; i <= Number(toBlock); i += RPC_STEP) {
+    const rangeEnd = Math.min(i + RPC_STEP - 1, Number(toBlock));
+    ranges.push([BigInt(i), BigInt(rangeEnd)]);
+  }
+
+  const _logs = await Promise.all(
+    ranges.map(async ([from, to]) => {
+      const events = await client.getLogs({
+        address: PRO_OPTIONS.oFVM.tokenAddress,
+        event: {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "recipient",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "paymentAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "lpAmount",
+              type: "uint256",
+            },
+          ],
+          name: "ExerciseLp",
+          type: "event",
+        },
+        fromBlock: from,
+        toBlock: to,
+      });
+      return events;
+    })
+  );
+
+  const logs = _logs.flat();
 
   const data: {
     sender: `0x${string}` | undefined;
   }[] = [];
 
-  for (const event of events) {
-    if (event.eventName === "ExerciseLp") {
-      data.push({
-        sender: (
-          event.args as {
-            sender?: `0x${string}` | undefined;
-            recipient?: `0x${string}` | undefined;
-            amount?: bigint | undefined;
-            paymentAmount?: bigint | undefined;
-          }
-        ).sender,
-      });
-    }
+  for (const event of logs) {
+    data.push({
+      sender: event.args.sender,
+    });
   }
 
   const addys = new Set(data.map((d) => d.sender!));
 
-  const res = await Promise.all(
-    [...addys].map(async (d) => {
-      const lockEnd = await client.readContract({
-        address: GOV_TOKEN_GAUGE_ADDRESS,
-        abi: PRO_OPTIONS.maxxingGaugeABI,
-        functionName: "lockEnd",
-        args: [d!],
-      });
-
-      return {
-        sender: d,
-        lockTime: dayjs.unix(Number(lockEnd)).diff(dayjs(), "day"),
-      };
-    })
-  );
+  const lockends = await client.multicall({
+    allowFailure: false,
+    contracts: [...addys].map((d) => ({
+      address: GOV_TOKEN_GAUGE_ADDRESS,
+      abi: PRO_OPTIONS.maxxingGaugeABI,
+      functionName: "lockEnd",
+      args: [d!],
+    })),
+  });
 
   const average =
-    res.reduce((acc, curr) => {
-      if (curr.lockTime < 0) return acc;
-      return acc + curr.lockTime;
-    }, 0) / res.length;
+    lockends
+      .map((lockEnd) => dayjs.unix(Number(lockEnd)).diff(dayjs(), "day"))
+      .reduce((acc, curr) => {
+        if (curr < 0) return acc;
+        return acc + curr;
+      }, 0) / lockends.length;
 
-  const sortedLockTimes = res
-    .map((r) => {
-      if (r.lockTime < 0) return 0;
-      return r.lockTime;
-    })
-    .sort((a, b) => a - b);
-  const midpoint = Math.floor(sortedLockTimes.length / 2);
-  const median =
-    sortedLockTimes.length % 2 === 1
-      ? sortedLockTimes[midpoint]
-      : (sortedLockTimes[midpoint - 1] + sortedLockTimes[midpoint]) / 2;
-
-  rs.status(200).json({ median: median.toFixed(), average: average.toFixed() });
+  rs.status(200).json(average.toFixed());
 }
