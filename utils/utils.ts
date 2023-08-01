@@ -4,7 +4,9 @@ import { stringToHex, keccak256 } from "viem";
 
 export function formatCurrency(amount: any, decimals = 2) {
   if (!isNaN(amount)) {
-    if (BigNumber(amount).gt(0) && BigNumber(amount).lt(0.01)) {
+    const comparator = 1 / Math.pow(10, decimals);
+
+    if (BigNumber(amount).gt(0) && BigNumber(amount).lt(comparator)) {
       return "< 0.01";
     }
 
