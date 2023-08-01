@@ -19,7 +19,7 @@ function SiteLogo(props: { className?: string }) {
   return (
     <Image
       className={className}
-      src={`/images/only_${GOV_TOKEN_SYMBOL}_blue.png`}
+      src={`/images/only_${GOV_TOKEN_SYMBOL.toLowerCase()}_blue.png`}
       alt={`${GOV_TOKEN_SYMBOL} by velocimeter logo`}
       height={357}
       width={1200}
