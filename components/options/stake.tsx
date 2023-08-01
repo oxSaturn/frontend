@@ -8,6 +8,7 @@ import {
 import { fantom } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
+import * as Separator from "@radix-ui/react-separator";
 import dayjs from "dayjs";
 
 import { LoadingSVG } from "../common/LoadingSVG";
@@ -310,6 +311,7 @@ export function Stake() {
               : `$${formatCurrency(paymentTokenToDistributeValue)}`}
           </div>
         </div>
+        <Separator.Root className="bg-secondary radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full my-[15px]" />
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>
           <div
