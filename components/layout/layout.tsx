@@ -28,6 +28,14 @@ export default function Layout({
       <div className="flex h-full min-h-screen flex-[1] flex-col">
         {!configure && (
           <>
+            <div className="text-center py-2 bg-[#587B7F] px-5 md:px-0 font-sono">
+              Airdrop on Base and Mantle chains coming! Lock ve
+              {GOV_TOKEN_SYMBOL} with{" "}
+              <Link href="/veboost" className="underline">
+                veBoost
+              </Link>{" "}
+              to qualify.
+            </div>
             <div className="block md:hidden">
               <MobileHeader />
             </div>
