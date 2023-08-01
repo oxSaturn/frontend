@@ -414,7 +414,7 @@ function Swap() {
             </Typography>
           </>
         )}
-        {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
+        {/* {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
           (parseFloat(fromAmountValueUsd) > 0 &&
             parseFloat(toAmountValueUsd) === 0)) && (
           <>
@@ -430,7 +430,7 @@ function Swap() {
               </div>
             </div>
           </>
-        )}
+        )} */}
         <div
           className="flex w-full cursor-pointer items-center justify-between"
           onClick={() => setRoutesOpen(true)}
