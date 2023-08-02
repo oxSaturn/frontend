@@ -26,6 +26,7 @@ import {
   GOV_TOKEN_SYMBOL,
   VE_BOOSTER_ADRRESS,
 } from "../../stores/constants/contracts";
+import { W_NATIVE_SYMBOL } from "../../stores/constants/constants";
 
 import { useLatestTxs } from "./useLatestTx";
 
@@ -151,7 +152,7 @@ export function VeBoost() {
               Buy boosted ve{GOV_TOKEN_SYMBOL}
             </h2>
             <Tooltip
-              content={`This transaction will take the amount of WETH chosen and use it to market buy ${GOV_TOKEN_SYMBOL}, then match it with ${GOV_TOKEN_SYMBOL} at the rate displayed, and lock all of that in a new ve${GOV_TOKEN_SYMBOL} NFT into your wallet.`}
+              content={`This transaction will take the amount of ${W_NATIVE_SYMBOL} chosen and use it to market buy ${GOV_TOKEN_SYMBOL}, then match it with ${GOV_TOKEN_SYMBOL} at the rate displayed, and lock all of that in a new ve${GOV_TOKEN_SYMBOL} NFT into your wallet.`}
             >
               <InfoOutlined />
             </Tooltip>
@@ -175,7 +176,7 @@ export function VeBoost() {
             <span>{formatCurrency(boostedAmount)}</span>
           </div>
           <div className="flex justify-between">
-            <span>{symbol ?? "WETH"} balance</span>
+            <span>{symbol ?? W_NATIVE_SYMBOL} balance</span>
             <span
               className="underline cursor-pointer"
               onClick={() => {
