@@ -28,7 +28,6 @@ import {
   W_NATIVE_SYMBOL,
   chainToConnect,
 } from "../../stores/constants/constants";
-import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {
   isValidInput,
