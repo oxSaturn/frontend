@@ -2,6 +2,7 @@ import { Typography } from "@mui/material";
 
 import Gauges from "../../components/ssVotes/ssVotes";
 import { PageWrapper } from "../../components/common/PageWrapper";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 function Vote() {
   return (
@@ -18,9 +19,9 @@ function Vote() {
             className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
             variant="body2"
           >
-            Use your veFVM to vote for your selected liquidity pair&apos;s
-            rewards distribution or create a bribe to encourage others to do the
-            same.
+            Use your ve{GOV_TOKEN_SYMBOL} to vote for your selected liquidity
+            pair&apos;s rewards distribution or create a bribe to encourage
+            others to do the same.
           </Typography>
         </div>
       }

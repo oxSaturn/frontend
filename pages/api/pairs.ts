@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Aprs, Pair, RouteAsset } from "../../stores/types/types";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 const fuckMultiPairAddress = "0x90102FbbB9226bBD286Da3003ADD03D4178D896e";
 export default async function handler(
@@ -24,13 +25,13 @@ export default async function handler(
         >;
         const filtered = parsed.filter((apr) => {
           if ("min_apr" in apr) {
-            if (apr.symbol !== "oFVM") {
+            if (apr.symbol !== `o${GOV_TOKEN_SYMBOL}`) {
               return apr.min_apr > 0;
             } else {
               return true;
             }
           } else {
-            if (apr.symbol !== "FVM") {
+            if (apr.symbol !== GOV_TOKEN_SYMBOL) {
               return apr.apr > 0;
             } else {
               return true;

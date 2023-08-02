@@ -1,10 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWalletClient, getAccount } from "@wagmi/core";
-import { fantom } from "wagmi/chains";
 
 import viemClient from "../../stores/connectors/viem";
 
-import { CONTRACTS, QUERY_KEYS } from "../../stores/constants/constants";
+import {
+  CONTRACTS,
+  QUERY_KEYS,
+  chainToConnect,
+} from "../../stores/constants/constants";
 import { getTXUUID } from "../../utils/utils";
 import { writeContractWrapper } from "../../lib/global/mutations";
 import { useTransactionStore } from "../transactionQueue/transactionQueue";
@@ -17,7 +20,7 @@ const bribeAutoBribe = async (autoBribeAddress: `0x${string}`) => {
     return null;
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     return null;

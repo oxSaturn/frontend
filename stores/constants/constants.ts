@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { fantom } from "wagmi/chains";
+import { fantom as chain } from "wagmi/chains";
 
 import { maxxingGaugeABI, optionTokenABI } from "../abis/abis";
 
@@ -7,7 +7,7 @@ import * as contracts from "./contracts";
 import * as queryKeys from "./queryKeys";
 
 const config = {
-  [fantom.id]: {
+  [chain.id]: {
     scan: "https://ftmscan.com/",
     contracts: contracts,
     nativeETH: {
@@ -16,7 +16,7 @@ const config = {
       logoURI: contracts.ETH_LOGO,
       name: contracts.ETH_NAME,
       symbol: contracts.ETH_SYMBOL,
-      chainId: fantom.id,
+      chainId: chain.id,
       local: false,
       balance: "0",
     },
@@ -26,9 +26,9 @@ const config = {
   },
 };
 
-export const EXPLORER_URL = config[fantom.id].scan;
+export const EXPLORER_URL = config[chain.id].scan;
 
-export const CONTRACTS = config[fantom.id].contracts;
+export const CONTRACTS = config[chain.id].contracts;
 export const PRO_OPTIONS = {
   optionTokenABI: optionTokenABI,
   maxxingGaugeABI: maxxingGaugeABI,
@@ -43,13 +43,29 @@ export const PRO_OPTIONS = {
   },
 } as const;
 
+/**
+ * define placeholders for inputs on all chains we support
+ */
+const inputPlaceholders: Record<string, string> = {
+  canto: "CANTO, NOTE, 0x...",
+  pulse: "PLS, HEX, 0x...",
+  fantom: "FTM, WFTM, 0x...",
+  base: "ETH, WETH, 0x...",
+  mantle: "WMNT, WETH, 0x...",
+};
+/**
+ * chain specific constants
+ */
+export const placeholderOfInput = inputPlaceholders[chain.network];
+export const chainToConnect = chain;
+
 export const MAX_UINT256 = new BigNumber(2).pow(256).minus(1).toFixed(0);
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-export const NATIVE_TOKEN = config[fantom.id].nativeETH;
-export const W_NATIVE_ADDRESS = config[fantom.id].wNativeAddress;
-export const W_NATIVE_SYMBOL = config[fantom.id].wNativeSymbol;
-export const W_NATIVE_ABI = config[fantom.id].wNativeABI;
+export const NATIVE_TOKEN = config[chain.id].nativeETH;
+export const W_NATIVE_ADDRESS = config[chain.id].wNativeAddress;
+export const W_NATIVE_SYMBOL = config[chain.id].wNativeSymbol;
+export const W_NATIVE_ABI = config[chain.id].wNativeABI;
 
 export const PAIR_DECIMALS = 18;
 export const QUERY_KEYS = queryKeys;

@@ -22,7 +22,12 @@ import {
   useVeBoosterBoostedEvent,
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
-import { VE_BOOSTER_ADRRESS } from "../../stores/constants/contracts";
+import {
+  GOV_TOKEN_SYMBOL,
+  VE_BOOSTER_ADRRESS,
+} from "../../stores/constants/contracts";
+
+import { W_NATIVE_SYMBOL } from "../../stores/constants/constants";
 
 import { useLatestTxs } from "./useLatestTx";
 import { useEligibleAirdropAmount } from "./useEligibleAirdropAmount";
@@ -147,13 +152,17 @@ export function VeBoost() {
   return (
     <div className="mx-5 sm:mx-auto sm:max-w-lg space-y-10 font-sono">
       <h1 className="text-3xl">
-        Buy veFVM with {symbol} and get {matchRate}% boost
+        Buy ve{GOV_TOKEN_SYMBOL} with {symbol} and get {matchRate}% boost
       </h1>
       <div className="space-y-5">
         <div className="bg-green-900 space-y-3 p-5 border border-cyan-900/70 rounded-md">
           <div className="flex justify-between">
-            <h2 className="text-2xl text-white">Buy boosted veFVM</h2>
-            <Tooltip content="This transaction will take the amount of wFTM chosen and use it to market buy FVM, then match it with FVM at the rate displayed, and lock all of that in a new veFVM NFT into your wallet.">
+            <h2 className="text-2xl text-white">
+              Buy boosted ve{GOV_TOKEN_SYMBOL}
+            </h2>
+            <Tooltip
+              content={`This transaction will take the amount of ${W_NATIVE_SYMBOL} chosen and use it to market buy ${GOV_TOKEN_SYMBOL}, then match it with ${GOV_TOKEN_SYMBOL} at the rate displayed, and lock all of that in a new ve${GOV_TOKEN_SYMBOL} NFT into your wallet.`}
+            >
               <InfoOutlined />
             </Tooltip>
           </div>
@@ -179,14 +188,16 @@ export function VeBoost() {
           </div>
           <div className="flex justify-between">
             <span>Booster balance</span>
-            <span>{formatCurrency(balanceInBooster)} FVM</span>
+            <span>
+              {formatCurrency(balanceInBooster)} {GOV_TOKEN_SYMBOL}
+            </span>
           </div>
           <div
             className={`flex justify-between ${
               isFetchingBoostedAmount && "animate-pulse"
             }`}
           >
-            <span>Boosted veFVM amount</span>
+            <span>Boosted ve{GOV_TOKEN_SYMBOL} amount</span>
             <span>{formatCurrency(boostedAmount)}</span>
           </div>
           <div className="flex justify-between">
@@ -244,7 +255,7 @@ export function VeBoost() {
                     className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
                     disabled
                   >
-                    Buying veFVM{" "}
+                    Buying ve{GOV_TOKEN_SYMBOL}{" "}
                     <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
                   </button>
                 ) : (
@@ -264,7 +275,9 @@ export function VeBoost() {
             {latestTxs.length > 0 &&
               latestTxs.map((tx) => (
                 <div key={tx.hash} className="flex justify-between">
-                  <span>{formatCurrency(tx.amount)} veFVM</span>
+                  <span>
+                    {formatCurrency(tx.amount)} ve{GOV_TOKEN_SYMBOL}
+                  </span>
                   <span>
                     {dayjs.unix(parseInt(tx.timestamp ?? "0")).fromNow()}
                   </span>

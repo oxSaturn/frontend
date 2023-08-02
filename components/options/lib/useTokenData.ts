@@ -15,6 +15,8 @@ import {
 } from "../../../lib/wagmiGen";
 import { PRO_OPTIONS } from "../../../stores/constants/constants";
 
+import { GOV_TOKEN_SYMBOL } from "../../../stores/constants/contracts";
+
 import { useInputs } from "./useInputs";
 
 export function useTokenData(lpDiscount?: number) {
@@ -89,10 +91,10 @@ export function useTokenData(lpDiscount?: number) {
     select: (data) => formatEther(data),
   });
   return {
-    optionTokenSymbol: optionTokenSymbol ?? "oFVM",
+    optionTokenSymbol: optionTokenSymbol ?? `o${GOV_TOKEN_SYMBOL}`,
     paymentTokenSymbol: paymentTokenSymbol ?? "WFTM",
     paymentTokenDecimals: paymentTokenDecimals ?? 18,
-    underlyingTokenSymbol: underlyingTokenSymbol ?? "FVM",
+    underlyingTokenSymbol: underlyingTokenSymbol ?? GOV_TOKEN_SYMBOL,
     paymentTokenAddress,
     paymentBalance,
     optionBalance,
