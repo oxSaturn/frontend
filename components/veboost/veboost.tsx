@@ -306,7 +306,7 @@ export function VeBoost() {
             </div>
           </div>
         </div>
-        <div className="flex w-96 min-w-[384px] flex-col gap-2 rounded-md p-5 font-sono text-lime-50 backdrop-blur-sm md:w-[512px] md:min-w-[512px]">
+        <div className="flex w-96 min-w-[384px] flex-col gap-2 rounded-md p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
           <div className="bg-green-900 space-y-3 p-5 border border-cyan-900/70 rounded-md">
             <h2 className="mb-5 text-xl">Airdrop Explainer</h2>
             <p>
