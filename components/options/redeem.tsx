@@ -7,7 +7,6 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { parseEther, parseUnits } from "viem";
-import { fantom } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -18,7 +17,11 @@ import { Select, SelectItem } from "../common/radixSelect";
 import { Tooltip } from "../common/radixTooltip";
 
 import { formatCurrency } from "../../utils/utils";
-import { PRO_OPTIONS, QUERY_KEYS } from "../../stores/constants/constants";
+import {
+  PRO_OPTIONS,
+  QUERY_KEYS,
+  chainToConnect,
+} from "../../stores/constants/constants";
 
 import {
   useOptionTokenExercise,
@@ -165,7 +168,7 @@ function RedeemLiquid({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -415,7 +418,7 @@ function RedeemLP({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -802,7 +805,7 @@ function RedeemVest({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
