@@ -20,6 +20,7 @@ import { Search } from "@mui/icons-material";
 import { useVeToken, useVestNfts } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
 import { VestNFT } from "../../stores/types/types";
+import { placeholderOfInput } from "../../stores/constants/constants";
 
 import GaugesTable from "./ssVotesTable";
 
@@ -255,7 +256,7 @@ export default function Votes() {
             <TextField
               variant="outlined"
               fullWidth
-              placeholder="ETH, WETH, 0x..."
+              placeholder={placeholderOfInput}
               value={search}
               onChange={onSearchChanged}
               InputProps={{

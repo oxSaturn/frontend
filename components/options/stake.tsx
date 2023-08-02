@@ -5,7 +5,6 @@ import {
   useSwitchNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { base } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
 import * as Separator from "@radix-ui/react-separator";
@@ -24,7 +23,11 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
-import { PRO_OPTIONS, W_NATIVE_SYMBOL } from "../../stores/constants/constants";
+import {
+  PRO_OPTIONS,
+  W_NATIVE_SYMBOL,
+  chainToConnect,
+} from "../../stores/constants/constants";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {
@@ -47,7 +50,7 @@ export function Stake() {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: base.id,
+    chainId: chainToConnect.id,
   });
 
   const [amount, setAmount] = useState("");

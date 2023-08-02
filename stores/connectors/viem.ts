@@ -5,7 +5,6 @@ import {
   MulticallParameters,
   fallback,
 } from "viem";
-import { base } from "wagmi/chains";
 import { createConfig, configureChains } from "wagmi";
 import { jsonRpcProvider } from "@wagmi/core/providers/jsonRpc";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
@@ -15,13 +14,15 @@ import {
   metaMaskWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 
+import { chainToConnect } from "../constants/constants";
+
 const publicNodeRpc = http("https://mainnet.base.org");
 const blockPiRpc = http("https://base.blockpi.network/v1/rpc/public");
 const devAccessRpc = http("https://developer-access-mainnet.base.org");
 
 // used in store for reading blockchain
 const client = createPublicClient({
-  chain: base,
+  chain: chainToConnect,
   transport: fallback([publicNodeRpc, devAccessRpc, blockPiRpc]),
   batch: {
     multicall: true,
@@ -30,7 +31,7 @@ const client = createPublicClient({
 
 // rainbow kit set up
 const { chains, publicClient } = configureChains(
-  [base],
+  [chainToConnect],
   [
     jsonRpcProvider({
       rpc: () => ({

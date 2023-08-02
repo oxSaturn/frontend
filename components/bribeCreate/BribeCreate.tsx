@@ -16,7 +16,10 @@ import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import { EXPLORER_URL } from "../../stores/constants/constants";
+import {
+  EXPLORER_URL,
+  placeholderOfInput,
+} from "../../stores/constants/constants";
 import { BaseAsset, Gauge } from "../../stores/types/types";
 import { useRemoveLocalAsset } from "../../lib/global/mutations";
 
@@ -344,7 +347,7 @@ function GaugeSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="ETH, WETH, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -574,7 +577,7 @@ function AssetSelect({
               autoFocus
               variant="outlined"
               fullWidth
-              placeholder="ETH, WETH, 0x..."
+              placeholder={placeholderOfInput}
               value={search}
               onChange={onSearchChanged}
               InputProps={{
@@ -613,7 +616,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="ETH, WETH, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{

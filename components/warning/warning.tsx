@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Dialog } from "@mui/material";
 
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
+
 export default function WarningModal({
   close,
   acceptWarning,
@@ -30,7 +32,8 @@ export default function WarningModal({
         <div className="text-left text-base font-normal text-lime-50">
           You must cast votes each epoch in order to get bribes.
           <br />
-          However, voting weights do carry over to the next epoch and direct BVM
+          However, voting weights do carry over to the next epoch and direct{" "}
+          {GOV_TOKEN_SYMBOL}
           emissions. If you don&apos;t want to change your votes, just press
           &apos;Cast&nbsp;Votes&apos; button.
         </div>

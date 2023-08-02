@@ -1,11 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
-import { base } from "wagmi/chains";
 import { Address, type WalletClient } from "viem";
 
 import viemClient from "../../../stores/connectors/viem";
-import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
+import {
+  CONTRACTS,
+  QUERY_KEYS,
+  chainToConnect,
+} from "../../../stores/constants/constants";
 import {
   Bribe,
   Gauge,
@@ -106,7 +109,7 @@ const claimBribes = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -155,7 +158,7 @@ const claimRewards = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -199,7 +202,7 @@ const claimVeDist = async (account: Address | undefined, tokenID: string) => {
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -244,7 +247,7 @@ const claimAllRewards = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     throw new Error("wallet not found");
   }

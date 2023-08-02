@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from "react";
 
 import { CONTRACTS } from "../../stores/constants/constants";
 import { formatFinancialData } from "../../utils/utils";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {
   useActivePeriod,
@@ -35,7 +36,7 @@ export default function Info() {
       value: `$${formatFinancialData(tbv ?? 0)}`,
     },
     {
-      label: "BVM Price",
+      label: GOV_TOKEN_SYMBOL + " Price",
       value: `$${(
         tokenPrices?.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()) ?? 0
       ).toFixed(3)}`,

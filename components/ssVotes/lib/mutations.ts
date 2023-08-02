@@ -1,12 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { Address, useAccount } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
-import { base } from "wagmi/chains";
 import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
 import { Pair, TransactionStatus, Votes } from "../../../stores/types/types";
-import { CONTRACTS } from "../../../stores/constants/constants";
+import { CONTRACTS, chainToConnect } from "../../../stores/constants/constants";
 import { writeContractWrapper } from "../../../lib/global/mutations";
 import { getTXUUID } from "../../../utils/utils";
 import { usePairs, useVestNfts } from "../../../lib/global/queries";
@@ -48,7 +47,7 @@ const vote = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
