@@ -177,7 +177,7 @@ export function VeBoost() {
             <span>{formatCurrency(boostedAmount)}</span>
           </div>
           <div className="flex justify-between">
-            <span>{symbol ?? "WFTM"} balance</span>
+            <span>{symbol ?? W_NATIVE_SYMBOL} balance</span>
             <span
               className="underline cursor-pointer"
               onClick={() => {
