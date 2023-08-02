@@ -2,7 +2,7 @@ import { PageWrapper } from "../../components/common/PageWrapper";
 import { VeBoost } from "../../components/veboost/veboost";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
-export default function Stake() {
+export default function VeBoostPage() {
   return (
     <PageWrapper
       placeholder={

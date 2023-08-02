@@ -1,6 +1,6 @@
 const BOOSTED_FACTOR = 1.02;
-const BOOSTED_LOADED = 5_263;
-const AIRDROP_SUPPLY = 210_000;
+export const BOOSTED_LOADED = 5_263;
+export const AIRDROP_SUPPLY = 210_000;
 
 export function calculateAirdropAmount(
   totalLocked: number | string | undefined
