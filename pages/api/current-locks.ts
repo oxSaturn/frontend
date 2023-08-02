@@ -1,9 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dayjs from "dayjs";
 import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
 
-import { PRO_OPTIONS } from "../../stores/constants/constants";
+import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 const FROM_BLOCK = 1963125;
 const RPC_STEP = 10_000;
@@ -11,7 +10,7 @@ const RPC_STEP = 10_000;
 const rpc = http("https://mainnet.base.org");
 
 const client = createPublicClient({
-  chain: base,
+  chain: chainToConnect,
   transport: rpc,
   batch: {
     multicall: true,
