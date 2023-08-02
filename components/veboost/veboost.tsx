@@ -156,6 +156,11 @@ export function VeBoost() {
     },
   });
 
+  const boostedAmount =
+    boostedTotal && matchRate
+      ? parseFloat(boostedTotal) -
+        parseFloat(boostedTotal) / (1 + parseFloat(matchRate) / 100)
+      : 0;
   const eligibleIfBuy = calculateAirdropAmount(boostedTotal);
   const eligibleDisplay = eligibleIfBuy + (eligibleAmount ?? 0);
 
@@ -204,6 +209,14 @@ export function VeBoost() {
                 }`}
               >
                 <span>Boosted ve{GOV_TOKEN_SYMBOL} amount</span>
+                <span>{formatCurrency(boostedAmount)}</span>
+              </div>
+              <div
+                className={`flex justify-between ${
+                  isFetchingBoostedTotal && "animate-pulse"
+                }`}
+              >
+                <span>Total ve{GOV_TOKEN_SYMBOL} amount</span>
                 <span>{formatCurrency(boostedTotal)}</span>
               </div>
               <div className="flex justify-between">
@@ -310,7 +323,7 @@ export function VeBoost() {
               on each Base and Mantle.
             </p>
             <div>
-              <p>Your airdrop value:</p>
+              <p>Your airdrop current value:</p>
               <ul>
                 <li className="w-full flex justify-between">
                   on Base{" "}
@@ -318,12 +331,12 @@ export function VeBoost() {
                     $
                     {formatCurrency(
                       (airdropValues?.baseMinValue ?? 0) * eligibleDisplay,
-                      3
+                      0
                     )}
                     -
                     {formatCurrency(
                       (airdropValues?.baseMaxValue ?? 0) * eligibleDisplay,
-                      3
+                      0
                     )}
                   </span>
                 </li>
@@ -333,12 +346,12 @@ export function VeBoost() {
                     $
                     {formatCurrency(
                       (airdropValues?.mantleMinValue ?? 0) * eligibleDisplay,
-                      3
+                      0
                     )}
                     -
                     {formatCurrency(
                       (airdropValues?.mantleMaxValue ?? 0) * eligibleDisplay,
-                      3
+                      0
                     )}
                   </span>
                 </li>
@@ -351,7 +364,7 @@ export function VeBoost() {
                   BVM{" "}
                   <span className="tracking-tighter">
                     {airdropValues
-                      ? `$${formatCurrency(airdropValues.basePrice, 4)}`
+                      ? `$${formatCurrency(airdropValues.basePrice)}`
                       : "loading..."}
                   </span>
                 </li>
@@ -359,7 +372,7 @@ export function VeBoost() {
                   MVM{" "}
                   <span className="tracking-tighter">
                     {airdropValues
-                      ? `$${formatCurrency(airdropValues.mantlePrice, 4)}`
+                      ? `$${formatCurrency(airdropValues.mantlePrice)}`
                       : "loading..."}
                   </span>
                 </li>
