@@ -2,6 +2,7 @@ import { Typography } from "@mui/material";
 
 import SwapComponent from "../../components/swap/swap";
 import { PageWrapper } from "../../components/common/PageWrapper";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 function Swap() {
   return (
@@ -20,7 +21,8 @@ function Swap() {
               className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
               variant="body2"
             >
-              Swap between BVM supported stable and volatile assets.
+              Swap between {GOV_TOKEN_SYMBOL} supported stable and volatile
+              assets.
             </Typography>
           </div>
         </>

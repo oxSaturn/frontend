@@ -7,7 +7,6 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { parseEther, parseUnits } from "viem";
-import { base } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -18,7 +17,11 @@ import { Select, SelectItem } from "../common/radixSelect";
 import { Tooltip } from "../common/radixTooltip";
 
 import { formatCurrency } from "../../utils/utils";
-import { PRO_OPTIONS, QUERY_KEYS } from "../../stores/constants/constants";
+import {
+  PRO_OPTIONS,
+  QUERY_KEYS,
+  chainToConnect,
+} from "../../stores/constants/constants";
 
 import {
   useOptionTokenExercise,
@@ -29,6 +32,7 @@ import {
   usePrepareOptionTokenExerciseVe,
   useOptionTokenExerciseVe,
 } from "../../lib/wagmiGen";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import { Slider } from "./slider";
 import {
@@ -47,7 +51,7 @@ import {
   useStakeData,
 } from "./lib";
 
-const TOKENS = ["oBVM", "oSMOOTH"];
+const TOKENS = [`o${GOV_TOKEN_SYMBOL}`, "oSMOOTH"];
 
 interface RedeemTabs {
   LP: string;
@@ -69,7 +73,7 @@ export function Redeem() {
   const [tab, setTab] = useState<(typeof tabs)[keyof typeof tabs]>(tabs.LP);
 
   useEffect(() => {
-    if (underlyingTokenSymbol === "BVM") {
+    if (underlyingTokenSymbol === GOV_TOKEN_SYMBOL) {
       const tabs = {
         LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
         VEST: `ve${underlyingTokenSymbol}`,
@@ -164,7 +168,7 @@ function RedeemLiquid({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: base.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -414,7 +418,7 @@ function RedeemLP({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: base.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -801,7 +805,7 @@ function RedeemVest({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: base.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();

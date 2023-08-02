@@ -29,7 +29,11 @@ import {
 import BigNumber from "bignumber.js";
 import { isAddress } from "viem";
 
-import { EXPLORER_URL, NATIVE_TOKEN } from "../../stores/constants/constants";
+import {
+  EXPLORER_URL,
+  NATIVE_TOKEN,
+  placeholderOfInput,
+} from "../../stores/constants/constants";
 import { formatCurrency } from "../../utils/utils";
 import {
   BaseAsset,
@@ -1433,7 +1437,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="ETH, WETH, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -1472,7 +1476,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="ETH, WETH, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{

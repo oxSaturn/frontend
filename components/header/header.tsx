@@ -7,6 +7,7 @@ import Navigation from "../navigation/navigation";
 import TransactionQueue, {
   useTransactionStore,
 } from "../transactionQueue/transactionQueue";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import Info from "./info";
 import { ConnectButton } from "./ConnectButton";
@@ -16,8 +17,8 @@ function SiteLogo(props: { className?: string }) {
   return (
     <Image
       className={className}
-      src="/images/bvm_logo_blue.png"
-      alt="bvm by velocimeter logo"
+      src={`/images/${GOV_TOKEN_SYMBOL.toLowerCase()}_logo_blue.png`}
+      alt={`${GOV_TOKEN_SYMBOL} by velocimeter logo`}
       height={357}
       width={1200}
     />

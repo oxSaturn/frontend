@@ -5,7 +5,6 @@ import {
   useSwitchNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { base } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
 import dayjs from "dayjs";
@@ -21,7 +20,7 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
-import { PRO_OPTIONS } from "../../stores/constants/constants";
+import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 import {
   isValidInput,
@@ -41,7 +40,7 @@ export function Stake() {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: base.id,
+    chainId: chainToConnect.id,
   });
 
   const [amount, setAmount] = useState("");
