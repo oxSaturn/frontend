@@ -29,8 +29,9 @@ import {
 
 import { W_NATIVE_SYMBOL } from "../../stores/constants/constants";
 
-import { useLatestTxs } from "./useLatestTx";
-import { useEligibleAirdropAmount } from "./useEligibleAirdropAmount";
+import { useLatestTxs } from "./lib/useLatestTx";
+import { useEligibleAirdropAmount } from "./lib/useEligibleAirdropAmount";
+import { calculateAirdropAmount } from "./lib/calculateAirdropAmount";
 
 export function VeBoost() {
   const { address } = useAccount();
@@ -149,6 +150,8 @@ export function VeBoost() {
     },
   });
 
+  const eligibleIfBuy = calculateAirdropAmount(boostedAmount);
+
   return (
     <div className="mx-5 sm:mx-auto sm:max-w-lg space-y-10 font-sono">
       <h1 className="text-3xl">
@@ -172,11 +175,7 @@ export function VeBoost() {
               {isLoadingEligibleAmount ? (
                 <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
               ) : eligibleAmount !== undefined ? (
-                formatCurrency(
-                  parseFloat(boostedAmount ?? "0") /
-                    (1 + parseFloat(matchRate ?? "0") / 100) +
-                    eligibleAmount
-                )
+                formatCurrency(eligibleIfBuy + eligibleAmount)
               ) : (
                 formatCurrency(0)
               )}

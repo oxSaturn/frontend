@@ -3,11 +3,9 @@ import { createPublicClient, formatEther, http } from "viem";
 import { fantom } from "viem/chains";
 
 import { CONTRACTS } from "../../stores/constants/constants";
+import { calculateAirdropAmount } from "../../components/veboost/lib/calculateAirdropAmount";
 
 const FROM_BLOCK = 66450156;
-const BOOSTED_FACTOR = 1.01;
-const BOOSTED_LOADED = 5_263.157895;
-const AIRDROP_SUPPLY = 90_000;
 const RPC_STEP = 10_000;
 
 const blockPiRpc = http("https://rpc.fantom.network/");
@@ -98,9 +96,7 @@ export default async function handler(
     return acc + Number(curr.formattedAmount);
   }, 0);
 
-  const boostedAmount = totalLocked / BOOSTED_FACTOR;
-
-  const eligible = (boostedAmount / BOOSTED_LOADED) * AIRDROP_SUPPLY;
+  const eligible = calculateAirdropAmount(totalLocked);
 
   rs.status(200).json(eligible);
 }
