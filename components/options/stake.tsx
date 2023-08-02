@@ -23,11 +23,7 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
-import {
-  PRO_OPTIONS,
-  W_NATIVE_SYMBOL,
-  chainToConnect,
-} from "../../stores/constants/constants";
+import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 import {
   isValidInput,
@@ -251,7 +247,7 @@ export function Stake() {
           <div>${formatCurrency(totalStakedValue)}</div>
         </div>
         <div className="flex items-center justify-between">
-          <div>{W_NATIVE_SYMBOL} reward claimed</div>
+          <div>{paymentTokenSymbol} reward claimed</div>
           <div>
             {isLoadingTotalRewardedAmount ? (
               <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
