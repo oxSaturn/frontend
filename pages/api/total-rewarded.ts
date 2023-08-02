@@ -105,7 +105,7 @@ export default async function handler(
 }
 
 async function getDefillamaPriceInStables(tokenAddy: `0x${string}`) {
-  const chainName = "base";
+  const chainName = chainToConnect.name.toLowerCase();
   const chainToken = `${chainName}:${tokenAddy.toLowerCase()}`;
 
   const res = await fetch(
