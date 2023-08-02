@@ -1,8 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createPublicClient, formatEther, http } from "viem";
+import { createPublicClient, formatUnits, http } from "viem";
 import { fantom } from "wagmi/chains";
-
-import { W_NATIVE_ADDRESS } from "../../stores/constants/constants";
 
 interface DefiLlamaTokenPrice {
   coins: {
@@ -16,9 +14,7 @@ interface DefiLlamaTokenPrice {
   };
 }
 
-const GOV_TOKEN_GAUGE_ADDRESS = "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52";
-
-const FROM_BLOCK = 64965262;
+const FROM_BLOCK = 64965262; // gov option token deployment
 const RPC_STEP = 10_000;
 
 const rpc = http("https://rpc.fantom.network/");
@@ -35,6 +31,16 @@ export default async function handler(
   req: NextApiRequest,
   rs: NextApiResponse
 ) {
+  const {
+    gaugeAddress,
+    paymentTokenAddress,
+    paymentTokenDecimals,
+  }: {
+    gaugeAddress: `0x${string}`;
+    paymentTokenAddress: `0x${string}`;
+    paymentTokenDecimals: number;
+  } = JSON.parse(req.body);
+
   const toBlock = await client.getBlockNumber();
 
   const ranges: bigint[][] = [];
@@ -47,7 +53,7 @@ export default async function handler(
   const _logs = await Promise.all(
     ranges.map(async ([from, to]) => {
       const events = await client.getLogs({
-        address: GOV_TOKEN_GAUGE_ADDRESS,
+        address: gaugeAddress,
         event: {
           anonymous: false,
           inputs: [
@@ -83,15 +89,16 @@ export default async function handler(
   const logs = _logs.flat();
 
   const totalPayed = logs.reduce((acc, curr) => {
-    if (curr.args.reward?.toLowerCase() === W_NATIVE_ADDRESS?.toLowerCase()) {
-      return acc + parseFloat(formatEther(curr.args.amount ?? 0n));
+    if (curr.args.reward?.toLowerCase() === paymentTokenAddress.toLowerCase()) {
+      return (
+        acc +
+        parseFloat(formatUnits(curr.args.amount ?? 0n, paymentTokenDecimals))
+      );
     }
     return acc;
   }, 0);
 
-  const nativePrice = await getDefillamaPriceInStables(
-    W_NATIVE_ADDRESS as `0x${string}`
-  );
+  const nativePrice = await getDefillamaPriceInStables(paymentTokenAddress);
 
   rs.status(200).json(totalPayed * nativePrice);
 }

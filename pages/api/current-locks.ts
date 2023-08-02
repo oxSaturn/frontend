@@ -5,9 +5,7 @@ import { fantom } from "viem/chains";
 
 import { PRO_OPTIONS } from "../../stores/constants/constants";
 
-const GOV_TOKEN_GAUGE_ADDRESS = "0xa3643a5d5b672a267199227cd3e95ed0b41dbd52";
-
-const FROM_BLOCK = 64965262;
+const FROM_BLOCK = 64965262; // gov option token deployment
 const RPC_STEP = 10_000;
 
 const rpc = http("https://rpc.fantom.network/");
@@ -24,6 +22,14 @@ export default async function handler(
   req: NextApiRequest,
   rs: NextApiResponse
 ) {
+  const {
+    gaugeAddress,
+    optionTokenAddress,
+  }: {
+    gaugeAddress: `0x${string}`;
+    optionTokenAddress: `0x${string}`;
+  } = JSON.parse(req.body);
+
   const toBlock = await client.getBlockNumber();
 
   const ranges: bigint[][] = [];
@@ -36,7 +42,7 @@ export default async function handler(
   const _logs = await Promise.all(
     ranges.map(async ([from, to]) => {
       const events = await client.getLogs({
-        address: PRO_OPTIONS.oFVM.tokenAddress,
+        address: optionTokenAddress,
         event: {
           anonymous: false,
           inputs: [
@@ -98,7 +104,7 @@ export default async function handler(
   const lockends = await client.multicall({
     allowFailure: false,
     contracts: [...addys].map((d) => ({
-      address: GOV_TOKEN_GAUGE_ADDRESS,
+      address: gaugeAddress,
       abi: PRO_OPTIONS.maxxingGaugeABI,
       functionName: "lockEnd",
       args: [d!],
