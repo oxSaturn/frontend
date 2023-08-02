@@ -3,7 +3,7 @@ import { formatEther } from "viem";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { CONTRACTS } from "../../stores/constants/constants";
+import { CONTRACTS } from "../../../stores/constants/constants";
 
 interface Tx {
   hash: `0x${string}` | null;

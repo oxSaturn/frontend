@@ -3,7 +3,7 @@ import { VeBoost } from "../../components/veboost/veboost";
 import { W_NATIVE_SYMBOL } from "../../stores/constants/constants";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
-export default function Stake() {
+export default function VeBoostPage() {
   return (
     <PageWrapper
       placeholder={
