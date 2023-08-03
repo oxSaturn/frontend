@@ -1,8 +1,7 @@
-import { base } from "viem/chains";
 import BigNumber from "bignumber.js";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { NATIVE_TOKEN } from "../../stores/constants/constants";
+import { NATIVE_TOKEN, chainToConnect } from "../../stores/constants/constants";
 import { QuoteSwapPayload, QuoteSwapResponse } from "../../stores/types/types";
 
 export default async function handler(
@@ -29,7 +28,7 @@ export default async function handler(
 
   try {
     const quote = await fetch(
-      `https://router.firebird.finance/aggregator/v1/route?chainId=${base.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${firebirdSlippage}&receiver=${address}&source=velocimeter&dexes=velocimeter`,
+      `https://router.firebird.finance/aggregator/v1/route?chainId=${chainToConnect.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${firebirdSlippage}&receiver=${address}&source=velocimeter&dexes=velocimeter`,
       {
         method: "GET",
         headers: {

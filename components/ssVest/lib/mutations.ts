@@ -6,7 +6,6 @@ import {
 import { serialize, useAccount } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
 import { Address, formatUnits } from "viem";
-import { base } from "viem/chains";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 
@@ -24,7 +23,11 @@ import {
   TransactionStatus,
   VeToken,
 } from "../../../stores/types/types";
-import { CONTRACTS, QUERY_KEYS } from "../../../stores/constants/constants";
+import {
+  CONTRACTS,
+  QUERY_KEYS,
+  chainToConnect,
+} from "../../../stores/constants/constants";
 import {
   useGovToken,
   usePairs,
@@ -159,7 +162,7 @@ const createVest = async (
     throw new Error("account not found");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -248,7 +251,7 @@ const increaseVestAmount = async (
     throw new Error("");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("");
@@ -346,7 +349,7 @@ const increaseVestDuration = async (
     throw new Error("");
   }
 
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("");
@@ -397,7 +400,7 @@ const resetVest = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -537,7 +540,7 @@ const withdrawVest = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -661,7 +664,7 @@ const transferNft = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
@@ -706,7 +709,7 @@ const mergeNft = async (
     console.warn("account not found");
     throw new Error("account not found");
   }
-  const walletClient = await getWalletClient({ chainId: base.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     console.warn("wallet");
     throw new Error("wallet not found");
