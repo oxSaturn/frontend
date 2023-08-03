@@ -6,7 +6,6 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { formatEther, parseEther } from "viem";
-import { base } from "viem/chains";
 
 import {
   useErc20Allowance,
@@ -17,13 +16,15 @@ import {
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
 
+import { chainToConnect } from "../../stores/constants/constants";
+
 import { isValidInput, useTokenData } from "./lib";
 
 export function Convert() {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: base.id,
+    chainId: chainToConnect.id,
   });
 
   const [amount, setAmount] = useState("");
@@ -118,7 +119,7 @@ export function Convert() {
               className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               onClick={() => switchNetwork?.()}
             >
-              Switch to Base
+              Switch to {chainToConnect.name}
             </button>
           ) : (
             <button
