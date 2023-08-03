@@ -13,6 +13,8 @@ export default async function handler(
     address,
   }: QuoteSwapPayload = JSON.parse(req.body);
 
+  const firebirdSlippage = parseFloat(slippage) / 100;
+
   const sendFromAmount = BigNumber(fromAmount)
     .times(10 ** fromAsset.decimals)
     .toFixed();
@@ -26,7 +28,7 @@ export default async function handler(
 
   try {
     const quote = await fetch(
-      `https://router.firebird.finance/aggregator/v1/route?chainId=${chainToConnect.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${slippage}&receiver=${address}&source=velocimeter&dexes=velocimeter`,
+      `https://router.firebird.finance/aggregator/v1/route?chainId=${chainToConnect.id}&from=${fromAsset.address}&to=${toAsset.address}&amount=${sendFromAmount}&slippage=${firebirdSlippage}&receiver=${address}&source=velocimeter&dexes=velocimeter`,
       {
         method: "GET",
         headers: {
