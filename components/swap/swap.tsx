@@ -20,10 +20,10 @@ import {
 import type { BaseAsset } from "../../stores/types/types";
 import { useTokenPrices } from "../header/lib/queries";
 
-import { useSwapAssets, useQuoteLegacy as useQuote } from "./lib/queries";
-import { useSwapLegacy as useSwap, useWrapOrUnwrap } from "./lib/mutations";
+import { useSwapAssets, useQuote } from "./lib/queries";
+import { useSwap, useWrapOrUnwrap } from "./lib/mutations";
 import { RoutesDialog } from "./routes";
-import { usePriceDiff } from "./lib/usePriceDiff";
+import { usePriceDiff, usePriceImpact } from "./lib/usePriceDiff";
 import { useIsWrapUnwrap } from "./lib/useIsWrapUnwrap";
 
 function Swap() {
@@ -86,7 +86,7 @@ function Swap() {
     fromAssetValue,
     toAssetValue,
     fromAmountValue,
-    // slippage,
+    slippage,
     setToAmountValue,
     setToAmountValueUsd,
     loadingTrade,
@@ -111,6 +111,7 @@ function Swap() {
   }, [fromAssetValue, swapAssetsOptions, toAssetValue]);
 
   const usdDiff = usePriceDiff({ fromAmountValueUsd, toAmountValueUsd });
+  const priceImpact = usePriceImpact({ fromAssetValue, toAssetValue, quote });
 
   const onAssetSelect = (type: string, value: BaseAsset) => {
     if (type === "From") {
@@ -266,8 +267,6 @@ function Swap() {
         quote,
         fromAsset: fromAssetValue,
         toAsset: toAssetValue,
-        fromAmount: fromAmountValue,
-        slippage,
       });
     }
   };
@@ -376,6 +375,12 @@ function Swap() {
         </div>
       );
     }
+    const totalFromInEth = fromAssetValue
+      ? BigNumber(quote.maxReturn.totalFrom).div(10 ** fromAssetValue.decimals)
+      : BigNumber(0);
+    const totalToInEth = toAssetValue
+      ? BigNumber(quote.maxReturn.totalTo).div(10 ** toAssetValue.decimals)
+      : BigNumber(0);
 
     return (
       <div className="mt-3 flex w-full flex-wrap items-center rounded-[10px] p-3">
@@ -386,9 +391,7 @@ function Swap() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.inputs.fromAmount)
-                  .div(quote.output.finalValue ?? "0")
-                  .toFixed(18)
+                BigNumber(totalFromInEth).div(totalToInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-secondary">{`${fromAssetValue?.symbol} per ${toAssetValue?.symbol}`}</Typography>
@@ -396,25 +399,13 @@ function Swap() {
           <div className="flex flex-col items-center justify-center py-6 px-0">
             <Typography className="pb-[6px] text-sm font-bold">
               {formatCurrency(
-                BigNumber(quote.output.finalValue ?? "0")
-                  .div(quote.inputs.fromAmount)
-                  .toFixed(18)
+                BigNumber(totalToInEth).div(totalFromInEth).toFixed(18)
               )}
             </Typography>
             <Typography className="text-xs text-secondary">{`${toAssetValue?.symbol} per ${fromAssetValue?.symbol}`}</Typography>
           </div>
         </div>
-        {BigNumber(quote.priceImpact).gt(5) && (
-          <>
-            <Typography
-              className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500"
-              align="center"
-            >
-              Price impact {formatCurrency(quote.priceImpact)}%
-            </Typography>
-          </>
-        )}
-        {/* {((usdDiff && Math.abs(parseFloat(usdDiff)) > 10) ||
+        {((priceImpact !== undefined && priceImpact > 5) ||
           (parseFloat(fromAmountValueUsd) > 0 &&
             parseFloat(toAmountValueUsd) === 0)) && (
           <>
@@ -424,13 +415,13 @@ function Swap() {
             <div className="grid w-full grid-cols-1">
               <div className="flex flex-col items-center justify-center py-6 px-0 text-sm font-bold text-red-500">
                 Potential low liquidity swap!{" "}
-                {usdDiff !== ""
-                  ? `Price difference is ${usdDiff}%`
+                {priceImpact !== undefined
+                  ? `Price difference is ${priceImpact.toFixed()}%`
                   : "Double check Price Info above"}
               </div>
             </div>
           </>
-        )} */}
+        )}
         <div
           className="flex w-full cursor-pointer items-center justify-between"
           onClick={() => setRoutesOpen(true)}
@@ -540,11 +531,27 @@ function Swap() {
               )}
             </Button>
           </div>
+          <div className="mt-2 text-end text-xs">
+            <span className="align-middle text-secondary">Powered by </span>
+            <a
+              href="https://firebird.finance/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="cursor-pointer grayscale transition-all hover:text-[#f66432] hover:grayscale-0"
+            >
+              <img
+                src="/images/logo-firebird.svg"
+                className="inline"
+                alt="firebird protocol logo"
+              />{" "}
+              <span className="align-middle">Firebird</span>
+            </a>
+          </div>
         </div>
         <RoutesDialog
           onClose={() => setRoutesOpen(false)}
           open={routesOpen}
-          paths={quote}
+          quote={quote}
           fromAssetValue={fromAssetValue}
           fromAmountValue={fromAmountValue}
           toAssetValue={toAssetValue}

@@ -306,9 +306,9 @@ interface QuoteSwapResponse {
     from: `0x${string}`;
     to: `0x${string}`;
     totalFrom: string;
-    totalTo: number;
+    totalTo: string;
     totalGas: number;
-    gasPrice: number;
+    gasPrice: string;
     paths: Path[];
     tokens: FireBirdTokens;
   };

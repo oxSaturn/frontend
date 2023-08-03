@@ -1,4 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { formatUnits } from "viem";
+
+import { BaseAsset, QuoteSwapResponse } from "../../../stores/types/types";
 
 export function usePriceDiff({
   fromAmountValueUsd,
@@ -41,4 +44,49 @@ export function usePriceDiff({
         : increase;
     return diff.toFixed(2);
   }, [fromAmountValueUsd, toAmountValueUsd]);
+}
+
+export function usePriceImpact({
+  quote,
+  fromAssetValue,
+  toAssetValue,
+}: {
+  quote: QuoteSwapResponse | undefined | null;
+  fromAssetValue: BaseAsset | null;
+  toAssetValue: BaseAsset | null;
+}) {
+  const [priceImpact, setPriceImpact] = useState<number>();
+  const fromPrice =
+    fromAssetValue?.address && quote
+      ? quote.maxReturn.tokens[
+          fromAssetValue?.address.toLowerCase() as `0x${string}`
+        ].price *
+        parseFloat(
+          formatUnits(
+            BigInt(quote.maxReturn.totalFrom),
+            fromAssetValue.decimals
+          )
+        )
+      : undefined;
+  const toPrice =
+    toAssetValue?.address && quote
+      ? quote.maxReturn.tokens[
+          toAssetValue?.address.toLowerCase() as `0x${string}`
+        ].price *
+        parseFloat(
+          formatUnits(BigInt(quote.maxReturn.totalTo), toAssetValue.decimals)
+        )
+      : undefined;
+
+  useEffect(() => {
+    if (fromPrice && toPrice) {
+      setPriceImpact(
+        ((fromPrice - toPrice) / fromPrice) * 100 > 0
+          ? ((fromPrice - toPrice) / fromPrice) * 100
+          : ((toPrice - fromPrice) / fromPrice) * 100
+      );
+    }
+  }, [fromPrice, toPrice]);
+
+  return priceImpact;
 }
