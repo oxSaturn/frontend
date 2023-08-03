@@ -1,9 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dayjs from "dayjs";
 import { createPublicClient, http } from "viem";
-import { fantom } from "viem/chains";
 
-import { PRO_OPTIONS } from "../../stores/constants/constants";
+import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 const FROM_BLOCK = 64965262; // gov option token deployment
 const RPC_STEP = 10_000;
@@ -11,7 +10,7 @@ const RPC_STEP = 10_000;
 const rpc = http("https://rpc.fantom.network/");
 
 const client = createPublicClient({
-  chain: fantom,
+  chain: chainToConnect,
   transport: rpc,
   batch: {
     multicall: true,

@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, formatUnits, http } from "viem";
-import { fantom } from "wagmi/chains";
+
+import { chainToConnect } from "../../stores/constants/constants";
 
 interface DefiLlamaTokenPrice {
   coins: {
@@ -20,7 +21,7 @@ const RPC_STEP = 10_000;
 const rpc = http("https://rpc.fantom.network/");
 
 const client = createPublicClient({
-  chain: fantom,
+  chain: chainToConnect,
   transport: rpc,
   batch: {
     multicall: true,
@@ -104,7 +105,7 @@ export default async function handler(
 }
 
 async function getDefillamaPriceInStables(tokenAddy: `0x${string}`) {
-  const chainName = "fantom";
+  const chainName = chainToConnect.name.toLowerCase();
   const chainToken = `${chainName}:${tokenAddy.toLowerCase()}`;
 
   const res = await fetch(
