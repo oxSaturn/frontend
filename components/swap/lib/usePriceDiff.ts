@@ -57,7 +57,7 @@ export function usePriceImpact({
 }) {
   const [priceImpact, setPriceImpact] = useState<number>();
   const fromPrice =
-    fromAssetValue?.address && quote
+    !!fromAssetValue?.address && !!quote
       ? quote.maxReturn.tokens[
           fromAssetValue?.address.toLowerCase() as `0x${string}`
         ].price *
@@ -69,7 +69,7 @@ export function usePriceImpact({
         )
       : undefined;
   const toPrice =
-    toAssetValue?.address && quote
+    !!toAssetValue?.address && !!quote
       ? quote.maxReturn.tokens[
           toAssetValue?.address.toLowerCase() as `0x${string}`
         ].price *
@@ -79,10 +79,10 @@ export function usePriceImpact({
       : undefined;
 
   useEffect(() => {
-    if (fromPrice && toPrice) {
+    if (fromPrice !== undefined && toPrice !== undefined) {
       setPriceImpact(
-        ((fromPrice - toPrice) / fromPrice) * 100 > 0
-          ? ((fromPrice - toPrice) / fromPrice) * 100
+        fromPrice - toPrice > 0
+          ? -1 * ((fromPrice - toPrice) / fromPrice) * 100
           : ((toPrice - fromPrice) / fromPrice) * 100
       );
     }
