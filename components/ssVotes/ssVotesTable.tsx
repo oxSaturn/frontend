@@ -34,7 +34,7 @@ import { Gauge, Vote, VestNFT, Votes } from "../../stores/types/types";
 
 import tokens from "../../tokens.json";
 import { formatTVL } from "../liquidityPairs/LiquidityPairsTable";
-import { EXPLORER_URL } from "../../stores/constants/constants";
+import { EXPLORER_URL, chainToConnect } from "../../stores/constants/constants";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -427,7 +427,7 @@ const VotesRow = memo(function VotesRow({
             <div>
               <Typography variant="h2" className="text-xs font-extralight">
                 <a
-                  href={`https://dexscreener.com/fantom/${row.address}`}
+                  href={`https://dexscreener.com/${chainToConnect.network}/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"

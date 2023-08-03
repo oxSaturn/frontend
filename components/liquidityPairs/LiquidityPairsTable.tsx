@@ -43,6 +43,7 @@ import tokens from "../../tokens.json";
 import { CopyToClipboardButton } from "../common/CopyToClipboardButton";
 import {
   EXPLORER_URL,
+  chainToConnect,
   placeholderOfInput,
 } from "../../stores/constants/constants";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
@@ -562,7 +563,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 noWrap
               >
                 <a
-                  href={`https://dexscreener.com/fantom/${row.address}`}
+                  href={`https://dexscreener.com/${chainToConnect.network}/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"

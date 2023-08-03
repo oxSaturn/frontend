@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, formatEther, http } from "viem";
-import { fantom } from "viem/chains";
 
-import { CONTRACTS } from "../../stores/constants/constants";
+import { CONTRACTS, chainToConnect } from "../../stores/constants/constants";
 import { calculateAirdropAmount } from "../../components/veboost/lib/calculateAirdropAmount";
 
 const FROM_BLOCK = 66450156;
@@ -11,7 +10,7 @@ const RPC_STEP = 10_000;
 const blockPiRpc = http("https://rpc.fantom.network/");
 
 const client = createPublicClient({
-  chain: fantom,
+  chain: chainToConnect,
   transport: blockPiRpc,
   batch: {
     multicall: true,

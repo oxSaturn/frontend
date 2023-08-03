@@ -20,14 +20,14 @@ export function PageWrapper(props: Props) {
             <div className="space-y-2">
               <Typography className="max-w-md text-2xl text-white">
                 {`The chain you're connected to isn't supported. Please
-                check that your wallet is connected to Fantom Mainnet.`}
+                check that your wallet is connected to ${chainToConnect.name} Mainnet.`}
               </Typography>
               <Button
                 className="scale-90 rounded-3xl border border-solid border-green-300 bg-green-300 px-6 pt-3 pb-4 font-bold transition-all duration-300 hover:scale-95 hover:bg-emerald-300"
                 variant="contained"
                 onClick={() => switchNetwork?.()}
               >
-                Switch to Fantom
+                Switch to {chainToConnect.name}
               </Button>
             </div>
           </div>
