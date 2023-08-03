@@ -166,9 +166,15 @@ export function VeBoost() {
 
   return (
     <div className="font-sono">
-      <h1 className="text-3xl text-center">
-        Buy ve{GOV_TOKEN_SYMBOL} with {symbol} and get {matchRate}% boost
-      </h1>
+      <header>
+        <h1 className="text-3xl text-center">
+          veBOOSTER Airdrop on Mantle & Base
+        </h1>
+        <h5 className="text-xl text-center leading-none">
+          Buy ve{GOV_TOKEN_SYMBOL} with {symbol} and get {matchRate}% boost and
+          a share of 3% of total supply on both Mantle & Base
+        </h5>
+      </header>
       <div className="flex flex-wrap items-stretch justify-center gap-5">
         <div className="flex w-96 min-w-[384px] flex-col gap-2 rounded-md p-5 text-lime-50 md:w-[512px] md:min-w-[512px]">
           <div className="space-y-5">
@@ -324,36 +330,69 @@ export function VeBoost() {
             </p>
             <div>
               <p>Your airdrop current value:</p>
-              <ul>
+              <ul className="space-y-5">
                 <li className="w-full flex justify-between">
-                  on Base{" "}
-                  <span className="tracking-tighter">
-                    $
-                    {formatCurrency(
-                      (airdropValues?.baseMinValue ?? 0) * eligibleDisplay,
-                      0
-                    )}
-                    -
-                    {formatCurrency(
-                      (airdropValues?.baseMaxValue ?? 0) * eligibleDisplay,
-                      0
-                    )}
-                  </span>
+                  <span>on Base if redeem to</span>
+                  <ul>
+                    <li>
+                      BVM $
+                      {formatCurrency(
+                        (airdropValues?.baseLiquidValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                    </li>
+                    <li>
+                      BVM/WETH LP $
+                      {formatCurrency(
+                        (airdropValues?.baseMinValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                      -
+                      {formatCurrency(
+                        (airdropValues?.baseMaxValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                    </li>
+                    <li>
+                      veBVM $
+                      {formatCurrency(
+                        (airdropValues?.baseVeValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                    </li>
+                  </ul>
                 </li>
                 <li className="w-full flex justify-between">
-                  on Mantle{" "}
-                  <span className="tracking-tighter">
-                    $
-                    {formatCurrency(
-                      (airdropValues?.mantleMinValue ?? 0) * eligibleDisplay,
-                      0
-                    )}
-                    -
-                    {formatCurrency(
-                      (airdropValues?.mantleMaxValue ?? 0) * eligibleDisplay,
-                      0
-                    )}
-                  </span>
+                  <span>on Mantle if redeem to</span>
+                  <ul>
+                    <li>
+                      MVM $
+                      {formatCurrency(
+                        (airdropValues?.mantleLiquidValue ?? 0) *
+                          eligibleDisplay,
+                        0
+                      )}
+                    </li>
+                    <li>
+                      MVM/WMNT LP $
+                      {formatCurrency(
+                        (airdropValues?.mantleMinValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                      -
+                      {formatCurrency(
+                        (airdropValues?.mantleMaxValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                    </li>
+                    <li>
+                      veMVM $
+                      {formatCurrency(
+                        (airdropValues?.mantleVeValue ?? 0) * eligibleDisplay,
+                        0
+                      )}
+                    </li>
+                  </ul>
                 </li>
               </ul>
             </div>
