@@ -1,11 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dayjs from "dayjs";
 import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
 
-import { PRO_OPTIONS } from "../../stores/constants/constants";
-
-const GOV_TOKEN_GAUGE_ADDRESS = "0x3f5129112754d4fbe7ab228c2d5e312b2bc79a06";
+import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 const FROM_BLOCK = 1963125;
 const RPC_STEP = 10_000;
@@ -13,7 +10,7 @@ const RPC_STEP = 10_000;
 const rpc = http("https://mainnet.base.org");
 
 const client = createPublicClient({
-  chain: base,
+  chain: chainToConnect,
   transport: rpc,
   batch: {
     multicall: true,
@@ -24,6 +21,14 @@ export default async function handler(
   req: NextApiRequest,
   rs: NextApiResponse
 ) {
+  const {
+    gaugeAddress,
+    optionTokenAddress,
+  }: {
+    gaugeAddress: `0x${string}`;
+    optionTokenAddress: `0x${string}`;
+  } = JSON.parse(req.body);
+
   const toBlock = await client.getBlockNumber();
 
   const ranges: bigint[][] = [];
@@ -36,7 +41,7 @@ export default async function handler(
   const _logs = await Promise.all(
     ranges.map(async ([from, to]) => {
       const events = await client.getLogs({
-        address: PRO_OPTIONS.oBVM.tokenAddress,
+        address: optionTokenAddress,
         event: {
           anonymous: false,
           inputs: [
@@ -98,7 +103,7 @@ export default async function handler(
   const lockends = await client.multicall({
     allowFailure: false,
     contracts: [...addys].map((d) => ({
-      address: GOV_TOKEN_GAUGE_ADDRESS,
+      address: gaugeAddress,
       abi: PRO_OPTIONS.maxxingGaugeABI,
       functionName: "lockEnd",
       args: [d!],
