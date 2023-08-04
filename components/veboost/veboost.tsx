@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 
 import { LoadingSVG } from "../common/LoadingSVG";
 import { Tooltip } from "../common/radixTooltip";
+import { Progress } from "../common/radixProgress";
 
 import {
   useErc20Allowance,
@@ -156,6 +157,9 @@ export function VeBoost() {
     },
   });
 
+  const veboosterUsed = balanceInBooster
+    ? ((BOOSTED_LOADED - parseInt(balanceInBooster)) / BOOSTED_LOADED) * 100
+    : undefined;
   const boostedAmount =
     boostedTotal && matchRate
       ? parseFloat(boostedTotal) -
@@ -188,6 +192,13 @@ export function VeBoost() {
                 >
                   <InfoOutlined />
                 </Tooltip>
+              </div>
+              <div className="p-2 pb-0">
+                <Progress progress={veboosterUsed} />
+                <div className="flex justify-start gap-2">
+                  <span>{veboosterUsed ? veboosterUsed.toFixed() : 0} %</span>
+                  <span>of veBooster used</span>
+                </div>
               </div>
               <div className="flex justify-between">
                 <span>AIRDROP AMOUNT</span>
@@ -312,89 +323,143 @@ export function VeBoost() {
             </div>
           </div>
         </div>
-        <div className="flex w-96 min-w-[384px] flex-col gap-2 rounded-md p-5 font-sono text-lime-50 md:w-[512px] md:min-w-[512px]">
+        <div className="flex w-96 min-w-[384px] flex-col gap-2 rounded-md p-5 text-lime-50 md:w-[512px] md:min-w-[512px]">
           <div className="bg-green-900 space-y-3 p-5 border border-cyan-900/70 rounded-md">
-            <h2 className="mb-5 text-xl">Airdrop Explainer</h2>
-            <p>
+            <h2 className="text-xl">Airdrop Explainer</h2>
+            <p className="text-secondary">
               For every 1 ve{GOV_TOKEN_SYMBOL} you got boosted, you will get an
               airdrop of option tokens on Base and Mantle Velocimeter instances.
             </p>
-            <p>
-              Your eligible amount so far is{" "}
+            <div className="flex justify-between">
+              <span>Eligible amount:</span>
               {isLoadingEligibleAmount ? (
                 <LoadingSVG className="animate-spin h-2 w-2 inline" />
               ) : (
-                `${formatCurrency(eligibleDisplay)}`
-              )}{" "}
-              on each Base and Mantle.
-            </p>
+                <span>{formatCurrency(eligibleDisplay)} BVM & MVM</span>
+              )}
+            </div>
             <div>
-              <p>Your airdrop current value:</p>
-              <ul className="space-y-5">
-                <li className="w-full flex justify-between">
-                  <span>on Base if redeem to</span>
-                  <ul>
-                    <li>
-                      BVM $
-                      {formatCurrency(
-                        (airdropValues?.baseLiquidValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                    </li>
-                    <li>
-                      BVM/WETH LP $
-                      {formatCurrency(
-                        (airdropValues?.baseMinValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                      -
-                      {formatCurrency(
-                        (airdropValues?.baseMaxValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                    </li>
-                    <li>
-                      veBVM $
-                      {formatCurrency(
-                        (airdropValues?.baseVeValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                    </li>
-                  </ul>
-                </li>
-                <li className="w-full flex justify-between">
-                  <span>on Mantle if redeem to</span>
-                  <ul>
-                    <li>
-                      MVM $
-                      {formatCurrency(
-                        (airdropValues?.mantleLiquidValue ?? 0) *
-                          eligibleDisplay,
-                        0
-                      )}
-                    </li>
-                    <li>
-                      MVM/WMNT LP $
-                      {formatCurrency(
-                        (airdropValues?.mantleMinValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                      -
-                      {formatCurrency(
-                        (airdropValues?.mantleMaxValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                    </li>
-                    <li>
-                      veMVM $
-                      {formatCurrency(
-                        (airdropValues?.mantleVeValue ?? 0) * eligibleDisplay,
-                        0
-                      )}
-                    </li>
-                  </ul>
-                </li>
-              </ul>
+              <p>
+                Your <span className="tracking-widest">options</span> airdrop
+                current value:
+              </p>
+              <table className="w-full table-auto border-collapse border border-secondary">
+                <thead>
+                  <tr>
+                    <th
+                      className="text-center border border-secondary"
+                      rowSpan={2}
+                    >
+                      Chain
+                    </th>
+                    <th
+                      className="text-center border border-secondary"
+                      colSpan={2}
+                    >
+                      Values
+                    </th>
+                  </tr>
+                  <tr>
+                    <td className="text-center border border-secondary">
+                      Option
+                    </td>
+                    <td className="text-center border border-secondary">
+                      Value
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="text-left border border-secondary">Base</td>
+                    <td className="border border-secondary">
+                      <ul>
+                        <li>Liquid BVM</li>
+                        <li>LP</li>
+                        <li>veBVM</li>
+                      </ul>
+                    </td>
+                    <td className="border border-secondary text-right">
+                      <ul>
+                        <li>
+                          $
+                          {formatCurrency(
+                            (airdropValues?.baseLiquidValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                        </li>
+                        <li>
+                          $
+                          {formatCurrency(
+                            (airdropValues?.baseMinValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                          -
+                          {formatCurrency(
+                            (airdropValues?.baseMaxValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                        </li>
+                        <li>
+                          $
+                          {formatCurrency(
+                            (airdropValues?.baseVeValue ?? 0) * eligibleDisplay,
+                            0
+                          )}
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-left border border-secondary">
+                      Mantle
+                    </td>
+                    <td className="border border-secondary">
+                      <ul>
+                        <li>Liquid MVM</li>
+                        <li>LP</li>
+                        <li>veMVM</li>
+                      </ul>
+                    </td>
+                    <td className="border border-secondary text-right">
+                      <ul>
+                        <li>
+                          $
+                          {formatCurrency(
+                            (airdropValues?.mantleLiquidValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                        </li>
+                        <li>
+                          $
+                          {formatCurrency(
+                            (airdropValues?.mantleMinValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                          -
+                          {formatCurrency(
+                            (airdropValues?.mantleMaxValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                        </li>
+                        <li>
+                          $
+                          {formatCurrency(
+                            (airdropValues?.mantleVeValue ?? 0) *
+                              eligibleDisplay,
+                            0
+                          )}
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
             <div>
               <p>Current prices of Velocimeter:</p>
@@ -422,7 +487,6 @@ export function VeBoost() {
               airdrop_amount = boosted_amount / {BOOSTED_LOADED} *{" "}
               {AIRDROP_SUPPLY}
             </code>
-            <br />
           </div>
         </div>
       </div>
