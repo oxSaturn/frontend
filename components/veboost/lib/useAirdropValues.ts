@@ -29,19 +29,36 @@ export function useAirdropValues() {
       );
       const basePrice = await getDexscreenerPriceInStables(BVM_ADDRESS, "BVM");
 
-      const { baseDiscount, baseVeDiscount, mantleDiscount, mantleVeDiscount } =
-        await airdropOptionsDiscounts();
+      const {
+        baseDiscount,
+        baseVeDiscount,
+        baseMinLpDiscount,
+        baseMaxLpDiscount,
+        mantleDiscount,
+        mantleVeDiscount,
+        mantleMinLpDiscount,
+        mantleMaxLpDiscount,
+      } = await airdropOptionsDiscounts();
 
-      const baseMaxValue = basePrice * (baseVeDiscount / 100);
-      const baseMinValue = basePrice * (baseDiscount / 100);
-      const mantleMaxValue = mantlePrice * (mantleVeDiscount / 100);
-      const mantleMinValue = mantlePrice * (mantleDiscount / 100);
+      const baseVeValue = basePrice * (baseVeDiscount / 100);
+      const baseLiquidValue = basePrice * (baseDiscount / 100);
+      const baseMaxValue = basePrice * (baseMaxLpDiscount / 100);
+      const baseMinValue = basePrice * (baseMinLpDiscount / 100);
+
+      const mantleVeValue = mantlePrice * (mantleVeDiscount / 100);
+      const mantleLiquidValue = mantlePrice * (mantleDiscount / 100);
+      const mantleMaxValue = mantlePrice * (mantleMaxLpDiscount / 100);
+      const mantleMinValue = mantlePrice * (mantleMinLpDiscount / 100);
 
       return {
         baseMaxValue,
         baseMinValue,
+        baseVeValue,
+        baseLiquidValue,
         mantleMaxValue,
         mantleMinValue,
+        mantleVeValue,
+        mantleLiquidValue,
         mantlePrice,
         basePrice,
       };
@@ -81,25 +98,44 @@ async function getDexscreenerPriceInStables(
 }
 
 async function airdropOptionsDiscounts() {
-  const [mantleAsianDiscount, mantleAsianVeDiscount] =
-    await mantleClient.multicall({
-      allowFailure: false,
-      multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
-      contracts: [
-        {
-          address: oMVM_ADDRESS,
-          abi: PRO_OPTIONS.optionTokenABI,
-          functionName: "discount",
-        },
-        {
-          address: oMVM_ADDRESS,
-          abi: PRO_OPTIONS.optionTokenABI,
-          functionName: "veDiscount",
-        },
-      ],
-    });
+  const [
+    mantleAsianDiscount,
+    mantleAsianVeDiscount,
+    mantleAsianMinLpDiscount,
+    mantleAsianMaxLpDiscount,
+  ] = await mantleClient.multicall({
+    allowFailure: false,
+    multicallAddress: "0xcA11bde05977b3631167028862bE2a173976CA11",
+    contracts: [
+      {
+        address: oMVM_ADDRESS,
+        abi: PRO_OPTIONS.optionTokenABI,
+        functionName: "discount",
+      },
+      {
+        address: oMVM_ADDRESS,
+        abi: PRO_OPTIONS.optionTokenABI,
+        functionName: "veDiscount",
+      },
+      {
+        address: oMVM_ADDRESS,
+        abi: PRO_OPTIONS.optionTokenABI,
+        functionName: "minLPDiscount",
+      },
+      {
+        address: oMVM_ADDRESS,
+        abi: PRO_OPTIONS.optionTokenABI,
+        functionName: "maxLPDiscount",
+      },
+    ],
+  });
 
-  const [baseAsianDiscount, baseAsianVeDiscount] = await baseClient.multicall({
+  const [
+    baseAsianDiscount,
+    baseAsianVeDiscount,
+    baseAsianMinLpDiscount,
+    baseAsianMaxLpDiscount,
+  ] = await baseClient.multicall({
     allowFailure: false,
     contracts: [
       {
@@ -112,18 +148,37 @@ async function airdropOptionsDiscounts() {
         abi: PRO_OPTIONS.optionTokenABI,
         functionName: "veDiscount",
       },
+      {
+        address: oBVM_ADDRESS,
+        abi: PRO_OPTIONS.optionTokenABI,
+        functionName: "minLPDiscount",
+      },
+      {
+        address: oBVM_ADDRESS,
+        abi: PRO_OPTIONS.optionTokenABI,
+        functionName: "maxLPDiscount",
+      },
     ],
   });
 
   const mantleDiscount = 100 - Number(mantleAsianDiscount);
   const mantleVeDiscount = 100 - Number(mantleAsianVeDiscount);
+  const mantleMinLpDiscount = 100 - Number(mantleAsianMinLpDiscount);
+  const mantleMaxLpDiscount = 100 - Number(mantleAsianMaxLpDiscount);
+
   const baseDiscount = 100 - Number(baseAsianDiscount);
   const baseVeDiscount = 100 - Number(baseAsianVeDiscount);
+  const baseMinLpDiscount = 100 - Number(baseAsianMinLpDiscount);
+  const baseMaxLpDiscount = 100 - Number(baseAsianMaxLpDiscount);
 
   return {
     mantleDiscount,
     mantleVeDiscount,
+    mantleMinLpDiscount,
+    mantleMaxLpDiscount,
     baseDiscount,
     baseVeDiscount,
+    baseMinLpDiscount,
+    baseMaxLpDiscount,
   };
 }
