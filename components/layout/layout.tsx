@@ -5,6 +5,7 @@ import Header from "../header/header";
 import MobileHeader from "../header/mobileHeader";
 import SnackbarController from "../snackbar/snackbarController";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
+import { chainToConnect } from "../../stores/constants/constants";
 
 export default function Layout({
   children,
@@ -19,7 +20,7 @@ export default function Layout({
         <link rel="icon" href="/images/logo-icon.png" />
         <meta
           name="description"
-          content={`${GOV_TOKEN_SYMBOL} by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on base.`}
+          content={`${GOV_TOKEN_SYMBOL} by Velocimeter allows low cost, near 0 slippage trades on uncorrelated or tightly correlated assets built on ${chainToConnect.name}.`}
         />
         <meta name="og:title" content={GOV_TOKEN_SYMBOL} />
         <meta name="twitter:card" content="summary_large_image" />

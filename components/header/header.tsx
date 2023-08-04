@@ -7,6 +7,7 @@ import Navigation from "../navigation/navigation";
 import TransactionQueue, {
   useTransactionStore,
 } from "../transactionQueue/transactionQueue";
+
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import Info from "./info";

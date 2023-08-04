@@ -7,10 +7,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
+
+import { chainToConnect } from "../stores/constants/constants";
 
 const client = createPublicClient({
-  chain: base,
+  chain: chainToConnect,
   transport: http(),
 });
 const pairFactoryAddress = "0x472f3c3c9608fe0ae8d702f3f8a2d12c410c881a";
