@@ -7,6 +7,7 @@ interface Props {
   children: React.ReactNode;
   placeholder: React.ReactNode;
 }
+
 export function PageWrapper(props: Props) {
   const { address } = useAccount();
   const { chain } = useNetwork();

@@ -1,16 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPublicClient, http, formatUnits } from "viem";
-import { base } from "viem/chains";
 import Cors from "cors";
 
-import { CONTRACTS } from "../../../stores/constants/constants";
+import { CONTRACTS, chainToConnect } from "../../../stores/constants/constants";
 
 const cors = Cors({
   methods: ["GET"],
 });
 
 const publicClient = createPublicClient({
-  chain: base,
+  chain: chainToConnect,
   transport: http("https://mainnet.base.org/"),
 });
 

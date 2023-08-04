@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from "react";
 
 import { CONTRACTS } from "../../stores/constants/constants";
 import { formatFinancialData } from "../../utils/utils";
+
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {

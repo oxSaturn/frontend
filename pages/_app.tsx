@@ -20,6 +20,7 @@ import darkTheme from "../theme/dark";
 import Layout from "../components/layout/layout";
 import { config, chains } from "../stores/connectors/viem";
 import createEmotionCache from "../utils/createEmotionCache";
+import { GOV_TOKEN_SYMBOL } from "../stores/constants/contracts";
 
 import Configure from "./configure";
 
@@ -63,7 +64,7 @@ export default function MyApp({
     <CacheProvider value={emotionCache}>
       <QueryClientProvider client={queryClient}>
         <Head>
-          <title>Based Velocimeter</title>
+          <title>{GOV_TOKEN_SYMBOL}</title>
           <meta
             name="viewport"
             content="minimum-scale=1, initial-scale=1, width=device-width"

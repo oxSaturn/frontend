@@ -15,7 +15,6 @@ import {
   useConvertorRedeem,
 } from "../../lib/wagmiGen";
 import { formatCurrency } from "../../utils/utils";
-
 import { chainToConnect } from "../../stores/constants/constants";
 
 import { isValidInput, useTokenData } from "./lib";
