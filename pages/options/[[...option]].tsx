@@ -56,7 +56,7 @@ function Options() {
       }
     >
       <div className="space-y-5">
-        <h1 className="text-2xl flex px-5 items-center gap-2 w-96 min-w-[384px] md:w-[512px] md:min-w-[512px] lg:w-[calc(1024px+1.25rem)] lg:min-w-[calc(1024px+1.25rem)] mx-auto">
+        <h1 className="font-sono text-base md:text-2xl flex px-5 items-center gap-2 w-96 min-w-[384px] md:w-[512px] md:min-w-[512px] lg:w-[calc(1024px+1.25rem)] lg:min-w-[calc(1024px+1.25rem)] mx-auto">
           <span>Select option token:</span>
           <Select
             value={transformOptionQuery(option)}
