@@ -70,3 +70,5 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm tsc
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096

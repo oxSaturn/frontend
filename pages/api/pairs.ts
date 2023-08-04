@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Aprs, Pair, RouteAsset } from "../../stores/types/types";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
+const fuckMultiPairAddress = "0x90102FbbB9226bBD286Da3003ADD03D4178D896e";
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -23,13 +25,13 @@ export default async function handler(
         >;
         const filtered = parsed.filter((apr) => {
           if ("min_apr" in apr) {
-            if (apr.symbol !== "oFVM") {
+            if (apr.symbol !== `o${GOV_TOKEN_SYMBOL}`) {
               return apr.min_apr > 0;
             } else {
               return true;
             }
           } else {
-            if (apr.symbol !== "FVM") {
+            if (apr.symbol !== GOV_TOKEN_SYMBOL) {
               return apr.apr > 0;
             } else {
               return true;
@@ -88,11 +90,21 @@ export default async function handler(
         );
       }
       tvl += pair.tvl;
-      tbv += pair.gauge?.tbv ?? 0;
+      tbv += pair.gauge?.median_tbv ?? 0;
     }
 
+    const censoredPairs = noScamPairs.map((pair) => {
+      if (pair.address.toLowerCase() === fuckMultiPairAddress.toLowerCase()) {
+        return {
+          ...pair,
+          symbol: "vAMM-WFTM/FMULTI",
+        };
+      }
+      return pair;
+    });
+
     res.status(200).json({
-      data: noScamPairs,
+      data: censoredPairs.map((pair) => transformPairSymbol(pair)),
       prices: [...tokenPricesMap.entries()],
       tvl,
       tbv,
@@ -100,6 +112,18 @@ export default async function handler(
   } catch (e) {
     res.status(200).json({ data: [] });
   }
+}
+export function transformPairSymbol(pair: Pair) {
+  let pairSymbol = pair.stable ? "sAMM" : "vAMM";
+  pairSymbol = pairSymbol + "-";
+
+  const { token0, token1 } = pair;
+
+  pairSymbol = pairSymbol + token0.symbol + "/" + token1.symbol;
+  return {
+    ...pair,
+    symbol: pairSymbol,
+  };
 }
 
 const knownScamPairs = ["0x2b774c36f9657148138fdfd63fb28c314746e002"] as const;

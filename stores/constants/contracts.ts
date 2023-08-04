@@ -7,8 +7,7 @@ export const GOV_TOKEN_ADDRESS = "0x07BB65fAaC502d4996532F834A1B7ba5dC32Ff96"; /
 export const GOV_TOKEN_NAME = "FVM";
 export const GOV_TOKEN_SYMBOL = "FVM";
 export const GOV_TOKEN_DECIMALS = 18;
-export const GOV_TOKEN_LOGO =
-  "https://raw.githubusercontent.com/Velocimeter/frontend/fantom/Frontend-v1-Original/public/tokens/fvm.png?raw=true";
+export const GOV_TOKEN_LOGO = "https://www.fvm.exchange/tokens/fvm.png";
 export const GOV_TOKEN_ABI = abis.tokenABI;
 
 export const VE_TOKEN_ADDRESS = "0xAE459eE7377Fb9F67518047BBA5482C2F0963236"; // fantom
@@ -66,5 +65,5 @@ export const AIRDROP_CLAIM = "0xCEE59eb1E4e28F50D90Bf4897ca1a84d6552AA21"; // fa
 
 // fantom staking FVM contract
 export const STAKING_ADDRESS = "0x0Ddf6B15422e68C892b66173f3026aE36b6C3825"; // fantom
-
+export const VE_BOOSTER_ADRRESS = "0xbD777Af905F603797CFC1E8eBa229DaD26FE4863"; // fantom
 //LFG

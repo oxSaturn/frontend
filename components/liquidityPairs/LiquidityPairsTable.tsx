@@ -12,7 +12,6 @@ import {
   TableSortLabel,
   TablePagination,
   Typography,
-  Tooltip,
   Toolbar,
   IconButton,
   TextField,
@@ -36,9 +35,18 @@ import {
   InfoOutlined,
 } from "@mui/icons-material";
 
+import { Tooltip } from "../common/radixTooltip";
+
 import { formatCurrency } from "../../utils/utils";
 import { Pair, hasGauge, isBaseAsset } from "../../stores/types/types";
 import tokens from "../../tokens.json";
+import { CopyToClipboardButton } from "../common/CopyToClipboardButton";
+import {
+  EXPLORER_URL,
+  chainToConnect,
+  placeholderOfInput,
+} from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -95,14 +103,6 @@ const headCells = [
 
 type OrderBy = (typeof headCells)[number]["id"];
 
-const lzTokensLowerCase = [
-  "0x28a92dde19D9989F39A49905d7C9C2FAc7799bDf",
-  "0xcc1b99dDAc1a33c201a742A1851662E87BC7f22C",
-  "0xf1648C50d2863f780c57849D812b4B7686031A3D",
-  "0x695921034f0387eAc4e11620EE91b1b15A6A09fE",
-  "0x91a40C733c97a6e1BF876EaF9ed8c08102eB491f",
-].map((x) => x.toLowerCase());
-
 function EnhancedTableHead(props: {
   order: "asc" | "desc";
   orderBy: OrderBy;
@@ -140,14 +140,13 @@ function EnhancedTableHead(props: {
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.id === "apr" ? (
-                <Tooltip title="The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid FVM tokens, whereas the higher for veFVM">
-                  <Typography
-                    variant="h5"
-                    className="text-xs font-extralight inline-flex items-center"
-                  >
+                <Tooltip
+                  content={`The below APR ranges indicate the yield that is obtained via the various options exercise possibilites. The lowest number indicated the APR for exercising to liquid ${GOV_TOKEN_SYMBOL} tokens, whereas the higher for ve${GOV_TOKEN_SYMBOL}.`}
+                >
+                  <h5 className="text-xs font-extralight inline-flex items-center">
                     <InfoOutlined className="w-5 mr-1" />
                     {headCell.label}
-                  </Typography>
+                  </h5>
                 </Tooltip>
               ) : (
                 <Typography variant="h5" className="text-xs font-extralight">
@@ -227,27 +226,25 @@ const EnhancedTableToolbar = ({
             </Typography>
           </Button>
           <ul className="flex w-full flex-wrap gap-2 md:flex-nowrap lg:w-auto">
-            {["all", "layer zero", "deposited", "stable", "volatile"].map(
-              (filterOption) => (
-                <li key={filterOption}>
-                  <input
-                    type="radio"
-                    id={filterOption}
-                    name="filter"
-                    value={filterOption}
-                    checked={filter === filterOption}
-                    onChange={onChange}
-                    className="peer hidden"
-                  />
-                  <label
-                    htmlFor={filterOption}
-                    className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
-                  >
-                    <span className="uppercase">{filterOption}</span>
-                  </label>
-                </li>
-              )
-            )}
+            {["all", "deposited", "stable", "volatile"].map((filterOption) => (
+              <li key={filterOption}>
+                <input
+                  type="radio"
+                  id={filterOption}
+                  name="filter"
+                  value={filterOption}
+                  checked={filter === filterOption}
+                  onChange={onChange}
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={filterOption}
+                  className="flex min-h-[56px] min-w-[108px] cursor-pointer items-center justify-center rounded-lg border border-[rgba(255,255,255,0.23)] px-2 font-medium transition-colors hover:bg-emerald-900 peer-checked:border-emerald-900 peer-checked:bg-background peer-checked:font-semibold peer-checked:text-lime-50"
+                >
+                  <span className="uppercase">{filterOption}</span>
+                </label>
+              </li>
+            ))}
           </ul>
         </div>
         <div className="w-full">
@@ -255,7 +252,7 @@ const EnhancedTableToolbar = ({
             className="flex w-full flex-[1]"
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -367,14 +364,6 @@ export default function EnhancedTable({
         .filter((pair) => {
           if (filter === "all") {
             return true;
-          }
-          if (filter === "layer zero") {
-            if (
-              !lzTokensLowerCase.includes(pair.token0_address.toLowerCase()) &&
-              !lzTokensLowerCase.includes(pair.token1_address.toLowerCase())
-            ) {
-              return false;
-            }
           }
           if (filter === "deposited") {
             if (
@@ -574,7 +563,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 noWrap
               >
                 <a
-                  href={`https://dexscreener.com/fantom/${row.address}`}
+                  href={`https://dexscreener.com/${chainToConnect.network}/${row.address}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:underline"
@@ -921,7 +910,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
         )}
         <TableCell align="right">
           {row.isAliveGauge === false && (
-            <Tooltip title="Gauge has been killed">
+            <Tooltip content="Gauge has been killed">
               <WarningOutlined className="ml-2 text-base text-yellow-300" />
             </Tooltip>
           )}
@@ -972,14 +961,17 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                         <>
                           <div className="flex items-center">
                             <a
-                              href={`https://ftmscan.com/address/${token.address}`}
+                              href={`${EXPLORER_URL}address/${token.address}`}
                               target="_blank"
                               rel="noopener noreferrer nofollow"
                               className="text-xs font-extralight transition-all duration-200 hover:text-blue-400 hover:underline"
                             >
                               Contract Address{" "}
-                              <OpenInNewOutlined fontSize="inherit" />
                             </a>
+                            <CopyToClipboardButton
+                              text={token.address}
+                              className="ml-1 text-xs w-3 h-3"
+                            />
                             {info?.homepage ? (
                               <>
                                 ・

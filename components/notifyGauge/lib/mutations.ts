@@ -2,45 +2,52 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatUnits } from "viem";
 import { getAccount, getWalletClient } from "@wagmi/core";
-import { fantom } from "wagmi/chains";
 import BigNumber from "bignumber.js";
 
-import viemClient from "../../stores/connectors/viem";
-import { writeApprove, writeContractWrapper } from "../../lib/global/mutations";
+import viemClient from "../../../stores/connectors/viem";
+import {
+  writeApprove,
+  writeContractWrapper,
+} from "../../../lib/global/mutations";
 
-import { BaseAsset, Gauge, TransactionStatus } from "../../stores/types/types";
+import {
+  BaseAsset,
+  Gauge,
+  TransactionStatus,
+} from "../../../stores/types/types";
 import {
   CONTRACTS,
   QUERY_KEYS,
   ZERO_ADDRESS,
-} from "../../stores/constants/constants";
-import { getTXUUID } from "../../utils/utils";
-import { useTransactionStore } from "../transactionQueue/transactionQueue";
+  chainToConnect,
+} from "../../../stores/constants/constants";
+import { getTXUUID } from "../../../utils/utils";
+import { useTransactionStore } from "../../transactionQueue/transactionQueue";
 
-export function useCreateBribe() {
-  const [createLoading, setCreateLoading] = useState(false);
+export function useNotifyGauge() {
+  const [notifyLoading, setNotifyLoading] = useState(false);
 
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: createBribe,
+    mutationFn: notifyGauge,
     onMutate: () => {
-      setCreateLoading(true);
+      setNotifyLoading(true);
     },
     onSuccess: () => {
-      setCreateLoading(false);
+      setNotifyLoading(false);
       queryClient.invalidateQueries([QUERY_KEYS.GOV_TOKEN]);
       queryClient.invalidateQueries([QUERY_KEYS.BASE_ASSET_INFO]);
     },
     onError: () => {
-      setCreateLoading(false);
+      setNotifyLoading(false);
     },
   });
 
-  return { ...mutation, createLoading };
+  return { ...mutation, notifyLoading };
 }
 
-const createBribe = async (options: {
+const notifyGauge = async (options: {
   asset: BaseAsset | null;
   amount: string;
   gauge: Gauge | null;
@@ -50,7 +57,7 @@ const createBribe = async (options: {
     throw new Error("No account found");
   }
 
-  const walletClient = await getWalletClient({ chainId: fantom.id });
+  const walletClient = await getWalletClient({ chainId: chainToConnect.id });
   if (!walletClient) {
     throw new Error("No wallet client found");
   }
@@ -61,13 +68,13 @@ const createBribe = async (options: {
     throw new Error("Asset or Gauge not found");
   }
 
-  if (gauge.gauge.bribeAddress === ZERO_ADDRESS) {
+  if (gauge.gauge.address === ZERO_ADDRESS) {
     throw new Error("Bribe address not found");
   }
 
   // ADD TRNASCTIONS TO TRANSACTION QUEUE DISPLAY
   let allowanceTXID = getTXUUID();
-  let bribeTXID = getTXUUID();
+  let notifyTXID = getTXUUID();
 
   useTransactionStore.getState().updateTransactionQueue({
     transactions: [
@@ -77,20 +84,20 @@ const createBribe = async (options: {
         status: TransactionStatus.WAITING,
       },
       {
-        uuid: bribeTXID,
-        description: `Create bribe`,
+        uuid: notifyTXID,
+        description: `Notify gauge`,
         status: TransactionStatus.WAITING,
       },
     ],
   });
 
   // CHECK ALLOWANCES AND SET TX DISPLAY
-  const allowance = await getBribeAllowance(asset, gauge, account);
+  const allowance = await getNotifyAllowance(asset, gauge, account);
   if (!allowance) throw new Error("Error getting bribe allowance");
   if (BigNumber(allowance).lt(amount)) {
     useTransactionStore.getState().updateTransactionStatus({
       uuid: allowanceTXID,
-      description: `Allow the bribe contract to spend your ${asset.symbol}`,
+      description: `Allow the gauge contract to spend your ${asset.symbol}`,
       status: TransactionStatus.WAITING,
     });
   } else {
@@ -107,7 +114,7 @@ const createBribe = async (options: {
       walletClient,
       allowanceTXID,
       asset.address,
-      gauge.gauge.bribeAddress
+      gauge.gauge.address
     );
   }
 
@@ -116,10 +123,10 @@ const createBribe = async (options: {
     .toFixed(0);
 
   // SUBMIT BRIBE TRANSACTION
-  const writeCreateBribe = async () => {
+  const writeNotifyGauge = async () => {
     const { request } = await viemClient.simulateContract({
       account,
-      address: gauge.gauge.bribeAddress,
+      address: gauge.gauge.address,
       abi: CONTRACTS.BRIBE_ABI,
       functionName: "notifyRewardAmount",
       args: [asset.address, BigInt(sendAmount)],
@@ -127,10 +134,10 @@ const createBribe = async (options: {
     const txHash = await walletClient.writeContract(request);
     return txHash;
   };
-  await writeContractWrapper(bribeTXID, writeCreateBribe);
+  await writeContractWrapper(notifyTXID, writeNotifyGauge);
 };
 
-const getBribeAllowance = async (
+const getNotifyAllowance = async (
   token: BaseAsset,
   pair: Gauge,
   address: `0x${string}`
@@ -140,7 +147,7 @@ const getBribeAllowance = async (
       address: token.address,
       abi: CONTRACTS.ERC20_ABI,
       functionName: "allowance",
-      args: [address, pair.gauge.bribeAddress],
+      args: [address, pair.gauge.address],
     });
 
     return formatUnits(allowance, token.decimals);

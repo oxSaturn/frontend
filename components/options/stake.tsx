@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useAccount,
   useNetwork,
   useSwitchNetwork,
   useWaitForTransaction,
 } from "wagmi";
-import { fantom } from "wagmi/chains";
 import { formatEther, parseEther } from "viem";
 import * as Switch from "@radix-ui/react-switch";
+import * as Separator from "@radix-ui/react-separator";
 import dayjs from "dayjs";
+
+import { LoadingSVG } from "../common/LoadingSVG";
 
 import { formatCurrency } from "../../utils/utils";
 import {
@@ -21,7 +23,7 @@ import {
   usePrepareErc20Approve,
   useOptionTokenGauge,
 } from "../../lib/wagmiGen";
-import { PRO_OPTIONS } from "../../stores/constants/constants";
+import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 import {
   isValidInput,
@@ -30,6 +32,8 @@ import {
   useTokenData,
   useInputs,
 } from "./lib";
+import { useTotalRewardedAmount } from "./lib/useTotalRewardedAmount";
+import { useCurrentLocksAverage } from "./lib/useCurrentLocksAverage";
 
 const ACTION = {
   STAKE: "STAKE",
@@ -41,7 +45,7 @@ export function Stake() {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const [amount, setAmount] = useState("");
@@ -66,6 +70,12 @@ export function Stake() {
   } = useStakeData();
 
   const { data: tokenAprs } = useGaugeApr();
+
+  const { data: totalRewardedAmount, isLoading: isLoadingTotalRewardedAmount } =
+    useTotalRewardedAmount();
+
+  const { data: averageLocks, isLoading: isLoadingLocksData } =
+    useCurrentLocksAverage();
 
   const { data: gaugeAddress } = useOptionTokenGauge({
     address: PRO_OPTIONS[optionToken].tokenAddress,
@@ -161,14 +171,21 @@ export function Stake() {
         setAmount(pooledBalance.formatted);
       }
     } else {
-      if (stakedBalance && parseFloat(stakedBalance) > 0) {
-        setAmount(stakedBalance);
+      if (
+        stakedBalanceWithoutLock &&
+        parseFloat(stakedBalanceWithoutLock) > 0
+      ) {
+        setAmount(stakedBalanceWithoutLock);
       }
     }
   };
 
-  const pickWithdrawAmount = (type: "locked" | "notLocked") => {
+  const pickWithdrawAmount = (type: "locked" | "notLocked" | "all") => {
     if (action === ACTION.STAKE) return;
+    if (type === "all") {
+      setAmount(stakedBalance ?? "0");
+      return;
+    }
     if (type === "notLocked") {
       if (
         stakedBalanceWithoutLock &&
@@ -195,6 +212,10 @@ export function Stake() {
       ? pooledBalance &&
         parseFloat(amount) > parseFloat(pooledBalance.formatted)
       : stakedBalance && parseFloat(amount) > parseFloat(stakedBalance);
+
+  const isLockExpired = useMemo(() => {
+    return stakedLockEnd && stakedLockEnd < dayjs().unix() ? true : false;
+  }, [stakedLockEnd]);
 
   return (
     <>
@@ -224,6 +245,34 @@ export function Stake() {
         <div className="flex items-center justify-between">
           <div>Total staked</div>
           <div>${formatCurrency(totalStakedValue)}</div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>{paymentTokenSymbol} reward claimed</div>
+          <div>
+            {isLoadingTotalRewardedAmount ? (
+              <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+            ) : (
+              `$${formatCurrency(totalRewardedAmount)}`
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>{paymentTokenSymbol} reward left</div>
+          <div>
+            {paymentTokenToDistributeValue === undefined
+              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
+              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>Average lock time</div>
+          <div>
+            {isLoadingLocksData ? (
+              <LoadingSVG className="animate-spin h-5 w-5 ml-1" />
+            ) : (
+              `${averageLocks ?? "-"}d`
+            )}
+          </div>
         </div>
         <div className="flex items-start justify-between">
           <div>APR</div>
@@ -257,33 +306,32 @@ export function Stake() {
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <div>{paymentTokenSymbol} reward</div>
-          <div>
-            {paymentTokenToDistributeValue === undefined
-              ? formatCurrency(paymentTokenBalanceToDistribute ?? 0)
-              : `$${formatCurrency(paymentTokenToDistributeValue)}`}
-          </div>
-        </div>
+        <Separator.Root className="bg-secondary radix-orientation-horizontal:h-px radix-orientation-horizontal:w-full my-[15px]" />
         <div className="flex items-center justify-between">
           <div>Staked without lock</div>
           <div
-            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
-            onClick={() => pickWithdrawAmount("notLocked")}
+            className={`${
+              action === ACTION.WITHDRAW && "cursor-pointer underline"
+            }`}
+            onClick={() =>
+              pickWithdrawAmount(isLockExpired ? "all" : "notLocked")
+            }
           >
-            ${formatCurrency(stakedWithoutLockValue)}
+            $
+            {formatCurrency(
+              isLockExpired
+                ? (stakedWithLockValue ?? 0) + (stakedWithoutLockValue ?? 0)
+                : stakedWithoutLockValue
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between">
           <div>Staked with lock</div>
-          <div
-            className={`${action === ACTION.WITHDRAW && "cursor-pointer"}`}
-            onClick={() => pickWithdrawAmount("locked")}
-          >
-            ${formatCurrency(stakedWithLockValue)}
+          <div>
+            ${formatCurrency(isLockExpired ? 0 : stakedWithLockValue ?? 0)}
           </div>
         </div>
-        {stakedLockEnd ? (
+        {!isLockExpired && stakedLockEnd ? (
           <div className="flex items-center justify-between">
             <div>Lock end</div>
             <div>{dayjs.unix(stakedLockEnd).format("YYYY-MM-DD HH:mm:ss")}</div>
@@ -291,7 +339,14 @@ export function Stake() {
         ) : null}
         <div className="flex items-center justify-between">
           <div>Pooled balance</div>
-          <div>{pooledBalance?.formatted}</div>
+          <div
+            className={`${
+              action === ACTION.STAKE && "cursor-pointer underline"
+            }`}
+            onClick={() => setMax()}
+          >
+            {pooledBalance?.formatted}
+          </div>
         </div>
         <div className="my-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -316,7 +371,7 @@ export function Stake() {
               className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
               onClick={() => switchNetwork?.()}
             >
-              Switch to fantom
+              Switch to {chainToConnect.name}
             </button>
           ) : (
             <button

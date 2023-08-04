@@ -16,13 +16,16 @@ import { Search, ArrowBack, DeleteOutline } from "@mui/icons-material";
 import BigNumber from "bignumber.js";
 
 import { formatCurrency } from "../../utils/utils";
-import { ETHERSCAN_URL } from "../../stores/constants/constants";
+import {
+  EXPLORER_URL,
+  placeholderOfInput,
+} from "../../stores/constants/constants";
 import { BaseAsset, Gauge } from "../../stores/types/types";
 import { useRemoveLocalAsset } from "../../lib/global/mutations";
 
 import { useBaseAssetWithInfoNoNative, useGauges } from "./queries";
 import { useCreateBribe } from "./mutations";
-import classes from "./ssBribeCreate.module.css";
+import classes from "./bribeCreate.module.css";
 
 export default function BribeCreate() {
   const router = useRouter();
@@ -344,7 +347,7 @@ function GaugeSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{
@@ -475,7 +478,7 @@ function AssetSelect({
   };
 
   const viewOption = (token: BaseAsset) => {
-    window.open(`${ETHERSCAN_URL}token/${token.address}`, "_blank");
+    window.open(`${EXPLORER_URL}token/${token.address}`, "_blank");
   };
 
   const renderManageOption = (asset: BaseAsset, idx: number) => {
@@ -574,7 +577,7 @@ function AssetSelect({
               autoFocus
               variant="outlined"
               fullWidth
-              placeholder="FTM, WFTM, 0x..."
+              placeholder={placeholderOfInput}
               value={search}
               onChange={onSearchChanged}
               InputProps={{
@@ -613,7 +616,7 @@ function AssetSelect({
             autoFocus
             variant="outlined"
             fullWidth
-            placeholder="FTM, WFTM, 0x..."
+            placeholder={placeholderOfInput}
             value={search}
             onChange={onSearchChanged}
             InputProps={{

@@ -1,7 +1,13 @@
 import { parseUnits } from "viem";
 import { create } from "zustand";
 
-import { type oToken as OptionToken } from "../../../stores/constants/constants";
+import { PRO_OPTIONS } from "../../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../../stores/constants/contracts";
+
+type OptionToken = Exclude<
+  keyof typeof PRO_OPTIONS,
+  "optionTokenABI" | "maxxingGaugeABI"
+>;
 
 export const INPUT = {
   OPTION: "0",
@@ -22,7 +28,7 @@ interface UseInputs {
 }
 
 export const useInputs = create<UseInputs>((set) => ({
-  optionToken: "oFVM",
+  optionToken: `o${GOV_TOKEN_SYMBOL}`,
   option: "",
   payment: "",
   activeInput: INPUT.OPTION,

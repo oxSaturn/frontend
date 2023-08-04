@@ -1,7 +1,8 @@
 import { Typography, SvgIcon } from "@mui/material";
 
-import SSBribes from "../../components/ssBribes/ssBribes";
+import SSBribes from "../../components/bribes/Bribes";
 import { PageWrapper } from "../../components/common/PageWrapper";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 function BalanceIcon({ className }: { className: string }) {
   return (
@@ -80,8 +81,9 @@ function Bribes() {
             className="my-7 mx-auto max-w-3xl text-center text-base text-secondary sm:text-lg"
             variant="body2"
           >
-            Use your veFVM to vote for your selected pool&apos;s rewards
-            distribution or create a bribe to encourage others to do the same.
+            Use your ve{GOV_TOKEN_SYMBOL} to vote for your selected pool&apos;s
+            rewards distribution or create a bribe to encourage others to do the
+            same.
           </Typography>
         </>
       }

@@ -19,8 +19,9 @@ import { Search } from "@mui/icons-material";
 
 import { useVeToken, useVestNfts } from "../../lib/global/queries";
 import { formatCurrency } from "../../utils/utils";
-import WarningModal from "../warning/warning";
 import { VestNFT } from "../../stores/types/types";
+
+import { placeholderOfInput } from "../../stores/constants/constants";
 
 import GaugesTable from "./ssVotesTable";
 
@@ -49,8 +50,6 @@ function MyListSubheader(props: ListSubheaderProps) {
 MyListSubheader.muiSkipListHighlight = true;
 
 export default function Votes() {
-  const [showWarning, setShowWarning] = useState(false);
-
   const [token, setToken] = useState<VestNFT>(initialEmptyToken);
   const [search, setSearch] = useState("");
 
@@ -63,6 +62,14 @@ export default function Votes() {
   const { mutate: vote, isLoading: voteLoading } = useVote();
 
   useEffect(() => {
+    if (token.id !== initialEmptyToken.id) {
+      // if user has selected a token, we don't want to change it
+      // just re set the same token to update token data
+      setToken(
+        vestNFTs?.find((nft) => nft.id === token.id) || initialEmptyToken
+      );
+      return;
+    }
     if (vestNFTs && vestNFTs.length > 0) {
       const votableNFTs = vestNFTs.filter(
         (nft) => nft.votedInCurrentEpoch === false
@@ -73,30 +80,13 @@ export default function Votes() {
         setToken(vestNFTs[0]);
       }
     }
-  }, [vestNFTs]);
-
-  useEffect(() => {
-    const localStorageWarningAccepted =
-      window.localStorage.getItem("voting.warning");
-    if (
-      !localStorageWarningAccepted ||
-      localStorageWarningAccepted !== "accepted"
-    ) {
-      setShowWarning(true);
-      return;
-    }
-    setShowWarning(false);
-  }, []);
+  }, [vestNFTs, token]);
 
   const onVote = () => {
     vote({
       votes,
       tokenID: token.id,
     });
-  };
-
-  const acceptWarning = () => {
-    window.localStorage.setItem("voting.warning", "accepted");
   };
 
   let totalVotes = votes?.reduce((acc, curr) => {
@@ -247,17 +237,7 @@ export default function Votes() {
   );
 
   const bribesAccrued = filteredGauges
-    ?.reduce(
-      (
-        acc: number,
-        row: {
-          gauge: {
-            tbv: number;
-          };
-        }
-      ) => acc + row.gauge.tbv,
-      0
-    )
+    ?.reduce((acc, row) => acc + row.gauge.median_tbv, 0)
     .toFixed(2);
 
   return (
@@ -277,7 +257,7 @@ export default function Votes() {
             <TextField
               variant="outlined"
               fullWidth
-              placeholder="FTM, WFTM, 0x..."
+              placeholder={placeholderOfInput}
               value={search}
               onChange={onSearchChanged}
               InputProps={{
@@ -355,12 +335,6 @@ export default function Votes() {
             </Button>
           </div>
         </Paper>
-      )}
-      {showWarning && (
-        <WarningModal
-          close={() => setShowWarning(false)}
-          acceptWarning={acceptWarning}
-        />
       )}
     </div>
   );

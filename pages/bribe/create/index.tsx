@@ -1,4 +1,4 @@
-import BribeCreate from "../../../components/ssBribeCreate/ssBribeCreate";
+import BribeCreate from "../../../components/bribeCreate/BribeCreate";
 
 function Bribe() {
   return (

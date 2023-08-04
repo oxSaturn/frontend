@@ -2,10 +2,9 @@ import { defineConfig } from "@wagmi/cli";
 import { react } from "@wagmi/cli/plugins";
 import { erc20ABI } from "wagmi";
 
-import { airdropClaimABI, stakeFvmABI } from "./stores/abis/abis";
-import { PRO_OPTIONS } from "./stores/constants/constants";
+import { airdropClaimABI, stakeFvmABI, veBoosterABI } from "./stores/abis/abis";
 import { flowConvertorABI } from "./stores/abis/flowConvertorABI";
-import { STAKING_ADDRESS } from "./stores/constants/contracts";
+import { CONTRACTS, PRO_OPTIONS } from "./stores/constants";
 
 export default defineConfig({
   out: "./lib/wagmiGen.ts",
@@ -34,7 +33,12 @@ export default defineConfig({
     {
       name: "StakeFvm",
       abi: stakeFvmABI,
-      address: STAKING_ADDRESS,
+      address: CONTRACTS.STAKING_ADDRESS,
+    },
+    {
+      name: "veBooster",
+      abi: veBoosterABI,
+      address: CONTRACTS.VE_BOOSTER_ADRRESS,
     },
   ],
   plugins: [react()],

@@ -7,7 +7,6 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { parseEther, parseUnits } from "viem";
-import { fantom } from "viem/chains";
 import { InfoOutlined, Check } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -17,7 +16,11 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import { Tooltip } from "../common/radixTooltip";
 
 import { formatCurrency } from "../../utils/utils";
-import { PRO_OPTIONS, QUERY_KEYS } from "../../stores/constants/constants";
+import {
+  PRO_OPTIONS,
+  QUERY_KEYS,
+  chainToConnect,
+} from "../../stores/constants/constants";
 
 import {
   useOptionTokenExercise,
@@ -28,6 +31,7 @@ import {
   usePrepareOptionTokenExerciseVe,
   useOptionTokenExerciseVe,
 } from "../../lib/wagmiGen";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import { Slider } from "./slider";
 import {
@@ -65,7 +69,7 @@ export function Redeem() {
   const [tab, setTab] = useState<(typeof tabs)[keyof typeof tabs]>(tabs.LP);
 
   useEffect(() => {
-    if (underlyingTokenSymbol === "FVM") {
+    if (underlyingTokenSymbol === GOV_TOKEN_SYMBOL) {
       const tabs = {
         LP: `${paymentTokenSymbol}/${underlyingTokenSymbol} LP`,
         VEST: `ve${underlyingTokenSymbol}`,
@@ -148,7 +152,7 @@ function RedeemLiquid({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -334,7 +338,7 @@ function RedeemLiquid({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
-            Switch to fantom
+            Switch to {chainToConnect.name}
           </button>
         ) : (
           <>
@@ -398,7 +402,7 @@ function RedeemLP({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -701,7 +705,7 @@ function RedeemLP({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
-            Switch to fantom
+            Switch to {chainToConnect.name}
           </button>
         ) : (
           <button
@@ -785,7 +789,7 @@ function RedeemVest({ now }: { now: number }) {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({
-    chainId: fantom.id,
+    chainId: chainToConnect.id,
   });
 
   const { address } = useAccount();
@@ -971,7 +975,7 @@ function RedeemVest({ now }: { now: number }) {
             className="flex h-14 w-full items-center justify-center rounded border border-transparent bg-cyan p-5 text-center font-medium text-black transition-colors hover:bg-cyan/80 focus-visible:outline-secondary disabled:bg-slate-400 disabled:opacity-60"
             onClick={() => switchNetwork?.()}
           >
-            Switch to fantom
+            Switch to {chainToConnect.name}
           </button>
         ) : (
           <>

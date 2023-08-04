@@ -73,9 +73,12 @@ type Aprs = (GeneralApr | OptionApr)[] | null;
 interface GaugeOfPair {
   // exists only if gauge_address is not empty
   decimals: number;
-  tbv: number;
+  min_tbv: number;
+  max_tbv: number;
+  median_tbv: number;
   votes: number;
-  apr: number;
+  min_apr: number;
+  max_apr: number;
   address: `0x${string}`;
   total_supply: number;
   bribe_address: `0x${string}`;
@@ -136,9 +139,12 @@ interface Pair {
   killed_gauges: Pick<
     GaugeOfPair,
     | "decimals"
-    | "tbv"
+    | "min_tbv"
+    | "max_tbv"
+    | "median_tbv"
     | "votes"
-    | "apr"
+    | "min_apr"
+    | "max_apr"
     | "address"
     | "total_supply"
     | "totalSupply"
@@ -196,6 +202,8 @@ interface DexScrennerPair {
     symbol: string;
   };
   quoteToken: {
+    address: `0x${string}`;
+    name: string;
     symbol: string;
   };
   priceNative: string;

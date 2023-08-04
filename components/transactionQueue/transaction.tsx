@@ -8,7 +8,7 @@ import {
   Pause,
 } from "@mui/icons-material";
 
-import { ETHERSCAN_URL } from "../../stores/constants/constants";
+import { EXPLORER_URL } from "../../stores/constants/constants";
 import { formatAddress } from "../../utils/utils";
 import { TransactionStatus, ITransaction } from "../../stores/types/types";
 
@@ -60,7 +60,7 @@ export default function Transaction({
   };
 
   const onViewTX = () => {
-    window.open(`${ETHERSCAN_URL}tx/${transaction.txHash}`, "_blank");
+    window.open(`${EXPLORER_URL}tx/${transaction.txHash}`, "_blank");
   };
 
   return (

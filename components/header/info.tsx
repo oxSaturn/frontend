@@ -1,6 +1,9 @@
 import { useState, useEffect, type ReactNode } from "react";
 
 import { CONTRACTS } from "../../stores/constants/constants";
+import { formatFinancialData } from "../../utils/utils";
+
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 import {
   useActivePeriod,
@@ -34,7 +37,7 @@ export default function Info() {
       value: `$${formatFinancialData(tbv ?? 0)}`,
     },
     {
-      label: "FVM Price",
+      label: GOV_TOKEN_SYMBOL + " Price",
       value: `$${(
         tokenPrices?.get(CONTRACTS.GOV_TOKEN_ADDRESS.toLowerCase()) ?? 0
       ).toFixed(3)}`,
@@ -105,17 +108,4 @@ function useTimer(deadline = 0, interval = SECOND) {
     minutes: Math.floor((timeLeft / MINUTE) % 60),
     seconds: Math.floor((timeLeft / SECOND) % 60),
   };
-}
-
-function formatFinancialData(dataNumber: number) {
-  if (dataNumber < 10_000_000) {
-    return dataNumber.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
-  } else if (dataNumber < 1_000_000_000) {
-    return (dataNumber / 1_000_000).toFixed(2) + "m";
-  } else {
-    return (dataNumber / 1_000_000_000).toFixed(2) + "b";
-  }
 }
