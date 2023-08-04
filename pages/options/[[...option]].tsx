@@ -1,7 +1,6 @@
 import { Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import Link from "next/link";
 
 import { Redeem } from "../../components/options/redeem";
 import { Stake } from "../../components/options/stake";
@@ -14,12 +13,13 @@ import {
   OPTIONS,
   type oToken as OptionToken,
 } from "../../stores/constants/constants";
+import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
 function transformOptionQuery(
   option: string | string[] | undefined
 ): OptionToken {
   if (typeof option === "undefined") {
-    return "oFVM";
+    return `o${GOV_TOKEN_SYMBOL}`;
   }
   if (Array.isArray(option)) {
     const [oToken] = option;
@@ -27,7 +27,7 @@ function transformOptionQuery(
       return oToken as OptionToken;
     }
   }
-  return "oFVM";
+  return `o${GOV_TOKEN_SYMBOL}`;
 }
 function Options() {
   const router = useRouter();
