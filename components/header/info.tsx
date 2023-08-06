@@ -1,6 +1,6 @@
 import { useState, useEffect, type ReactNode } from "react";
 
-import { CONTRACTS } from "../../stores/constants/constants";
+import { CONTRACTS, PRO_OPTIONS } from "../../stores/constants/constants";
 import { formatFinancialData } from "../../utils/utils";
 
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
@@ -8,6 +8,7 @@ import { useTokenData } from "../options/lib";
 
 import { LoadingSVG } from "../common/LoadingSVG";
 import { useDisplayedPairs } from "../liquidityPairs/queries";
+import { useErc20Symbol, useOptionTokenPaymentToken } from "../../lib/wagmiGen";
 
 import {
   useActivePeriod,
@@ -31,7 +32,14 @@ export default function Info() {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: mCap } = useMarketCap();
 
-  const { paymentTokenSymbol } = useTokenData();
+  const { data: paymentTokenAddress } = useOptionTokenPaymentToken({
+    address: PRO_OPTIONS[`o${GOV_TOKEN_SYMBOL}`].tokenAddress,
+  });
+
+  const { data: paymentTokenSymbol } = useErc20Symbol({
+    address: paymentTokenAddress,
+    enabled: !!paymentTokenAddress,
+  });
 
   let infoItems: InfoItem[] = [
     {
