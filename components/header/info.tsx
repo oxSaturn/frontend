@@ -4,6 +4,9 @@ import { CONTRACTS } from "../../stores/constants/constants";
 import { formatFinancialData } from "../../utils/utils";
 
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
+import { useGaugeApr, useTokenData } from "../options/lib";
+
+import { LoadingSVG } from "../common/LoadingSVG";
 
 import {
   useActivePeriod,
@@ -27,7 +30,9 @@ export default function Info() {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: mCap } = useMarketCap();
 
-  const infoItems: InfoItem[] = [
+  const { paymentTokenSymbol, underlyingTokenSymbol } = useTokenData();
+
+  let infoItems: InfoItem[] = [
     {
       label: "TVL",
       value: `$${formatFinancialData(tvl ?? 0)}`,
@@ -54,6 +59,10 @@ export default function Info() {
       label: "Next Epoch",
       value: <Timer deadline={updateDate} />,
     },
+    {
+      label: `${paymentTokenSymbol}/${underlyingTokenSymbol} APR`,
+      value: <BlueChipAPR />,
+    },
   ];
 
   return (
@@ -68,6 +77,23 @@ export default function Info() {
         </div>
       ))}
     </div>
+  );
+}
+
+function BlueChipAPR() {
+  const { paymentTokenSymbol } = useTokenData();
+  const { data: tokenAprs } = useGaugeApr();
+
+  if (!tokenAprs || !paymentTokenSymbol) {
+    return <LoadingSVG className="animate-spin h-4 w-4" />;
+  }
+  const [{ apr, symbol }] = tokenAprs.filter(
+    (apr) => apr.symbol.toLowerCase() === paymentTokenSymbol.toLowerCase()
+  );
+  return (
+    <span className="text-yellow">
+      {apr?.toFixed(0)}% in {symbol}
+    </span>
   );
 }
 
