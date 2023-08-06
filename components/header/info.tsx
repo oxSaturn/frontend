@@ -4,9 +4,10 @@ import { CONTRACTS } from "../../stores/constants/constants";
 import { formatFinancialData } from "../../utils/utils";
 
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
-import { useGaugeApr, useTokenData } from "../options/lib";
+import { useTokenData } from "../options/lib";
 
 import { LoadingSVG } from "../common/LoadingSVG";
+import { useDisplayedPairs } from "../liquidityPairs/queries";
 
 import {
   useActivePeriod,
@@ -30,7 +31,7 @@ export default function Info() {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: mCap } = useMarketCap();
 
-  const { paymentTokenSymbol, underlyingTokenSymbol } = useTokenData();
+  const { paymentTokenSymbol } = useTokenData();
 
   let infoItems: InfoItem[] = [
     {
@@ -60,7 +61,7 @@ export default function Info() {
       value: <Timer deadline={updateDate} />,
     },
     {
-      label: `${paymentTokenSymbol}/${underlyingTokenSymbol} APR`,
+      label: `${paymentTokenSymbol}/${GOV_TOKEN_SYMBOL} APR`,
       value: <BlueChipAPR />,
     },
   ];
@@ -82,17 +83,33 @@ export default function Info() {
 
 function BlueChipAPR() {
   const { paymentTokenSymbol } = useTokenData();
-  const { data: tokenAprs } = useGaugeApr();
 
-  if (!tokenAprs || !paymentTokenSymbol) {
+  const { data: pairs } = useDisplayedPairs();
+
+  if (!pairs || !paymentTokenSymbol) {
     return <LoadingSVG className="animate-spin h-4 w-4" />;
   }
-  const [{ apr, symbol }] = tokenAprs.filter(
-    (apr) => apr.symbol.toLowerCase() === paymentTokenSymbol.toLowerCase()
+
+  const [pair] = pairs.filter(
+    (pair) =>
+      pair.symbol.toLowerCase() ===
+        `vamm-${GOV_TOKEN_SYMBOL.toLowerCase()}/${paymentTokenSymbol.toLowerCase()}` ||
+      pair.symbol.toLowerCase() ===
+        `vamm-${paymentTokenSymbol.toLowerCase()}/${GOV_TOKEN_SYMBOL.toLowerCase()}`
   );
+  const rewards = pair?.aprs?.filter(
+    (reward) => reward.symbol.toLowerCase() === paymentTokenSymbol.toLowerCase()
+  );
+
+  if (!rewards || rewards.length === 0) {
+    return <span className="text-yellow">0% in {paymentTokenSymbol}</span>;
+  }
+
+  const apr = "apr" in rewards[0] ? rewards[0].apr : 0;
+
   return (
     <span className="text-yellow">
-      {apr?.toFixed(0)}% in {symbol}
+      {apr.toFixed(0)}% in {paymentTokenSymbol}
     </span>
   );
 }

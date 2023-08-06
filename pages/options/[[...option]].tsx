@@ -37,12 +37,6 @@ function Options() {
     setOptionToken(transformOptionQuery(option));
   }, [option, setOptionToken]);
 
-  useEffect(() => {
-    return () => {
-      // reset option token on unmount
-      setOptionToken(`o${GOV_TOKEN_SYMBOL}`);
-    };
-  }, [setOptionToken]);
   return (
     <PageWrapper
       placeholder={
