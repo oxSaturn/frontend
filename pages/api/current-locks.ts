@@ -5,9 +5,9 @@ import { createPublicClient, http } from "viem";
 import { PRO_OPTIONS, chainToConnect } from "../../stores/constants/constants";
 
 const FROM_BLOCK = 1963125;
-const RPC_STEP = 10_000;
+const RPC_STEP = 1_024;
 
-const rpc = http("https://mainnet.base.org");
+const rpc = http("https://base.blockpi.network/v1/rpc/public");
 
 const client = createPublicClient({
   chain: chainToConnect,
