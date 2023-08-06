@@ -59,6 +59,9 @@ module.exports = {
         blue: {
           DEFAULT: "#0C8FE8",
         },
+        yellow: {
+          DEFAULT: "#E8BC17",
+        },
       },
       boxShadow: ({ theme }) => ({
         glow: `0 0 10px 0 ${theme("colors.cyan.DEFAULT")}`,
