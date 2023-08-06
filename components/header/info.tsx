@@ -90,7 +90,14 @@ export default function Info() {
 }
 
 function BlueChipAPR() {
-  const { paymentTokenSymbol } = useTokenData();
+  const { data: paymentTokenAddress } = useOptionTokenPaymentToken({
+    address: PRO_OPTIONS[`o${GOV_TOKEN_SYMBOL}`].tokenAddress,
+  });
+
+  const { data: paymentTokenSymbol } = useErc20Symbol({
+    address: paymentTokenAddress,
+    enabled: !!paymentTokenAddress,
+  });
 
   const { data: pairs } = useDisplayedPairs();
 
