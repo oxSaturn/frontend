@@ -1128,13 +1128,13 @@ const addLiquidityAndStake = async (
         status: TransactionStatus.WAITING,
       },
       {
-        uuid: stakeAllowanceTXID,
-        description: `Checking your ${pair.symbol} allowance`,
+        uuid: depositTXID,
+        description: `Deposit tokens in the pool`,
         status: TransactionStatus.WAITING,
       },
       {
-        uuid: depositTXID,
-        description: `Deposit tokens in the pool`,
+        uuid: stakeAllowanceTXID,
+        description: `Checking your ${pair.symbol} allowance`,
         status: TransactionStatus.WAITING,
       },
       {
@@ -1148,7 +1148,6 @@ const addLiquidityAndStake = async (
   let allowance0: string | null = "0";
   let allowance1: string | null = "0";
 
-  // CHECK ALLOWANCES AND SET TX DISPLAY
   if (token0.address !== NATIVE_TOKEN.symbol) {
     allowance0 = await getDepositAllowance(token0, account);
     if (!allowance0) throw new Error();
@@ -1199,23 +1198,6 @@ const addLiquidityAndStake = async (
     });
   }
 
-  const stakeAllowance = await getStakeAllowance(pair, account);
-  if (!stakeAllowance) throw new Error("Error getting stake allowance");
-
-  if (BigNumber(stakeAllowance).lt(minLiquidity)) {
-    useTransactionStore.getState().updateTransactionStatus({
-      uuid: stakeAllowanceTXID,
-      description: `Allow the gauge to spend your ${pair.symbol}`,
-      status: TransactionStatus.WAITING,
-    });
-  } else {
-    useTransactionStore.getState().updateTransactionStatus({
-      uuid: stakeAllowanceTXID,
-      description: `Allowance on ${pair.symbol} sufficient`,
-      status: TransactionStatus.DONE,
-    });
-  }
-
   // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
   if (BigNumber(allowance0).lt(amount0)) {
     await writeApprove(
@@ -1232,17 +1214,6 @@ const addLiquidityAndStake = async (
       allowance1TXID,
       token1.address,
       CONTRACTS.ROUTER_ADDRESS
-    );
-  }
-
-  if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
-
-  if (BigNumber(stakeAllowance).lt(minLiquidity)) {
-    await writeApprove(
-      walletClient,
-      stakeAllowanceTXID,
-      pair.address,
-      pair.gauge.address
     );
   }
 
@@ -1276,6 +1247,34 @@ const addLiquidityAndStake = async (
     sendAmount1Min,
     deadline
   );
+
+  const stakeAllowance = await getStakeAllowance(pair, account);
+  if (!stakeAllowance) throw new Error("Error getting stake allowance");
+
+  if (BigNumber(stakeAllowance).lt(minLiquidity)) {
+    useTransactionStore.getState().updateTransactionStatus({
+      uuid: stakeAllowanceTXID,
+      description: `Allow the gauge to spend your ${pair.symbol}`,
+      status: TransactionStatus.WAITING,
+    });
+  } else {
+    useTransactionStore.getState().updateTransactionStatus({
+      uuid: stakeAllowanceTXID,
+      description: `Allowance on ${pair.symbol} sufficient`,
+      status: TransactionStatus.DONE,
+    });
+  }
+
+  if (!pair.gauge?.address) throw new Error("Gauge address is undefined");
+
+  if (BigNumber(stakeAllowance).lt(minLiquidity)) {
+    await writeApprove(
+      walletClient,
+      stakeAllowanceTXID,
+      pair.address,
+      pair.gauge.address
+    );
+  }
 
   const balanceOf = await viemClient.readContract({
     abi: CONTRACTS.PAIR_ABI,
