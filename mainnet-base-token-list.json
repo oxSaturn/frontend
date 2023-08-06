@@ -16,12 +16,7 @@
     "name": "Doge Base",
     "symbol": "DBASE"
   },
-    "chainId": 8453,
-    "decimals": 18,
-    "logoURI": "https://assets.coingecko.com/coins/images/31013/large/wrapped-eth-mantle-bridge.png",
-    "name": "Wrapped ETH",
-    "symbol": "DBASE"
-  },
+
   {
     "address": "0xd386a121991E51Eab5e3433Bf5B1cF4C8884b47a",
     "chainId": 8453,
