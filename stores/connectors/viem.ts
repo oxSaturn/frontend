@@ -18,12 +18,13 @@ import { chainToConnect } from "../constants/constants";
 
 const publicNodeRpc = http("https://mainnet.base.org");
 const blockPiRpc = http("https://base.blockpi.network/v1/rpc/public");
+const blastRpc = http("https://base-mainnet.public.blastapi.io");
 const devAccessRpc = http("https://developer-access-mainnet.base.org");
 
 // used in store for reading blockchain
 const client = createPublicClient({
   chain: chainToConnect,
-  transport: fallback([publicNodeRpc, devAccessRpc, blockPiRpc]),
+  transport: fallback([publicNodeRpc, devAccessRpc, blockPiRpc, blastRpc]),
   batch: {
     multicall: true,
   },
@@ -41,6 +42,11 @@ const { chains, publicClient } = configureChains(
     jsonRpcProvider({
       rpc: () => ({
         http: "https://base.blockpi.network/v1/rpc/public",
+      }),
+    }),
+    jsonRpcProvider({
+      rpc: () => ({
+        http: "https://base-mainnet.public.blastapi.io",
       }),
     }),
     jsonRpcProvider({
