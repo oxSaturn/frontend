@@ -20,7 +20,7 @@ export function useTotalRewardedAmount() {
       paymentTokenDecimals,
     ],
     queryFn: async () => {
-      const jsonTotalRewarded = await fetch("api/total-rewarded", {
+      const jsonTotalRewarded = await fetch("/api/total-rewarded", {
         method: "POST",
         body: JSON.stringify({
           gaugeAddress,

@@ -5,6 +5,7 @@ import { maxxingGaugeABI, optionTokenABI } from "../abis/abis";
 
 import * as contracts from "./contracts";
 import * as queryKeys from "./queryKeys";
+import { GOV_TOKEN_SYMBOL } from "./contracts";
 
 const config = {
   [chain.id]: {
@@ -29,15 +30,24 @@ const config = {
 export const EXPLORER_URL = config[chain.id].scan;
 
 export const CONTRACTS = config[chain.id].contracts;
-export const PRO_OPTIONS = {
-  optionTokenABI: optionTokenABI,
-  maxxingGaugeABI: maxxingGaugeABI,
-  oBVM: {
+export type oToken = `o${typeof GOV_TOKEN_SYMBOL}` | "oSMOOTH";
+export const OPTIONS: Record<
+  oToken,
+  {
+    tokenAddress: `0x${string}`;
+  }
+> = {
+  [`o${GOV_TOKEN_SYMBOL}` as `o${typeof GOV_TOKEN_SYMBOL}`]: {
     tokenAddress: "0x762eb51D2e779EeEc9B239FFB0B2eC8262848f3E",
   },
   oSMOOTH: {
     tokenAddress: "0x6c743ee9ef26b445d80f19cc783e89b43dcffa07",
   },
+};
+export const PRO_OPTIONS = {
+  optionTokenABI: optionTokenABI,
+  maxxingGaugeABI: maxxingGaugeABI,
+  ...OPTIONS,
 } as const;
 
 /**
