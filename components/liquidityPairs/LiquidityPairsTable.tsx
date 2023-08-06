@@ -48,7 +48,7 @@ import {
   placeholderOfInput,
 } from "../../stores/constants/constants";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
-import { useTokenData } from "../options/lib";
+import { usePaymentTokenSymbol } from "../../hooks/usePaymentTokenSymbol";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -503,7 +503,7 @@ export default function EnhancedTable({
 }
 
 function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
-  const { paymentTokenSymbol } = useTokenData();
+  const paymentTokenSymbol = usePaymentTokenSymbol();
   const { row, onView } = props;
   const [open, setOpen] = useState(false);
   const token0Info =
