@@ -33,6 +33,7 @@ import {
   KeyboardArrowDown,
   OpenInNewOutlined,
   InfoOutlined,
+  Whatshot,
 } from "@mui/icons-material";
 
 import { Tooltip } from "../common/radixTooltip";
@@ -47,6 +48,7 @@ import {
   placeholderOfInput,
 } from "../../stores/constants/constants";
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
+import { usePaymentTokenSymbol } from "../../hooks/usePaymentTokenSymbol";
 
 const headCells = [
   { id: "expand", numeric: false, disablePadding: true, label: "" },
@@ -501,6 +503,7 @@ export default function EnhancedTable({
 }
 
 function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
+  const paymentTokenSymbol = usePaymentTokenSymbol();
   const { row, onView } = props;
   const [open, setOpen] = useState(false);
   const token0Info =
@@ -595,7 +598,13 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                     key={apr.apr + apr.symbol + apr.logo}
                     className="flex justify-end items-center w-full"
                   >
-                    <h2 className="text-xs font-extralight">
+                    <h2 className="text-xs font-extralight inline-flex items-center">
+                      {apr.symbol.toLowerCase() ===
+                      paymentTokenSymbol?.toLowerCase() ? (
+                        <Whatshot className="text-yellow w-4" />
+                      ) : (
+                        ""
+                      )}
                       {apr.apr.toFixed()}% {apr.symbol}
                     </h2>
                   </div>
@@ -604,7 +613,13 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                     key={apr.min_apr + apr.max_apr + apr.symbol + apr.logo}
                     className="flex justify-end items-center w-full"
                   >
-                    <h2 className="text-xs font-extralight">
+                    <h2 className="text-xs font-extralight inline-flex items-center">
+                      {apr.symbol.toLowerCase() ===
+                      paymentTokenSymbol?.toLowerCase() ? (
+                        <Whatshot className="text-yellow w-4" />
+                      ) : (
+                        ""
+                      )}
                       {apr.min_apr.toFixed()}-{apr.max_apr.toFixed()}%{" "}
                       {apr.symbol}
                     </h2>

@@ -5,6 +5,10 @@ import { formatFinancialData } from "../../utils/utils";
 
 import { GOV_TOKEN_SYMBOL } from "../../stores/constants/contracts";
 
+import { LoadingSVG } from "../common/LoadingSVG";
+import { useDisplayedPairs } from "../liquidityPairs/queries";
+import { usePaymentTokenSymbol } from "../../hooks/usePaymentTokenSymbol";
+
 import {
   useActivePeriod,
   useCirculatingSupply,
@@ -27,7 +31,9 @@ export default function Info() {
   const { data: circulatingSupply } = useCirculatingSupply();
   const { data: mCap } = useMarketCap();
 
-  const infoItems: InfoItem[] = [
+  const paymentTokenSymbol = usePaymentTokenSymbol();
+
+  let infoItems: InfoItem[] = [
     {
       label: "TVL",
       value: `$${formatFinancialData(tvl ?? 0)}`,
@@ -54,6 +60,10 @@ export default function Info() {
       label: "Next Epoch",
       value: <Timer deadline={updateDate} />,
     },
+    {
+      label: `${paymentTokenSymbol}/${GOV_TOKEN_SYMBOL} APR`,
+      value: <BlueChipAPR />,
+    },
   ];
 
   return (
@@ -68,6 +78,39 @@ export default function Info() {
         </div>
       ))}
     </div>
+  );
+}
+
+function BlueChipAPR() {
+  const paymentTokenSymbol = usePaymentTokenSymbol();
+
+  const { data: pairs } = useDisplayedPairs();
+
+  if (!pairs || !paymentTokenSymbol) {
+    return <LoadingSVG className="animate-spin h-4 w-4" />;
+  }
+
+  const [pair] = pairs.filter(
+    (pair) =>
+      pair.symbol.toLowerCase() ===
+        `vamm-${GOV_TOKEN_SYMBOL.toLowerCase()}/${paymentTokenSymbol.toLowerCase()}` ||
+      pair.symbol.toLowerCase() ===
+        `vamm-${paymentTokenSymbol.toLowerCase()}/${GOV_TOKEN_SYMBOL.toLowerCase()}`
+  );
+  const rewards = pair?.aprs?.filter(
+    (reward) => reward.symbol.toLowerCase() === paymentTokenSymbol.toLowerCase()
+  );
+
+  if (!rewards || rewards.length === 0) {
+    return <span className="text-yellow">0% in {paymentTokenSymbol}</span>;
+  }
+
+  const apr = "apr" in rewards[0] ? rewards[0].apr : 0;
+
+  return (
+    <span className="text-yellow">
+      {apr.toFixed(0)}% in {paymentTokenSymbol}
+    </span>
   );
 }
 

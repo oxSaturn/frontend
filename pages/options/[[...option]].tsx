@@ -36,6 +36,7 @@ function Options() {
   useEffect(() => {
     setOptionToken(transformOptionQuery(option));
   }, [option, setOptionToken]);
+
   return (
     <PageWrapper
       placeholder={
