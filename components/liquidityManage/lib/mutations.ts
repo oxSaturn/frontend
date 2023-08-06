@@ -1505,13 +1505,13 @@ const unstakeAndRemoveLiquidity = async (
   useTransactionStore.getState().updateTransactionQueue({
     transactions: [
       {
-        uuid: allowanceTXID,
-        description: `Checking your ${pair.symbol} allowance`,
+        uuid: unstakeTXID,
+        description: `Unstake LP tokens from the gauge`,
         status: TransactionStatus.WAITING,
       },
       {
-        uuid: unstakeTXID,
-        description: `Unstake LP tokens from the gauge`,
+        uuid: allowanceTXID,
+        description: `Checking your ${pair.symbol} allowance`,
         status: TransactionStatus.WAITING,
       },
       {
@@ -1522,35 +1522,6 @@ const unstakeAndRemoveLiquidity = async (
     ],
   });
 
-  // CHECK ALLOWANCES AND SET TX DISPLAY
-  const allowance = await getWithdrawAllowance(pair, account);
-  if (!allowance) throw new Error("Error getting withdraw allowance");
-
-  if (BigNumber(allowance).lt(amount)) {
-    useTransactionStore.getState().updateTransactionStatus({
-      uuid: allowanceTXID,
-      description: `Allow the router to spend your ${pair.symbol}`,
-      status: TransactionStatus.WAITING,
-    });
-  } else {
-    useTransactionStore.getState().updateTransactionStatus({
-      uuid: allowanceTXID,
-      description: `Allowance on ${pair.symbol} sufficient`,
-      status: TransactionStatus.DONE,
-    });
-  }
-
-  // SUBMIT REQUIRED ALLOWANCE TRANSACTIONS
-  if (BigNumber(allowance).lt(amount)) {
-    await writeApprove(
-      walletClient,
-      allowanceTXID,
-      pair.address,
-      CONTRACTS.ROUTER_ADDRESS
-    );
-  }
-
-  // SUBMIT DEPOSIT TRANSACTION
   const sendSlippage = BigNumber(100).minus(slippage).div(100);
   const sendAmount = BigNumber(amount)
     .times(10 ** PAIR_DECIMALS)
@@ -1585,6 +1556,32 @@ const unstakeAndRemoveLiquidity = async (
     functionName: "balanceOf",
     args: [account],
   });
+
+  const allowance = await getWithdrawAllowance(pair, account);
+  if (!allowance) throw new Error("Error getting withdraw allowance");
+
+  if (BigNumber(allowance).lt(amount)) {
+    useTransactionStore.getState().updateTransactionStatus({
+      uuid: allowanceTXID,
+      description: `Allow the router to spend your ${pair.symbol}`,
+      status: TransactionStatus.WAITING,
+    });
+  } else {
+    useTransactionStore.getState().updateTransactionStatus({
+      uuid: allowanceTXID,
+      description: `Allowance on ${pair.symbol} sufficient`,
+      status: TransactionStatus.DONE,
+    });
+  }
+
+  if (BigNumber(allowance).lt(amount)) {
+    await writeApprove(
+      walletClient,
+      allowanceTXID,
+      pair.address,
+      CONTRACTS.ROUTER_ADDRESS
+    );
+  }
 
   await writeRemoveLiquidty(
     walletClient,
