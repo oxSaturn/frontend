@@ -12,7 +12,7 @@ export default defineConfig({
     {
       name: "AirdropClaim",
       abi: airdropClaimABI,
-      address: "0xCEE59eb1E4e28F50D90Bf4897ca1a84d6552AA21",
+      address: "0xC5d4E462b96cC73283EB452B15147c17Af413313",
     },
     {
       name: "ERC20",
