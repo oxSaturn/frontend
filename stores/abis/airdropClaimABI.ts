@@ -1,21 +1,9 @@
 export const airdropClaimABI = [
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "_token",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_ve",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_msig",
-        type: "address",
-      },
+      { internalType: "address", name: "_token", type: "address" },
+      { internalType: "address", name: "_optionToken", type: "address" },
+      { internalType: "address", name: "_msig", type: "address" },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -99,88 +87,40 @@ export const airdropClaimABI = [
   {
     inputs: [],
     name: "LOCK",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "PRECISION",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "claim",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "_tokenId",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "_tokenId", type: "uint256" }],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
-    ],
+    inputs: [{ internalType: "address", name: "user", type: "address" }],
     name: "claimable",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "_claimable",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "_claimable", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    inputs: [{ internalType: "address", name: "", type: "address" }],
     name: "claimableAmount",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
     name: "deposit",
     outputs: [],
     stateMutability: "nonpayable",
@@ -188,16 +128,8 @@ export const airdropClaimABI = [
   },
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "_token",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
+      { internalType: "address", name: "_token", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
     ],
     name: "emergencyWithdraw",
     outputs: [],
@@ -207,54 +139,35 @@ export const airdropClaimABI = [
   {
     inputs: [],
     name: "msig",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "optionToken",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "seeded",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      {
-        internalType: "address[]",
-        name: "_who",
-        type: "address[]",
-      },
-      {
-        internalType: "uint256[]",
-        name: "_amount",
-        type: "uint256[]",
-      },
+      { internalType: "address[]", name: "_who", type: "address[]" },
+      { internalType: "uint256[]", name: "_amount", type: "uint256[]" },
     ],
     name: "setAirdropReceivers",
     outputs: [],
@@ -262,13 +175,7 @@ export const airdropClaimABI = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_owner",
-        type: "address",
-      },
-    ],
+    inputs: [{ internalType: "address", name: "_owner", type: "address" }],
     name: "setOwner",
     outputs: [],
     stateMutability: "nonpayable",
@@ -277,125 +184,56 @@ export const airdropClaimABI = [
   {
     inputs: [],
     name: "token",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalAirdrop",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalToReceive",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalVeFLOWClaimed",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalWalletsClaimed",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalWalletsIncluded",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    inputs: [{ internalType: "address", name: "", type: "address" }],
     name: "userClaimed",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "ve",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "_token",
-        type: "address",
-      },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "address", name: "_token", type: "address" },
     ],
     name: "withdraw",
     outputs: [],
