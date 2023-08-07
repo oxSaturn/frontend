@@ -601,7 +601,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                     <h2 className="text-xs font-extralight inline-flex items-center">
                       {apr.symbol.toLowerCase() ===
                       paymentTokenSymbol?.toLowerCase() ? (
-                        <Whatshot className="text-yellow w-4" />
+                        <Whatshot className="text-yellow w-4 h-4" />
                       ) : (
                         ""
                       )}
@@ -616,7 +616,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                     <h2 className="text-xs font-extralight inline-flex items-center">
                       {apr.symbol.toLowerCase() ===
                       paymentTokenSymbol?.toLowerCase() ? (
-                        <Whatshot className="text-yellow w-4" />
+                        <Whatshot className="text-yellow w-4 h-4" />
                       ) : (
                         ""
                       )}

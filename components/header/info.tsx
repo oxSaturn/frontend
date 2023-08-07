@@ -60,11 +60,14 @@ export default function Info() {
       label: "Next Epoch",
       value: <Timer deadline={updateDate} />,
     },
-    {
+  ];
+
+  if (paymentTokenSymbol) {
+    infoItems.push({
       label: `${paymentTokenSymbol}/${GOV_TOKEN_SYMBOL} APR`,
       value: <BlueChipAPR />,
-    },
-  ];
+    });
+  }
 
   return (
     <div className="grid gap-1 px-[14px] font-sono text-sm md:flex md:flex-row md:items-stretch md:py-3 lg:gap-x-5">
