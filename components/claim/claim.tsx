@@ -91,7 +91,7 @@ export function Claim() {
         <div className="flex items-center justify-between">
           <div>Claimable amount</div>
           <div>
-            {formatCurrency(claimable ?? "0")} ve{GOV_TOKEN_SYMBOL}
+            {formatCurrency(claimable ?? "0")} o{GOV_TOKEN_SYMBOL}
           </div>
         </div>
         {claimable && parseFloat(claimable) > 0 && (
