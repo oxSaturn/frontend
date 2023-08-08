@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { formatUnits } from "viem";
 
 import { BaseAsset, QuoteSwapResponse } from "../../../stores/types/types";
+import { WETH_ADDRESS } from "../../../stores/constants/contracts";
 
 export function usePriceDiff({
   fromAmountValueUsd,
@@ -56,11 +57,17 @@ export function usePriceImpact({
   toAssetValue: BaseAsset | null;
 }) {
   const [priceImpact, setPriceImpact] = useState<number>();
+  let fromAssetAddress = fromAssetValue?.address.toLowerCase();
+  if (fromAssetAddress === "eth") {
+    fromAssetAddress = WETH_ADDRESS.toLowerCase();
+  }
+  let toAssetAddress = toAssetValue?.address.toLowerCase();
+  if (toAssetAddress === "eth") {
+    toAssetAddress = WETH_ADDRESS.toLowerCase();
+  }
   const fromPrice =
     !!fromAssetValue?.address && !!quote
-      ? quote.maxReturn.tokens[
-          fromAssetValue?.address.toLowerCase() as `0x${string}`
-        ].price *
+      ? quote.maxReturn.tokens[fromAssetAddress as `0x${string}`].price *
         parseFloat(
           formatUnits(
             BigInt(quote.maxReturn.totalFrom),
@@ -70,9 +77,7 @@ export function usePriceImpact({
       : undefined;
   const toPrice =
     !!toAssetValue?.address && !!quote
-      ? quote.maxReturn.tokens[
-          toAssetValue?.address.toLowerCase() as `0x${string}`
-        ].price *
+      ? quote.maxReturn.tokens[toAssetAddress as `0x${string}`].price *
         parseFloat(
           formatUnits(BigInt(quote.maxReturn.totalTo), toAssetValue.decimals)
         )
