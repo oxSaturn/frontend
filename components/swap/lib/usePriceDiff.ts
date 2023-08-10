@@ -3,6 +3,10 @@ import { formatUnits } from "viem";
 
 import { BaseAsset, QuoteSwapResponse } from "../../../stores/types/types";
 import { WETH_ADDRESS } from "../../../stores/constants/contracts";
+import {
+  NATIVE_TOKEN,
+  W_NATIVE_ADDRESS,
+} from "../../../stores/constants/constants";
 
 export function usePriceDiff({
   fromAmountValueUsd,
@@ -58,12 +62,12 @@ export function usePriceImpact({
 }) {
   const [priceImpact, setPriceImpact] = useState<number>();
   let fromAssetAddress = fromAssetValue?.address.toLowerCase();
-  if (fromAssetAddress === "eth") {
-    fromAssetAddress = WETH_ADDRESS.toLowerCase();
+  if (fromAssetAddress === NATIVE_TOKEN.address.toLowerCase()) {
+    fromAssetAddress = W_NATIVE_ADDRESS.toLowerCase();
   }
   let toAssetAddress = toAssetValue?.address.toLowerCase();
-  if (toAssetAddress === "eth") {
-    toAssetAddress = WETH_ADDRESS.toLowerCase();
+  if (toAssetAddress === NATIVE_TOKEN.address.toLowerCase()) {
+    toAssetAddress = W_NATIVE_ADDRESS.toLowerCase();
   }
   const fromPrice =
     !!fromAssetValue?.address && !!quote
