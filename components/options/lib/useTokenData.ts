@@ -20,6 +20,7 @@ import {
 } from "../../../stores/constants/constants";
 
 import { useInputs } from "./useInputs";
+import { useTokenValue } from "./usePaymentTokenValue";
 
 export function useTokenData(lpDiscount?: number) {
   const { optionToken } = useInputs();
@@ -71,12 +72,18 @@ export function useTokenData(lpDiscount?: number) {
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
+  const { data: optionValue } = useTokenValue(paymentTokenAddress, optionPrice);
 
   const { data: discountedPrice } = useOptionTokenGetDiscountedPrice({
     address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
+  const { data: discountedValue } = useTokenValue(
+    paymentTokenAddress,
+    discountedPrice
+  );
+
   const { data: discountedLpPrice } = useOptionTokenGetLpDiscountedPrice({
     address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [
@@ -87,11 +94,21 @@ export function useTokenData(lpDiscount?: number) {
     enabled: !!lpDiscount,
     cacheTime: 0,
   });
+  const { data: discountedLpValue } = useTokenValue(
+    paymentTokenAddress,
+    discountedLpPrice
+  );
+
   const { data: discountedVePrice } = useOptionTokenGetVeDiscountedPrice({
     address: PRO_OPTIONS[optionToken].tokenAddress,
     args: [parseEther("1")],
     select: (data) => formatEther(data),
   });
+  const { data: discountedVeValue } = useTokenValue(
+    paymentTokenAddress,
+    discountedVePrice
+  );
+
   return {
     optionTokenSymbol: optionTokenSymbol ?? `o${GOV_TOKEN_SYMBOL}`,
     paymentTokenSymbol: paymentTokenSymbol ?? W_NATIVE_SYMBOL,
@@ -104,6 +121,10 @@ export function useTokenData(lpDiscount?: number) {
     discountedPrice,
     discountedLpPrice,
     discountedVePrice,
+    optionValue,
+    discountedValue,
+    discountedLpValue,
+    discountedVeValue,
     refetchBalances: () => {
       refetchPaymentBalance();
       refetchOptionBalance();
