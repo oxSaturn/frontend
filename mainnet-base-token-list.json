@@ -8,6 +8,14 @@
     "symbol": "WETH"
   },
     {
+    "address": "0x4a3a6dd60a34bb2aba60d73b4c88315e9ceb6a3d",
+    "chainId": 8453,
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/16786/small/mimlogopng.png?1624979612",
+    "name": "Magic Internet Money",
+    "symbol": "MIM"
+  },
+    {
    
     "address": "0xbcf19453badf7c7ac0630b11dcb75d52b7eb8930",
     "chainId": 8453,
