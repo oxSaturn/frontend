@@ -57,6 +57,7 @@ export const AUTO_BRIBE_ABI = abis.autoBribeABI;
 export const FAIR_AUCTION_ABI = abis.fairAuctionABI;
 
 export const MSIG_ADDRESS = "0xfA89A4C7F79Dc4111c116a0f01061F4a7D9fAb73"; // base
+export const TIMELOCK_ADDRESS = "0xa36b73043ded64586aaf28d3a70fa9a20bc514fc";
 export const MINT_TANK = "0x9B5EC2ddCb1BeeBEA5FFe94e6449b4eC56294cBa"; // base
 export const AIRDROP_CLAIM = "0xC5d4E462b96cC73283EB452B15147c17Af413313"; // base
 

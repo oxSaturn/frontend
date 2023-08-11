@@ -49,6 +49,7 @@ export default async function handler(
     flowInAirdropClaim,
     flowInMintTank,
     flowInMsig,
+    tokenInTimelock,
   ] = await publicClient.multicall({
     allowFailure: false,
     contracts: [
@@ -91,8 +92,14 @@ export default async function handler(
         functionName: "balanceOf",
         args: [CONTRACTS.MSIG_ADDRESS],
       },
+      {
+        ...flowContract,
+        functionName: "balanceOf",
+        args: [CONTRACTS.TIMELOCK_ADDRESS],
+      },
     ],
   });
+
   const pairs = await publicClient.readContract({
     abi: CONTRACTS.FACTORY_ABI,
     address: CONTRACTS.FACTORY_ADDRESS,
@@ -144,6 +151,7 @@ export default async function handler(
       flowInRewardsDistributor -
       flowInMintTank -
       flowInMsig -
+      tokenInTimelock -
       gaugeBalancesSum -
       flowInOptionToken1,
     CONTRACTS.GOV_TOKEN_DECIMALS
