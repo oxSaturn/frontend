@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAccount, useBalance } from "wagmi";
+import { formatUnits } from "viem";
 import { Typography, Button, CircularProgress, Paper } from "@mui/material";
 import {
   ArrowDownward,
@@ -195,33 +196,33 @@ function Swap() {
     }
   };
 
-  const calculateReceiveAmount = (
-    amount: string,
-    from: BaseAsset | null,
-    to: BaseAsset | null
-  ) => {
-    if (
-      amount !== "" &&
-      !isNaN(+amount) &&
-      to !== null &&
-      parseFloat(amount) !== 0 &&
-      from !== null
-    ) {
-      const isWrapUnwrap =
-        (from?.symbol === W_NATIVE_SYMBOL &&
-          to?.symbol === NATIVE_TOKEN.symbol) ||
-        (from?.symbol === NATIVE_TOKEN.symbol && to?.symbol === W_NATIVE_SYMBOL)
-          ? true
-          : false;
+  const calculateReceiveAmount = useCallback(
+    (amount: string, from: BaseAsset | null, to: BaseAsset | null) => {
+      if (
+        amount !== "" &&
+        !isNaN(+amount) &&
+        to !== null &&
+        parseFloat(amount) !== 0 &&
+        from !== null
+      ) {
+        const isWrapUnwrap =
+          (from?.symbol === W_NATIVE_SYMBOL &&
+            to?.symbol === NATIVE_TOKEN.symbol) ||
+          (from?.symbol === NATIVE_TOKEN.symbol &&
+            to?.symbol === W_NATIVE_SYMBOL)
+            ? true
+            : false;
 
-      if (isWrapUnwrap) {
-        setToAmountValue(amount);
-        return;
+        if (isWrapUnwrap) {
+          setToAmountValue(amount);
+          return;
+        }
+
+        refetchQuote();
       }
-
-      refetchQuote();
-    }
-  };
+    },
+    [refetchQuote]
+  );
 
   const closeSettings = () => {
     setSettingsOpen(false);
@@ -282,9 +283,11 @@ function Swap() {
     }
   };
 
-  const setBalance100 = () => {
+  const setBalance100 = useCallback(() => {
     if (!fromAssetValue || fromAssetValue.balance === null) return;
-    const am = BigNumber(fromAssetValue.balance).toString();
+    const am = balanceFrom
+      ? formatUnits(balanceFrom.value, balanceFrom.decimals)
+      : BigNumber(fromAssetValue.balance).toString();
     setFromAmountValue(am);
     setFromAmountValueUsd(
       (
@@ -299,7 +302,13 @@ function Swap() {
       ).toFixed(2)
     );
     calculateReceiveAmount(am, fromAssetValue, toAssetValue);
-  };
+  }, [
+    balanceFrom,
+    fromAssetValue,
+    toAssetValue,
+    tokenPrices,
+    calculateReceiveAmount,
+  ]);
 
   const swapAssets = () => {
     let fromAmountValueWithNewDecimals: string | undefined;
