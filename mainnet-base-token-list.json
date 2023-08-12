@@ -160,5 +160,13 @@
     "chainId": 8453,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png"
+  },
+  {
+    "address": "0x8901cB2e82CC95c01e42206F8d1F417FE53e7Af0",
+    "chainId": 8453,
+    "decimals": 18,
+    "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/23896.png",
+    "name": "YieldFarming Index",
+    "symbol": "YFX"
   }
 ]
