@@ -12,6 +12,7 @@ import {
   walletConnectWallet,
   rabbyWallet,
   metaMaskWallet,
+  coinbaseWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 
 import { chainToConnect } from "../constants/constants";
@@ -66,6 +67,10 @@ if (projectId) {
     metaMaskWallet({ projectId, chains }),
     walletConnectWallet({
       projectId,
+      chains,
+    }),
+    coinbaseWallet({
+      appName: "Velocimeter",
       chains,
     }),
   ];
