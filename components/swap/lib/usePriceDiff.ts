@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { formatUnits } from "viem";
 
 import { BaseAsset, QuoteSwapResponse } from "../../../stores/types/types";
-import { WETH_ADDRESS } from "../../../stores/constants/contracts";
 import {
   NATIVE_TOKEN,
   W_NATIVE_ADDRESS,
