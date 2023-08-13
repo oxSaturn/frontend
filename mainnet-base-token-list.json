@@ -7,7 +7,7 @@
     "name": "Wrapped ETH",
     "symbol": "WETH"
   },
-    {
+  {
     "address": "0x4a3a6dd60a34bb2aba60d73b4c88315e9ceb6a3d",
     "chainId": 8453,
     "decimals": 18,
@@ -15,8 +15,7 @@
     "name": "Magic Internet Money",
     "symbol": "MIM"
   },
-    {
-   
+  {
     "address": "0xbcf19453badf7c7ac0630b11dcb75d52b7eb8930",
     "chainId": 8453,
     "decimals": 18,
@@ -56,22 +55,6 @@
     "logoURI": "https://base.velocimeter.xyz/images/partners/smooth.png",
     "name": "Smooth",
     "symbol": "SMOOTH"
-  },
-  {
-    "address": "0x9Adf0d2C4fEeAc572AC1e2Ca6a0D453017B5F7D9",
-    "chainId": 8453,
-    "decimals": 18,
-    "logoURI": "https://base.velocimeter.xyz/images/partners/beth.png",
-    "name": "Basethereum",
-    "symbol": "BETH"
-  },
-  {
-    "address": "0x3FF13895C5449591e3296192649169c9110941F0",
-    "chainId": 8453,
-    "decimals": 18,
-    "logoURI": "https://base.velocimeter.xyz/images/partners/share.png",
-    "name": "Seigniorage Shares",
-    "symbol": "SHARE"
   },
   {
     "address": "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
