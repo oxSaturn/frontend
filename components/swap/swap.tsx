@@ -418,11 +418,11 @@ function Swap() {
           (parseFloat(fromAmountValueUsd) > 0 &&
             parseFloat(toAmountValueUsd) === 0)) && (
           <>
-            <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-warning">
+            <h3 className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-warning">
               Warning
-            </Typography>
+            </h3>
             <div className="grid w-full grid-cols-1">
-              <div className="flex flex-col items-center justify-center py-6 px-0 text-sm font-bold text-warning">
+              <div className="flex flex-col items-center justify-center py-6 px-0 text-sm text-warning">
                 Potential low liquidity swap!{" "}
                 {priceImpact !== undefined
                   ? `Price difference is ${priceImpact.toFixed()}%`
@@ -436,11 +436,11 @@ function Swap() {
             (parseFloat(fromAmountValueUsd) > 0 &&
               parseFloat(toAmountValueUsd) === 0)) && (
             <>
-              <Typography className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-red-500">
+              <h3 className="w-full border-b border-solid border-[rgba(126,153,176,0.2)] pb-[6px] text-sm font-bold text-warning">
                 Warning
-              </Typography>
+              </h3>
               <div className="grid w-full grid-cols-1">
-                <div className="flex flex-col items-center justify-center py-6 px-0 text-sm font-bold text-red-500">
+                <div className="flex flex-col items-center justify-center py-6 px-0 text-sm text-warning">
                   Potential low liquidity swap!{" "}
                   {usdDiff !== ""
                     ? `Price difference is ${usdDiff}%`
