@@ -1,13 +1,15 @@
-import BigNumber from "bignumber.js";
 import { v4 as uuidv4 } from "uuid";
 import { stringToHex, keccak256 } from "viem";
 
-export function formatCurrency(amount: any, decimals = 2) {
-  if (!isNaN(amount)) {
+export function formatCurrency(
+  amount: string | number | undefined | null,
+  decimals = 2
+) {
+  if (amount !== undefined && amount !== null && !isNaN(+amount)) {
     const comparator = 1 / Math.pow(10, decimals);
 
-    if (BigNumber(amount).gt(0) && BigNumber(amount).lt(comparator)) {
-      return "< 0.01";
+    if (+amount > 0 && +amount < comparator) {
+      return `< ${comparator.toFixed(decimals)}`;
     }
 
     const formatter = new Intl.NumberFormat(undefined, {
@@ -15,11 +17,11 @@ export function formatCurrency(amount: any, decimals = 2) {
       maximumFractionDigits: decimals,
     });
 
-    if (amount >= 1_000_000_000) {
-      return formatter.format(amount / 1_000_000_000) + "b";
+    if (+amount >= 1_000_000_000) {
+      return formatter.format(+amount / 1_000_000_000) + "b";
     }
 
-    return formatter.format(amount);
+    return formatter.format(+amount);
   } else {
     return "0.00";
   }

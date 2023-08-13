@@ -160,8 +160,8 @@ function RedeemLiquid({ now }: { now: number }) {
   const {
     paymentBalance,
     optionBalance,
-    optionPrice,
-    discountedPrice,
+    optionValue,
+    discountedValue,
     isFetchingBalances,
     refetchBalances,
     optionTokenSymbol,
@@ -259,15 +259,11 @@ function RedeemLiquid({ now }: { now: number }) {
       </div>
       <div className="flex items-center justify-between">
         <div>Strike price</div>
-        <div>
-          {formatCurrency(discountedPrice, 4)} {paymentTokenSymbol}
-        </div>
+        <div>${formatCurrency(discountedValue, 4)}</div>
       </div>
       <div className="flex items-center justify-between">
         <div>{underlyingTokenSymbol} price</div>
-        <div>
-          {formatCurrency(optionPrice, 4)} {paymentTokenSymbol}
-        </div>
+        <div>${formatCurrency(optionValue, 4)}</div>
       </div>
       <div className="flex items-center justify-between">
         <div>Discount</div>
@@ -435,8 +431,8 @@ function RedeemLP({ now }: { now: number }) {
   const {
     paymentBalance,
     optionBalance,
-    optionPrice,
-    discountedLpPrice,
+    optionValue,
+    discountedLpValue,
     isFetchingBalances,
     refetchBalances,
     optionTokenSymbol,
@@ -545,15 +541,11 @@ function RedeemLP({ now }: { now: number }) {
       </div>
       <div className="flex items-center justify-between">
         <div>Strike price</div>
-        <div>
-          {formatCurrency(discountedLpPrice, 4)} {paymentTokenSymbol}
-        </div>
+        <div>${formatCurrency(discountedLpValue, 4)}</div>
       </div>
       <div className="flex items-center justify-between">
         <div>{underlyingTokenSymbol} price</div>
-        <div>
-          {formatCurrency(optionPrice, 4)} {paymentTokenSymbol}
-        </div>
+        <div>${formatCurrency(optionValue, 4)}</div>
       </div>
       <div className="flex items-center justify-between">
         <div>LP Discount</div>
@@ -797,8 +789,8 @@ function RedeemVest({ now }: { now: number }) {
   const {
     paymentBalance,
     optionBalance,
-    optionPrice,
-    discountedVePrice,
+    optionValue,
+    discountedVeValue,
     isFetchingBalances,
     refetchBalances,
     optionTokenSymbol,
@@ -896,15 +888,11 @@ function RedeemVest({ now }: { now: number }) {
       </div>
       <div className="flex items-center justify-between">
         <div>Strike price</div>
-        <div>
-          {formatCurrency(discountedVePrice, 4)} {paymentTokenSymbol}
-        </div>
+        <div>${formatCurrency(discountedVeValue, 4)}</div>
       </div>
       <div className="flex items-center justify-between">
         <div>{underlyingTokenSymbol} price</div>
-        <div>
-          {formatCurrency(optionPrice, 4)} {paymentTokenSymbol}
-        </div>
+        <div>${formatCurrency(optionValue, 4)}</div>
       </div>
       <div className="flex items-center justify-between">
         <div>Discount</div>

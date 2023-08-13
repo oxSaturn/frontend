@@ -84,7 +84,11 @@ export function Reward() {
               className="flex items-center justify-between space-y-2"
               key={earnedReward.address}
             >
-              {formatCurrency(earnedReward.earnedAmount)} {earnedReward.symbol}
+              {formatCurrency(
+                earnedReward.earnedAmount,
+                earnedReward.symbol === "WETH" ? 6 : undefined
+              )}{" "}
+              {earnedReward.symbol}
             </div>
           ))}
         </div>

@@ -357,9 +357,9 @@ export default function EnhancedTable({
                                     className="text-xs font-extralight"
                                   >
                                     {formatCurrency(
-                                      BigNumber(row.gauge.balance)
-                                        .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve0 ?? 0)
+                                      (+row.gauge.balance /
+                                        row.gauge.totalSupply) *
+                                        parseFloat(row.gauge.reserve0 ?? "0")
                                     )}
                                   </Typography>
                                   <Typography
@@ -376,9 +376,9 @@ export default function EnhancedTable({
                                     className="text-xs font-extralight"
                                   >
                                     {formatCurrency(
-                                      BigNumber(row.gauge.balance)
-                                        .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve1 ?? 0)
+                                      (+row.gauge.balance /
+                                        row.gauge.totalSupply) *
+                                        parseFloat(row.gauge.reserve1 ?? "0")
                                     )}
                                   </Typography>
                                   <Typography
@@ -403,9 +403,9 @@ export default function EnhancedTable({
                                     className="text-xs font-extralight"
                                   >
                                     {formatCurrency(
-                                      BigNumber(row.gauge.balance)
-                                        .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve0 ?? 0)
+                                      (+row.gauge.balance /
+                                        row.gauge.totalSupply) *
+                                        parseFloat(row.gauge.reserve0 ?? "0")
                                     )}
                                   </Typography>
                                   <Typography
@@ -422,9 +422,9 @@ export default function EnhancedTable({
                                     className="text-xs font-extralight"
                                   >
                                     {formatCurrency(
-                                      BigNumber(row.gauge.balance)
-                                        .div(row.gauge.totalSupply)
-                                        .times(row.gauge.reserve1 ?? 0)
+                                      (+row.gauge.balance /
+                                        row.gauge.totalSupply) *
+                                        parseFloat(row.gauge.reserve1 ?? "0")
                                     )}
                                   </Typography>
                                   <Typography
