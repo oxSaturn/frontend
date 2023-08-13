@@ -706,9 +706,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
               <div className="flex items-center justify-end max-md:block">
                 <Typography variant="h2" className="text-xs font-extralight">
                   {formatCurrency(
-                    BigNumber(row.balance)
-                      .div(row.totalSupply)
-                      .times(row.reserve0)
+                    (+row.balance / row.totalSupply) * row.reserve0
                   )}
                 </Typography>
                 <Typography
@@ -722,9 +720,7 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
               <div className="flex items-center justify-end max-md:block">
                 <Typography variant="h5" className="text-xs font-extralight">
                   {formatCurrency(
-                    BigNumber(row.balance)
-                      .div(row.totalSupply)
-                      .times(row.reserve1)
+                    (+row.balance / row.totalSupply) * row.reserve1
                   )}
                 </Typography>
                 <Typography
@@ -755,9 +751,8 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 <div className="flex items-center justify-end max-md:block">
                   <Typography variant="h2" className="text-xs font-extralight">
                     {formatCurrency(
-                      BigNumber(row.gauge.balance)
-                        .div(row.gauge.totalSupply)
-                        .times(row.gauge.reserve0)
+                      (+row.gauge.balance / row.gauge.totalSupply) *
+                        +row.gauge.reserve0
                     )}
                   </Typography>
                   <Typography
@@ -771,9 +766,8 @@ function Row(props: { row: Pair; onView: (_row: Pair) => void }) {
                 <div className="flex items-center justify-end max-md:block">
                   <Typography variant="h5" className="text-xs font-extralight">
                     {formatCurrency(
-                      BigNumber(row.gauge.balance)
-                        .div(row.gauge.totalSupply)
-                        .times(row.gauge.reserve1)
+                      (+row.gauge.balance / row.gauge.totalSupply) *
+                        +row.gauge.reserve1
                     )}
                   </Typography>
                   <Typography

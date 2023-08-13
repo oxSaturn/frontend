@@ -744,17 +744,13 @@ export default function LiquidityManage() {
           <div className="grid w-full grid-cols-2 gap-3">
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <Typography className="pb-[6px] text-sm font-bold">
-                {BigNumber(amount1).gt(0)
-                  ? formatCurrency(BigNumber(amount0).div(amount1))
-                  : "0.00"}
+                {+amount1 > 0 ? formatCurrency(+amount0 / +amount1) : "0.00"}
               </Typography>
               <Typography className="text-xs text-secondary">{`${asset0?.symbol} per ${asset1?.symbol}`}</Typography>
             </div>
             <div className="flex flex-col items-center justify-center py-6 px-0">
               <Typography className="pb-[6px] text-sm font-bold">
-                {BigNumber(amount0).gt(0)
-                  ? formatCurrency(BigNumber(amount1).div(amount0))
-                  : "0.00"}
+                {+amount0 > 0 ? formatCurrency(+amount1 / +amount0) : "0.00"}
               </Typography>
               <Typography className="text-xs text-secondary">{`${asset1?.symbol} per ${asset0?.symbol}`}</Typography>
             </div>
