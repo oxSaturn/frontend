@@ -70,7 +70,9 @@ export function usePriceImpact({
     toAssetAddress = W_NATIVE_ADDRESS.toLowerCase();
   }
   const fromPrice =
-    !!fromAssetValue?.address && !!quote
+    !!fromAssetValue?.address &&
+    !!quote &&
+    quote.maxReturn.tokens[fromAssetAddress as `0x${string}`].price !== 0
       ? quote.maxReturn.tokens[fromAssetAddress as `0x${string}`].price *
         parseFloat(
           formatUnits(
@@ -80,7 +82,9 @@ export function usePriceImpact({
         )
       : undefined;
   const toPrice =
-    !!toAssetValue?.address && !!quote
+    !!toAssetValue?.address &&
+    !!quote &&
+    quote.maxReturn.tokens[toAssetAddress as `0x${string}`].price !== 0
       ? quote.maxReturn.tokens[toAssetAddress as `0x${string}`].price *
         parseFloat(
           formatUnits(BigInt(quote.maxReturn.totalTo), toAssetValue.decimals)
