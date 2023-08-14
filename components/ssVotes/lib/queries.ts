@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { type Address, useAccount } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { create } from "zustand";
-import BigNumber from "bignumber.js";
 
 import viemClient from "../../../stores/connectors/viem";
 import { Pair, Vote, Votes, hasGauge } from "../../../stores/types/types";
@@ -37,9 +36,7 @@ export const useVestVotes = (tokenID: string | undefined) => {
         return {
           address: vote?.address,
           gaugeAddress: vote?.gaugeAddress,
-          value: BigNumber(
-            vote && vote.votePercent ? vote.votePercent : 0
-          ).toNumber(),
+          value: vote && vote.votePercent ? +vote.votePercent : 0,
         };
       });
       return votesValues;
@@ -86,22 +83,22 @@ const getVestVotes = async (
     contracts: calls,
   });
 
+  let formattedVoteCounts = voteCounts.map((voteCount) => {
+    return Number(voteCount);
+  });
   let votes: Vote[] = [];
 
-  const totalVotes = voteCounts.reduce((curr, acc) => {
-    let num = acc > 0 ? acc : acc * BigInt(-1);
-    return curr + num;
-  }, BigInt(0));
+  const totalVotes = formattedVoteCounts.reduce((curr, acc) => {
+    return curr + acc;
+  }, 0);
 
-  for (let i = 0; i < voteCounts.length; i++) {
+  for (let i = 0; i < formattedVoteCounts.length; i++) {
     votes.push({
       address: filteredPairs[i].address,
       gaugeAddress: filteredPairs[i].gauge.address,
       votePercent:
-        totalVotes > 0 || totalVotes < 0
-          ? parseFloat(
-              ((voteCounts[i] * BigInt(100)) / totalVotes).toString()
-            ).toFixed(0)
+        totalVotes > 0
+          ? ((formattedVoteCounts[i] * 100) / totalVotes).toFixed(0)
           : "0",
     });
   }
