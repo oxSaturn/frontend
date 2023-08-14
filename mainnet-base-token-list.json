@@ -7,6 +7,14 @@
     "name": "Wrapped ETH",
     "symbol": "WETH"
   },
+    {
+    "address": "0xBa5E6fa2f33f3955f0cef50c63dCC84861eAb663",
+    "chainId": 8453,
+    "decimals": 18,
+    "logoURI": "https://2398686764-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FCItzZ2bMZhSuKAoCAWVf%2Fuploads%2Fj4G9DTdGjyUGNrjYspmD%2Fbased%20logo%201000.png",
+    "name": "BASED Markets",
+    "symbol": "BASED"
+  },
   {
     "address": "0x4a3a6dd60a34bb2aba60d73b4c88315e9ceb6a3d",
     "chainId": 8453,
