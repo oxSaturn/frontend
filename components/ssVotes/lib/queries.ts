@@ -88,7 +88,7 @@ const getVestVotes = async (
   });
   let votes: Vote[] = [];
 
-  const totalVotes = formattedVoteCounts.reduce((curr, acc) => {
+  const totalVotes = formattedVoteCounts.reduce((acc, curr) => {
     return curr + acc;
   }, 0);
 
